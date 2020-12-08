@@ -28,8 +28,10 @@ require (RPMG)
 require (lubridate)
 require (tidyverse)
 require (sf)
+require(maptools)
 library(ROracle)
 library(RCurl)
+
 
 # Define: 
 #uid <- un.sameotoj
@@ -73,12 +75,6 @@ inVMS<-read.csv("Y:/Offshore scallop/Assessment/Data/Maps/approved/Other_Borders
 outvms<-read.csv("Y:/Offshore scallop/Assessment/Data/Maps/approved/Other_Borders/SPA6_VMS_OUT_R_final_MOD.csv")
 attr(inVMS,"projection") <- "LL"
 attr(outvms,"projection") <- "LL"
-
-#################
-# For New Plots #
-#################
-
-land <- st_read("C:/Users/WILSONB/Documents/1_GISdata/Shapefiles/AtlanticCanada/AC_1M_BoundaryPolygons_wAnnBasin_StJohnR.shp") #Testing shapefiles - will need to change directory....
 
 
 # -----------------------------Import SHF data (live and dead)--------------------------------------------
@@ -316,14 +312,21 @@ ScallopSurv.mtcnt <- ScallopSurv.mtcnt[-which(is.na(ScallopSurv.mtcnt$meat.count
 # SURVEY - Commercial Size >= 80 mm
 
 #############NEW PLOT#################
+temp <- as.PolySet(totCont.poly ,projection = "LL") # I am assuming you provide Lat/Lon data and WGS84
+temp <- PolySet2SpatialPolygons(temp) # Spatial lines is a bit more general (don't need to have boxes closed)
+custom <- st_as_sf(temp)
+custom <- krige(custom)
+plot(custom)
+crs(custom)
+#Possible answer to fill in contours
+#https://gis.stackexchange.com/questions/287988/kriging-example-with-sf-object
+
 #basemap
 p <- pecjector(area = "bof",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(bathy = c(20,'c'), scale.bar = c('tl',0.5))) 
+               add_layer = list(land = "grey", bathy = c(20,'c'), survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = custom, size = 1)) # survey = c("inshore", "outline")
 
-#add_inla(field = inla.field.obj, mesh = mesh.inla.obj,range = c(0,1),clip = sf.obj,dims = c(50,50), scale= list(scale = 'discrete', palette = viridis::viridis(100), breaks = seq(0,1, by = 0.05), limits = c(0,1), alpha = 0.8,leg.name = "Ted")))
 
 p + 
-  annotation_spatial(land) +
   geom_spatial_point(data = ScallopSurv %>% 
                        filter(year == survey.year), #survey.year defined in beginning of script
                      aes(lon, lat), size = 0.1) +
@@ -339,7 +342,7 @@ p +
 #Axis : 'Longitude (degree symbol), Latitude (degree symbol)
 #Legend: #/Tow
 #Fadded contours?
-#
+#Save to file - png(paste(plot.dir,map,".png",sep=""),units="in",width=672,height=672,res=100, bg = "transparent")
 
 
 
