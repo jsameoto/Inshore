@@ -2,6 +2,8 @@
 ### Spatial Figures - Survey Data ###
 ###    Full BoF and Approaches   ###
 ### J.Sameoto Nov 2017, Oct 2018 ###
+### B.Wilson - Revised Dec 2020  ###
+###        (using Github)        ###
 ###..............................###
 
 # Spatial figures of Survey Density, Survey Biomass, Condition, Meat count for BoF: SPA 4, SPA 1A, SPA1B
@@ -22,13 +24,20 @@ require (splancs)
 require (RColorBrewer)
 require (spatstat)
 require (RPMG)
+#require (RODBC)
+require (lubridate)
+require (tidyverse)
+require (sf)
 library(ROracle)
+library(RCurl)
 
 # Define: 
-uid <- un.sameotoj
-pwd <- pw.sameotoj
+#uid <- un.sameotoj
+#pwd <- pw.sameotoj
 #uid <- un.raperj
 #pwd <- un.raperj
+uid <- un.bwilson
+pwd <- pw.bwilson
 
 surveyyear <- 2019  #This is the last survey year 
 assessmentyear <- 2020 #year in which you are conducting the survey 
@@ -40,7 +49,7 @@ path.directory <- "Y:/INSHORE SCALLOP/BoF/"
 chan <- dbConnect(dbDriver("Oracle"),username=uid, password=pwd,'ptran')
 
 #set year 
-maxyear <- 2019  #remove in script and change to survey year 
+survey.year <- 2019  #removed maxyear in script and changed to survey year (Under )
 
 #### Import Source functions and polygons ####
 # source R functions
@@ -48,6 +57,8 @@ source("Y:/Offshore scallop/Assessment/Assessment_fns/Maps/ScallopMap.R")
 source("Y:/INSHORE SCALLOP/BoF/Assessment_fns/contour.gen.r")
 source("Y:/INSHORE SCALLOP/BoF/Assessment_fns/convert.dd.dddd.r")
 source("Y:/INSHORE SCALLOP/BoF/Assessment_fns/gridPlot.r")
+eval(parse(text = getURL("https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Maps/pectinid_projector_sf.R", ssl.verifypeer = FALSE))) #load pectinid_projector function from Github
+
 
 # BoF.poly <- read.csv("C:/Users/NasmithL/Documents/Mapping/Scallop Boundaries/Survey/XYBoFPoly_new.csv") #use for commercial plots of 1A !!!GET FROM LESLIE
 BoF.Survpoly <- read.csv("Y:/Offshore scallop/Assessment/Data/Maps/approved/Other_Borders/bofPoly.csv") #use for survey plots
@@ -63,7 +74,14 @@ outvms<-read.csv("Y:/Offshore scallop/Assessment/Data/Maps/approved/Other_Border
 attr(inVMS,"projection") <- "LL"
 attr(outvms,"projection") <- "LL"
 
-#### Import SHF data (live and dead) ####
+#################
+# For New Plots #
+#################
+
+land <- st_read("C:/Users/WILSONB/Documents/1_GISdata/Shapefiles/AtlanticCanada/AC_1M_BoundaryPolygons_wAnnBasin_StJohnR.shp") #Testing shapefiles - will need to change directory....
+
+
+# -----------------------------Import SHF data (live and dead)--------------------------------------------
 
 ##.. LIVE ..##
 ## NOTE: For BoF plots keep strata_id call included (omits GM and SMB); for document remove strata_id limits
@@ -82,7 +100,10 @@ quer2 <- paste(
 #If ROracle: 
 ScallopSurv <- dbGetQuery(chan, quer2)
 ScallopSurv  <- ScallopSurv[,1:51]
-ScallopSurv$year <- as.numeric(substr(ScallopSurv$CRUISE,3,6)) # add year column to SHF data. NOTE: this would NOT work for SFA29 cruises - would need to be ..,6,9)!!!
+
+#ScallopSurv$year <- as.numeric(substr(ScallopSurv$CRUISE,3,6)) # add year column to SHF data. NOTE: this would NOT work for SFA29 cruises - would need to be ..,6,9)!!!
+ScallopSurv <- mutate(ScallopSurv, year = year(TOW_DATE)) #***Potential fix - require(lubridate), require(tidyverse), check if works with SFA29 cruises, should if TOW_DATE is formatted the same (POSIXct). Creates column year based on the POSIXct year character in TOW_DATE.
+
 # Error from year (b/c SFA29 surveys are alloted)
 # Check using following that all cruises are ok for analysis
 # temp <- ScallopSurv[!is.na(ScallopSurv$year),]
@@ -92,18 +113,43 @@ summary (ScallopSurv) #check data
 ScallopSurv$lat <- convert.dd.dddd(ScallopSurv$START_LAT)
 ScallopSurv$lon <- convert.dd.dddd(ScallopSurv$START_LONG)
 
-names(ScallopSurv)[2] <- c("tow") #change 'TOW_NO' to 'tow'
-ScallopSurv$tot <- rowSums(ScallopSurv[,11:50]) #all scallops, BIN_ID_0 to BIN_ID_195
+#names(ScallopSurv)[2] <- c("tow") #change 'TOW_NO' to 'tow'
+ScallopSurv <- rename(ScallopSurv, tow = TOW_NO) # ***NEW - eliminates the use of column number to make changes - require(tidyverse) ****
+
+#ScallopSurv$tot <- rowSums(ScallopSurv[,11:50]) #all scallops, BIN_ID_0 to BIN_ID_195
+ScallopSurv %>% 
+  select(BIN_ID_0:BIN_ID_195) %>%
+  rowSums(na.rm=TRUE) -> ScallopSurv$tot # NEW **** Potential fix for summing all bin IDS across Rows, without using column numbers ****
+
 ScallopSurv$tot <- ScallopSurv$tot/ 4267.2 # standardize number per tow to numbers per m^2
+
 attr(ScallopSurv, "projection") #check default projection of data
 attr(ScallopSurv, "projection") <- "LL" # assign projection for data
+#ScallopSurv.sf <- st_as_sf(ScallopSurv, coords = c("lon", "lat"), crs = 4326) #NEW ***Potential change: Convert ScallopSurv to sf object (requires sf) with latlong projection (EPSG 4326) can still be treated as dataframe, replaces assigning "LL" projection using attr() function, could potentially be named without the .sf ***
+
 ScallopSurv$ID <- paste(ScallopSurv$CRUISE, ScallopSurv$tow, sep=".")
 
 #create pre-rec, rec, comm fields:
-ScallopSurv$com <- apply(ScallopSurv[,27:50],1,sum) #>=80mm; BINS 80 to 195
-ScallopSurv$rec <- apply(ScallopSurv[,24:26],1,sum) #65-79; BINS 65 to 75
-ScallopSurv$pre <- apply(ScallopSurv[,11:23],1,sum) #0-64 mm; BINS 0 to 60
 
+#ScallopSurv$com <- apply(ScallopSurv[,27:50],1,sum) #>=80mm; BINS 80 to 195
+ScallopSurv %>% #>=80mm; BINS 80 to 195 # ***NEW*** - eliminates the need for column number selection - require(tidyverse)
+  dplyr::select(BIN_ID_80:BIN_ID_195) %>%
+  rowSums(na.rm=TRUE) -> ScallopSurv$com
+ScallopSurv$com <- round(ScallopSurv$com, 0) #Round totals
+
+#ScallopSurv$rec <- apply(ScallopSurv[,24:26],1,sum) #65-79; BINS 65 to 75
+ScallopSurv %>% #65-79; BINS 65 to 75 # ***NEW*** - eliminates the need for column number selection - require(tidyverse)
+  dplyr::select(BIN_ID_65:BIN_ID_75) %>%
+  rowSums(na.rm=TRUE) -> ScallopSurv$rec
+ScallopSurv$rec <- round(ScallopSurv$rec, 0) #Round totals
+
+#ScallopSurv$pre <- apply(ScallopSurv[,11:23],1,sum) #0-64 mm; BINS 0 to 60
+ScallopSurv %>% #0-64 mm; BINS 0 to 60 # ***NEW*** - eliminates the need for column number selection - require(tidyverse)
+  dplyr::select(BIN_ID_0:BIN_ID_60) %>%
+  rowSums(na.rm=TRUE) -> ScallopSurv$pre
+ScallopSurv$pre <- round(ScallopSurv$pre, 0) #Round totals
+
+ScallopSurv.sf <- st_as_sf(ScallopSurv, coords = c("lon", "lat"), crs = 4326)
 
 ##.. DEAD ..##
 #Db Query:
@@ -120,26 +166,47 @@ quer3 <- paste(
 
 ScallopSurv.dead <- dbGetQuery(chan, quer3)
 ScallopSurv.dead   <- ScallopSurv.dead[,1:51]
-ScallopSurv.dead$year <- as.numeric(substr(ScallopSurv.dead$CRUISE,3,6)) # add year column to SHF data. NOTE: this would NOT work for SFA29 cruises - would need to be ..,6,9)!!!
+#ScallopSurv.dead$year <- as.numeric(substr(ScallopSurv.dead$CRUISE,3,6)) # add year column to SHF data. NOTE: this would NOT work for SFA29 cruises - would need to be ..,6,9)!!!
+ScallopSurv.dead <- mutate(ScallopSurv.dead, year = year(TOW_DATE)) # ***Potential fix - require(lubridate), require(tidyverse), check if works with SFA29 cruises, should if TOW_DATE is formatted the same (POSIXct)
 
 #Once data imported, convert to DD
 ScallopSurv.dead$lat <- convert.dd.dddd(ScallopSurv.dead$START_LAT)
 ScallopSurv.dead$lon <- convert.dd.dddd(ScallopSurv.dead$START_LONG)
 
-names(ScallopSurv.dead)[2] <- c("tow") #change 'TOW_NO' to 'tow'
-ScallopSurv.dead$tot <- rowSums(ScallopSurv.dead[,11:50]) #all scallops
+#names(ScallopSurv.dead)[2] <- c("tow") #change 'TOW_NO' to 'tow'
+ScallopSurv.dead <- rename(ScallopSurv.dead, tow = TOW_NO) # ***NEW - eliminates the use of column number to make changes - require(tidyverse) ****
+
+#ScallopSurv.dead$tot <- rowSums(ScallopSurv.dead[,11:50]) #all scallops
+ScallopSurv.dead %>% 
+  select(BIN_ID_0:BIN_ID_195) %>%
+  rowSums(na.rm=TRUE) -> ScallopSurv.dead$tot # NEW **** Potential fix for summing all bin IDS across Rows, without using column numbers ****
+
 ScallopSurv.dead$tot <- ScallopSurv.dead$tot/ 4267.2 # standardize number per tow to numbers per m^2
 attr(ScallopSurv.dead, "projection") #check default projection of data
 attr(ScallopSurv.dead, "projection") <- "LL" # assign projection for data
 ScallopSurv.dead$ID <- paste(ScallopSurv.dead$CRUISE, ScallopSurv.dead$tow, sep=".")
 
 #create pre-rec, rec, comm fields:
-ScallopSurv.dead$com <- apply(ScallopSurv.dead[,27:50],1,sum) #>=80mm; BINS 80 to 195
-ScallopSurv.dead$rec <- apply(ScallopSurv.dead[,24:26],1,sum) #65-79; BINS 65 to 75
-ScallopSurv.dead$pre <- apply(ScallopSurv.dead[,11:23],1,sum) #0-64 mm; BINS 0 to 60
+#ScallopSurv.dead$com <- apply(ScallopSurv.dead[,27:50],1,sum) #>=80mm; BINS 80 to 195
+ScallopSurv.dead %>% #>=80mm; BINS 80 to 195 # ***NEW*** - eliminates the need for column number selection - require(tidyverse)
+  dplyr::select(BIN_ID_80:BIN_ID_195) %>%
+  rowSums(na.rm=TRUE) -> ScallopSurv.dead$com
+ScallopSurv.dead$com <- round(ScallopSurv.dead$com, 0) #Round totals
+
+#ScallopSurv.dead$rec <- apply(ScallopSurv.dead[,24:26],1,sum) #65-79; BINS 65 to 75
+ScallopSurv.dead %>% #65-79; BINS 65 to 75 # ***NEW*** - eliminates the need for column number selection - require(tidyverse)
+  dplyr::select(BIN_ID_65:BIN_ID_75) %>%
+  rowSums(na.rm=TRUE) -> ScallopSurv.dead$rec
+ScallopSurv.dead$rec <- round(ScallopSurv.dead$rec, 0) #Round totals
+
+#ScallopSurv.dead$pre <- apply(ScallopSurv.dead[,11:23],1,sum) #0-64 mm; BINS 0 to 60
+ScallopSurv.dead %>% #0-64 mm; BINS 0 to 60 # ***NEW*** - eliminates the need for column number selection - require(tidyverse)
+  dplyr::select(BIN_ID_0:BIN_ID_60) %>%
+  rowSums(na.rm=TRUE) -> ScallopSurv.dead$pre
+ScallopSurv.dead$pre <- round(ScallopSurv.dead$pre, 0) #Round totals
 
 
-#### Import WGTHGT DATA ####
+# -------------------------------Import WGTHGT DATA------------------------------------------
 
 #List of tows that have detailed samples
 quer4 <- paste(
@@ -152,10 +219,13 @@ quer4 <- paste(
 
 sampled.dat <- dbGetQuery(chan, quer4)
 
-#### Import Biomass per tow data ####
+
+# --------------------------------Import Biomass per tow data-----------------------------------------
+
 # this is output from the meat weight/shell height modelling !NB: not all years needed depending on what you want to show
 #code for reading in multiple csvs at once and combining into one dataframe from D.Keith (2015)
-max.yr <- max(na.omit(ScallopSurv$year))
+
+max.yr <- max(na.omit(ScallopSurv$year)) ##***Already defined at beginning? as maxyear - with note to replace with survey year***
 Year <- seq((max.yr-4),max.yr)
 num.years <- length(Year)
 
@@ -163,7 +233,7 @@ BFliveweight <- NULL
 for(i in 1:num.years)
 {
   # Make a list with each years data in it, extract it as needed later
-  temp <- read.csv(paste0(path.directory,assessmentyear,"/Assessment/Data/SurveyIndices/SPA",area,"/BFliveweight",Year[i],".csv",sep="") ,header=T)
+  temp <- read.csv(paste0(path.directory,assessmentyear,"/Assessment/Data/SurveyIndices/SPA",area,"/BFliveweight",Year[i],".csv",sep=""), header=T)
   BFliveweight <- rbind(BFliveweight,temp)
 }
 
@@ -177,21 +247,40 @@ ScallopSurv.kg$year <- ScallopSurv.kg$YEAR
 ScallopSurv.kg$lat <- convert.dd.dddd(ScallopSurv.kg$START_LAT)
 ScallopSurv.kg$lon <- convert.dd.dddd(ScallopSurv.kg$START_LONG)
 
-names(ScallopSurv.kg)[4] <- c("tow") #change 'TOW_NO' to 'tow'
-ScallopSurv.kg$tot <- rowSums(ScallopSurv.kg[,13:52]) #all scallops
+#names(ScallopSurv.kg)[4] <- c("tow") #change 'TOW_NO' to 'tow'
+ScallopSurv.kg <- rename(ScallopSurv.kg, tow = TOW_NO) # ***NEW - eliminates the use of column number to make changes - require(tidyverse) ****
+
+#ScallopSurv.kg$tot <- rowSums(ScallopSurv.kg[,13:52]) #all scallops
+ScallopSurv.kg %>% 
+  dplyr::select(BIN_ID_0:BIN_ID_195) %>%
+  rowSums(na.rm=TRUE) -> ScallopSurv.kg$tot # NEW **** Potential fix for summing all bin IDS across Rows, without using column numbers ****
+
 ScallopSurv.kg$tot <- ScallopSurv.kg$tot/ 4267.2 # standardize number per tow to numbers per m^2
 attr(ScallopSurv.kg, "projection") #check default projection of data
 attr(ScallopSurv.kg, "projection") <- "LL" # assign projection for data
 ScallopSurv.kg$ID <- paste(ScallopSurv.kg$CRUISE, ScallopSurv.kg$tow, sep=".")
 
 #create pre-rec, rec, comm fields:
-ScallopSurv.kg$com.bm <- apply(ScallopSurv.kg[,29:52],1,sum)/1000 #>=80mm; BINS 80 to 195
-ScallopSurv.kg$rec.bm <- apply(ScallopSurv.kg[,26:28],1,sum)/1000 #65-79; BINS 65 to 75
-ScallopSurv.kg$pre.bm <- apply(ScallopSurv.kg[,13:25],1,sum)/1000 #0-64 mm; BINS 0 to 60
+#ScallopSurv.kg$com.bm <- apply(ScallopSurv.kg[,29:52],1,sum)/1000 #>=80mm; BINS 80 to 195
+ScallopSurv.kg %>% #>=80mm; BINS 80 to 195 # ***NEW*** - eliminates the need for column number selection - require(tidyverse)
+  dplyr::select(BIN_ID_80:BIN_ID_195) %>%
+  rowSums(na.rm=TRUE) -> ScallopSurv.kg$com.bm
+ScallopSurv.kg$com.bm <- round(ScallopSurv.kg$com.bm, 0)/1000 #Round totals and divide by 1000
 
+#ScallopSurv.kg$rec.bm <- apply(ScallopSurv.kg[,26:28],1,sum)/1000 #65-79; BINS 65 to 75
+ScallopSurv.kg %>% #65-79; BINS 65 to 75 # ***NEW*** - eliminates the need for column number selection - require(tidyverse)
+  dplyr::select(BIN_ID_65:BIN_ID_75) %>%
+  rowSums(na.rm=TRUE) -> ScallopSurv.kg$rec.bm
+ScallopSurv.kg$rec.bm <- round(ScallopSurv.kg$rec.bm, 0)/1000 #Round totals
+
+#ScallopSurv.kg$pre.bm <- apply(ScallopSurv.kg[,13:25],1,sum)/1000 #0-64 mm; BINS 0 to 60
+ScallopSurv.kg %>% #0-64 mm; BINS 0 to 60 # ***NEW*** - eliminates the need for column number selection - require(tidyverse)
+  dplyr::select(BIN_ID_0:BIN_ID_60) %>%
+  rowSums(na.rm=TRUE) -> ScallopSurv.kg$pre.bm
+ScallopSurv.kg$pre.bm <- round(ScallopSurv.kg$pre.bm, 0)/1000 #Round totals
 
 ## Load Condition data since 2015 
-Year <- seq(2015,maxyear)
+Year <- seq(2015,survey.year) # ***changed maxyear to survey.year***
 num.years <- length(Year)
 
 con.dat <- NULL
@@ -218,11 +307,42 @@ ScallopSurv.mtcnt$meat.count<-(0.5/(ScallopSurv.mtcnt$com.bm/ScallopSurv.mtcnt$c
 ScallopSurv.mtcnt <- ScallopSurv.mtcnt[-which(is.na(ScallopSurv.mtcnt$meat.count)),]
 
 
-#  ---- SURVEY DISTRIBUTION PLOTS (BoF, spa1a, spa1B, spa4/5) ---- 
+
+# ------------------------------SURVEY DISTRIBUTION PLOTS (BoF, spa1a, spa1B, spa4/5)-------------------------------------------
 # Breakout for each area
 
-#---- BAY OF FUNDY (FULL EXPANSE PLOT) ----
+# ----BAY OF FUNDY (FULL EXPANSE PLOT)----
+
 # SURVEY - Commercial Size >= 80 mm
+
+#############NEW PLOT#################
+#basemap
+p <- pecjector(area = "bof",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
+               add_layer = list(bathy = c(20,'c'), scale.bar = c('tl',0.5))) 
+
+#add_inla(field = inla.field.obj, mesh = mesh.inla.obj,range = c(0,1),clip = sf.obj,dims = c(50,50), scale= list(scale = 'discrete', palette = viridis::viridis(100), breaks = seq(0,1, by = 0.05), limits = c(0,1), alpha = 0.8,leg.name = "Ted")))
+
+p + 
+  annotation_spatial(land) +
+  geom_spatial_point(data = ScallopSurv %>% 
+                       filter(year == survey.year), #survey.year defined in beginning of script
+                     aes(lon, lat), size = 0.1) +
+  labs(title = "BoF Density (>= 80mm)",
+       x = "Longitude",
+       y = "Latitude") +
+  theme_void() +
+  theme(legend.position = "bottom")
+
+
+#Plot elements:
+#Title: 'BoF Density (>= 80mm)'
+#Axis : 'Longitude (degree symbol), Latitude (degree symbol)
+#Legend: #/Tow
+#Fadded contours?
+#
+
+
+
 xx <- 2019 #UPDATE 
 com.contours <- contour.gen(subset(ScallopSurv,year==xx,c('ID','lon','lat','com')),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
 
@@ -520,7 +640,10 @@ addPolys(spa4.poly,border='black',lwd=1)
 
 dev.off()
 
-#--- SPA1A ----
+
+# -----------------------------SPA1A--------------------------------------------
+
+
 # SURVEY - Commercial Size >= 80 mm
 xx <- 2019 #UPDATE 
 com.contours<-contour.gen(subset(ScallopSurv,year==xx,c('ID','lon','lat','com')),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
@@ -788,10 +911,13 @@ addPolys(Survey.poly,border='black',lwd=1)
 addPolys(spa4.poly,border='black',lwd=1)
 
 
-#---- SPA1B ----
+# -------------------------------SPA1B------------------------------------------
+
 # SURVEY - Commercial Size >= 80 mm
 xx <- 2019 #UPDATE 
 com.contours<-contour.gen(subset(ScallopSurv,year==xx,c('ID','lon','lat','com')),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
+
+
 
 lvls=c(1,5,10,50,100,200,300,400,500) #levels to be color coded
 
@@ -1056,7 +1182,8 @@ addPolys(Survey.poly,border='black',lwd=1)
 addPolys(spa4.poly,border='black',lwd=1)
 
 
-#---- SPA4&5 ----
+# -------------------------------SPA4&5------------------------------------------
+
 # SURVEY - Commercial Size >= 80 mm
 xx <- 2019 #UPDATE 
 com.contours<-contour.gen(subset(ScallopSurv,year==xx,c('ID','lon','lat','com')),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
@@ -1322,8 +1449,11 @@ points(lat~lon,ScallopSurv.dead,subset=year==xx,pch=16,cex=0.1)
 legend("bottomright",c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep='')),fill=cont.data$col,title="Proportion",inset=0.02,bty='o',box.col='white', cex=1, bg='white')
 addPolys(Survey.poly,border='black',lwd=1)
 addPolys(spa4.poly,border='black',lwd=1)
+
+
 ########################################################################################################################################
-#---- PLOTS FOR ALL BOF - PREREC NUMBERS, REC NUMBERS, COM BIOMASS - USED IN UPDATE DOCUMENT ONLY ----
+
+# --------------PLOTS FOR ALL BOF - PREREC NUMBERS, REC NUMBERS, COM BIOMASS - USED IN UPDATE DOCUMENT ONLY------------------------------
 
 ##read in data for count - rec and prerec figure
 
@@ -1403,9 +1533,6 @@ addLines(inVMS, col='black',lwd=1, lty=2)
 legend("bottomright",c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep='')),fill=cont.data$col,title="Nombre par trait",inset=0.02,bty='o',box.col='white',bg='white')
 
 dev.off()
-
-
-
 
 
 ### RECRUIT Survey Distribution(0-64 mm) ###
