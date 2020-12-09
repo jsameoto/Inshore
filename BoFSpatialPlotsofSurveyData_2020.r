@@ -312,21 +312,39 @@ ScallopSurv.mtcnt <- ScallopSurv.mtcnt[-which(is.na(ScallopSurv.mtcnt$meat.count
 # SURVEY - Commercial Size >= 80 mm
 
 #############NEW PLOT#################
-temp <- as.PolySet(totCont.poly ,projection = "LL") # I am assuming you provide Lat/Lon data and WGS84
-temp <- PolySet2SpatialPolygons(temp) # Spatial lines is a bit more general (don't need to have boxes closed)
-custom <- st_as_sf(temp)
-custom <- krige(custom)
-plot(custom)
-crs(custom)
-#Possible answer to fill in contours
-#https://gis.stackexchange.com/questions/287988/kriging-example-with-sf-object
+##Setting up for plotting data contours... (re-vist another time for alternatives?)
+ScallopSurv.sf <- st_as_sf(ScallopSurv, coords = c("lon","lat"), crs = 4326) #convert to sf
+com.contours.sf <- ScallopSurv.sf %>%
+  filter(year == survey.year) %>%  #filters out survey year, formerly defined as xx in contour.gen() function.
+  dplyr::select(year, ID, com)
+
+#from original script using ScallopMap function and PBSMapping objects
+com.contours <- contour.gen(subset(ScallopSurv,year==survey.year,c('ID','lon','lat','com')),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
+lvls=c(1,5,10,50,100,200,300,400,500) #levels to be color coded
+CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
+CP <- convCP(CL)
+totCont.poly <- CP$PolySet
+
+#Convert PBSMapping object to sf
+totCont.poly <- as.PolySet(totCont.poly,projection = "LL") #assuming you provide Lat/Lon data and WGS84
+totCont.poly <- PolySet2SpatialLines(totCont.poly) # Spatial lines is a bit more general (don't need to have boxes closed)
+totCont.poly.sf <- st_as_sf(totCont.poly)
+totCont.poly.sf <- totCont.poly.sf %>% 
+  st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
+  st_cast("MULTIPOLYGON") %>% #Convert multilines to polygons
+  st_join(com.contours.sf[3]) %>% #combine with selected ScallopSurv data
+  st_make_valid() %>% 
+  st_buffer(0)
+
+##########
 
 #basemap
 p <- pecjector(area = "bof",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = c(20,'c'), survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = custom, size = 1)) # survey = c("inshore", "outline")
+               add_layer = list(land = "grey", bathy = c(20, "c"), survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf, size = 0.2, fill = NA, color = "grey"), scale = list(scale = 'discrete', palette = viridis::viridis(100), breaks = c(1,5,10,50,100,200,300,400,500), limits = c(0,500), alpha = 0.8,leg.name = "Ted"))
 
 
 p + 
+  #geom_sf(data=totCont.poly.sf ,aes(fill= com), alpha = 0.8)+
   geom_spatial_point(data = ScallopSurv %>% 
                        filter(year == survey.year), #survey.year defined in beginning of script
                      aes(lon, lat), size = 0.1) +
@@ -336,15 +354,7 @@ p +
   theme_void() +
   theme(legend.position = "bottom")
 
-
-#Plot elements:
-#Title: 'BoF Density (>= 80mm)'
-#Axis : 'Longitude (degree symbol), Latitude (degree symbol)
-#Legend: #/Tow
-#Fadded contours?
-#Save to file - png(paste(plot.dir,map,".png",sep=""),units="in",width=672,height=672,res=100, bg = "transparent")
-
-
+###########OLD PLOT#############
 
 xx <- 2019 #UPDATE 
 com.contours <- contour.gen(subset(ScallopSurv,year==xx,c('ID','lon','lat','com')),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
