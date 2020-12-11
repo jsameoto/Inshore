@@ -31,7 +31,7 @@ require (sf)
 require(maptools)
 library(ROracle)
 library(RCurl)
-
+#library(raster)
 
 # Define: 
 #uid <- un.sameotoj
@@ -302,8 +302,6 @@ ScallopSurv.mtcnt <- merge(ScallopSurv.kg[,c('ID','year','lat','lon','com.bm')],
 ScallopSurv.mtcnt$meat.count<-(0.5/(ScallopSurv.mtcnt$com.bm/ScallopSurv.mtcnt$com))
 ScallopSurv.mtcnt <- ScallopSurv.mtcnt[-which(is.na(ScallopSurv.mtcnt$meat.count)),]
 
-
-
 # ------------------------------SURVEY DISTRIBUTION PLOTS (BoF, spa1a, spa1B, spa4/5)-------------------------------------------
 # Breakout for each area
 
@@ -312,13 +310,12 @@ ScallopSurv.mtcnt <- ScallopSurv.mtcnt[-which(is.na(ScallopSurv.mtcnt$meat.count
 # SURVEY - Commercial Size >= 80 mm
 
 #############NEW PLOT#################
-##Setting up for plotting data contours... (re-vist another time for alternatives?)
-ScallopSurv.sf <- st_as_sf(ScallopSurv, coords = c("lon","lat"), crs = 4326) #convert to sf
-com.contours.sf <- ScallopSurv.sf %>%
+#from original script using ScallopMap function and PBSMapping objects
+ScallopSurv.sf <- ScallopSurv %>% 
+  st_as_sf(coords = c("lon","lat"), crs = 4326) %>%  #convert to sf
   filter(year == survey.year) %>%  #filters out survey year, formerly defined as xx in contour.gen() function.
   dplyr::select(year, ID, com)
 
-#from original script using ScallopMap function and PBSMapping objects
 com.contours <- contour.gen(subset(ScallopSurv,year==survey.year,c('ID','lon','lat','com')),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
 lvls=c(1,5,10,50,100,200,300,400,500) #levels to be color coded
 CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
@@ -331,20 +328,21 @@ totCont.poly <- PolySet2SpatialLines(totCont.poly) # Spatial lines is a bit more
 totCont.poly.sf <- st_as_sf(totCont.poly)
 totCont.poly.sf <- totCont.poly.sf %>% 
   st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
-  st_cast("MULTIPOLYGON") %>% #Convert multilines to polygons
-  st_join(com.contours.sf[3]) %>% #combine with selected ScallopSurv data
-  st_make_valid() %>% 
-  st_buffer(0)
+  st_cast("POLYGON") %>% #Convert multilines to polygons
+  st_join(ScallopSurv.sf[3]) %>% #combine with selected ScallopSurv data
+  st_make_valid()
+#plot(totCont.poly.sf)
+
+#st_write(totCont.poly.sf, "C:/Users/WILSONB/Documents/GitHub/GIS_layers/SurveyIndices_contours/test_plot1.shp")
 
 ##########
-
 #basemap
 p <- pecjector(area = "bof",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = c(20, "c"), survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf, size = 0.2, fill = NA, color = "grey"), scale = list(scale = 'discrete', palette = viridis::viridis(100), breaks = c(1,5,10,50,100,200,300,400,500), limits = c(0,500), alpha = 0.8,leg.name = "Ted"))
-
+               add_layer = list(land = "grey", bathy = c(20, "c"), survey = c("inshore", "outline"), scale.bar = c('tl',0.5))) 
+#, add_custom = list(obj = totCont.poly.sf, scale = list(scale = 'discrete', palette = cols, breaks = base.lvls, limits = c(0,500), alpha = 0.75,leg.name = "N per tow")))
 
 p + 
-  #geom_sf(data=totCont.poly.sf ,aes(fill= com), alpha = 0.8)+
+  #geom_sf(data=totCont.poly.sf ,aes(fill= com), alpha = 0.8)+ #Plots on top on p...not ideal
   geom_spatial_point(data = ScallopSurv %>% 
                        filter(year == survey.year), #survey.year defined in beginning of script
                      aes(lon, lat), size = 0.1) +
