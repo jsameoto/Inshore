@@ -1,3 +1,59 @@
+library(raster)
+library(stars)
+
+##Setting up for plotting data contours... (re-vist another time for alternatives?)
+ScallopSurv.sf <- st_as_sf(ScallopSurv, coords = c("lon","lat"), crs = 4326) %>%  #convert to sf
+  filter(year == survey.year) %>%  #filters out survey year, formerly defined as xx in contour.gen() function.
+  dplyr::select(year, ID, com)
+
+r <- raster(extent(ScallopSurv.sf), resolution = 0.07999, crs= crs(ScallopSurv.sf)) #create raster with extent of scallop survey data
+
+ScallopSurv.grid <- rasterize(ScallopSurv.sf, r, "com", mean) #rasterize sf point objects using means with the resolution in raster template.
+plot(ScallopSurv.grid)
+
+
+ScallopSurv.grid.sf <- st_as_stars(ScallopSurv.grid)
+
+ScallopSurv.gstat <- gstat(id = "com", formula = com ~ 1, data = ScallopSurv.sf, 
+                     nmax = 8, set = list(idp = 0.5))
+
+z <- predict(ScallopSurv.gstat, ScallopSurv.grid.sf)
+
+cont <- st_contour(z, na.rm = FALSE, breaks = c(1,5,10,50,100,200,300,400,500), contour_lines = FALSE)
+plot(cont)
+
+
+#######################################################################################
+library(sp)
+library(sf)
+ScallopSurv.sp <- ScallopSurv
+coordinates(ScallopSurv.sp) <- c("lon", "lat")
+grd <- as.data.frame(spsample(ScallopSurv.sp, "regular", n = 50000))
+names(grd) <- c("lon", "lat")
+coordinates(grd) <- c("lon", "lat")
+gridded(grd)     <- TRUE  # Create SpatialPixel object
+fullgrid(grd)    <- TRUE  # Create SpatialGrid object
+
+proj4string(ScallopSurv.sp) <- CRS("+init=epsg:4326") # Temp fix until new proj env is adopted
+proj4string(grd) <- proj4string(ScallopSurv.sp)
+
+S.idw <- gstat::idw(com ~ 1, ScallopSurv.sp, newdata=grd, idp=0.5)
+# Convert to raster object then clip to area
+r <- raster(S.idw)
+plot(S.idw)
+
+S.idw.sf <- as(S.idw, "sf") %>% 
+  st_transform(crs = 4326) %>% 
+  st_make_valid() %>% 
+  st_difference()
+
+class(S.idw.sf)
+class(totCont.poly.sf)
+
+S.idw.sf <- st_intersection(totCont.poly.sf, S.idw.sf)
+
+plot(S.idw.sf)
+#######################################################################################
 
 
 ##Setting up for plotting data contours... (re-vist another time for alternatives?)

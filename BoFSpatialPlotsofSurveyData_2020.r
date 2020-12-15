@@ -31,7 +31,7 @@ require (sf)
 require(maptools)
 library(ROracle)
 library(RCurl)
-
+library(raster)
 
 # Define: 
 #uid <- un.sameotoj
@@ -114,7 +114,7 @@ ScallopSurv <- rename(ScallopSurv, tow = TOW_NO) # ***NEW - eliminates the use o
 
 #ScallopSurv$tot <- rowSums(ScallopSurv[,11:50]) #all scallops, BIN_ID_0 to BIN_ID_195
 ScallopSurv %>% 
-  select(BIN_ID_0:BIN_ID_195) %>%
+  dplyr::select(BIN_ID_0:BIN_ID_195) %>%
   rowSums(na.rm=TRUE) -> ScallopSurv$tot # NEW **** Potential fix for summing all bin IDS across Rows, without using column numbers ****
 
 ScallopSurv$tot <- ScallopSurv$tot/ 4267.2 # standardize number per tow to numbers per m^2
@@ -174,7 +174,7 @@ ScallopSurv.dead <- rename(ScallopSurv.dead, tow = TOW_NO) # ***NEW - eliminates
 
 #ScallopSurv.dead$tot <- rowSums(ScallopSurv.dead[,11:50]) #all scallops
 ScallopSurv.dead %>% 
-  select(BIN_ID_0:BIN_ID_195) %>%
+  dplyr::select(BIN_ID_0:BIN_ID_195) %>%
   rowSums(na.rm=TRUE) -> ScallopSurv.dead$tot # NEW **** Potential fix for summing all bin IDS across Rows, without using column numbers ****
 
 ScallopSurv.dead$tot <- ScallopSurv.dead$tot/ 4267.2 # standardize number per tow to numbers per m^2
@@ -313,8 +313,9 @@ ScallopSurv.mtcnt <- ScallopSurv.mtcnt[-which(is.na(ScallopSurv.mtcnt$meat.count
 
 #############NEW PLOT#################
 ##Setting up for plotting data contours... (re-vist another time for alternatives?)
-ScallopSurv.sf <- st_as_sf(ScallopSurv, coords = c("lon","lat"), crs = 4326) #convert to sf
-com.contours.sf <- ScallopSurv.sf %>%
+#Check https://rspatial.org/raster/analysis/4-interpolation.html
+
+ScallopSurv.sf <- st_as_sf(ScallopSurv, coords = c("lon","lat"), crs = 4326) %>%  #convert to sf
   filter(year == survey.year) %>%  #filters out survey year, formerly defined as xx in contour.gen() function.
   dplyr::select(year, ID, com)
 
@@ -328,23 +329,33 @@ totCont.poly <- CP$PolySet
 #Convert PBSMapping object to sf
 totCont.poly <- as.PolySet(totCont.poly,projection = "LL") #assuming you provide Lat/Lon data and WGS84
 totCont.poly <- PolySet2SpatialLines(totCont.poly) # Spatial lines is a bit more general (don't need to have boxes closed)
-totCont.poly.sf <- st_as_sf(totCont.poly)
-totCont.poly.sf <- totCont.poly.sf %>% 
+totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
-  st_cast("MULTIPOLYGON") %>% #Convert multilines to polygons
-  st_join(com.contours.sf[3]) %>% #combine with selected ScallopSurv data
-  st_make_valid() %>% 
-  st_buffer(0)
+  st_cast("POLYGON") %>% #Convert multilines to polygons
+  st_make_valid()
+
+
+  #st_join(ScallopSurv.sf[3]) %>% #combine with selected ScallopSurv data
+  #st_make_valid() %>% 
+  #st_buffer(0)
 
 ##########
 
+cols <- viridis::viridis(length(base.lvls)-1,alpha=0.7,begin=0,end=1)
 #basemap
 p <- pecjector(area = "bof",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = c(20, "c"), survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf, size = 0.2, fill = NA, color = "grey"), scale = list(scale = 'discrete', palette = viridis::viridis(100), breaks = c(1,5,10,50,100,200,300,400,500), limits = c(0,500), alpha = 0.8,leg.name = "Ted"))
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)))
+
+p <- pecjector(area = "bof",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
+               add_layer = list(land = "grey", bathy = c(20, "c"), survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), 
+               add_custom = list(obj = S.idw.sf, size = 0.2, fill = NA, color = "grey"), 
+               scale = list(scale = 'discrete', palette = viridis::viridis(100), breaks = c(1,5,10,50,100,200,300,400,500), limits = c(0,500), alpha = 0.8))
+
 
 
 p + 
-  #geom_sf(data=totCont.poly.sf ,aes(fill= com), alpha = 0.8)+
+  geom_sf(data=totCont.poly.sf ,aes(fill= com), alpha = 0.8)+
+  #scale_fill_manual()+
   geom_spatial_point(data = ScallopSurv %>% 
                        filter(year == survey.year), #survey.year defined in beginning of script
                      aes(lon, lat), size = 0.1) +
