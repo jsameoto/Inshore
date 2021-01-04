@@ -31,7 +31,7 @@ require (sf)
 require(maptools)
 library(ROracle)
 library(RCurl)
-library(raster)
+#library(raster)
 
 # Define: 
 #uid <- un.sameotoj
@@ -302,8 +302,6 @@ ScallopSurv.mtcnt <- merge(ScallopSurv.kg[,c('ID','year','lat','lon','com.bm')],
 ScallopSurv.mtcnt$meat.count<-(0.5/(ScallopSurv.mtcnt$com.bm/ScallopSurv.mtcnt$com))
 ScallopSurv.mtcnt <- ScallopSurv.mtcnt[-which(is.na(ScallopSurv.mtcnt$meat.count)),]
 
-
-
 # ------------------------------SURVEY DISTRIBUTION PLOTS (BoF, spa1a, spa1B, spa4/5)-------------------------------------------
 # Breakout for each area
 
@@ -311,51 +309,47 @@ ScallopSurv.mtcnt <- ScallopSurv.mtcnt[-which(is.na(ScallopSurv.mtcnt$meat.count
 
 # SURVEY - Commercial Size >= 80 mm
 
-#############NEW PLOT#################
-##Setting up for plotting data contours... (re-vist another time for alternatives?)
-#Check https://rspatial.org/raster/analysis/4-interpolation.html
+#############Set up data for NEW PLOT#################
 
-ScallopSurv.sf <- st_as_sf(ScallopSurv, coords = c("lon","lat"), crs = 4326) %>%  #convert to sf
+b_box <- ScallopSurv %>% #Create bounding box for data contour layer
+  st_as_sf(coords = c("lon","lat"), crs = 4326) %>%  #convert to sf
   filter(year == survey.year) %>%  #filters out survey year, formerly defined as xx in contour.gen() function.
-  dplyr::select(year, ID, com)
+  dplyr::select(year, ID, com) %>%  
+  st_buffer(0.06) %>% #create sf object around data points
+  st_union()
 
-#from original script using ScallopMap function and PBSMapping objects
-com.contours <- contour.gen(subset(ScallopSurv,year==survey.year,c('ID','lon','lat','com')),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
-lvls=c(1,5,10,50,100,200,300,400,500) #levels to be color coded
-CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
-CP <- convCP(CL)
-totCont.poly <- CP$PolySet
+ScallopSurv.sp <- ScallopSurv
+coordinates(ScallopSurv.sp) <- c("lon", "lat")
+grd <- as.data.frame(spsample(ScallopSurv.sp, "regular", n = 15000))
+names(grd) <- c("lon", "lat")
+coordinates(grd) <- c("lon", "lat")
+gridded(grd)     <- TRUE  # Create SpatialPixel object
+fullgrid(grd)    <- TRUE  # Create SpatialGrid object
 
-#Convert PBSMapping object to sf
-totCont.poly <- as.PolySet(totCont.poly,projection = "LL") #assuming you provide Lat/Lon data and WGS84
-totCont.poly <- PolySet2SpatialLines(totCont.poly) # Spatial lines is a bit more general (don't need to have boxes closed)
-totCont.poly.sf <- st_as_sf(totCont.poly) %>%
-  st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
-  st_cast("POLYGON") %>% #Convert multilines to polygons
-  st_make_valid()
+proj4string(ScallopSurv.sp) <- CRS("+init=epsg:4326")
+proj4string(grd) <- proj4string(ScallopSurv.sp)
 
+S.idw <- gstat::idw(com ~ 1, ScallopSurv.sp, newdata=grd, idp = 1.5)
 
-  #st_join(ScallopSurv.sf[3]) %>% #combine with selected ScallopSurv data
-  #st_make_valid() %>% 
-  #st_buffer(0)
+S.idw.sf <- st_as_stars(S.idw) %>% #convert to stars object
+  st_transform(crs = 4326) %>% #crop to area around data points
+  st_as_sf(S.idw.sf, as_points = FALSE, merge = FALSE) %>%  #convert to sf object.. in order to integrate into pecjector function.
+  st_intersection(b_box)
 
 ##########
+#Set aesthetics for plot
+breaks <- c(1,5,10,50,100,200,300,400,500) #Set breaks
+n.breaks <- length(unique(S.idw.sf$var1.pred)) 
+col <- brewer.pal(length(breaks),"YlGn") #set colours
+cfd <- scale_fill_manual(values = alpha(col[1:n.breaks], 0.6)) #set custom fill arguments for pecjector.
 
-cols <- viridis::viridis(length(base.lvls)-1,alpha=0.7,begin=0,end=1)
-#basemap
+#basemap with data contour layer
 p <- pecjector(area = "bof",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)))
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = S.idw.sf %>% #Set breaks
+                                                                                                                                                     mutate(brk = cut(var1.pred, breaks = breaks, dig.lab = 10)) %>% 
+                                                                                                                                                     dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
-p <- pecjector(area = "bof",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = c(20, "c"), survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), 
-               add_custom = list(obj = S.idw.sf, size = 0.2, fill = NA, color = "grey"), 
-               scale = list(scale = 'discrete', palette = viridis::viridis(100), breaks = c(1,5,10,50,100,200,300,400,500), limits = c(0,500), alpha = 0.8))
-
-
-
-p + 
-  geom_sf(data=totCont.poly.sf ,aes(fill= com), alpha = 0.8)+
-  #scale_fill_manual()+
+p +
   geom_spatial_point(data = ScallopSurv %>% 
                        filter(year == survey.year), #survey.year defined in beginning of script
                      aes(lon, lat), size = 0.1) +
