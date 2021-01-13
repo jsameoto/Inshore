@@ -29,10 +29,11 @@ require (lubridate)
 require (tidyverse)
 require (sf)
 require(maptools)
+require(forcats)
 library(ROracle)
 library(RCurl)
-#library(raster)
-library(stars)
+
+
 
 # Define: 
 #uid <- un.sameotoj
@@ -311,57 +312,51 @@ ScallopSurv.mtcnt <- ScallopSurv.mtcnt[-which(is.na(ScallopSurv.mtcnt$meat.count
 # SURVEY - Commercial Size >= 80 mm
 
 #############Set up data for NEW PLOT#################
+#survey.year <- 2019 #UPDATED from xx, already defined at start of script
+com.contours <- contour.gen(subset(ScallopSurv,year==survey.year,c('ID','lon','lat','com')),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
 
-b_box <- ScallopSurv %>% #Create bounding box for data contour layer
-  st_as_sf(coords = c("lon","lat"), crs = 4326) %>%  #convert to sf
-  filter(year == survey.year) %>%  #filters out survey year, formerly defined as xx in contour.gen() function.
-  dplyr::select(year, ID, com) %>%  
-  st_buffer(0.06) %>% #create sf object around data points
-  st_union()
+lvls <- c(1,5,10,50,100,200,300,400,500) #levels to be color coded
+CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
+CP <- convCP(CL)
+totCont.poly <- CP$PolySet
+cont.data <- data.frame(PID=1:length(lvls),col=brewer.pal(length(lvls),"YlGn"),border=NA, stringsAsFactors=FALSE)
 
-ScallopSurv.sp <- ScallopSurv %>%
-  filter(year == survey.year) #Use only data from survey year (specified earlier)
-coordinates(ScallopSurv.sp) <- c("lon", "lat")
-grd <- as.data.frame(spsample(ScallopSurv.sp, "regular", n = 15000))
-names(grd) <- c("lon", "lat")
-coordinates(grd) <- c("lon", "lat")
-gridded(grd)     <- TRUE  # Create SpatialPixel object
-fullgrid(grd)    <- TRUE  # Create SpatialGrid object
+##Convert pbsmapping object to sf
+#breaks <- c(1,5,10,50,100,200,300,400,500)#define breaks
 
-proj4string(ScallopSurv.sp) <- CRS("+init=epsg:4326")
-proj4string(grd) <- proj4string(ScallopSurv.sp)
+totCont.poly <- as.PolySet(totCont.poly,projection = "LL") #assuming you provide Lat/Lon data and WGS84
+totCont.poly <- PolySet2SpatialLines(totCont.poly) # Spatial lines is a bit more general (don't need to have boxes closed)
+totCont.poly.sf <- st_as_sf(totCont.poly) %>%
+  st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
+  st_cast("POLYGON") %>% #Convert multilines to polygons
+  st_make_valid() %>% 
+  mutate(col = brewer.pal(length(lvls),"YlGn"), level = lvls)
 
-S.idw <- gstat::idw(com ~ 1, ScallopSurv.sp, newdata=grd, idp = 1.5)
-
-S.idw.sf <- st_as_stars(S.idw) %>% #convert to stars object
-  st_transform(crs = 4326) %>% #crop to area around data points
-  st_as_sf(S.idw.sf, as_points = FALSE, merge = FALSE) %>%  #convert to sf object.. in order to integrate into pecjector function.
-  st_intersection(b_box)
-
-plot(S.idw.sf)
-
-##########
 #Set aesthetics for plot
-breaks <- c(1,5,10,50,100,200,300,400,500) #Set breaks
-n.breaks <- length(unique(S.idw.sf$var1.pred)) 
-col <- brewer.pal(length(breaks),"YlGn") #set colours
-cfd <- scale_fill_manual(values = alpha(col[1:n.breaks], 0.6)) #set custom fill arguments for pecjector.
+n.breaks <- length(unique(totCont.poly.sf$col)) 
+col <- brewer.pal(length(lvls),"YlGn") #set colours
+cfd <- scale_fill_manual(values = alpha(col[1:n.breaks], 0.6), name = expression(frac(N,tow))) #set custom fill arguments for pecjector.
 
-#basemap with data contour layer
+#Pecjector with custom contour layer
 p <- pecjector(area = "bof",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = S.idw.sf %>% #Set breaks
-  mutate(brk = cut(var1.pred, breaks = breaks, dig.lab = 10)) %>% 
-  dplyr::select(brk), size = 1, fill = "cfd", color = NA))
-  
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+
+#Final plot with survey data and custom legend
 p +
   geom_spatial_point(data = ScallopSurv %>% 
                        filter(year == survey.year), #survey.year defined in beginning of script
                      aes(lon, lat), size = 0.1) +
-  labs(title = "BoF Density (>= 80mm)",
-       x = "Longitude",
+  labs(title = paste(survey.year, "", "BoF Density (>= 80mm)"), x = "Longitude",
        y = "Latitude") +
-  theme_void() +
-  theme(legend.position = "bottom")
+  #theme_void() +
+  theme(plot.title = element_text(size = 15, hjust = 0.5), #plot title size and position
+        axis.title = element_text(size = 12),
+        legend.title = element_text(size = 15, face = "bold"), 
+        legend.text = element_text(size = 12),
+        legend.position = c(.85,.25), #legend position
+        legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.7)), #Legend bkg colour and transparency
+        legend.box.margin = margin(10, 30, 10, 10)) #Legend bkg margin (top, right, bottom, left)
+
 
 ###########OLD PLOT#############
 
