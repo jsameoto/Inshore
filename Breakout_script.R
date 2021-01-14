@@ -1,4 +1,179 @@
 
+#BREAKOUT SCRIPT - will need to run BOFSpatialPlotsofSurveyData_2020.r to run these
+
+
+
+###################################################
+#Solution 1 - Raster grid, stars, using gstat and cropping to bbox
+###################################################
+library(raster)
+library(stars)
+
+##Setting up for plotting data contours... (re-vist another time for alternatives?)
+b_box <- ScallopSurv %>% 
+  st_as_sf(coords = c("lon","lat"), crs = 4326) %>%  #convert to sf
+  filter(year == survey.year) %>%  #filters out survey year, formerly defined as xx in contour.gen() function.
+  dplyr::select(year, ID, com) %>%  
+  st_buffer(0.08) %>% #create sf object around data points
+  st_union()
+
+ScallopSurv.sf <- ScallopSurv %>% 
+  st_as_sf(coords = c("lon","lat"), crs = 4326) %>%  #convert to sf
+  filter(year == survey.year) %>%  #filters out survey year, formerly defined as xx in contour.gen() function.
+  dplyr::select(year, ID, com)
+
+r <- raster(extent(ScallopSurv.sf), resolution = 0.07999, crs= crs(ScallopSurv.sf)) #create raster with extent of scallop survey data
+
+ScallopSurv.grid <- rasterize(ScallopSurv.sf, r, "com", mean) #rasterize sf point objects using means with the resolution in raster template.
+#plot(ScallopSurv.grid)
+ScallopSurv.grid.sf <- st_as_stars(ScallopSurv.grid)
+
+ScallopSurv.gstat <- gstat(id = "com", formula = com ~ 1, data = ScallopSurv.sf, 
+                           nmax = 8, set = list(idp = 0.5))
+
+z <- predict(ScallopSurv.gstat, ScallopSurv.grid.sf)
+plot(z)
+
+S.idw <- mask(z, b_box)
+
+cont <- st_contour(z, na.rm = FALSE, breaks = c(1,5,10,50,100,200,300,400,500), contour_lines = FALSE)
+plot(cont)
+
+
+###########################################################################
+#Solution 2 - sp, grid, stars, sf, using idw, and cropping to bounding box
+###########################################################################
+library(sp)
+library(sf)
+library(stars)
+
+data.idw <- function(data = data, var = "com")
+  
+  b_box <- ScallopSurv %>% 
+  st_as_sf(coords = c("lon","lat"), crs = 4326) %>%  #convert to sf
+  filter(year == survey.year) %>%  #filters out survey year, formerly defined as xx in contour.gen() function.
+  dplyr::select(year, ID, com) %>%  
+  st_buffer(0.06) %>% #create sf object around data points
+  st_union()
+
+ScallopSurv.sp <- ScallopSurv
+coordinates(ScallopSurv.sp) <- c("lon", "lat")
+grd <- as.data.frame(spsample(ScallopSurv.sp, "regular", n = 15000))
+names(grd) <- c("lon", "lat")
+coordinates(grd) <- c("lon", "lat")
+gridded(grd)     <- TRUE  # Create SpatialPixel object
+fullgrid(grd)    <- TRUE  # Create SpatialGrid object
+
+proj4string(ScallopSurv.sp) <- CRS("+init=epsg:4326")
+proj4string(grd) <- proj4string(ScallopSurv.sp)
+
+S.idw <- gstat::idw(com ~ 1, ScallopSurv.sp, newdata=grd, idp = 2.5)
+
+S.idw.sf <- st_as_stars(S.idw) %>% #convert to stars object
+  st_transform(crs = 4326) %>% #crop to area around data points
+  dplyr::select(var1.pred) %>% 
+  st_as_sf(S.idw.sf, as_points = FALSE, merge = FALSE) %>%  #convert to sf object.. in order to integrate into pecjector function.
+  st_intersection(b_box) %>%
+  mutate(brk = cut(var1.pred, breaks = brk, dig.lab = 10)) %>% 
+  dplyr::select(brk)
+
+plot(S.idw.sf)
+class(S.idw.sf)
+
+
+#####################################################
+#Solution 3 - using old method and converting to sf
+#####################################################
+
+#from original script using ScallopMap function and PBSMapping objects
+com.contours <- contour.gen(subset(ScallopSurv,year==survey.year,c('ID','lon','lat','com')),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
+lvls=c(1,5,10,50,100,200,300,400,500) #levels to be color coded
+CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
+CP <- convCP(CL)
+totCont.poly <- CP$PolySet
+
+#Convert PBSMapping object to sf
+totCont.poly <- as.PolySet(totCont.poly,projection = "LL") #assuming you provide Lat/Lon data and WGS84
+totCont.poly <- PolySet2SpatialLines(totCont.poly) # Spatial lines is a bit more general (don't need to have boxes closed)
+totCont.poly.sf <- st_as_sf(totCont.poly) %>%
+  st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
+  st_cast("POLYGON") %>% #Convert multilines to polygons
+  st_make_valid() %>% 
+  mutate(col = brewer.pal(length(lvls),"YlGn"), level = lvls) #Adding in the colour palette and levels into the shapefile
+
+plot(totCont.poly.sf)
+
+#####################################################
+#Solution 4 - trying ipdw package instead of gstat
+#####################################################
+
+library(raster)
+library(stars)
+library(ipdw)
+library(spatstat)
+
+
+#Create SpatialPointsDataframe
+ScallopSurv.sp <- ScallopSurv %>%
+  filter(year == survey.year) #Use only data from survey year (specified earlier)
+coordinates(ScallopSurv.sp) <- c("lon", "lat")
+proj4string(ScallopSurv.sp) <- CRS("+init=epsg:4326")
+
+#Create Cost Raster using land layer - allows for in-water interpolation rather than Euclidean distances
+land <- st_read("Y:/INSHORE SCALLOP/BoF/Coastline/AtlCan_1M_BoundaryPolygons_modified/AC_1M_BoundaryPolygons_wAnnBasin_StJohnR.shp") %>%
+  #filter(POL_DIV == c("Nova Scotia", "New Brunswick", "Maine")) %>% 
+  as("Spatial") #Convert to sp
+
+costras <- costrasterGen(ScallopSurv.sp, land, projstr = crs(land))
+
+r <- raster(extent(ScallopSurv.sp), resolution = 0.07, crs = crs(land)) #Create raster at fine resolution with extent of data.
+costras <- resample(costras, r, method = "bilinear") # increse resolution of costras to raster with specified resolution.
+
+
+#find average nearest neighbbour
+W              <- owin(range(coordinates(ScallopSurv.sp)[,1]), range(coordinates(ScallopSurv.sp)[,2]))
+kat.pp         <- ppp(coordinates(ScallopSurv.sp)[,1], coordinates(ScallopSurv.sp)[,2], window = W)
+mean.neighdist <- mean(nndist(kat.pp))
+
+test <- ipdw(ScallopSurv.sp, costras, range = mean.neighdist, "com", overlapped = FALSE)
+
+plot(test, main = "Commercial")
+plot(land, add = TRUE)
+
+ipdw.com <- st_as_stars(test) %>% #convert to stars object
+  st_transform(crs = 4326) %>% #crop to area around data points
+  st_as_sf(test, as_points = FALSE, merge = FALSE) #convert to sf object.. in order to integrate into pecjector function.
+
+plot(ipdw.com)
+
+
+##########
+#Set aesthetics for plot
+breaks <- c(1,5,10,50,100,200,300,400,500) #Set breaks
+n.breaks <- length(unique(ipdw.com$layer)) 
+col <- brewer.pal(length(breaks),"YlGn") #set colours
+cfd <- scale_fill_manual(values = alpha(col[1:n.breaks], 0.6))
+
+#basemap with data contour layer
+p <- pecjector(area = "bof",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = ipdw.com %>% #Set breaks
+                                                                                                                                                     mutate(brk = cut(layer, breaks = breaks, dig.lab = 10)) %>% 
+                                                                                                                                                     dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+
+p +
+  geom_spatial_point(data = ScallopSurv %>% 
+                       filter(year == survey.year), #survey.year defined in beginning of script
+                     aes(lon, lat), size = 0.1) +
+  labs(title = "BoF Density (>= 80mm)",
+       x = "Longitude",
+       y = "Latitude") +
+  theme_void() +
+  theme(legend.position = "bottom")
+
+#########################################################################
+#Working Solution - Pulling script from contour.gen function for testing
+#########################################################################
+
 #Dataset up:
 contour.dat <- ScallopSurv %>%
   filter(year == survey.year) %>% 
@@ -103,41 +278,4 @@ PolySet <- data.frame(PID=pid, SID=sid, POS=pos, X=x, Y=y);
 
 data <- merge(PolyData, PolySet, by = "PID")
 
-data.sf <- st_as_sf(data, coords = c("X", "Y"), crs = 4326) %>%
-  
-  
-  
-  st_cast("MULTIPOINT") %>% #Convert multilines to polygons
-  st_cast("MULTILINESTRING")
-
-
-#st_join(ScallopSurv.sf[3]) %>% #combine with selected ScallopSurv data
-#st_make_valid() %>% 
-#st_buffer(0)
-
-ScallopSurv.sf <- st_as_sf(ScallopSurv, coords = c("lon","lat"), crs = 4326) %>%  #convert to sf
-  filter(year == survey.year) %>%  #filters out survey year, formerly defined as xx in contour.gen() function.
-  dplyr::select(year, ID, com)
-
-totCont.poly <- as.PolySet(totCont.poly,projection = "LL") #assuming you provide Lat/Lon data and WGS84
-totCont.poly <- PolySet2SpatialLines(totCont.poly) # Spatial lines is a bit more general (don't need to have boxes closed)
-totCont.poly.sf <- st_as_sf(totCont.poly) %>%
-  st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
-  st_cast("POLYGON") %>% #Convert multilines to polygons
-  st_make_valid()
-
-plot(totCont.poly.sf)
-
-data <- merge(cont.data, totCont.poly, by = "PID")
-data <- merge(data, CP$PolyData, by = "PID")
-
-data.sf <- st_as_sf(data, coords = c("X", "Y"), crs = 4326) %>%
-  #st_make_valid() %>% 
-  #group_by(level) %>%
-  summarise(geometry = st_combine(geometry)) %>%
-  st_cast("MULTILINESTRING") %>% 
-  plot()
-
-#st_join(ScallopSurv.sf[3]) %>% #combine with selected ScallopSurv data
-#st_make_valid() %>% 
-#st_buffer(0)
+#############################################################################################################
