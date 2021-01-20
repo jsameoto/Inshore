@@ -61,7 +61,8 @@ source("Y:/Offshore scallop/Assessment/Assessment_fns/Maps/ScallopMap.R")
 source("Y:/INSHORE SCALLOP/BoF/Assessment_fns/contour.gen.r")
 source("Y:/INSHORE SCALLOP/BoF/Assessment_fns/convert.dd.dddd.r")
 source("Y:/INSHORE SCALLOP/BoF/Assessment_fns/gridPlot.r")
-eval(parse(text = getURL("https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Maps/pectinid_projector_sf.R", ssl.verifypeer = FALSE))) #load pectinid_projector function from Github
+source("C:/Users/WILSONB/Documents/GitHub/BayofFundy/SurveyIndices/load_github_functions.R") #Temp fix.. need to load from ESS not locally!
+#eval(parse(text = getURL("https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Maps/pectinid_projector_sf.R", ssl.verifypeer = FALSE))) #load pectinid_projector function from Github
 
 
 # BoF.poly <- read.csv("C:/Users/NasmithL/Documents/Mapping/Scallop Boundaries/Survey/XYBoFPoly_new.csv") #use for commercial plots of 1A !!!GET FROM LESLIE

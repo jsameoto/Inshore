@@ -22,21 +22,21 @@ ScallopSurv.sf <- ScallopSurv %>%
   filter(year == survey.year) %>%  #filters out survey year, formerly defined as xx in contour.gen() function.
   dplyr::select(year, ID, com)
 
-r <- raster(extent(ScallopSurv.sf), resolution = 0.07999, crs= crs(ScallopSurv.sf)) #create raster with extent of scallop survey data
+r <- raster(extent(ScallopSurv.sf), resolution = 0.03, crs= crs(ScallopSurv.sf)) #create raster with extent of scallop survey data
 
 ScallopSurv.grid <- rasterize(ScallopSurv.sf, r, "com", mean) #rasterize sf point objects using means with the resolution in raster template.
 #plot(ScallopSurv.grid)
-ScallopSurv.grid.sf <- st_as_stars(ScallopSurv.grid)
+ScallopSurv.grid.sf <- st_as_stars(ScallopSurv.grid, crs = st_crs(4326))
 
 ScallopSurv.gstat <- gstat(id = "com", formula = com ~ 1, data = ScallopSurv.sf, 
-                           nmax = 8, set = list(idp = 0.5))
+                           nmax = 8, set = list(idp = 3.5))
 
 z <- predict(ScallopSurv.gstat, ScallopSurv.grid.sf)
 plot(z)
 
-S.idw <- mask(z, b_box)
-
-cont <- st_contour(z, na.rm = FALSE, breaks = c(1,5,10,50,100,200,300,400,500), contour_lines = FALSE)
+z
+cont <- st_contour(z, na.rm = FALSE, breaks = c(1,5,10,50,100,200,300,400,500), contour_lines = TRUE) %>% 
+  st_make_valid()
 plot(cont)
 
 
@@ -47,8 +47,6 @@ library(sp)
 library(sf)
 library(stars)
 
-data.idw <- function(data = data, var = "com")
-  
   b_box <- ScallopSurv %>% 
   st_as_sf(coords = c("lon","lat"), crs = 4326) %>%  #convert to sf
   filter(year == survey.year) %>%  #filters out survey year, formerly defined as xx in contour.gen() function.
@@ -67,15 +65,20 @@ fullgrid(grd)    <- TRUE  # Create SpatialGrid object
 proj4string(ScallopSurv.sp) <- CRS("+init=epsg:4326")
 proj4string(grd) <- proj4string(ScallopSurv.sp)
 
-S.idw <- gstat::idw(com ~ 1, ScallopSurv.sp, newdata=grd, idp = 2.5)
+S.idw <- gstat::idw(com ~ 1, ScallopSurv.sp, newdata=grd, idp = 3.5)
+#plot(S.idw)
+
+lvls <- c(1,5,10,50,100,200,300,400,500)
 
 S.idw.sf <- st_as_stars(S.idw) %>% #convert to stars object
   st_transform(crs = 4326) %>% #crop to area around data points
   dplyr::select(var1.pred) %>% 
   st_as_sf(S.idw.sf, as_points = FALSE, merge = FALSE) %>%  #convert to sf object.. in order to integrate into pecjector function.
   st_intersection(b_box) %>%
-  mutate(brk = cut(var1.pred, breaks = brk, dig.lab = 10)) %>% 
-  dplyr::select(brk)
+  #mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% 
+  mutate(brk = cut(var1.pred, breaks = brk)) %>% 
+  dplyr::select(brk) %>% 
+  mutate(col = brewer.pal(length(lvls),"YlGn"), level = lvls)
 
 plot(S.idw.sf)
 class(S.idw.sf)
@@ -131,8 +134,8 @@ costras <- resample(costras, r, method = "bilinear") # increse resolution of cos
 
 
 #find average nearest neighbbour
-W              <- owin(range(coordinates(ScallopSurv.sp)[,1]), range(coordinates(ScallopSurv.sp)[,2]))
-kat.pp         <- ppp(coordinates(ScallopSurv.sp)[,1], coordinates(ScallopSurv.sp)[,2], window = W)
+W <- owin(range(coordinates(ScallopSurv.sp)[,1]), range(coordinates(ScallopSurv.sp)[,2]))
+kat.pp <- ppp(coordinates(ScallopSurv.sp)[,1], coordinates(ScallopSurv.sp)[,2], window = W)
 mean.neighdist <- mean(nndist(kat.pp))
 
 test <- ipdw(ScallopSurv.sp, costras, range = mean.neighdist, "com", overlapped = FALSE)
@@ -146,7 +149,6 @@ ipdw.com <- st_as_stars(test) %>% #convert to stars object
 
 plot(ipdw.com)
 
-
 ##########
 #Set aesthetics for plot
 breaks <- c(1,5,10,50,100,200,300,400,500) #Set breaks
@@ -157,8 +159,8 @@ cfd <- scale_fill_manual(values = alpha(col[1:n.breaks], 0.6))
 #basemap with data contour layer
 p <- pecjector(area = "bof",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
                add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = ipdw.com %>% #Set breaks
-                                                                                                                                                     mutate(brk = cut(layer, breaks = breaks, dig.lab = 10)) %>% 
-                                                                                                                                                     dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+      mutate(brk = cut(layer, breaks = breaks, dig.lab = 10)) %>% 
+      dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 p +
   geom_spatial_point(data = ScallopSurv %>% 
@@ -184,7 +186,7 @@ datapoints1 <- contour.dat %>%
   dplyr::select(EID, lon, lat)
 
 #######Image.prep#######
-#Parameters defined in image.prep function
+#Parameters defined in image.prep function inside contour.gen.R function
 aspr <- 1.345640
 res<- 0.02
 subscale <- 0.01
@@ -204,16 +206,35 @@ grid.dat <- with(poly, expand.grid(lon = Xs, lat = Ys))
 #gstat idw interpretation
 Z.gstat <- gstat(id = "com", formula = com ~ 1, locations = ~ lon + lat, data = contour.dat, maxdist=Inf, nmax = 8, set = list(idp = 3.5))
 Z.dat<- predict(Z.gstat, grid.dat)
-str(Z.dat)
+plot(Z.dat)
 
-as.data.frame(com.contours$image.mod)
+#######################
+#working on idw object
+#Z.dat <- st_as_sf(Z.dat, coords = c("lon", "lat"), crs = 4326) %>% #convert to sf object
+  #st_transform(crs = 4326) %>% #crop to area around data points
+  #st_as_sf(Z.dat, as_points = FALSE, merge = FALSE) %>% 
+#  st_intersection(b_box) %>% 
+  #mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% 
+#  mutate(brk = cut(com.pred, breaks = brk)) %>% 
+#  dplyr::select(com.pred) %>% 
+#  st_as_stars()
 
-image.data<-makeTopography(Z.dat[c('lon','lat','com.pred')],digits=5)
-spatial.model<-Z.gstat
+#st_contour(Z.dat, contour_lines=TRUE, breaks = lvls)
 plot(Z.dat)
 
 
-# Contour lines to spatial object
+image.data<-makeTopography(Z.dat[c('lon','lat','com.pred')],digits=5)
+spatial.model<-Z.gstat
+
+image.data <- as.data.frame(image.data)
+image.data <- st_as_sf(image.data, coords = c("x","y"), crs = 4326)
+
+CL <- contourLines(com.contours$image.dat,levels=lvls)#### Line from old script
+
+
+###########################################################################
+# ConvCP function from PBSmapping package - Contour lines to spatial object
+############################################################################
 vData <- unlist(CL) #vector contour lines
 
 
@@ -276,6 +297,9 @@ PolyData$level <- vData[levelsIdx];
 ## put the data frames together in a list
 PolySet <- data.frame(PID=pid, SID=sid, POS=pos, X=x, Y=y);
 
+### added in so that i could plot it to make sense of things
 data <- merge(PolyData, PolySet, by = "PID")
+data <- st_as_sf(data, coords = c("X", "Y"), crs = 4326)
+plot(data)
 
 #############################################################################################################
