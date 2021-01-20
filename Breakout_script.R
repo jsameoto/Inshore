@@ -1,13 +1,12 @@
 
 #BREAKOUT SCRIPT - will need to run BOFSpatialPlotsofSurveyData_2020.r to run these
 
-
-
 ###################################################
 #Solution 1 - Raster grid, stars, using gstat and cropping to bbox
 ###################################################
 library(raster)
 library(stars)
+library(smoothr)
 
 ##Setting up for plotting data contours... (re-vist another time for alternatives?)
 b_box <- ScallopSurv %>% 
@@ -19,24 +18,68 @@ b_box <- ScallopSurv %>%
 
 ScallopSurv.sf <- ScallopSurv %>% 
   st_as_sf(coords = c("lon","lat"), crs = 4326) %>%  #convert to sf
+  st_transform(crs = 4326) %>% 
   filter(year == survey.year) %>%  #filters out survey year, formerly defined as xx in contour.gen() function.
   dplyr::select(year, ID, com)
 
 r <- raster(extent(ScallopSurv.sf), resolution = 0.03, crs= crs(ScallopSurv.sf)) #create raster with extent of scallop survey data
-
-ScallopSurv.grid <- rasterize(ScallopSurv.sf, r, "com", mean) #rasterize sf point objects using means with the resolution in raster template.
+#grid.sf <- rasterize(ScallopSurv.sf, r, "com", mean) #rasterize sf point objects using means with the resolution in raster template.
 #plot(ScallopSurv.grid)
-ScallopSurv.grid.sf <- st_as_stars(ScallopSurv.grid, crs = st_crs(4326))
+grid.sf <- st_as_stars(grid.sf, crs = 4326) %>%  
+  st_transform(4326)
 
 ScallopSurv.gstat <- gstat(id = "com", formula = com ~ 1, data = ScallopSurv.sf, 
                            nmax = 8, set = list(idp = 3.5))
 
-z <- predict(ScallopSurv.gstat, ScallopSurv.grid.sf)
+z <- predict(ScallopSurv.gstat, grid.sf)
 plot(z)
 
-z
-cont <- st_contour(z, na.rm = FALSE, breaks = c(1,5,10,50,100,200,300,400,500), contour_lines = TRUE) %>% 
-  st_make_valid()
+z.crop <- z %>%
+  st_crop(b_box) %>% 
+  st_transform(crs = 4326) %>% 
+  st_as_sf(as_points = FALSE, merge = FALSE) %>% 
+  mutate(brk = cut(com.pred, breaks = lvls, right = FALSE)) %>%
+  group_by(brk) %>%
+  summarise(brk = paste(unique(brk))) %>%
+  mutate(col = brewer.pal(length(brk),"YlGn"), level = lvls) %>%
+  mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% 
+  mutate(brk = fct_reorder(brk, level)) %>%
+  dplyr::select(brk) %>% 
+  smooth(method = "ksmooth", smoothness = 2)
+
+#str(z.crop)
+plot(z.crop)
+
+#####
+lvls <- c(1,5,10,50,100,200,300,400,500)
+n.breaks <- length(lvls)
+col <- brewer.pal(length(lvls),"YlGn") #set colours
+cfd <- scale_fill_manual(values = alpha(col[1:n.breaks], 0.6), name = expression(frac(N,tow))) #set custom fill arguments for pecjector.
+
+#Pecjector with custom contour layer
+p <- pecjector(area = "bof",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = z.crop, size = 1, fill = "cfd", color = NA))
+
+#Final plot with survey data and custom legend
+p +
+  geom_spatial_point(data = ScallopSurv %>% 
+                       filter(year == survey.year), #survey.year defined in beginning of script
+                     aes(lon, lat), size = 0.1) +
+  labs(title = paste(survey.year, "", "BoF Density (>= 80mm)"), x = "Longitude",
+       y = "Latitude") +
+  #theme_void() +
+  theme(plot.title = element_text(size = 15, hjust = 0.5), #plot title size and position
+        axis.title = element_text(size = 12),
+        legend.title = element_text(size = 15, face = "bold"), 
+        legend.text = element_text(size = 12),
+        legend.position = c(.85,.25), #legend position
+        legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.7)), #Legend bkg colour and transparency
+        legend.box.margin = margin(10, 30, 10, 10))
+
+cont <- z.crop %>% 
+  st_contour(na.rm = FALSE, breaks = c(1,5,10,50,100,200,300,400,500), contour_lines = TRUE) %>%
+  st_transform(crs = st_crs(4326)) %>%
+cont <- st_difference(b_box, st_union(cont))
 plot(cont)
 
 
@@ -54,34 +97,73 @@ library(stars)
   st_buffer(0.06) %>% #create sf object around data points
   st_union()
 
-ScallopSurv.sp <- ScallopSurv
+ScallopSurv.sp <- ScallopSurv %>% #Save data as new object
+  filter(year == survey.year) %>%  #filters out survey year, formerly defined as xx in contour.gen() function.
+  dplyr::select(year, ID, com, lon, lat) %>% 
+  filter(com != 0, !is.na(com)) #Remove NAs and zero values #Check.
+
 coordinates(ScallopSurv.sp) <- c("lon", "lat")
 grd <- as.data.frame(spsample(ScallopSurv.sp, "regular", n = 15000))
 names(grd) <- c("lon", "lat")
 coordinates(grd) <- c("lon", "lat")
 gridded(grd)     <- TRUE  # Create SpatialPixel object
 fullgrid(grd)    <- TRUE  # Create SpatialGrid object
-
 proj4string(ScallopSurv.sp) <- CRS("+init=epsg:4326")
 proj4string(grd) <- proj4string(ScallopSurv.sp)
 
 S.idw <- gstat::idw(com ~ 1, ScallopSurv.sp, newdata=grd, idp = 3.5)
-#plot(S.idw)
+plot(S.idw)
+
+S.idw <- st_as_stars(S.idw, crs = 4326)
 
 lvls <- c(1,5,10,50,100,200,300,400,500)
 
-S.idw.sf <- st_as_stars(S.idw) %>% #convert to stars object
-  st_transform(crs = 4326) %>% #crop to area around data points
-  dplyr::select(var1.pred) %>% 
-  st_as_sf(S.idw.sf, as_points = FALSE, merge = FALSE) %>%  #convert to sf object.. in order to integrate into pecjector function.
-  st_intersection(b_box) %>%
-  #mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% 
-  mutate(brk = cut(var1.pred, breaks = brk)) %>% 
+z.crop <- S.idw  %>%
+  st_as_sf(as_points = FALSE, merge = FALSE) %>% 
+  #st_as_stars() %>% 
+  st_transform(crs = 4326) %>%
+  st_intersection(b_box) %>% 
+  mutate(brk = cut(var1.pred, breaks = lvls, right = FALSE)) %>%
+  group_by(brk) %>%
+  summarise(brk = paste(unique(brk))) %>%
+  mutate(col = brewer.pal(length(brk),"YlGn"), level = lvls) %>%
+  mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% 
+  mutate(brk = fct_reorder(brk, level)) %>%
   dplyr::select(brk) %>% 
-  mutate(col = brewer.pal(length(lvls),"YlGn"), level = lvls)
+  smooth(method = "ksmooth", smoothness = 2)
 
-plot(S.idw.sf)
-class(S.idw.sf)
+plot(z.crop)
+
+#lvls <- c(1,5,10,50,100,200,300,400,500)
+n.breaks <- length(lvls)
+col <- brewer.pal(length(lvls),"YlGn") #set colours
+cfd <- scale_fill_manual(values = alpha(col[1:n.breaks], 0.6), name = expression(frac(N,tow))) #set custom fill arguments for pecjector.
+
+#Pecjector with custom contour layer
+p <- pecjector(area = "bof",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = z.crop, size = 1, fill = "cfd", color = NA))
+
+#Final plot with survey data and custom legend
+p +
+  geom_spatial_point(data = ScallopSurv %>% 
+                       filter(year == survey.year), #survey.year defined in beginning of script
+                     aes(lon, lat), size = 0.1) +
+  labs(title = paste(survey.year, "", "BoF Density (>= 80mm)"), x = "Longitude",
+       y = "Latitude") +
+  #theme_void() +
+  theme(plot.title = element_text(size = 15, hjust = 0.5), #plot title size and position
+        axis.title = element_text(size = 12),
+        legend.title = element_text(size = 15, face = "bold"), 
+        legend.text = element_text(size = 12),
+        legend.position = c(.85,.25), #legend position
+        legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.7)), #Legend bkg colour and transparency
+        legend.box.margin = margin(10, 30, 10, 10))
+
+cont <- z.crop %>% 
+  st_contour(na.rm = FALSE, breaks = c(1,5,10,50,100,200,300,400,500), contour_lines = TRUE) %>%
+  st_transform(crs = st_crs(4326)) %>%
+  cont <- st_difference(b_box, st_union(cont))
+plot(cont)
 
 
 #####################################################
@@ -206,13 +288,12 @@ grid.dat <- with(poly, expand.grid(lon = Xs, lat = Ys))
 #gstat idw interpretation
 Z.gstat <- gstat(id = "com", formula = com ~ 1, locations = ~ lon + lat, data = contour.dat, maxdist=Inf, nmax = 8, set = list(idp = 3.5))
 Z.dat<- predict(Z.gstat, grid.dat)
-#plot(Z.dat)
 
 #######################
 #working on idw object
-#Z.dat <- st_as_sf(Z.dat, coords = c("lon", "lat"), crs = 4326) %>% #convert to sf object
-  #st_transform(crs = 4326) %>% #crop to area around data points
-  #st_as_sf(Z.dat, as_points = FALSE, merge = FALSE) %>% 
+#require(stars)
+Z.dat <- st_as_stars(Z.dat, coords = c("lon", "lat")) %>% #convert to sf object
+  st_as_sf(Z.dat, as_points = FALSE, merge = FALSE) %>% 
 #  st_intersection(b_box) %>% 
   #mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% 
 #  mutate(brk = cut(com.pred, breaks = brk)) %>% 
