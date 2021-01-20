@@ -206,7 +206,7 @@ grid.dat <- with(poly, expand.grid(lon = Xs, lat = Ys))
 #gstat idw interpretation
 Z.gstat <- gstat(id = "com", formula = com ~ 1, locations = ~ lon + lat, data = contour.dat, maxdist=Inf, nmax = 8, set = list(idp = 3.5))
 Z.dat<- predict(Z.gstat, grid.dat)
-plot(Z.dat)
+#plot(Z.dat)
 
 #######################
 #working on idw object
@@ -226,8 +226,8 @@ plot(Z.dat)
 image.data<-makeTopography(Z.dat[c('lon','lat','com.pred')],digits=5)
 spatial.model<-Z.gstat
 
-image.data <- as.data.frame(image.data)
-image.data <- st_as_sf(image.data, coords = c("x","y"), crs = 4326)
+#image.data <- as.data.frame(image.data)
+#image.data <- st_as_sf(image.data, coords = c("x","y"), crs = 4326)
 
 CL <- contourLines(com.contours$image.dat,levels=lvls)#### Line from old script
 
