@@ -1,12 +1,101 @@
 
 #BREAKOUT SCRIPT - will need to run BOFSpatialPlotsofSurveyData_2020.r to run these
 
-###################################################
-#Solution 1 - Raster grid, stars, using gstat and cropping to bbox
-###################################################
-library(raster)
+########################################################################################################################################
+#Solution 1 - sp, grid, stars, sf, using idw, and cropping to bounding box  **Really close to old plot, but still needs some tweeking**
+########################################################################################################################################
+
+library(sp)
+library(sf)
 library(stars)
 library(smoothr)
+
+b_box <- ScallopSurv %>% 
+  st_as_sf(coords = c("lon","lat"), crs = 4326) %>%  #convert to sf
+  filter(year == survey.year) %>%  #filters out survey year, formerly defined as xx in contour.gen() function.
+  dplyr::select(year, ID, com) %>%  
+  st_buffer(0.06) %>% #create sf object around data points
+  st_union() %>% 
+  st_as_sf()
+
+ScallopSurv.sp <- ScallopSurv %>% #Save data as new object
+  filter(year == survey.year) %>%  #filters out survey year, formerly defined as xx in contour.gen() function.
+  dplyr::select(year, ID, com, lon, lat) %>% 
+  filter(com != 0, !is.na(com)) #Remove NAs and zero values #Check.
+
+coordinates(ScallopSurv.sp) <- c("lon", "lat")
+grd <- as.data.frame(spsample(ScallopSurv.sp, "regular", n = 15000))
+names(grd) <- c("lon", "lat")
+coordinates(grd) <- c("lon", "lat")
+gridded(grd)     <- TRUE  # Create SpatialPixel object
+fullgrid(grd)    <- TRUE  # Create SpatialGrid object
+proj4string(ScallopSurv.sp) <- CRS("+init=epsg:4326")
+proj4string(grd) <- proj4string(ScallopSurv.sp)
+
+S.idw <- gstat::idw(com ~ 1, ScallopSurv.sp, newdata=grd, idp = 3.5)
+plot(S.idw)
+
+S.idw <- st_as_stars(S.idw)
+
+lvls <- c(1,5,10,50,100,200,300,400,500)
+
+z.crop <- S.idw  %>%
+  st_as_sf(as_points = FALSE, merge = FALSE) %>% 
+  #st_as_stars() %>% 
+  st_transform(crs = 4326) %>%
+  st_intersection(b_box) %>%
+  mutate(brk = cut(var1.pred, breaks = lvls, right = FALSE)) %>%
+  group_by(brk) %>%
+  summarise(brk = paste(unique(brk))) %>%
+  mutate(col = brewer.pal(length(brk),"YlGn"), level = lvls) %>%
+  mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% 
+  mutate(brk = fct_reorder(brk, level)) %>%
+  dplyr::select(brk) %>% 
+  smooth(method = "ksmooth", smoothness = 2)
+
+plot(z.crop)
+
+
+#####################################
+#With contours? Work in progress - trying to get closed contours using b_box..
+cont <- S.idw %>%
+  st_contour(na.rm = FALSE, breaks = c(1,5,10,50,100,200,300,400,500), contour_lines = TRUE) %>% 
+  st_cast("MULTILINESTRING") %>% 
+  st_intersection(b_box)
+########################################
+
+#lvls <- c(1,5,10,50,100,200,300,400,500)
+n.breaks <- length(lvls)
+col <- brewer.pal(length(lvls),"YlGn") #set colours
+cfd <- scale_fill_manual(values = alpha(col[1:n.breaks], 0.6), name = expression(frac(N,tow))) #set custom fill arguments for pecjector.
+
+#Pecjector with custom contour layer
+p <- pecjector(area = "bof",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = z.crop, size = 1, fill = "cfd", color = NA))
+
+#Final plot with survey data and custom legend
+p +
+  geom_spatial_point(data = ScallopSurv %>% 
+                       filter(year == survey.year), #survey.year defined in beginning of script
+                     aes(lon, lat), size = 0.1) +
+  labs(title = paste(survey.year, "", "BoF Density (>= 80mm)"), x = "Longitude",
+       y = "Latitude") +
+  #theme_void() +
+  theme(plot.title = element_text(size = 15, hjust = 0.5), #plot title size and position
+        axis.title = element_text(size = 12),
+        legend.title = element_text(size = 15, face = "bold"), 
+        legend.text = element_text(size = 12),
+        legend.position = c(.85,.25), #legend position
+        legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.7)), #Legend bkg colour and transparency
+        legend.box.margin = margin(10, 30, 10, 10))
+
+
+#############################################################################################################
+#Solution 2 - Raster grid, stars, using gstat and cropping to bbox - not working as well... still in progress
+#############################################################################################################
+library(raster)
+library(stars)
+
 
 ##Setting up for plotting data contours... (re-vist another time for alternatives?)
 b_box <- ScallopSurv %>% 
@@ -80,89 +169,6 @@ cont <- z.crop %>%
   st_contour(na.rm = FALSE, breaks = c(1,5,10,50,100,200,300,400,500), contour_lines = TRUE) %>%
   st_transform(crs = st_crs(4326)) %>%
 cont <- st_difference(b_box, st_union(cont))
-plot(cont)
-
-
-###########################################################################
-#Solution 2 - sp, grid, stars, sf, using idw, and cropping to bounding box
-###########################################################################
-library(sp)
-library(sf)
-library(stars)
-
-  b_box <- ScallopSurv %>% 
-  st_as_sf(coords = c("lon","lat"), crs = 4326) %>%  #convert to sf
-  filter(year == survey.year) %>%  #filters out survey year, formerly defined as xx in contour.gen() function.
-  dplyr::select(year, ID, com) %>%  
-  st_buffer(0.06) %>% #create sf object around data points
-  st_union()
-
-ScallopSurv.sp <- ScallopSurv %>% #Save data as new object
-  filter(year == survey.year) %>%  #filters out survey year, formerly defined as xx in contour.gen() function.
-  dplyr::select(year, ID, com, lon, lat) %>% 
-  filter(com != 0, !is.na(com)) #Remove NAs and zero values #Check.
-
-coordinates(ScallopSurv.sp) <- c("lon", "lat")
-grd <- as.data.frame(spsample(ScallopSurv.sp, "regular", n = 15000))
-names(grd) <- c("lon", "lat")
-coordinates(grd) <- c("lon", "lat")
-gridded(grd)     <- TRUE  # Create SpatialPixel object
-fullgrid(grd)    <- TRUE  # Create SpatialGrid object
-proj4string(ScallopSurv.sp) <- CRS("+init=epsg:4326")
-proj4string(grd) <- proj4string(ScallopSurv.sp)
-
-S.idw <- gstat::idw(com ~ 1, ScallopSurv.sp, newdata=grd, idp = 3.5)
-plot(S.idw)
-
-S.idw <- st_as_stars(S.idw, crs = 4326)
-
-lvls <- c(1,5,10,50,100,200,300,400,500)
-
-z.crop <- S.idw  %>%
-  st_as_sf(as_points = FALSE, merge = FALSE) %>% 
-  #st_as_stars() %>% 
-  st_transform(crs = 4326) %>%
-  st_intersection(b_box) %>% 
-  mutate(brk = cut(var1.pred, breaks = lvls, right = FALSE)) %>%
-  group_by(brk) %>%
-  summarise(brk = paste(unique(brk))) %>%
-  mutate(col = brewer.pal(length(brk),"YlGn"), level = lvls) %>%
-  mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% 
-  mutate(brk = fct_reorder(brk, level)) %>%
-  dplyr::select(brk) %>% 
-  smooth(method = "ksmooth", smoothness = 2)
-
-plot(z.crop)
-
-#lvls <- c(1,5,10,50,100,200,300,400,500)
-n.breaks <- length(lvls)
-col <- brewer.pal(length(lvls),"YlGn") #set colours
-cfd <- scale_fill_manual(values = alpha(col[1:n.breaks], 0.6), name = expression(frac(N,tow))) #set custom fill arguments for pecjector.
-
-#Pecjector with custom contour layer
-p <- pecjector(area = "bof",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = z.crop, size = 1, fill = "cfd", color = NA))
-
-#Final plot with survey data and custom legend
-p +
-  geom_spatial_point(data = ScallopSurv %>% 
-                       filter(year == survey.year), #survey.year defined in beginning of script
-                     aes(lon, lat), size = 0.1) +
-  labs(title = paste(survey.year, "", "BoF Density (>= 80mm)"), x = "Longitude",
-       y = "Latitude") +
-  #theme_void() +
-  theme(plot.title = element_text(size = 15, hjust = 0.5), #plot title size and position
-        axis.title = element_text(size = 12),
-        legend.title = element_text(size = 15, face = "bold"), 
-        legend.text = element_text(size = 12),
-        legend.position = c(.85,.25), #legend position
-        legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.7)), #Legend bkg colour and transparency
-        legend.box.margin = margin(10, 30, 10, 10))
-
-cont <- z.crop %>% 
-  st_contour(na.rm = FALSE, breaks = c(1,5,10,50,100,200,300,400,500), contour_lines = TRUE) %>%
-  st_transform(crs = st_crs(4326)) %>%
-  cont <- st_difference(b_box, st_union(cont))
 plot(cont)
 
 

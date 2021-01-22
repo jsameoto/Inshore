@@ -61,9 +61,19 @@ source("Y:/Offshore scallop/Assessment/Assessment_fns/Maps/ScallopMap.R")
 source("Y:/INSHORE SCALLOP/BoF/Assessment_fns/contour.gen.r")
 source("Y:/INSHORE SCALLOP/BoF/Assessment_fns/convert.dd.dddd.r")
 source("Y:/INSHORE SCALLOP/BoF/Assessment_fns/gridPlot.r")
-source("C:/Users/WILSONB/Documents/GitHub/BayofFundy/SurveyIndices/load_github_functions.R") #Temp fix.. need to load from ESS not locally!
-#eval(parse(text = getURL("https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Maps/pectinid_projector_sf.R", ssl.verifypeer = FALSE))) #load pectinid_projector function from Github
 
+#### Import Mar-scal functions
+funcs <- c("https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Maps/convert_coords.R",
+           "https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Maps/add_alpha_function.R",
+           "https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Maps/pectinid_projector_sf.R")
+dir <- getwd()
+for(fun in funcs) 
+{
+  temp <- dir
+  download.file(fun,destfile = basename(fun))
+  source(paste0(dir,"/",basename(fun)))
+  file.remove(paste0(dir,"/",basename(fun)))
+}
 
 # BoF.poly <- read.csv("C:/Users/NasmithL/Documents/Mapping/Scallop Boundaries/Survey/XYBoFPoly_new.csv") #use for commercial plots of 1A !!!GET FROM LESLIE
 BoF.Survpoly <- read.csv("Y:/Offshore scallop/Assessment/Data/Maps/approved/Other_Borders/bofPoly.csv") #use for survey plots
@@ -310,9 +320,8 @@ ScallopSurv.mtcnt <- ScallopSurv.mtcnt[-which(is.na(ScallopSurv.mtcnt$meat.count
 
 # ----BAY OF FUNDY (FULL EXPANSE PLOT)----
 
-# SURVEY - Commercial Size >= 80 mm
+#############   SURVEY - Commercial Size >= 80 mm   #################
 
-#############Set up data for NEW PLOT#################
 #survey.year <- 2019 #UPDATED from xx, already defined at start of script
 com.contours <- contour.gen(subset(ScallopSurv,year==survey.year,c('ID','lon','lat','com')),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
 
@@ -342,78 +351,100 @@ cfd <- scale_fill_manual(values = alpha(col[1:n.breaks], 0.6), name = expression
 p <- pecjector(area = "bof",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
                add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
-#Final plot with survey data and custom legend
+#set up directory to save plot
+#ifelse(!dir.exists(file.path("C:/Users/WILSONB/Documents/1_GISdata", "test2")), dir.create(file.path("C:/Users/WILSONB/Documents/1_GISdata", "test2"), showWarnings = TRUE)) #creates figure directory if it does not exist.
+
+png (paste0('C:/Users/WILSONB/Documents/1_GISdata/test2/','ContPlot_BF_ComDensity',survey.year,'.png'),width=672,height=672,res=100)
 p +
   geom_spatial_point(data = ScallopSurv %>% 
                        filter(year == survey.year), #survey.year defined in beginning of script
-                     aes(lon, lat), size = 0.1) +
+                     aes(lon, lat), size = 0.5) +
   labs(title = paste(survey.year, "", "BoF Density (>= 80mm)"), x = "Longitude",
        y = "Latitude") +
   #theme_void() +
-  theme(plot.title = element_text(size = 15, hjust = 0.5), #plot title size and position
+  theme(plot.title = element_text(size = 14, hjust = 0.5), #plot title size and position
         axis.title = element_text(size = 12),
-        legend.title = element_text(size = 15, face = "bold"), 
-        legend.text = element_text(size = 12),
-        legend.position = c(.85,.25), #legend position
+        axis.text = element_text(size = 10),
+        legend.title = element_text(size = 10, face = "bold"), 
+        legend.text = element_text(size = 8),
+        legend.position = c(.85,.28), #legend position
         legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.7)), #Legend bkg colour and transparency
-        legend.box.margin = margin(10, 30, 10, 10)) #Legend bkg margin (top, right, bottom, left)
-
-
-###########OLD PLOT#############
-
-xx <- 2019 #UPDATE 
-com.contours <- contour.gen(subset(ScallopSurv,year==xx,c('ID','lon','lat','com')),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
-
-lvls=c(1,5,10,50,100,200,300,400,500) #levels to be color coded
-
-CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
-CP <- convCP(CL)
-totCont.poly <- CP$PolySet
-cont.data <- data.frame(PID=1:length(lvls),col=brewer.pal(length(lvls),"YlGn"),border=NA, stringsAsFactors=FALSE)
-
-windows()
-
-ScallopMap('bof',bathcol=rgb(0,0,1,0.1),contour=list(totCont.poly,cont.data),title=paste(xx,'BoF Density (>= 80mm)',sep=" "),plot.boundries = F, plot.bathy=T, bathy.source='usgs')
-points(lat~lon,ScallopSurv,subset=year==xx,pch=16,cex=0.1)
-legend("bottomright",c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep='')),fill=cont.data$col,title="#/tow",inset=0.001,bty='o',box.col='white', cex=0.95, bg='white')
-addPolys(Survey.poly,border='black',lwd=1)
-addPolys(spa4.poly,border='black',lwd=1)
-
+        legend.box.margin = margin(6, 8, 6, 8)) #Legend bkg margin (top, right, bottom, left)
 dev.off()
 
-# TEMPLATE TO AUTOMATE SAVING OF PLOTS (Changes to plot in code as well!)
-#png (paste0('Y:/INSHORE SCALLOP/BoF/',xx,'/Figures/','ContPlot_BF_ComDensity',xx,'.png'),width=672,height=672,res=100)
-#ScallopMap('bof',bathcol=rgb(0,0,1,0.1),contour=list(totCont.poly,cont.data),title=paste(xx,'BoF Density (>= 80mm)',sep=" "),plot.boundries = F, plot.bathy=T, bathy.source='usgs')
-#points(lat~lon,ScallopSurv,subset=year==xx,pch=16,cex=0.1)
-#legend("bottomright",c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep='')),fill=cont.data$col,title="#/tow",inset=0.001,bty='o',box.col='white', cex=0.95, bg='white')
-#addPolys(Survey.poly,border='black',lwd=1, col="transparent")
-#addPolys(spa4.poly,border='black',lwd=1, col="transparent")
-#dev.off()
 
-# SURVEY - Recruit Size 65-79 mm
-xx <- 2019
-rec.contours<-contour.gen(subset(ScallopSurv,year==xx,c('ID','lon','lat','rec')),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
+#############  SURVEY - Recruit Size 65-79 mm  #################
+rec.contours<-contour.gen(subset(ScallopSurv,year==survey.year,c('ID','lon','lat','rec')),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
 
-lvls=c(1,5,10,50,100,200,300,400,500)
+lvls=c(1,5,10,50,100,200,300)
 
 CL <- contourLines(rec.contours$image.dat,levels=lvls)
 CP <- convCP(CL)
 totCont.poly <- CP$PolySet
 cont.data<- data.frame(PID=1:length(lvls),col=brewer.pal(length(lvls),"YlGn"),border=NA, stringsAsFactors=FALSE)
 
-windows()
+##Convert pbsmapping object to sf
+totCont.poly <- as.PolySet(totCont.poly,projection = "LL") #assuming you provide Lat/Lon data and WGS84
+totCont.poly <- PolySet2SpatialLines(totCont.poly) # Spatial lines is a bit more general (don't need to have boxes closed)
+totCont.poly.sf <- st_as_sf(totCont.poly) %>%
+  st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
+  st_cast("POLYGON") %>% #Convert multilines to polygons
+  st_make_valid() %>% 
+  mutate(col = brewer.pal(length(lvls),"YlGn"), level = lvls)
 
-ScallopMap('bof',bathcol=rgb(0,0,1,0.1),contour=list(totCont.poly,cont.data),title=paste(xx, 'BoF Density (65-79mm)',sep=" "),plot.boundries = F,plot.bathy=T, bathy.source='quick')
-points(lat~lon,ScallopSurv,subset=year==xx,pch=16,cex=0.1)
-legend("bottomright",c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep='')),fill=cont.data$col,title="#/tow",inset=0.001,bty='o',box.col='white', cex=1, bg='white')
-addPolys(Survey.poly,border='black',lwd=1)
-addPolys(spa4.poly,border='black',lwd=1)
+#Set aesthetics for plot
+n.breaks <- length(unique(totCont.poly.sf$col)) 
+col <- brewer.pal(length(lvls),"YlGn") #set colours
+cfd <- scale_fill_manual(values = alpha(col[1:n.breaks], 0.6), name = expression(frac(N,tow))) #set custom fill arguments for pecjector.
 
+#Pecjector with custom contour layer
+p <- pecjector(area = "bof",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+
+#set up directory to save plot
+#ifelse(!dir.exists(file.path("C:/Users/WILSONB/Documents/1_GISdata", "test2")), dir.create(file.path("C:/Users/WILSONB/Documents/1_GISdata", "test2"), showWarnings = TRUE)) #creates figure directory if it does not exist.
+
+png (paste0('C:/Users/WILSONB/Documents/1_GISdata/test2/','ContPlot_BF_RecDensity',survey.year,'.png'),width=672,height=672,res=100)
+p +
+  geom_spatial_point(data = ScallopSurv %>% 
+                       filter(year == survey.year), #survey.year defined in beginning of script
+                     aes(lon, lat), size = 0.5) +
+  labs(title = paste(survey.year, "", "BoF Density (65-79mm)"), x = "Longitude",
+       y = "Latitude") +
+  #theme_void() +
+  theme(plot.title = element_text(size = 14, hjust = 0.5), #plot title size and position
+        axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        legend.title = element_text(size = 10, face = "bold"), 
+        legend.text = element_text(size = 8),
+        legend.position = c(.85,.28), #legend position
+        legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.7)), #Legend bkg colour and transparency
+        legend.box.margin = margin(6, 8, 6, 8)) #Legend bkg margin (top, right, bottom, left)
 dev.off()
 
-# SURVEY - Prerecruit Size < 65 mm
-xx <- 2019
-pre.contours<-contour.gen(subset(ScallopSurv,year==xx,c('ID','lon','lat','pre')),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
+#OLD PLOT
+#xx <- 2019
+#rec.contours<-contour.gen(subset(ScallopSurv,year==xx,c('ID','lon','lat','rec')),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
+
+#lvls=c(1,5,10,50,100,200,300,400,500)
+
+#CL <- contourLines(rec.contours$image.dat,levels=lvls)
+#CP <- convCP(CL)
+#totCont.poly <- CP$PolySet
+#cont.data<- data.frame(PID=1:length(lvls),col=brewer.pal(length(lvls),"YlGn"),border=NA, stringsAsFactors=FALSE)
+
+#windows()
+
+#ScallopMap('bof',bathcol=rgb(0,0,1,0.1),contour=list(totCont.poly,cont.data),title=paste(xx, 'BoF Density (65-79mm)',sep=" "),plot.boundries = F,plot.bathy=T, bathy.source='quick')
+#points(lat~lon,ScallopSurv,subset=year==xx,pch=16,cex=0.1)
+#legend("bottomright",c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep='')),fill=cont.data$col,title="#/tow",inset=0.001,bty='o',box.col='white', cex=1, bg='white')
+#addPolys(Survey.poly,border='black',lwd=1)
+#addPolys(spa4.poly,border='black',lwd=1)
+
+#dev.off()
+
+#############  SURVEY - Prerecruit Size < 65 mm  #################
+pre.contours<-contour.gen(subset(ScallopSurv,year==survey.year,c('ID','lon','lat','pre')),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
 
 lvls=c(1,5,10,50,100,200,300,400,500)
 
@@ -422,19 +453,69 @@ CP <- convCP(CL)
 totCont.poly <- CP$PolySet
 cont.data<- data.frame(PID=1:length(lvls),col=brewer.pal(length(lvls),"YlGn"),border=NA, stringsAsFactors=FALSE)
 
-windows()
+##Convert pbsmapping object to sf
+totCont.poly <- as.PolySet(totCont.poly,projection = "LL") #assuming you provide Lat/Lon data and WGS84
+totCont.poly <- PolySet2SpatialLines(totCont.poly) # Spatial lines is a bit more general (don't need to have boxes closed)
+totCont.poly.sf <- st_as_sf(totCont.poly) %>%
+  st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
+  st_cast("POLYGON") %>% #Convert multilines to polygons
+  st_make_valid() %>% 
+  mutate(col = brewer.pal(length(lvls),"YlGn"), level = lvls)
 
-ScallopMap('bof',bathcol=rgb(0,0,1,0.1),contour=list(totCont.poly,cont.data),title=paste(xx,'BoF Density (< 65mm)',sep=" "),plot.boundries = F,plot.bathy=T, bathy.source='usgs')
-points(lat~lon,ScallopSurv,subset=year==xx,pch=16,cex=0.1)
-legend("bottomright",c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep='')),fill=cont.data$col,title="#/tow",inset=0.001,bty='o',box.col='white', cex=1,  bg='white')
-addPolys(Survey.poly,border='black',lwd=1)
-addPolys(spa4.poly,border='black',lwd=1)
+#Set aesthetics for plot
+n.breaks <- length(unique(totCont.poly.sf$col)) 
+col <- brewer.pal(length(lvls),"YlGn") #set colours
+cfd <- scale_fill_manual(values = alpha(col[1:n.breaks], 0.6), name = expression(frac(N,tow))) #set custom fill arguments for pecjector.
 
+#Pecjector with custom contour layer
+p <- pecjector(area = "bof",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+
+#set up directory to save plot
+#ifelse(!dir.exists(file.path("C:/Users/WILSONB/Documents/1_GISdata", "test2")), dir.create(file.path("C:/Users/WILSONB/Documents/1_GISdata", "test2"), showWarnings = TRUE)) #creates figure directory if it does not exist.
+
+png (paste0('C:/Users/WILSONB/Documents/1_GISdata/test2/','ContPlot_BF_PreDensity',survey.year,'.png'),width=672,height=672,res=100)
+p +
+  geom_spatial_point(data = ScallopSurv %>% 
+                       filter(year == survey.year), #survey.year defined in beginning of script
+                     aes(lon, lat), size = 0.5) +
+  labs(title = paste(survey.year, "", "BoF Density (< 65mm)"), x = "Longitude",
+       y = "Latitude") +
+  #theme_void() +
+  theme(plot.title = element_text(size = 14, hjust = 0.5), #plot title size and position
+        axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        legend.title = element_text(size = 10, face = "bold"), 
+        legend.text = element_text(size = 8),
+        legend.position = c(.85,.28), #legend position
+        legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.7)), #Legend bkg colour and transparency
+        legend.box.margin = margin(6, 8, 6, 8)) #Legend bkg margin (top, right, bottom, left)
 dev.off()
 
-# SURVEY BIOMASS - Commercial  Size >= 80 mm
-xx <- 2019
-com.contours <- contour.gen(subset(ScallopSurv.kg,year==xx,c('ID','lon','lat','com.bm')),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
+#OLD PLOT
+#xx <- 2019
+#pre.contours<-contour.gen(subset(ScallopSurv,year==xx,c('ID','lon','lat','pre')),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
+
+#lvls=c(1,5,10,50,100,200,300,400,500)
+
+#CL <- contourLines(pre.contours$image.dat,levels=lvls)
+#CP <- convCP(CL)
+#totCont.poly <- CP$PolySet
+#cont.data<- data.frame(PID=1:length(lvls),col=brewer.pal(length(lvls),"YlGn"),border=NA, stringsAsFactors=FALSE)
+
+#windows()
+
+#ScallopMap('bof',bathcol=rgb(0,0,1,0.1),contour=list(totCont.poly,cont.data),title=paste(xx,'BoF Density (< 65mm)',sep=" "),plot.boundries = F,plot.bathy=T, bathy.source='usgs')
+#points(lat~lon,ScallopSurv,subset=year==xx,pch=16,cex=0.1)
+#legend("bottomright",c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep='')),fill=cont.data$col,title="#/tow",inset=0.001,bty='o',box.col='white', cex=1,  bg='white')
+#addPolys(Survey.poly,border='black',lwd=1)
+#addPolys(spa4.poly,border='black',lwd=1)
+
+#dev.off()
+
+
+#############  SURVEY BIOMASS - Commercial  Size >= 80 mm  #################
+com.contours <- contour.gen(subset(ScallopSurv.kg,year==survey.year,c('ID','lon','lat','com.bm')),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
 
 lvls=c(0.01,0.1,1,2,4,6,8)  #levels to be color coded
 
@@ -443,56 +524,208 @@ CP <- convCP(CL)
 totCont.poly <- CP$PolySet
 cont.data<- data.frame(PID=1:length(lvls),col=brewer.pal(length(lvls),"YlGn"),border=NA, stringsAsFactors=FALSE)
 
-windows()
+##Convert pbsmapping object to sf
+totCont.poly <- as.PolySet(totCont.poly,projection = "LL") #assuming you provide Lat/Lon data and WGS84
+totCont.poly <- PolySet2SpatialLines(totCont.poly) # Spatial lines is a bit more general (don't need to have boxes closed)
+totCont.poly.sf <- st_as_sf(totCont.poly) %>%
+  st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
+  st_cast("POLYGON") %>% #Convert multilines to polygons
+  st_make_valid() %>% 
+  mutate(col = brewer.pal(length(lvls),"YlGn"), level = lvls)
 
-ScallopMap('bof',bathcol=rgb(0,0,1,0.1),contour=list(totCont.poly,cont.data),title=paste(xx,'BoF Biomass (>= 80mm)',sep=" "),plot.boundries = F,plot.bathy=T, bathy.source='usgs')
-points(lat~lon,ScallopSurv.kg,subset=year==xx,pch=16,cex=0.1)
-legend("bottomright",c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep='')),fill=cont.data$col,title="kg/tow",inset=0.02,bty='o',box.col='white', cex=1,  bg='white')
-addPolys(Survey.poly,border='black',lwd=1)
-addPolys(spa4.poly,border='black',lwd=1)
+#Set aesthetics for plot
+n.breaks <- length(unique(totCont.poly.sf$col)) 
+col <- brewer.pal(length(lvls),"YlGn") #set colours
+cfd <- scale_fill_manual(values = alpha(col[1:n.breaks], 0.6), name = expression(frac(kg,tow))) #set custom fill arguments for pecjector.
 
-dev.off() 
+#Pecjector with custom contour layer
+p <- pecjector(area = "bof",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
-# SURVEY BIOMASS - Recruit Size 65-79 mm
-xx <- 2019
-com.contours<-contour.gen(subset(ScallopSurv.kg,year==xx,c('ID','lon','lat','rec.bm')),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
+#set up directory to save plot
+#ifelse(!dir.exists(file.path("C:/Users/WILSONB/Documents/1_GISdata", "test2")), dir.create(file.path("C:/Users/WILSONB/Documents/1_GISdata", "test2"), showWarnings = TRUE)) #creates figure directory if it does not exist.
 
-lvls=c(0.01,0.1,1,2,4,6,8) #levels to be color coded
-
-CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
-CP <- convCP(CL)
-totCont.poly <- CP$PolySet
-cont.data<- data.frame(PID=1:length(lvls),col=brewer.pal(length(lvls),"YlGn"),border=NA, stringsAsFactors=FALSE)
-
-windows()
-
-ScallopMap('bof',bathcol=rgb(0,0,1,0.1),contour=list(totCont.poly,cont.data),title=paste(xx,'BoF Biomass (65-79mm)',sep=" "),plot.boundries = F,plot.bathy=T, bathy.source='usgs')
-points(lat~lon,ScallopSurv.kg,subset=year==xx,pch=16,cex=0.1)
-legend("bottomright",c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep='')),fill=cont.data$col,title="kg/tow",inset=0.02,bty='o',box.col='white', cex=1,  bg='white')
-addPolys(Survey.poly,border='black',lwd=1)
-addPolys(spa4.poly,border='black',lwd=1)
-
-dev.off() 
-
-# SURVEY BIOMASS - Prerecruit Size < 65 mm
-xx <- 2019
-com.contours<-contour.gen(subset(ScallopSurv.kg,year==xx,c('ID','lon','lat','pre.bm')),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
-
-lvls=c(0.01,0.05,0.1,1,2,3,4,5) #levels to be color coded
-
-CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
-CP <- convCP(CL)
-totCont.poly <- CP$PolySet
-cont.data<- data.frame(PID=1:length(lvls),col=brewer.pal(length(lvls),"YlGn"),border=NA, stringsAsFactors=FALSE)
-
-windows()
-ScallopMap('bof',bathcol=rgb(0,0,1,0.1),contour=list(totCont.poly,cont.data),title=paste(xx,'BoF Biomass (< 65mm)',sep=" "),plot.boundries = F,plot.bathy=T, bathy.source='usgs')
-points(lat~lon,ScallopSurv.kg,subset=year==xx,pch=16,cex=0.1)
-legend("bottomright",c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep='')),fill=cont.data$col,title="kg/tow",inset=0.02,bty='o',box.col='white', cex=1,  bg='white')
-addPolys(Survey.poly,border='black',lwd=1)
-addPolys(spa4.poly,border='black',lwd=1)
-
+png (paste0('C:/Users/WILSONB/Documents/1_GISdata/test2/','ContPlot_BF_ComBiomass',survey.year,'.png'),width=672,height=672,res=100)
+p +
+  geom_spatial_point(data = ScallopSurv.kg %>% 
+                       filter(year == survey.year), #survey.year defined in beginning of script
+                     aes(lon, lat), size = 0.5) +
+  labs(title = paste(survey.year, "", "BoF Biomass (>= 80mm)"), x = "Longitude",
+       y = "Latitude") +
+  #theme_void() +
+  theme(plot.title = element_text(size = 14, hjust = 0.5), #plot title size and position
+        axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        legend.title = element_text(size = 10, face = "bold"), 
+        legend.text = element_text(size = 8),
+        legend.position = c(.85,.28), #legend position
+        legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.7)), #Legend bkg colour and transparency
+        legend.box.margin = margin(6, 8, 6, 8)) #Legend bkg margin (top, right, bottom, left)
 dev.off()
+
+#OLD PLOT 
+#xx <- 2019
+#com.contours <- contour.gen(subset(ScallopSurv.kg,year==xx,c('ID','lon','lat','com.bm')),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
+
+#lvls=c(0.01,0.1,1,2,4,6,8)  #levels to be color coded
+
+#CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
+#CP <- convCP(CL)
+#totCont.poly <- CP$PolySet
+#cont.data<- data.frame(PID=1:length(lvls),col=brewer.pal(length(lvls),"YlGn"),border=NA, stringsAsFactors=FALSE)
+
+#windows()
+
+#ScallopMap('bof',bathcol=rgb(0,0,1,0.1),contour=list(totCont.poly,cont.data),title=paste(xx,'BoF Biomass (>= 80mm)',sep=" "),plot.boundries = F,plot.bathy=T, bathy.source='usgs')
+#points(lat~lon,ScallopSurv.kg,subset=year==xx,pch=16,cex=0.1)
+#legend("bottomright",c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep='')),fill=cont.data$col,title="kg/tow",inset=0.02,bty='o',box.col='white', cex=1,  bg='white')
+#addPolys(Survey.poly,border='black',lwd=1)
+#addPolys(spa4.poly,border='black',lwd=1)
+
+#dev.off() 
+
+
+#############  SURVEY BIOMASS - Recruit Size 65-79 mm  #################
+
+com.contours<-contour.gen(subset(ScallopSurv.kg,year==survey.year,c('ID','lon','lat','rec.bm')),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
+
+lvls=c(0.01,0.1,1) #levels to be color coded
+
+CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
+CP <- convCP(CL)
+totCont.poly <- CP$PolySet
+cont.data<- data.frame(PID=1:length(lvls),col=brewer.pal(length(lvls),"YlGn"),border=NA, stringsAsFactors=FALSE)
+
+##Convert pbsmapping object to sf
+totCont.poly <- as.PolySet(totCont.poly,projection = "LL") #assuming you provide Lat/Lon data and WGS84
+totCont.poly <- PolySet2SpatialLines(totCont.poly) # Spatial lines is a bit more general (don't need to have boxes closed)
+totCont.poly.sf <- st_as_sf(totCont.poly) %>%
+  st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
+  st_cast("POLYGON") %>% #Convert multilines to polygons
+  st_make_valid() %>% 
+  mutate(col = brewer.pal(length(lvls),"YlGn"), level = lvls)
+
+#Set aesthetics for plot
+n.breaks <- length(unique(totCont.poly.sf$col)) 
+col <- brewer.pal(length(lvls),"YlGn") #set colours
+cfd <- scale_fill_manual(values = alpha(col[1:n.breaks], 0.6), name = expression(frac(kg,tow))) #set custom fill arguments for pecjector.
+
+#Pecjector with custom contour layer
+p <- pecjector(area = "bof",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+
+#set up directory to save plot
+#ifelse(!dir.exists(file.path("C:/Users/WILSONB/Documents/1_GISdata", "test2")), dir.create(file.path("C:/Users/WILSONB/Documents/1_GISdata", "test2"), showWarnings = TRUE)) #creates figure directory if it does not exist.
+
+png (paste0('C:/Users/WILSONB/Documents/1_GISdata/test2/','ContPlot_BF_RecBiomass',survey.year,'.png'),width=672,height=672,res=100)
+p +
+  geom_spatial_point(data = ScallopSurv.kg %>% 
+                       filter(year == survey.year), #survey.year defined in beginning of script
+                     aes(lon, lat), size = 0.5) +
+  labs(title = paste(survey.year, "", "BoF Biomass (65-79mm)"), x = "Longitude",
+       y = "Latitude") +
+  #theme_void() +
+  theme(plot.title = element_text(size = 14, hjust = 0.5), #plot title size and position
+        axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        legend.title = element_text(size = 10, face = "bold"), 
+        legend.text = element_text(size = 8),
+        legend.position = c(.85,.28), #legend position
+        legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.7)), #Legend bkg colour and transparency
+        legend.box.margin = margin(6, 8, 6, 8)) #Legend bkg margin (top, right, bottom, left)
+dev.off()
+
+#OLD PLOT
+#xx <- 2019
+#com.contours<-contour.gen(subset(ScallopSurv.kg,year==xx,c('ID','lon','lat','rec.bm')),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
+
+#lvls=c(0.01,0.1,1,2,4,6,8) #levels to be color coded
+
+#CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
+#CP <- convCP(CL)
+#totCont.poly <- CP$PolySet
+#cont.data<- data.frame(PID=1:length(lvls),col=brewer.pal(length(lvls),"YlGn"),border=NA, stringsAsFactors=FALSE)
+
+#windows()
+
+#ScallopMap('bof',bathcol=rgb(0,0,1,0.1),contour=list(totCont.poly,cont.data),title=paste(xx,'BoF Biomass (65-79mm)',sep=" "),plot.boundries = F,plot.bathy=T, bathy.source='usgs')
+#points(lat~lon,ScallopSurv.kg,subset=year==xx,pch=16,cex=0.1)
+#legend("bottomright",c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep='')),fill=cont.data$col,title="kg/tow",inset=0.02,bty='o',box.col='white', cex=1,  bg='white')
+#addPolys(Survey.poly,border='black',lwd=1)
+#addPolys(spa4.poly,border='black',lwd=1)
+
+#dev.off() 
+
+
+#############  SURVEY BIOMASS - Prerecruit Size < 65 mm  #################
+
+com.contours<-contour.gen(subset(ScallopSurv.kg,year==survey.year,c('ID','lon','lat','pre.bm')),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
+
+lvls=c(0.01,0.05,0.1) #levels to be color coded
+
+CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
+CP <- convCP(CL)
+totCont.poly <- CP$PolySet
+cont.data<- data.frame(PID=1:length(lvls),col=brewer.pal(length(lvls),"YlGn"),border=NA, stringsAsFactors=FALSE)
+
+##Convert pbsmapping object to sf
+totCont.poly <- as.PolySet(totCont.poly,projection = "LL") #assuming you provide Lat/Lon data and WGS84
+totCont.poly <- PolySet2SpatialLines(totCont.poly) # Spatial lines is a bit more general (don't need to have boxes closed)
+totCont.poly.sf <- st_as_sf(totCont.poly) %>%
+  st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
+  st_cast("POLYGON") %>% #Convert multilines to polygons
+  st_make_valid() %>% 
+  mutate(col = brewer.pal(length(lvls),"YlGn"), level = lvls)
+
+#Set aesthetics for plot
+n.breaks <- length(unique(totCont.poly.sf$col)) 
+col <- brewer.pal(length(lvls),"YlGn") #set colours
+cfd <- scale_fill_manual(values = alpha(col[1:n.breaks], 0.6), name = expression(frac(kg,tow))) #set custom fill arguments for pecjector.
+
+#Pecjector with custom contour layer
+p <- pecjector(area = "bof",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+
+#set up directory to save plot
+#ifelse(!dir.exists(file.path("C:/Users/WILSONB/Documents/1_GISdata", "test2")), dir.create(file.path("C:/Users/WILSONB/Documents/1_GISdata", "test2"), showWarnings = TRUE)) #creates figure directory if it does not exist.
+
+png (paste0('C:/Users/WILSONB/Documents/1_GISdata/test2/','ContPlot_BF_PreBiomass',survey.year,'.png'),width=672,height=672,res=100)
+p +
+  geom_spatial_point(data = ScallopSurv.kg %>% 
+                       filter(year == survey.year), #survey.year defined in beginning of script
+                     aes(lon, lat), size = 0.5) +
+  labs(title = paste(survey.year, "", "BoF Biomass (< 65mm)"), x = "Longitude",
+       y = "Latitude") +
+  #theme_void() +
+  theme(plot.title = element_text(size = 14, hjust = 0.5), #plot title size and position
+        axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        legend.title = element_text(size = 10, face = "bold"), 
+        legend.text = element_text(size = 8),
+        legend.position = c(.85,.28), #legend position
+        legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.7)), #Legend bkg colour and transparency
+        legend.box.margin = margin(6, 8, 6, 8)) #Legend bkg margin (top, right, bottom, left)
+dev.off()
+
+#OLD PLOT
+#xx <- 2019
+#com.contours<-contour.gen(subset(ScallopSurv.kg,year==xx,c('ID','lon','lat','pre.bm')),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
+
+#lvls=c(0.01,0.05,0.1,1,2,3,4,5) #levels to be color coded
+
+#CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
+#CP <- convCP(CL)
+#totCont.poly <- CP$PolySet
+#cont.data<- data.frame(PID=1:length(lvls),col=brewer.pal(length(lvls),"YlGn"),border=NA, stringsAsFactors=FALSE)
+
+#windows()
+#ScallopMap('bof',bathcol=rgb(0,0,1,0.1),contour=list(totCont.poly,cont.data),title=paste(xx,'BoF Biomass (< 65mm)',sep=" "),plot.boundries = F,plot.bathy=T, bathy.source='usgs')
+#points(lat~lon,ScallopSurv.kg,subset=year==xx,pch=16,cex=0.1)
+#legend("bottomright",c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep='')),fill=cont.data$col,title="kg/tow",inset=0.02,bty='o',box.col='white', cex=1,  bg='white')
+#addPolys(Survey.poly,border='black',lwd=1)
+#addPolys(spa4.poly,border='black',lwd=1)
+
+#dev.off()
 
 ##  CONDITION
 xx <- 2019
