@@ -354,7 +354,7 @@ p <- pecjector(area = "bof",repo ='github',c_sys="ll", gis.repo = 'github', plot
 #set up directory to save plot
 #ifelse(!dir.exists(file.path("C:/Users/WILSONB/Documents/1_GISdata", "test2")), dir.create(file.path("C:/Users/WILSONB/Documents/1_GISdata", "test2"), showWarnings = TRUE)) #creates figure directory if it does not exist.
 
-png (paste0('C:/Users/WILSONB/Documents/1_GISdata/test2/','ContPlot_BF_ComDensity',survey.year,'.png'),width=672,height=672,res=100)
+png(paste0('C:/Users/WILSONB/Documents/1_GISdata/test2/','ContPlot_BF_ComDensity',survey.year,'.png'),width=672,height=672,res=100)
 p +
   geom_spatial_point(data = ScallopSurv %>% 
                        filter(year == survey.year), #survey.year defined in beginning of script
@@ -404,7 +404,7 @@ p <- pecjector(area = "bof",repo ='github',c_sys="ll", gis.repo = 'github', plot
 #set up directory to save plot
 #ifelse(!dir.exists(file.path("C:/Users/WILSONB/Documents/1_GISdata", "test2")), dir.create(file.path("C:/Users/WILSONB/Documents/1_GISdata", "test2"), showWarnings = TRUE)) #creates figure directory if it does not exist.
 
-png (paste0('C:/Users/WILSONB/Documents/1_GISdata/test2/','ContPlot_BF_RecDensity',survey.year,'.png'),width=672,height=672,res=100)
+png(paste0('C:/Users/WILSONB/Documents/1_GISdata/test2/','ContPlot_BF_RecDensity',survey.year,'.png'),width=672,height=672,res=100)
 p +
   geom_spatial_point(data = ScallopSurv %>% 
                        filter(year == survey.year), #survey.year defined in beginning of script
@@ -474,7 +474,7 @@ p <- pecjector(area = "bof",repo ='github',c_sys="ll", gis.repo = 'github', plot
 #set up directory to save plot
 #ifelse(!dir.exists(file.path("C:/Users/WILSONB/Documents/1_GISdata", "test2")), dir.create(file.path("C:/Users/WILSONB/Documents/1_GISdata", "test2"), showWarnings = TRUE)) #creates figure directory if it does not exist.
 
-png (paste0('C:/Users/WILSONB/Documents/1_GISdata/test2/','ContPlot_BF_PreDensity',survey.year,'.png'),width=672,height=672,res=100)
+png(paste0('C:/Users/WILSONB/Documents/1_GISdata/test2/','ContPlot_BF_PreDensity',survey.year,'.png'),width=672,height=672,res=100)
 p +
   geom_spatial_point(data = ScallopSurv %>% 
                        filter(year == survey.year), #survey.year defined in beginning of script
@@ -545,7 +545,7 @@ p <- pecjector(area = "bof",repo ='github',c_sys="ll", gis.repo = 'github', plot
 #set up directory to save plot
 #ifelse(!dir.exists(file.path("C:/Users/WILSONB/Documents/1_GISdata", "test2")), dir.create(file.path("C:/Users/WILSONB/Documents/1_GISdata", "test2"), showWarnings = TRUE)) #creates figure directory if it does not exist.
 
-png (paste0('C:/Users/WILSONB/Documents/1_GISdata/test2/','ContPlot_BF_ComBiomass',survey.year,'.png'),width=672,height=672,res=100)
+png(paste0('C:/Users/WILSONB/Documents/1_GISdata/test2/','ContPlot_BF_ComBiomass',survey.year,'.png'),width=672,height=672,res=100)
 p +
   geom_spatial_point(data = ScallopSurv.kg %>% 
                        filter(year == survey.year), #survey.year defined in beginning of script
@@ -617,7 +617,7 @@ p <- pecjector(area = "bof",repo ='github',c_sys="ll", gis.repo = 'github', plot
 #set up directory to save plot
 #ifelse(!dir.exists(file.path("C:/Users/WILSONB/Documents/1_GISdata", "test2")), dir.create(file.path("C:/Users/WILSONB/Documents/1_GISdata", "test2"), showWarnings = TRUE)) #creates figure directory if it does not exist.
 
-png (paste0('C:/Users/WILSONB/Documents/1_GISdata/test2/','ContPlot_BF_RecBiomass',survey.year,'.png'),width=672,height=672,res=100)
+png(paste0('C:/Users/WILSONB/Documents/1_GISdata/test2/','ContPlot_BF_RecBiomass',survey.year,'.png'),width=672,height=672,res=100)
 p +
   geom_spatial_point(data = ScallopSurv.kg %>% 
                        filter(year == survey.year), #survey.year defined in beginning of script
@@ -689,7 +689,7 @@ p <- pecjector(area = "bof",repo ='github',c_sys="ll", gis.repo = 'github', plot
 #set up directory to save plot
 #ifelse(!dir.exists(file.path("C:/Users/WILSONB/Documents/1_GISdata", "test2")), dir.create(file.path("C:/Users/WILSONB/Documents/1_GISdata", "test2"), showWarnings = TRUE)) #creates figure directory if it does not exist.
 
-png (paste0('C:/Users/WILSONB/Documents/1_GISdata/test2/','ContPlot_BF_PreBiomass',survey.year,'.png'),width=672,height=672,res=100)
+png(paste0('C:/Users/WILSONB/Documents/1_GISdata/test2/','ContPlot_BF_PreBiomass',survey.year,'.png'),width=672,height=672,res=100)
 p +
   geom_spatial_point(data = ScallopSurv.kg %>% 
                        filter(year == survey.year), #survey.year defined in beginning of script
@@ -727,11 +727,13 @@ dev.off()
 
 #dev.off()
 
-##  CONDITION
-xx <- 2019
+
+#############  CONDITION  #################
+
+#xx <- 2019
 
 #com.contours<-contour.gen(subset(con.dat,year==xx,c('ID','lon','lat','Condition')),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
-com.contours <- contour.gen(subset(con.dat,year==xx,c('ID','lon','lat','Condition')),ticks='define',nstrata=7,str.min=0,place=2,id.par=5,interp.method='gstat',key='strata',blank=T,plot=F,res=0.01,blank.dist = 0.1)
+com.contours <- contour.gen(subset(con.dat,year==survey.year,c('ID','lon','lat','Condition')),ticks='define',nstrata=7,str.min=0,place=2,id.par=5,interp.method='gstat',key='strata',blank=T,plot=F,res=0.01,blank.dist = 0.1)
 
 lvls=c(5,6,7,8,9,10,11,12) #levels to be color coded
 
@@ -740,20 +742,59 @@ CP <- convCP(CL)
 totCont.poly <- CP$PolySet
 cont.data<- data.frame(PID=1:length(lvls),col=brewer.pal(length(lvls),"YlOrBr"),border=NA, stringsAsFactors=FALSE)  #previously was YlOrBr YlGnBu
 
-windows()
+##Convert pbsmapping object to sf
+totCont.poly <- as.PolySet(totCont.poly,projection = "LL") #assuming you provide Lat/Lon data and WGS84
+totCont.poly <- PolySet2SpatialLines(totCont.poly) # Spatial lines is a bit more general (don't need to have boxes closed)
+totCont.poly.sf <- st_as_sf(totCont.poly) %>%
+  st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
+  st_cast("POLYGON") %>% #Convert multilines to polygons
+  st_make_valid() %>% 
+  mutate(col = brewer.pal(length(lvls),"YlOrBr"), level = lvls)
 
-ScallopMap('bof' ,bathcol=rgb(0,0,1,0.1),contour=list(totCont.poly,cont.data),title=paste(xx,'Condition',sep=" "),plot.boundries = F,plot.bathy=T, bathy.source='quick')
-points(lat~lon,con.dat,subset=year==xx,pch=16,cex=0.5)
-legend("bottomright",c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep='')),fill=cont.data$col,title="Condition (g)",inset=0.02,bty='o',box.col='white', cex=1, bg='white')
-addPolys(Survey.poly,border='black',lwd=1)
-addPolys(spa4.poly,border='black',lwd=1)
+#Set aesthetics for plot
+n.breaks <- length(unique(totCont.poly.sf$col)) 
+col <- brewer.pal(length(lvls),"YlOrBr") #set colours
+cfd <- scale_fill_manual(values = alpha(col[1:n.breaks], 0.6), name = "Condition (g)") #set custom fill arguments for pecjector.
 
+#Pecjector with custom contour layer
+p <- pecjector(area = "bof",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+
+#set up directory to save plot
+#ifelse(!dir.exists(file.path("C:/Users/WILSONB/Documents/1_GISdata", "test2")), dir.create(file.path("C:/Users/WILSONB/Documents/1_GISdata", "test2"), showWarnings = TRUE)) #creates figure directory if it does not exist.
+
+png(paste0('C:/Users/WILSONB/Documents/1_GISdata/test2/','ContPlot_BF_Condition',survey.year,'.png'),width=672,height=672,res=100)
+p +
+  geom_spatial_point(data = con.dat %>% 
+                       filter(year == survey.year), #survey.year defined in beginning of script
+                     aes(lon, lat), size = 0.5) +
+  labs(title = paste(survey.year, "", "BoF Condition"), x = "Longitude",
+       y = "Latitude") +
+  #theme_void() +
+  theme(plot.title = element_text(size = 14, hjust = 0.5), #plot title size and position
+        axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        legend.title = element_text(size = 10, face = "bold"), 
+        legend.text = element_text(size = 8),
+        legend.position = c(.85,.28), #legend position
+        legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.7)), #Legend bkg colour and transparency
+        legend.box.margin = margin(6, 8, 6, 8)) #Legend bkg margin (top, right, bottom, left)
 dev.off()
 
-# SURVEY MEAT COUNT - of commerical (>= 80mm) sized animals
-xx <- 2019
+#windows()
 
-mc.contours<-contour.gen(na.omit(subset(ScallopSurv.mtcnt,year==xx,c('ID','lon','lat','meat.count'))),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,interp.method='gstat',blank=T,plot=F,subset.poly='square',subset.eff=0,subscale=0.25,res=0.01)
+#ScallopMap('bof' ,bathcol=rgb(0,0,1,0.1),contour=list(totCont.poly,cont.data),title=paste(xx,'Condition',sep=" "),plot.boundries = F,plot.bathy=T, bathy.source='quick')
+#points(lat~lon,con.dat,subset=year==xx,pch=16,cex=0.5)
+#legend("bottomright",c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep='')),fill=cont.data$col,title="Condition (g)",inset=0.02,bty='o',box.col='white', cex=1, bg='white')
+#addPolys(Survey.poly,border='black',lwd=1)
+#addPolys(spa4.poly,border='black',lwd=1)
+
+#dev.off()
+
+
+#############  SURVEY MEAT COUNT - of commerical (>= 80mm) sized animals  #################
+#xx <- 2019
+mc.contours<-contour.gen(na.omit(subset(ScallopSurv.mtcnt,year==survey.year,c('ID','lon','lat','meat.count'))),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,interp.method='gstat',blank=T,plot=F,subset.poly='square',subset.eff=0,subscale=0.25,res=0.01)
 
 lvls=seq(10,45,5)
 div=2
@@ -764,79 +805,231 @@ totCont.poly  <- CP$PolySet
 Ncol=length(lvls)+div
 cont.data<- data.frame(PID=1:length(lvls),col=brewer.pal(Ncol,"Spectral")[c(Ncol:(div+2),1)],border=NA,stringsAsFactors=FALSE)
 
-windows()
-ScallopMap('bof',bathcol=rgb(0,0,1,0.1),contour=list(totCont.poly,cont.data),title=paste(xx,'Meat Count (>= 80mm)',sep=" "),plot.boundries = F,plot.bathy=T, bathy.source='quick')
-points(lat~lon,ScallopSurv.mtcnt,subset=year==xx,pch=16,cex=0.5)
-legend("bottomright",c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep='')),fill=cont.data$col,title="Scallops/500g",inset=0.02,bty='o',box.col='white', cex=1, bg='white')
-addPolys(Survey.poly,border='black',lwd=1)
-addPolys(spa4.poly,border='black',lwd=1)
+##Convert pbsmapping object to sf
+totCont.poly <- as.PolySet(totCont.poly,projection = "LL") #assuming you provide Lat/Lon data and WGS84
+totCont.poly <- PolySet2SpatialLines(totCont.poly) # Spatial lines is a bit more general (don't need to have boxes closed)
+totCont.poly.sf <- st_as_sf(totCont.poly) %>%
+  st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
+  st_cast("POLYGON") %>% #Convert multilines to polygons
+  st_make_valid() %>% 
+  mutate(col = brewer.pal(length(lvls),"Spectral"), level = lvls)
 
+#Set aesthetics for plot
+n.breaks <- length(unique(totCont.poly.sf$col)) 
+col <- brewer.pal(length(lvls),"Spectral") #set colours
+cfd <- scale_fill_manual(values = alpha(col[1:n.breaks], 0.6), name = expression(frac(Scallops,"500g"))) #set custom fill arguments for pecjector.
+
+#Pecjector with custom contour layer
+p <- pecjector(area = "bof",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+
+#set up directory to save plot
+#ifelse(!dir.exists(file.path("C:/Users/WILSONB/Documents/1_GISdata", "test2")), dir.create(file.path("C:/Users/WILSONB/Documents/1_GISdata", "test2"), showWarnings = TRUE)) #creates figure directory if it does not exist.
+
+png(paste0('C:/Users/WILSONB/Documents/1_GISdata/test2/','ContPlot_BF_Meatcount',survey.year,'.png'),width=672,height=672,res=100)
+p +
+  geom_spatial_point(data = ScallopSurv.mtcnt %>% 
+                       filter(year == survey.year), #survey.year defined in beginning of script
+                     aes(lon, lat), size = 0.5) +
+  labs(title = paste(survey.year, "", "BOF Meat Count (>= 80mm)"), x = "Longitude",
+       y = "Latitude") +
+  #theme_void() +
+  theme(plot.title = element_text(size = 14, hjust = 0.5), #plot title size and position
+        axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        legend.title = element_text(size = 10, face = "bold"), 
+        legend.text = element_text(size = 8),
+        legend.position = c(.85,.28), #legend position
+        legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.7)), #Legend bkg colour and transparency
+        legend.box.margin = margin(6, 8, 6, 8)) #Legend bkg margin (top, right, bottom, left)
 dev.off()
 
-# Spatial plot of clappers #
-# SURVEY - Commercial Size >= 80 mm
-xx <- 2019
-com.contours<-contour.gen(subset(ScallopSurv.dead,year==xx,c('ID','lon','lat','com')),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
+#windows()
+#ScallopMap('bof',bathcol=rgb(0,0,1,0.1),contour=list(totCont.poly,cont.data),title=paste(xx,'Meat Count (>= 80mm)',sep=" "),plot.boundries = F,plot.bathy=T, bathy.source='quick')
+#points(lat~lon,ScallopSurv.mtcnt,subset=year==xx,pch=16,cex=0.5)
+#legend("bottomright",c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep='')),fill=cont.data$col,title="Scallops/500g",inset=0.02,bty='o',box.col='white', cex=1, bg='white')
+#addPolys(Survey.poly,border='black',lwd=1)
+#addPolys(spa4.poly,border='black',lwd=1)
 
-lvls=c(1,5,10,15,20,25,30,50,100) #levels to be color coded
+#dev.off()
+
+#############  SURVEY - Clappers - Commercial Size >= 80 mm sized animals  #################
+com.contours<-contour.gen(subset(ScallopSurv.dead,year==survey.year,c('ID','lon','lat','com')),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
+
+lvls=c(1,5,10,15,20,25,30,50) #levels to be color coded
 
 CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
 CP <- convCP(CL)
 totCont.poly <- CP$PolySet
 cont.data<- data.frame(PID=1:length(lvls),col=brewer.pal(length(lvls),"YlGn"),border=NA, stringsAsFactors=FALSE)
 
-windows()
-ScallopMap('bof',bathcol=rgb(0,0,1,0.1),contour=list(totCont.poly,cont.data),title=paste(xx,'BoF Clapper Density (>= 80mm)',sep=" "),plot.boundries = F,plot.bathy=T, bathy.source='usgs')
-points(lat~lon,ScallopSurv.dead,subset=year==xx,pch=16,cex=0.1)
-legend("bottomright",c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep='')),fill=cont.data$col,title="#/tow",inset=0.02,bty='o',box.col='white', cex=1, bg='white')
-addPolys(Survey.poly,border='black',lwd=1)
-addPolys(spa4.poly,border='black',lwd=1)
+##Convert pbsmapping object to sf
+totCont.poly <- as.PolySet(totCont.poly,projection = "LL") #assuming you provide Lat/Lon data and WGS84
+totCont.poly <- PolySet2SpatialLines(totCont.poly) # Spatial lines is a bit more general (don't need to have boxes closed)
+totCont.poly.sf <- st_as_sf(totCont.poly) %>%
+  st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
+  st_cast("POLYGON") %>% #Convert multilines to polygons
+  st_make_valid() %>% 
+  mutate(col = brewer.pal(length(lvls),"YlGn"), level = lvls)
 
+#Set aesthetics for plot
+n.breaks <- length(unique(totCont.poly.sf$col)) 
+col <- brewer.pal(length(lvls),"YlGn") #set colours
+cfd <- scale_fill_manual(values = alpha(col[1:n.breaks], 0.6), name = expression(frac(N,tow))) #set custom fill arguments for pecjector.
+
+#Pecjector with custom contour layer
+p <- pecjector(area = "bof",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+
+#set up directory to save plot
+#ifelse(!dir.exists(file.path("C:/Users/WILSONB/Documents/1_GISdata", "test2")), dir.create(file.path("C:/Users/WILSONB/Documents/1_GISdata", "test2"), showWarnings = TRUE)) #creates figure directory if it does not exist.
+
+png(paste0('C:/Users/WILSONB/Documents/1_GISdata/test2/','ContPlot_BF_ComClappers',survey.year,'.png'),width=672,height=672,res=100)
+p +
+  geom_spatial_point(data = ScallopSurv.dead %>% 
+                       filter(year == survey.year), #survey.year defined in beginning of script
+                     aes(lon, lat), size = 0.5) +
+  labs(title = paste(survey.year, "", "BoF Clapper Density (>= 80mm)"), x = "Longitude",
+       y = "Latitude") +
+  #theme_void() +
+  theme(plot.title = element_text(size = 14, hjust = 0.5), #plot title size and position
+        axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        legend.title = element_text(size = 10, face = "bold"), 
+        legend.text = element_text(size = 8),
+        legend.position = c(.85,.28), #legend position
+        legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.7)), #Legend bkg colour and transparency
+        legend.box.margin = margin(6, 8, 6, 8)) #Legend bkg margin (top, right, bottom, left)
 dev.off()
 
-# SURVEY - Recruit Size 65-79 mm
-xx <- 2019
-rec.contours<-contour.gen(subset(ScallopSurv.dead,year==xx,c('ID','lon','lat','rec')),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
 
-lvls=c(1,5,10,15,20,25,30,50,100) #levels to be color coded
+#windows()
+#ScallopMap('bof',bathcol=rgb(0,0,1,0.1),contour=list(totCont.poly,cont.data),title=paste(xx,'BoF Clapper Density (>= 80mm)',sep=" "),plot.boundries = F,plot.bathy=T, bathy.source='usgs')
+#points(lat~lon,ScallopSurv.dead,subset=year==xx,pch=16,cex=0.1)
+#legend("bottomright",c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep='')),fill=cont.data$col,title="#/tow",inset=0.02,bty='o',box.col='white', cex=1, bg='white')
+#addPolys(Survey.poly,border='black',lwd=1)
+#addPolys(spa4.poly,border='black',lwd=1)
+
+#dev.off()
+
+#############  SURVEY - Clappers - Recruit Size 65-79 mm sized animals  #################
+rec.contours<-contour.gen(subset(ScallopSurv.dead,year==survey.year,c('ID','lon','lat','rec')),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
+
+lvls=c(1,5,10) #levels to be color coded #,15,20,25,30,50,100
 
 CL <- contourLines(rec.contours$image.dat,levels=lvls)
 CP <- convCP(CL)
 totCont.poly <- CP$PolySet
 cont.data<- data.frame(PID=1:length(lvls),col=brewer.pal(length(lvls),"YlGn"),border=NA, stringsAsFactors=FALSE)
 
-windows()
-ScallopMap('bof',bathcol=rgb(0,0,1,0.1),contour=list(totCont.poly,cont.data),title=paste(xx,'BoF Clapper Density (65-79mm)',sep=" "),plot.boundries = F,plot.bathy=T, bathy.source='usgs')
-points(lat~lon,ScallopSurv.dead,subset=year==xx,pch=16,cex=0.1)
-legend("bottomright",c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep='')),fill=cont.data$col,title="#/tow",inset=0.02,bty='o',box.col='white', cex=1, bg='white')
-addPolys(Survey.poly,border='black',lwd=1)
-addPolys(spa4.poly,border='black',lwd=1)
+##Convert pbsmapping object to sf
+totCont.poly <- as.PolySet(totCont.poly,projection = "LL") #assuming you provide Lat/Lon data and WGS84
+totCont.poly <- PolySet2SpatialLines(totCont.poly) # Spatial lines is a bit more general (don't need to have boxes closed)
+totCont.poly.sf <- st_as_sf(totCont.poly) %>%
+  st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
+  st_cast("POLYGON") %>% #Convert multilines to polygons
+  st_make_valid() %>% 
+  mutate(col = brewer.pal(length(lvls),"YlGn"), level = lvls)
 
-dev.off() 
+#Set aesthetics for plot
+n.breaks <- length(unique(totCont.poly.sf$col)) 
+col <- brewer.pal(length(lvls),"YlGn") #set colours
+cfd <- scale_fill_manual(values = alpha(col[1:n.breaks], 0.6), name = expression(frac(N,tow))) #set custom fill arguments for pecjector.
 
-# SURVEY - Prerecruit Size < 65 mm
-xx <- 2019
-pre.contours<-contour.gen(subset(ScallopSurv.dead,year==xx,c('ID','lon','lat','pre')),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
+#Pecjector with custom contour layer
+p <- pecjector(area = "bof",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
-lvls=c(1,5,10,15,20,25,30,50,100) #levels to be color coded
+#set up directory to save plot
+#ifelse(!dir.exists(file.path("C:/Users/WILSONB/Documents/1_GISdata", "test2")), dir.create(file.path("C:/Users/WILSONB/Documents/1_GISdata", "test2"), showWarnings = TRUE)) #creates figure directory if it does not exist.
+
+png(paste0('C:/Users/WILSONB/Documents/1_GISdata/test2/','ContPlot_BF_RecClappers',survey.year,'.png'),width=672,height=672,res=100)
+p +
+  geom_spatial_point(data = ScallopSurv.dead %>% 
+                       filter(year == survey.year), #survey.year defined in beginning of script
+                     aes(lon, lat), size = 0.5) +
+  labs(title = paste(survey.year, "", "BoF Clapper Density (65-79mm)"), x = "Longitude",
+       y = "Latitude") +
+  #theme_void() +
+  theme(plot.title = element_text(size = 14, hjust = 0.5), #plot title size and position
+        axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        legend.title = element_text(size = 10, face = "bold"), 
+        legend.text = element_text(size = 8),
+        legend.position = c(.85,.28), #legend position
+        legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.7)), #Legend bkg colour and transparency
+        legend.box.margin = margin(6, 8, 6, 8)) #Legend bkg margin (top, right, bottom, left)
+dev.off()
+
+#windows()
+#ScallopMap('bof',bathcol=rgb(0,0,1,0.1),contour=list(totCont.poly,cont.data),title=paste(xx,'BoF Clapper Density (65-79mm)',sep=" "),plot.boundries = F,plot.bathy=T, bathy.source='usgs')
+#points(lat~lon,ScallopSurv.dead,subset=year==xx,pch=16,cex=0.1)
+#legend("bottomright",c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep='')),fill=cont.data$col,title="#/tow",inset=0.02,bty='o',box.col='white', cex=1, bg='white')
+#addPolys(Survey.poly,border='black',lwd=1)
+#addPolys(spa4.poly,border='black',lwd=1)
+
+#dev.off() 
+
+#############  SURVEY - Clappers - Prerecruit Size < 65 mm sized animals  #################
+pre.contours<-contour.gen(subset(ScallopSurv.dead,year==survey.year,c('ID','lon','lat','pre')),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
+
+lvls=c(1,5,10,15,20,25,30,50) #levels to be color coded #,100
 
 CL <- contourLines(pre.contours$image.dat,levels=lvls)
 CP <- convCP(CL)
 totCont.poly <- CP$PolySet
 cont.data<- data.frame(PID=1:length(lvls),col=brewer.pal(length(lvls),"YlGn"),border=NA, stringsAsFactors=FALSE)
 
-windows()
-ScallopMap('bof',bathcol=rgb(0,0,1,0.1),contour=list(totCont.poly,cont.data),title=paste(xx,'BoF Clapper Density (< 65mm)',sep=" "),plot.boundries = F,plot.bathy=T, bathy.source='usgs')
-points(lat~lon,ScallopSurv.dead,subset=year==xx,pch=16,cex=0.1)
-legend("bottomright",c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep='')),fill=cont.data$col,title="#/tow",inset=0.02,bty='o',box.col='white', cex=1, bg='white')
-addPolys(Survey.poly,border='black',lwd=1)
-addPolys(spa4.poly,border='black',lwd=1)
+##Convert pbsmapping object to sf
+totCont.poly <- as.PolySet(totCont.poly,projection = "LL") #assuming you provide Lat/Lon data and WGS84
+totCont.poly <- PolySet2SpatialLines(totCont.poly) # Spatial lines is a bit more general (don't need to have boxes closed)
+totCont.poly.sf <- st_as_sf(totCont.poly) %>%
+  st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
+  st_cast("POLYGON") %>% #Convert multilines to polygons
+  st_make_valid() %>% 
+  mutate(col = brewer.pal(length(lvls),"YlGn"), level = lvls)
 
-dev.off()  
+#Set aesthetics for plot
+n.breaks <- length(unique(totCont.poly.sf$col)) 
+col <- brewer.pal(length(lvls),"YlGn") #set colours
+cfd <- scale_fill_manual(values = alpha(col[1:n.breaks], 0.6), name = expression(frac(N,tow))) #set custom fill arguments for pecjector.
+
+#Pecjector with custom contour layer
+p <- pecjector(area = "bof",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+
+#set up directory to save plot
+#ifelse(!dir.exists(file.path("C:/Users/WILSONB/Documents/1_GISdata", "test2")), dir.create(file.path("C:/Users/WILSONB/Documents/1_GISdata", "test2"), showWarnings = TRUE)) #creates figure directory if it does not exist.
+
+png(paste0('C:/Users/WILSONB/Documents/1_GISdata/test2/','ContPlot_BF_PrerecClappers',survey.year,'.png'),width=672,height=672,res=100)
+p +
+  geom_spatial_point(data = ScallopSurv.dead %>% 
+                       filter(year == survey.year), #survey.year defined in beginning of script
+                     aes(lon, lat), size = 0.5) +
+  labs(title = paste(survey.year, "", "BoF Clapper Density (< 65mm)"), x = "Longitude",
+       y = "Latitude") +
+  #theme_void() +
+  theme(plot.title = element_text(size = 14, hjust = 0.5), #plot title size and position
+        axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        legend.title = element_text(size = 10, face = "bold"), 
+        legend.text = element_text(size = 8),
+        legend.position = c(.85,.28), #legend position
+        legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.7)), #Legend bkg colour and transparency
+        legend.box.margin = margin(6, 8, 6, 8)) #Legend bkg margin (top, right, bottom, left)
+dev.off()
 
 
-### SURVEY - Clappers presented as a proportion of all live and dead animals:
-###
+#windows()
+#ScallopMap('bof',bathcol=rgb(0,0,1,0.1),contour=list(totCont.poly,cont.data),title=paste(xx,'BoF Clapper Density (< 65mm)',sep=" "),plot.boundries = F,plot.bathy=T, bathy.source='usgs')
+#points(lat~lon,ScallopSurv.dead,subset=year==xx,pch=16,cex=0.1)
+#legend("bottomright",c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep='')),fill=cont.data$col,title="#/tow",inset=0.02,bty='o',box.col='white', cex=1, bg='white')
+#addPolys(Survey.poly,border='black',lwd=1)
+#addPolys(spa4.poly,border='black',lwd=1)
+
+#dev.off()  
+
+#############  SURVEY - Clappers presented as a proportion of all live and dead animals:  #################
 live <- ScallopSurv[,c(1,2,52:59)]
 dead <- ScallopSurv.dead[,c(1,2,52:59)]
 
