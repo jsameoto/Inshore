@@ -1030,23 +1030,35 @@ dev.off()
 #dev.off()  
 
 #############  SURVEY - Clappers presented as a proportion of all live and dead animals:  #################
-live <- ScallopSurv[,c(1,2,52:59)]
-dead <- ScallopSurv.dead[,c(1,2,52:59)]
+#live <- ScallopSurv[,c(1,2,52:59)] #replaced
+live <- ScallopSurv %>% 
+  dplyr::select(CRUISE, tow, year, lat, lon, tot, ID, com, rec, pre)
 
-prop.clappers <- merge(live,dead,by="ID")
-prop.clappers$prop.dead.com <- prop.clappers$com.y/(prop.clappers$com.x+prop.clappers$com.y) #number of commercial sized clappers relative to total number of commercial size live and dead combined
-prop.clappers$prop.dead.rec <- prop.clappers$rec.y/(prop.clappers$rec.x+prop.clappers$rec.y) #number of recruit sized clappers relative to total number of recruit size live and dead combined
-prop.clappers$prop.dead.com[is.na(prop.clappers$prop.dead.com)] <- 0
-prop.clappers$prop.dead.rec[is.na(prop.clappers$prop.dead.rec)]  <- 0
-prop.clappers <- prop.clappers[,c(1:6,20:21)]
-names(prop.clappers) <- c("ID", "CRUISE", "tow", "year", "lat", "lon", "prop.dead.com","prop.dead.rec")
+#dead <- ScallopSurv.dead[,c(1,2,52:59)]
+dead <- ScallopSurv.dead %>% 
+  dplyr::select(CRUISE, tow, year, lat, lon, tot, ID, com, rec, pre)
+
+prop.clappers <- merge(live,dead,by="ID") %>% 
+  mutate(prop.dead.com = com.y/(com.x + com.y)) %>% #number of commercial sized clappers relative to total number of commercial size live and dead combined
+  mutate(prop.dead.rec = rec.y/(rec.x + rec.y)) %>% #number of recruit sized clappers relative to total number of recruit size live and dead combined
+  mutate_at(vars(prop.dead.com:prop.dead.rec), ~replace(., is.na(.), 0)) %>% 
+  dplyr::select(ID, CRUISE = CRUISE.x, tow = tow.x, year = year.x, lat = lat.x, lon = lon.x, prop.dead.com, prop.dead.rec)
 
 #	write.csv(prop.clappers, file="Y:/INSHORE SCALLOP/BoF/dataoutput/PropClappers.csv")  #Export if needed 
 
-# Spatial plot of PROPORTION of clappers #
-# SURVEY - Commercial Size >= 80 mm
-xx <- 2019
-com.contours<-contour.gen(subset(prop.clappers,year==xx,c('ID','lon','lat','prop.dead.com')),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
+#Replaced with the above using tidy :)
+#prop.clappers <- merge(live,dead,by="ID") 
+#prop.clappers$prop.dead.com <- prop.clappers$com.y/(prop.clappers$com.x+prop.clappers$com.y) #number of commercial sized clappers relative to total number of commercial size live and dead combined
+#prop.clappers$prop.dead.rec <- prop.clappers$rec.y/(prop.clappers$rec.x+prop.clappers$rec.y) #number of recruit sized clappers relative to total number of recruit size live and dead combined
+#prop.clappers$prop.dead.com[is.na(prop.clappers$prop.dead.com)] <- 0
+#prop.clappers$prop.dead.rec[is.na(prop.clappers$prop.dead.rec)]  <- 0
+#prop.clappers <- prop.clappers[,c(1:6,20:21)]
+#names(prop.clappers) <- c("ID", "CRUISE", "tow", "year", "lat", "lon", "prop.dead.com","prop.dead.rec")
+
+
+
+#############  SURVEY - Proportion of Clappers Commercial Size >= 80 mm  #################
+com.contours<-contour.gen(subset(prop.clappers,year==survey.year,c('ID','lon','lat','prop.dead.com')),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
 
 lvls=c(0.01,0.05,0.10,0.15,0.20,0.25,0.30,0.50,1) #levels to be color coded
 
