@@ -1,6 +1,60 @@
 
 #BREAKOUT SCRIPT - will need to run BOFSpatialPlotsofSurveyData_2020.r to run these
 
+################################
+## Option - written by Freya?##
+###############################
+
+### Prep the contours 
+### Pre-rec Survey Distribution (0-64 mm) ###
+
+com.contours<-contour.gen(subset(ScallopSurv,year==2019,c('ID','lon','lat','pre')),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
+
+contour_ras <- raster(com.contours$image.dat)
+# To convert a raster to a spatial polygon.is easy..
+contour_sp <- as(contour_ras, "SpatialPolygonsDataFrame") 
+# Make it an sf object
+contour_sf <- st_as_sf(contour_sp,as_points=F,merge=F) 
+# Now we need to convert to the coordinate system you want
+contour_sf <- st_transform(contour_sf,crs = 4326)
+
+lvls=c(1,5,10,50,100,200,300,400,500)
+
+# REPEAT ABOVE FOR ALL CONTOUR GROUPINGS (Rec, Com, biomass, clappers etc...)
+################### PLOT IT! ###############################
+## do this for each contour grouping. change contour_sf object to match above object name.
+
+p <- pecjector(area = list(x=c(-67.2, -64.3), y=c(43.6, 45.6), crs=4326), 
+               add_layer = list(land="beige", 
+                                bathy = c(50, 'c', 200)),#, 
+               #survey=c("inshore", "outline")), # don't add these here because it puts too many on.
+               # add the contours here: 
+               add_custom = list(obj=contour_sf, 
+                                 scale=list(breaks = lvls, 
+                                            scale='d', 
+                                            palette=brewer.pal(length(lvls), "YlGn"),
+                                            leg.name = "#/tow")), 
+               legend=T) +
+  # moving the legend
+  theme(legend.position = c(0.99, 0.01), 
+        legend.background = element_rect(fill="white"), 
+        legend.key.height = unit(0.25, "in"),
+        legend.justification = c(1,0))
+
+# manual corrections to bathy colour and transparency (alpha)
+p$layers[[2]]$aes_params$colour <- "blue"
+p$layers[[2]]$aes_params$alpha <- 0.25
+# relabelling the legend
+p$scales$scales[[3]]$labels <- c("1-5", "5-10", "10-50", "50-100", "100-200", "200-300", "300-400", "400-500", "500+")
+
+p <- p + geom_sf(data=strata, fill=NA)
+
+p <- p + geom_sf(data=VMSpoly, linetype="dashed", size=0.5)+
+  geom_sf(data=inVMS, linetype="dashed", size=0.5)
+
+p
+
+
 ########################################################################################################################################
 #Solution 1 - sp, grid, stars, sf, using idw, and cropping to bounding box  **Really close to old plot, but still needs some tweeking**
 ########################################################################################################################################
