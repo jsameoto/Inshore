@@ -52,7 +52,7 @@ area <- "1A1B4and5"  #SPA assessing recall SPA 1A, 1B, and 4 are grouped; option
 path.directory <- "Y:/INSHORE SCALLOP/BoF/"
 
 #set up directory to save plot
-saveplot.dir <- "C:/Users/WILSONB/Documents/1_GISdata/" #Directory to save plots to #paste0("Y:/INSHORE SCALLOP/BoF/",assessmentyear,"/Assessment/Figures")
+saveplot.dir <- "C:/Users/WILSONB/Documents/1_Inshore_Scallop/FigureTest/" #Directory to save plots to #paste0("Y:/INSHORE SCALLOP/BoF/",assessmentyear,"/Assessment/Figures")
 
 #ROracle
 chan <- dbConnect(dbDriver("Oracle"),username=uid, password=pwd,'ptran')
@@ -216,7 +216,8 @@ for(i in 1:num.years)
   GMliveweight <- rbind(GMliveweight,temp)
 }
 
-liveweight <- rbind(BFliveweight, BIliveweight, GMliveweight)
+liveweight <- rbind(BFliveweight, if(exists("BIliveweight")) BIliveweight, if(exists("GMliveweight")) GMliveweight) #Combine SPA condition data together if data is available
+
 
 #check data
 head(liveweight)
@@ -257,7 +258,7 @@ BI.con.dat <- read.csv(paste0(path.directory,assessmentyear,"/Assessment/Data/Su
 #SPA6
 GM.con.dat <- read.csv(paste0(path.directory,assessmentyear,"/Assessment/Data/SurveyIndices/SPA6/GMConditionForMap",survey.year,".csv",sep="") ,header=T) %>% mutate(CRUISE = paste0("GM", survey.year))#Add Cruise information
 
-con.dat <- rbind(BF.con.dat, BI.con.dat, GM.con.dat) #Combine SPA condition data together
+con.dat <- rbind(BF.con.dat, if(exists("BI.con.dat")) BI.con.dat, if(exists("GM.con.dat")) GM.con.dat) #Combine SPA condition data together if data is available
 
 #check data structure
 head(con.dat)
@@ -273,10 +274,59 @@ con.dat <- con.dat %>%
 
 # For Meat Count plot:
 ScallopSurv.mtcnt <- ScallopSurv.kg %>% 
-  dplyr::select(ID, year, lat, lon, com.bm) %>% 
+  dplyr::select(ID, STRATA_ID, year, lat, lon, com.bm) %>% 
   merge(ScallopSurv %>% dplyr::select(ID, com), by = "ID") %>% 
   mutate(meat.count = (0.5/(com.bm/com))) %>% 
   filter(!is.na(meat.count))
+
+#Set plot themes (legend orientation/aesthetics)
+#Set legend format for plots
+plot.theme <-  theme(plot.title = element_text(size = 14, hjust = 0.5), #plot title size and position
+                     axis.title = element_text(size = 12),
+                     axis.text = element_text(size = 10),
+                     legend.title = element_text(size = 10, face = "bold"), 
+                     legend.text = element_text(size = 8),
+                     legend.position = c(.87,.32), #legend position
+                     legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.7)), #Legend bkg colour and transparency
+                     legend.box.margin = margin(6, 8, 6, 8)) #Legend bkg margin (top, right, bottom, left)
+
+plot.theme.1b <-  theme(plot.title = element_text(size = 14, hjust = 0.5), #plot title size and position
+                        axis.title = element_text(size = 12),
+                        axis.text = element_text(size = 10),
+                        legend.title = element_text(size = 10, face = "bold"), 
+                        legend.text = element_text(size = 8),
+                        legend.direction="horizontal",
+                        legend.position = c(.72, .09),#legend position
+                        legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.7)), #Legend bkg colour and transparency
+                        legend.box.margin = margin(1, 1, 1, 1))
+
+plot.theme.3 <- theme(plot.title = element_text(size = 14, hjust = 0.5), #plot title size and position
+                      axis.title = element_text(size = 12),
+                      axis.text = element_text(size = 10),
+                      legend.title = element_text(size = 10, face = "bold"), 
+                      legend.text = element_text(size = 8),
+                      legend.position = c(.87,.42), #legend position
+                      legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.7)), #Legend bkg colour and transparency
+                      legend.box.margin = margin(6, 8, 6, 8))
+
+plot.theme.4 <- theme(plot.title = element_text(size = 14, hjust = 0.5), #plot title size and position
+                      axis.title = element_text(size = 12),
+                      axis.text = element_text(size = 10),
+                      legend.title = element_text(size = 10, face = "bold"), 
+                      legend.text = element_text(size = 8),
+                      #legend.direction="horizontal",
+                      legend.position = c(.90,.22), #legend position
+                      legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.8)), #Legend bkg colour and transparency
+                      legend.box.margin = margin(1, 1, 1, 1)) #Legend bkg margin (top, right, bottom, left)
+
+plot.theme.6 <- theme(plot.title = element_text(size = 14, hjust = 0.5), #plot title size and position
+                      axis.title = element_text(size = 12),
+                      axis.text = element_text(size = 10),
+                      legend.title = element_text(size = 10, face = "bold"), 
+                      legend.text = element_text(size = 8),
+                      legend.position = c(.10,.70), #legend position
+                      legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.7)), #Legend bkg colour and transparency
+                      legend.box.margin = margin(6, 8, 6, 8))
 
 
 # ------------------------------COMMERCIAL SCALLOP - SURVEY DISTRIBUTION PLOTS -------------------------------------------
@@ -302,18 +352,11 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   st_make_valid() %>% 
   mutate(col = brewer.pal(length(lvls),"YlGn"), level = lvls)
 
-#Set general aesthetics for plots
+#Colour aesthetics and breaks for contours
 n.breaks <- length(unique(totCont.poly.sf$col)) 
 col <- brewer.pal(length(lvls),"YlGn") #set colours
-cfd <- scale_fill_manual(values = alpha(col[1:n.breaks], 0.6), name = expression(frac(N,tow))) #set custom fill arguments for pecjector.
-plot.theme <-  theme(plot.title = element_text(size = 14, hjust = 0.5), #plot title size and position
-                     axis.title = element_text(size = 12),
-                     axis.text = element_text(size = 10),
-                     legend.title = element_text(size = 10, face = "bold"), 
-                     legend.text = element_text(size = 8),
-                     legend.position = c(.87,.32), #legend position
-                     legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.7)), #Legend bkg colour and transparency
-                     legend.box.margin = margin(6, 8, 6, 8)) #Legend bkg margin (top, right, bottom, left)
+cfd <- scale_fill_manual(values = alpha(col[1:n.breaks], 0.25), name = expression(frac(N,tow))) #set custom fill arguments for pecjector.
+
 
 # ----DENSITY PLOTS -----
 
@@ -330,6 +373,7 @@ p + #Plot survey data and format figure.
                        filter(year == survey.year, !STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)), #excludes SPA3 and SFA29 data
                      aes(lon, lat), size = 0.5) +
   labs(title = paste(survey.year, "", "BoF Density (>= 80mm)"), x = "Longitude", y = "Latitude") +
+  guides(fill = guide_legend(override.aes= list(alpha = .8))) + #Legend transparency
   plot.theme
 
 #save
@@ -346,6 +390,7 @@ p + #Plot survey data and format figure.
                        filter(year == survey.year, !STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)), #excludes SPA3 and SFA29 data
                      aes(lon, lat), size = 0.5) +
   labs(title = paste(survey.year, "", "SPA1A Density (>= 80mm)"), x = "Longitude", y = "Latitude") +
+  guides(fill = guide_legend(override.aes= list(alpha = .8))) + #Legend transparency
   plot.theme
 
 #save
@@ -361,7 +406,8 @@ p + #Plot survey data and format figure.
                        filter(year == survey.year, !STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)), #excludes SPA3 and SFA29 data
                      aes(lon, lat), size = 0.5) +
   labs(title = paste(survey.year, "", "SPA1B Density (>= 80mm)"), x = "Longitude", y = "Latitude") +
-  plot.theme 
+  guides(fill = guide_legend(override.aes= list(alpha = .8))) + #Legend transparency
+  plot.theme.1b
 
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1B_ComDensity',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -377,15 +423,8 @@ p + #Plot survey data and format figure.
                        filter(year == survey.year, !STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)), #excludes SPA3 and SFA29 data
                      aes(lon, lat), size = 0.5) +
   labs(title = paste(survey.year, "", "SPA4 Density (>= 80mm)"), x = "Longitude", y = "Latitude") +
-  theme(plot.title = element_text(size = 14, hjust = 0.5), #plot title size and position
-        axis.title = element_text(size = 12),
-        axis.text = element_text(size = 10),
-        legend.title = element_text(size = 10, face = "bold"), 
-        legend.text = element_text(size = 8),
-        #legend.direction="horizontal",
-        legend.position = c(.90,.23), #legend position
-        legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.9)), #Legend bkg colour and transparency
-        legend.box.margin = margin(1, 1, 1, 1)) #Legend bkg margin (top, right, bottom, left)
+  guides(fill = guide_legend(override.aes= list(alpha = .8))) + #Legend transparency
+  plot.theme.4
   
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA4_ComDensity',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
@@ -422,14 +461,8 @@ p + #Plot survey data and format figure.
                        filter(year == survey.year, STRATA_ID %in% c(26,30,31,32,54,57)), #excludes SPA3 and SFA29 data
                      aes(lon, lat), size = 0.5) +
   labs(title = paste(survey.year, "", "SPA6 Density (>= 80mm)"), x = "Longitude", y = "Latitude")+
-  theme(plot.title = element_text(size = 14, hjust = 0.5), #plot title size and position
-        axis.title = element_text(size = 12),
-        axis.text = element_text(size = 10),
-        legend.title = element_text(size = 10, face = "bold"), 
-        legend.text = element_text(size = 8),
-        legend.position = c(.10,.70), #legend position
-        legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.7)), #Legend bkg colour and transparency
-        legend.box.margin = margin(6, 8, 6, 8))
+  guides(fill = guide_legend(override.aes= list(alpha = .8))) + #Legend transparency
+  plot.theme.6
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA6_ComDensity',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
@@ -464,8 +497,10 @@ p + #Plot survey data and format figure.
                        filter(year == survey.year, STRATA_ID %in% c(22, 23, 24)), #only SPA3 strata IDs
                      aes(lon, lat), size = 0.5) +
   labs(title = paste(survey.year, "", "SPA3 Density (>= 80mm)"), x = "Longitude", y = "Latitude") +
-  plot.theme
+  guides(fill = guide_legend(override.aes= list(alpha = .8))) + #Legend transparency
+  plot.theme.3
 
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA3_ComDensity',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----BIOMASS PLOTS -----
 
@@ -491,16 +526,7 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
 #Set aesthetics for plot
 n.breaks <- length(unique(totCont.poly.sf$col)) 
 col <- brewer.pal(length(lvls),"YlGn") #set colours
-cfd <- scale_fill_manual(values = alpha(col[1:n.breaks], 0.6), name = expression(frac(kg,tow))) #set custom fill arguments for pecjector.
-plot.theme <-  theme(plot.title = element_text(size = 14, hjust = 0.5), #plot title size and position
-                     axis.title = element_text(size = 12),
-                     axis.text = element_text(size = 10),
-                     legend.title = element_text(size = 10, face = "bold"), 
-                     legend.text = element_text(size = 8),
-                     legend.position = c(.87,.32), #legend position
-                     legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.7)), #Legend bkg colour and transparency
-                     legend.box.margin = margin(6, 8, 6, 8)) #Legend bkg margin (top, right, bottom, left)
-
+cfd <- scale_fill_manual(values = alpha(col[1:n.breaks], 0.25), name = expression(frac(kg,tow))) #set custom fill arguments for pecjector.
 
 # ----FULL BAY -----
 
@@ -513,6 +539,7 @@ p + #Plot survey data and format figure.
                      aes(lon, lat), size = 0.5) +
   labs(title = paste(survey.year, "", "BoF Biomass (>= 80mm)"), x = "Longitude",
        y = "Latitude") +
+  guides(fill = guide_legend(override.aes= list(alpha = .8))) + #Legend transparency
   plot.theme
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_BF_ComBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -529,6 +556,7 @@ p + #Plot survey data and format figure.
                      aes(lon, lat), size = 0.5) +
   labs(title = paste(survey.year, "", "SPA1A Biomass (>= 80mm)"), x = "Longitude",
        y = "Latitude") +
+  guides(fill = guide_legend(override.aes= list(alpha = .8))) + #Legend transparency
   plot.theme
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1A_ComBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -544,7 +572,8 @@ p + #Plot survey data and format figure.
                      aes(lon, lat), size = 0.5) +
   labs(title = paste(survey.year, "", "SPA1B Biomass (>= 80mm)"), x = "Longitude",
        y = "Latitude") +
-  plot.theme
+  guides(fill = guide_legend(override.aes= list(alpha = .8))) + #Legend transparency
+  plot.theme.1b
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1B_ComBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
@@ -559,7 +588,8 @@ p + #Plot survey data and format figure.
                      aes(lon, lat), size = 0.5) +
   labs(title = paste(survey.year, "", "SPA4 Biomass (>= 80mm)"), x = "Longitude",
        y = "Latitude") +
-  plot.theme
+  guides(fill = guide_legend(override.aes= list(alpha = .8))) + #Legend transparency
+  plot.theme.4
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA4_ComBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
@@ -585,11 +615,6 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   st_make_valid() %>% 
   mutate(col = brewer.pal(length(lvls),"YlGn"), level = lvls)
 
-#Set aesthetics for plot
-n.breaks <- length(unique(totCont.poly.sf$col)) 
-col <- brewer.pal(length(lvls),"YlGn") #set colours
-cfd <- scale_fill_manual(values = alpha(col[1:n.breaks], 0.6), name = expression(frac(kg,tow))) #set custom fill arguments for pecjector.
-
 p <- pecjector(area =list(x=c(-67.5,-66.4), y=c(45.2,44.4), crs=4326),repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
                add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
@@ -599,14 +624,8 @@ p + #Plot survey data and format figure.
                        filter(year == survey.year, STRATA_ID %in% c(26,30,31,32,54,57)), #Only SPA6
                      aes(lon, lat), size = 0.5) +
   labs(title = paste(survey.year, "", "SPA6 Density (>= 80mm)"), x = "Longitude", y = "Latitude")+
-  theme(plot.title = element_text(size = 14, hjust = 0.5), #plot title size and position
-        axis.title = element_text(size = 12),
-        axis.text = element_text(size = 10),
-        legend.title = element_text(size = 10, face = "bold"), 
-        legend.text = element_text(size = 8),
-        legend.position = c(.10,.70), #legend position
-        legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.7)), #Legend bkg colour and transparency
-        legend.box.margin = margin(6, 8, 6, 8))
+  guides(fill = guide_legend(override.aes= list(alpha = .8))) + #Legend transparency
+  plot.theme.6
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA6_ComBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
@@ -640,7 +659,8 @@ p + #Plot survey data and format figure.
                        filter(year == survey.year, STRATA_ID %in% c(22, 23, 24)), #only SPA3 strata IDs
                      aes(lon, lat), size = 0.5) +
   labs(title = paste(survey.year, "", "SPA3 Biomass (>= 80mm)"), x = "Longitude", y = "Latitude") +
-  plot.theme
+  guides(fill = guide_legend(override.aes= list(alpha = .8))) + #Legend transparency
+  plot.theme.3
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA3_ComBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
@@ -668,7 +688,7 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
 #Set aesthetics for plot
 n.breaks <- length(unique(totCont.poly.sf$col)) 
 col <- brewer.pal(length(lvls),"YlOrBr") #set colours
-cfd <- scale_fill_manual(values = alpha(col[1:n.breaks], 0.6), name = "Condition (g)") #set custom fill arguments for pecjector.
+cfd <- scale_fill_manual(values = alpha(col[1:n.breaks], 0.25), name = "Condition (g)") #set custom fill arguments for pecjector.
 
 # ----FULL BAY -----
 
@@ -681,6 +701,7 @@ p + #Plot survey data and format figure.
                      aes(lon, lat), size = 0.5) +
   labs(title = paste(survey.year, "", "BoF Condition"), x = "Longitude",
        y = "Latitude") +
+  guides(fill = guide_legend(override.aes= list(alpha = .8))) + #Legend transparency
   plot.theme
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_BF_Condition',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -692,19 +713,381 @@ p <- pecjector(area = "spa1A",repo ='github',c_sys="ll", gis.repo = 'github', pl
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = con.dat %>% 
-                       filter(year == survey.year), #survey.year defined in beginning of script
+                       filter(year == survey.year, CRUISE == "BF2019"), #survey.year defined in beginning of script
                      aes(lon, lat), size = 0.5) +
   labs(title = paste(survey.year, "", "SPA1A Condition"), x = "Longitude",
        y = "Latitude") +
+  guides(fill = guide_legend(override.aes= list(alpha = .8))) + #Legend transparency
   plot.theme
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1A_Condition',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA1B -----
+
+p <- pecjector(area = "spa1B",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+
+p + #Plot survey data and format figure.
+  geom_spatial_point(data = con.dat %>% 
+                       filter(year == survey.year, CRUISE == "BF2019"), #survey.year defined in beginning of script
+                     aes(lon, lat), size = 0.5) +
+  labs(title = paste(survey.year, "", "SPA1B Condition"), x = "Longitude",
+       y = "Latitude") +
+  guides(fill = guide_legend(override.aes= list(alpha = .8))) + #Legend transparency
+  plot.theme.1b
+
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1B_Condition',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+
+# ----SPA4 and 5 -----
+
+p <- pecjector(area = "spa4",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+
+p + #Plot survey data and format figure.
+  geom_spatial_point(data = con.dat %>% 
+                       filter(year == survey.year, CRUISE == "BF2019"), #survey.year defined in beginning of script
+                     aes(lon, lat), size = 0.5) +
+  labs(title = paste(survey.year, "", "SPA4 Condition"), x = "Longitude",
+       y = "Latitude") + 
+  guides(fill = guide_legend(override.aes= list(alpha = .8))) + #Legend transparency
+  plot.theme.4
+
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA4_Condition',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+
+
+# ----SPA6 -----
+
+com.contours<-contour.gen(con.dat %>% filter(year==survey.year, CRUISE == "GM2019") %>% #Only SPA6
+                            dplyr::select(ID,lon,lat,Condition),
+                          ticks='define', nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
+
+lvls=c(5,6,7,8,9,10,11,12) #levels to be color coded
+
+CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
+CP <- convCP(CL)
+totCont.poly <- CP$PolySet
+cont.data<- data.frame(PID=1:length(lvls),col=brewer.pal(length(lvls),"YlOrBr"),border=NA, stringsAsFactors=FALSE)  #previously was YlOrBr YlGnBu
+
+##Convert pbsmapping object to sf
+totCont.poly <- as.PolySet(totCont.poly,projection = "LL") #assuming you provide Lat/Lon data and WGS84
+totCont.poly <- PolySet2SpatialLines(totCont.poly) # Spatial lines is a bit more general (don't need to have boxes closed)
+totCont.poly.sf <- st_as_sf(totCont.poly) %>%
+  st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
+  st_cast("POLYGON") %>% #Convert multilines to polygons
+  st_make_valid() %>% 
+  mutate(col = brewer.pal(length(lvls),"YlOrBr"), level = lvls)
+
+p <- pecjector(area =list(x=c(-67.5,-66.4), y=c(45.2,44.4), crs=4326),repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+
+
+p + #Plot survey data and format figure.
+  geom_spatial_point(data = con.dat %>% 
+                       filter(year == survey.year, CRUISE == "GM2019"),
+                     aes(lon, lat), size = 0.5) +
+  labs(title = paste(survey.year, "", "SPA6 Condition"), x = "Longitude", y = "Latitude")+
+  guides(fill = guide_legend(override.aes= list(alpha = .8))) + #Legend transparency
+  plot.theme.6
+
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA6_Condition',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+
+# ----SPA3 -----
+
+#Create contour and specify plot aesthetics
+com.contours<-contour.gen(con.dat %>% filter(year==survey.year, CRUISE == "BI2019") %>% #Only SPA6
+                            dplyr::select(ID,lon,lat,Condition),
+                          ticks='define', nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
+
+lvls=c(5,6,7,8,9,10,11,12) #levels to be color coded
+
+CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
+CP <- convCP(CL)
+totCont.poly <- CP$PolySet
+cont.data<- data.frame(PID=1:length(lvls),col=brewer.pal(length(lvls),"YlOrBr"),border=NA, stringsAsFactors=FALSE)  #previously was YlOrBr YlGnBu
+
+##Convert pbsmapping object to sf
+totCont.poly <- as.PolySet(totCont.poly,projection = "LL") #assuming you provide Lat/Lon data and WGS84
+totCont.poly <- PolySet2SpatialLines(totCont.poly) # Spatial lines is a bit more general (don't need to have boxes closed)
+totCont.poly.sf <- st_as_sf(totCont.poly) %>%
+  st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
+  st_cast("POLYGON") %>% #Convert multilines to polygons
+  st_make_valid() %>% 
+  mutate(col = brewer.pal(length(lvls),"YlOrBr"), level = lvls)
+
+p <- pecjector(area = "spa3",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+
+p + #Plot survey data and format figure.
+  geom_spatial_point(data = con.dat %>% 
+                       filter(year == survey.year, CRUISE == "BI2019"), #only SPA3 strata IDs
+                     aes(lon, lat), size = 0.5) +
+  labs(title = paste(survey.year, "", "SPA3 Condition"), x = "Longitude", y = "Latitude") +
+  guides(fill = guide_legend(override.aes= list(alpha = .8))) + #Legend transparency
+  plot.theme.3
+
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA3_Condition',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+
+
+
+# ----MEAT COUNT -----
+
+mc.contours<-contour.gen(ScallopSurv.mtcnt %>% filter(year==survey.year, !STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)) %>% #Excludes SPA3 and SFA29)
+                           dplyr::select(ID, lon, lat, meat.count), ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,interp.method='gstat',blank=T,plot=F,subset.poly='square',subset.eff=0,subscale=0.25,res=0.01)
+
+lvls=seq(10,45,5)
+div=2
+
+CL <- contourLines(mc.contours$image.dat,levels=lvls)
+CP <- convCP(CL)
+totCont.poly  <- CP$PolySet
+Ncol=length(lvls)+div
+cont.data<- data.frame(PID=1:length(lvls),col=brewer.pal(Ncol,"Spectral")[c(Ncol:(div+2),1)],border=NA,stringsAsFactors=FALSE)
+
+##Convert pbsmapping object to sf
+totCont.poly <- as.PolySet(totCont.poly,projection = "LL") #assuming you provide Lat/Lon data and WGS84
+totCont.poly <- PolySet2SpatialLines(totCont.poly) # Spatial lines is a bit more general (don't need to have boxes closed)
+totCont.poly.sf <- st_as_sf(totCont.poly) %>%
+  st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
+  st_cast("POLYGON") %>% #Convert multilines to polygons
+  st_make_valid() %>% 
+  mutate(col = brewer.pal(length(lvls),"Spectral"), level = lvls)
+
+#Set aesthetics for plot
+n.breaks <- length(unique(totCont.poly.sf$col)) 
+col <- rev(brewer.pal(length(lvls),"Spectral")) #set colours
+cfd <- scale_fill_manual(values = alpha(col[1:n.breaks], 0.45), name = expression(frac(Scallops,"500g"))) #set custom fill arguments for pecjector.
+
+# ----FULL BAY -----
+
+#Pecjector with custom contour layer
+p <- pecjector(area = "bof",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+
+
+p + #Plot survey data and format figure.
+  geom_spatial_point(data = ScallopSurv.mtcnt %>% 
+                       filter(year == survey.year, !STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)),
+                     aes(lon, lat), size = 0.5) +
+  labs(title = paste(survey.year, "", "BOF Meat Count (>= 80mm)"), x = "Longitude",
+       y = "Latitude") +
+  guides(fill = guide_legend(override.aes= list(alpha = .8))) + #Legend transparency
+  plot.theme
+
+ggsave(filename = paste0(saveplot.dir,'ContPlot_BF_Meatcount',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+
+# ----SPA1A -----
+
+p <- pecjector(area = "spa1A",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+
+p + #Plot survey data and format figure.
+  geom_spatial_point(data = ScallopSurv.mtcnt %>% 
+                       filter(year == survey.year, !STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)),
+                     aes(lon, lat), size = 0.5) +
+  labs(title = paste(survey.year, "", "SPA1A Meat Count (>= 80mm)"), x = "Longitude",
+       y = "Latitude") +
+  guides(fill = guide_legend(override.aes= list(alpha = .8))) + #Legend transparency
+  plot.theme
+
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1A_Meatcount',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+
+# ----SPA1B -----
+
+p <- pecjector(area = "spa1B",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+
+p + #Plot survey data and format figure.
+  geom_spatial_point(data = ScallopSurv.mtcnt %>% 
+                       filter(year == survey.year, !STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)),
+                     aes(lon, lat), size = 0.5) +
+  labs(title = paste(survey.year, "", "Meat Count (>= 80mm)"), x = "Longitude",
+       y = "Latitude") +
+  guides(fill = guide_legend(override.aes= list(alpha = .8))) + #Legend transparency
+  plot.theme.1b
+
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1B_Meatcount',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+
+
+# ----SPA4 and 5 -----
+
+p <- pecjector(area = "spa4",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+
+p + #Plot survey data and format figure.
+  geom_spatial_point(data = ScallopSurv.mtcnt %>% 
+                       filter(year == survey.year,  !STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)), #excludes SPA3 and SFA29 data
+                     aes(lon, lat), size = 0.5) +
+  labs(title = paste(survey.year, "", "SPA4 Meat Count (>= 80mm)"), x = "Longitude",
+       y = "Latitude") +
+  guides(fill = guide_legend(override.aes= list(alpha = .8))) + #Legend transparency
+  plot.theme.4
+
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA4_Meatcount',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+
+
+# ----SPA6 -----
+
+mc.contours<-contour.gen(ScallopSurv.mtcnt %>% filter(year==survey.year, STRATA_ID %in% c(26,30,31,32,54,57)) %>% #Only SPA6
+                           dplyr::select(ID, lon, lat, meat.count), ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,interp.method='gstat',blank=T,plot=F,subset.poly='square',subset.eff=0,subscale=0.25,res=0.01)
+
+lvls=seq(10,45,5)
+div=2
+
+CL <- contourLines(mc.contours$image.dat,levels=lvls)
+CP <- convCP(CL)
+totCont.poly  <- CP$PolySet
+Ncol=length(lvls)+div
+cont.data<- data.frame(PID=1:length(lvls),col=brewer.pal(Ncol,"Spectral")[c(Ncol:(div+2),1)],border=NA,stringsAsFactors=FALSE)
+
+##Convert pbsmapping object to sf
+totCont.poly <- as.PolySet(totCont.poly,projection = "LL") #assuming you provide Lat/Lon data and WGS84
+totCont.poly <- PolySet2SpatialLines(totCont.poly) # Spatial lines is a bit more general (don't need to have boxes closed)
+totCont.poly.sf <- st_as_sf(totCont.poly) %>%
+  st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
+  st_cast("POLYGON") %>% #Convert multilines to polygons
+  st_make_valid() %>% 
+  mutate(col = brewer.pal(length(lvls),"Spectral"), level = lvls)
+
+
+p <- pecjector(area =list(x=c(-67.5,-66.4), y=c(45.2,44.4), crs=4326),repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+
+
+p + #Plot survey data and format figure.
+  geom_spatial_point(data = ScallopSurv.mtcnt %>% 
+                       filter(year == survey.year, STRATA_ID %in% c(26,30,31,32,54,57)), #Only SPA6
+                     aes(lon, lat), size = 0.5) +
+  labs(title = paste(survey.year, "", "SPA6 Meat Count (>= 80mm)"), x = "Longitude", y = "Latitude")+
+  guides(fill = guide_legend(override.aes= list(alpha = .8))) + #Legend transparency
+  plot.theme.6
+
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA6_Meatcount',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+
+# ----SPA3 -----
+
+#Create contour and specify plot aesthetics
+mc.contours <- contour.gen(ScallopSurv.mtcnt %>% 
+                              filter(year == survey.year, STRATA_ID %in% c(22, 23, 24)) %>% 
+                              dplyr::select(ID, lon, lat, meat.count, -STRATA_ID, -year), ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,interp.method='gstat',
+                            blank=T,plot=F,subset.poly='square',subset.eff=0,subscale=0.25,res=0.01)
+
+lvls=seq(10,45,5)
+div=2
+
+CL <- contourLines(mc.contours$image.dat,levels=lvls)
+CP <- convCP(CL)
+totCont.poly  <- CP$PolySet
+Ncol=length(lvls)+div
+cont.data<- data.frame(PID=1:length(lvls),col=brewer.pal(Ncol,"Spectral")[c(Ncol:(div+2),1)],border=NA,stringsAsFactors=FALSE)
+
+##Convert pbsmapping object to sf
+totCont.poly <- as.PolySet(totCont.poly,projection = "LL") #assuming you provide Lat/Lon data and WGS84
+totCont.poly <- PolySet2SpatialLines(totCont.poly) # Spatial lines is a bit more general (don't need to have boxes closed)
+totCont.poly.sf <- st_as_sf(totCont.poly) %>%
+  st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
+  st_cast("POLYGON") %>% #Convert multilines to polygons
+  st_make_valid() %>% 
+  mutate(col = brewer.pal(length(lvls),"Spectral"), level = lvls)
+
+p <- pecjector(area = "spa3",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+
+p + #Plot survey data and format figure.
+  geom_spatial_point(data = ScallopSurv.mtcnt %>% 
+                       filter(year == survey.year, STRATA_ID %in% c(22, 23, 24)), #only SPA3 strata IDs
+                     aes(lon, lat), size = 0.5) +
+  labs(title = paste(survey.year, "", "SPA3 Meat Count (>= 80mm)"), x = "Longitude", y = "Latitude") +
+  guides(fill = guide_legend(override.aes= list(alpha = .8))) + #Legend transparency
+  plot.theme.3
+
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA3_Meatcount',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+
+
+
+
+# ----CLAPPERS -----
+
+com.contours<-contour.gen(ScallopSurv.dead %>%  filter(year==survey.year,!STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)) %>% #Excludes SPA3 and SFA29)
+                            dplyr::select(ID,lon,lat,com),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',
+                          blank=T,plot=F,res=0.01)
+
+lvls=c(1,5,10,15,20,25,30,50) #levels to be color coded
+
+CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
+CP <- convCP(CL)
+totCont.poly <- CP$PolySet
+cont.data<- data.frame(PID=1:length(lvls),col=brewer.pal(length(lvls),"YlGn"),border=NA, stringsAsFactors=FALSE)
+
+##Convert pbsmapping object to sf
+totCont.poly <- as.PolySet(totCont.poly,projection = "LL") #assuming you provide Lat/Lon data and WGS84
+totCont.poly <- PolySet2SpatialLines(totCont.poly) # Spatial lines is a bit more general (don't need to have boxes closed)
+totCont.poly.sf <- st_as_sf(totCont.poly) %>%
+  st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
+  st_cast("POLYGON") %>% #Convert multilines to polygons
+  st_make_valid() %>% 
+  mutate(col = brewer.pal(length(lvls),"YlGn"), level = lvls)
+
+#Set aesthetics for plot
+n.breaks <- length(unique(totCont.poly.sf$col)) 
+col <- brewer.pal(length(lvls),"YlGn") #set colours
+cfd <- scale_fill_manual(values = alpha(col[1:n.breaks], 0.25), name = expression(frac(N,tow))) #set custom fill arguments for pecjector.
+
+
+# ----FULL BAY -----
+
+#Pecjector with custom contour layer
+p <- pecjector(area = "bof",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+
+p + #Plot survey data and format figure.
+  geom_spatial_point(data = ScallopSurv.dead %>% 
+                       filter(year == survey.year, !STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)),
+                     aes(lon, lat), size = 0.5) +
+  labs(title = paste(survey.year, "", "BoF Clapper Density (>= 80mm)"), x = "Longitude",
+       y = "Latitude") +
+  guides(fill = guide_legend(override.aes= list(alpha = .8))) + #Legend transparency
+  plot.theme
+
+ggsave(filename = paste0(saveplot.dir,'ContPlot_BF_ComClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+
+# ----SPA1A -----
+
+#Pecjector with custom contour layer
+p <- pecjector(area = "spa1A",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+
+p + #Plot survey data and format figure.
+  geom_spatial_point(data = ScallopSurv.dead %>% 
+                       filter(year == survey.year, !STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)),
+                     aes(lon, lat), size = 0.5) +
+  labs(title = paste(survey.year, "", "SPA1A Clapper Density (>= 80mm)"), x = "Longitude",
+       y = "Latitude") +
+  guides(fill = guide_legend(override.aes= list(alpha = .8))) + #Legend transparency
+  plot.theme
+
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1A_ComClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+
+# ----SPA1B -----
+
+#Pecjector with custom contour layer
+p <- pecjector(area = "spa1B",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+
+p + #Plot survey data and format figure.
+  geom_spatial_point(data = ScallopSurv.dead %>% 
+                       filter(year == survey.year, !STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)),
+                     aes(lon, lat), size = 0.5) +
+  labs(title = paste(survey.year, "", "SPA1B Clapper Density (>= 80mm)"), x = "Longitude",
+       y = "Latitude") +
+  guides(fill = guide_legend(override.aes= list(alpha = .8))) + #Legend transparency
+  plot.theme.1b
+
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1B_ComClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+
+
 # ----SPA4 and 5 -----
 # ----SPA3 -----
 # ----SPA6 -----
-
 # ------------------------------RECRUIT SCALLOP - SURVEY DISTRIBUTION PLOTS -------------------------------------------
 # ----DENSITY -----
 # ----FULL BAY -----
