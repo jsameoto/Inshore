@@ -354,7 +354,6 @@ com.contours <- contour.gen(ScallopSurv %>%
                                        dplyr::select(ID, lon, lat, com), 
                             ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
 
-
 lvls <- c(1,5,10,50,100,200,300,400,500) #levels to be color coded
 CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
 CP <- convCP(CL)
@@ -367,12 +366,13 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
   st_cast("POLYGON") %>% #Convert multilines to polygons
   st_make_valid() %>% 
-  mutate(col = brewer.pal(length(lvls),"YlGn"), level = lvls)
+  mutate(col = brewer.pal(length(unique(CP$PolyData$level)),"YlGn"), level = unique(CP$PolyData$level))
 
 #Colour aesthetics and breaks for contours
-n.breaks <- length(unique(totCont.poly.sf$col)) 
+labels <- c("1-5", "5-10", "10-50", "50-100", "100-200", "200-300", "300-400", "400-500", "500+")
 col <- brewer.pal(length(lvls),"YlGn") #set colours
-cfd <- scale_fill_manual(values = alpha(col[1:n.breaks], 0.4), name = expression(frac(N,tow))) #set custom fill arguments for pecjector.
+cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = expression(frac(N,tow)), limits = labels) #set custom fill arguments for pecjector.
+
 
 
 # ----DENSITY PLOTS -----
@@ -382,7 +382,9 @@ cfd <- scale_fill_manual(values = alpha(col[1:n.breaks], 0.4), name = expression
 # ----FULL BAY -----
 
 p <- pecjector(area = "bof",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), 
+               add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>%
+                                   mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 
 p + #Plot survey data and format figure.
@@ -399,7 +401,10 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_BF_ComDensity',survey.year,'.png
 # ----SPA1A -----
 
 p <- pecjector(area = "spa1A",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), 
+               add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>%
+                                   mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+
 
 
 p + #Plot survey data and format figure.
@@ -416,7 +421,10 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1A_ComDensity',survey.year,'.
 # ----SPA1B -----
 
 p <- pecjector(area = "spa1B",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), 
+               add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>%
+                                   mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv %>% 
@@ -433,7 +441,9 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1B_ComDensity',survey.year,'.
 # ----SPA4 and 5 -----
 
 p <- pecjector(area = "spa4",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), 
+               add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>%
+                                   mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv %>% 
@@ -454,7 +464,7 @@ com.contours <- contour.gen(ScallopSurv %>%
                             ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
 
 
-lvls <- c(1,5,10,50,100,200,300,400) #levels to be color coded
+lvls <- c(1,5,10,50,100,200,300,400,500) #levels to be color coded
 CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
 CP <- convCP(CL)
 totCont.poly <- CP$PolySet
@@ -466,11 +476,11 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
   st_cast("POLYGON") %>% #Convert multilines to polygons
   st_make_valid() %>% 
-  mutate(col = brewer.pal(length(lvls),"YlGn"), level = lvls)
+  mutate(col = brewer.pal(length(unique(CP$PolyData$level)),"YlGn"), level = unique(CP$PolyData$level))
 
 
 p <- pecjector(area =list(x=c(-67.5,-66.4), y=c(45.2,44.4), crs=4326),repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 
 p + #Plot survey data and format figure.
@@ -486,10 +496,8 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA6_ComDensity',survey.year,'.p
 # ----SPA3 -----
 
 #Create contour and specify plot aesthetics
-com.contours <- contour.gen(ScallopSurv %>% 
-                              filter(year == survey.year, STRATA_ID %in% c(22, 23, 24)) %>% #only SPA3
-                              dplyr::select(ID, lon, lat, com), 
-                            ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
+com.contours <- contour.gen(ScallopSurv %>% filter(year == survey.year, STRATA_ID %in% c(22, 23, 24)) %>% #only SPA3
+                              dplyr::select(ID, lon, lat, com), ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
 
 
 lvls <- c(1,5,10,50,100,200,300,400,500) #levels to be color coded
@@ -504,10 +512,10 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
   st_cast("POLYGON") %>% #Convert multilines to polygons
   st_make_valid() %>% 
-  mutate(col = brewer.pal(length(lvls),"YlGn"), level = lvls)
+  mutate(col = brewer.pal(length(unique(CP$PolyData$level)),"YlGn"), level = unique(CP$PolyData$level))
 
 p <- pecjector(area = "spa3",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>%                                     mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv %>% 
@@ -538,17 +546,18 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
   st_cast("POLYGON") %>% #Convert multilines to polygons
   st_make_valid() %>% 
-  mutate(col = brewer.pal(length(lvls),"YlGn"), level = lvls)
+  mutate(col = brewer.pal(length(unique(CP$PolyData$level)),"YlGn"), level = unique(CP$PolyData$level))
 
 #Set aesthetics for plot
-n.breaks <- length(unique(totCont.poly.sf$col)) 
+
+labels <- c("0.01-0.1", "0.1-1", "1-2", "2-4", "4-6", "6-8", "8+")
 col <- brewer.pal(length(lvls),"YlGn") #set colours
-cfd <- scale_fill_manual(values = alpha(col[1:n.breaks], 0.4), name = expression(frac(kg,tow))) #set custom fill arguments for pecjector.
+cfd <- scale_fill_manual(values = alpha(col, 0.6), breaks = labels, name = expression(frac(kg,tow)), limits = labels) #set custom fill arguments for pecjector.
 
 # ----FULL BAY -----
 
 p <- pecjector(area = "bof",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv.kg %>% 
@@ -565,7 +574,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_BF_ComBiomass',survey.year,'.png
 # ----SPA1A -----
 
 p <- pecjector(area = "spa1A",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv.kg %>% 
@@ -581,7 +590,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1A_ComBiomass',survey.year,'.
 # ----SPA1B -----
 
 p <- pecjector(area = "spa1B",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv.kg %>% 
@@ -597,7 +606,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1B_ComBiomass',survey.year,'.
 # ----SPA4 and 5 -----
 
 p <- pecjector(area = "spa4",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv.kg %>% 
@@ -630,10 +639,10 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
   st_cast("POLYGON") %>% #Convert multilines to polygons
   st_make_valid() %>% 
-  mutate(col = brewer.pal(length(lvls),"YlGn"), level = lvls)
+  mutate(col = brewer.pal(length(unique(CP$PolyData$level)),"YlGn"), level = unique(CP$PolyData$level))
 
 p <- pecjector(area =list(x=c(-67.5,-66.4), y=c(45.2,44.4), crs=4326),repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 
 p + #Plot survey data and format figure.
@@ -666,10 +675,10 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
   st_cast("POLYGON") %>% #Convert multilines to polygons
   st_make_valid() %>% 
-  mutate(col = brewer.pal(length(lvls),"YlGn"), level = lvls)
+  mutate(col = brewer.pal(length(unique(CP$PolyData$level)),"YlGn"), level = unique(CP$PolyData$level))
 
 p <- pecjector(area = "spa3",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv.kg %>% 
@@ -691,7 +700,6 @@ lvls=c(5,6,7,8,9,10,11,12) #levels to be color coded
 CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
 CP <- convCP(CL)
 totCont.poly <- CP$PolySet
-cont.data<- data.frame(PID=1:length(lvls),col=brewer.pal(length(lvls),"YlOrBr"),border=NA, stringsAsFactors=FALSE)  #previously was YlOrBr YlGnBu
 
 ##Convert pbsmapping object to sf
 totCont.poly <- as.PolySet(totCont.poly,projection = "LL") #assuming you provide Lat/Lon data and WGS84
@@ -700,17 +708,17 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
   st_cast("POLYGON") %>% #Convert multilines to polygons
   st_make_valid() %>% 
-  mutate(col = brewer.pal(length(lvls),"YlOrBr"), level = lvls)
+  mutate(col = brewer.pal(length(unique(CP$PolyData$level)),"YlOrBr"), level = unique(CP$PolyData$level))
 
-#Set aesthetics for plot
-n.breaks <- length(unique(totCont.poly.sf$col)) 
+#Colour aesthetics and breaks for contours
+labels <- c("5-6", "6-7", "7-8", "8-9", "9-10", "10-11", "11-12", "12+")
 col <- brewer.pal(length(lvls),"YlOrBr") #set colours
-cfd <- scale_fill_manual(values = alpha(col[1:n.breaks], 0.4), name = "Condition (g)") #set custom fill arguments for pecjector.
+cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = "Condition (g)", limits = labels) #set custom fill arguments for pecjector.
 
 # ----FULL BAY -----
 
 p <- pecjector(area = "bof",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = con.dat %>% 
@@ -726,7 +734,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_BF_Condition',survey.year,'.png'
 # ----SPA1A -----
 
 p <- pecjector(area = "spa1A",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = con.dat %>% 
@@ -742,7 +750,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1A_Condition',survey.year,'.p
 # ----SPA1B -----
 
 p <- pecjector(area = "spa1B",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = con.dat %>% 
@@ -758,7 +766,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1B_Condition',survey.year,'.p
 # ----SPA4 and 5 -----
 
 p <- pecjector(area = "spa4",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = con.dat %>% 
@@ -783,7 +791,6 @@ lvls=c(5,6,7,8,9,10,11,12) #levels to be color coded
 CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
 CP <- convCP(CL)
 totCont.poly <- CP$PolySet
-cont.data<- data.frame(PID=1:length(lvls),col=brewer.pal(length(lvls),"YlOrBr"),border=NA, stringsAsFactors=FALSE)  #previously was YlOrBr YlGnBu
 
 ##Convert pbsmapping object to sf
 totCont.poly <- as.PolySet(totCont.poly,projection = "LL") #assuming you provide Lat/Lon data and WGS84
@@ -792,10 +799,12 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
   st_cast("POLYGON") %>% #Convert multilines to polygons
   st_make_valid() %>% 
-  mutate(col = brewer.pal(length(lvls),"YlOrBr"), level = lvls)
+  mutate(col = brewer.pal(length(unique(CP$PolyData$level)),"YlOrBr"), level = unique(CP$PolyData$level))
+
 
 p <- pecjector(area =list(x=c(-67.5,-66.4), y=c(45.2,44.4), crs=4326),repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), 
+               add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 
 p + #Plot survey data and format figure.
@@ -820,7 +829,6 @@ lvls=c(5,6,7,8,9,10,11,12) #levels to be color coded
 CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
 CP <- convCP(CL)
 totCont.poly <- CP$PolySet
-cont.data<- data.frame(PID=1:length(lvls),col=brewer.pal(length(lvls),"YlOrBr"),border=NA, stringsAsFactors=FALSE)  #previously was YlOrBr YlGnBu
 
 ##Convert pbsmapping object to sf
 totCont.poly <- as.PolySet(totCont.poly,projection = "LL") #assuming you provide Lat/Lon data and WGS84
@@ -829,10 +837,11 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
   st_cast("POLYGON") %>% #Convert multilines to polygons
   st_make_valid() %>% 
-  mutate(col = brewer.pal(length(lvls),"YlOrBr"), level = lvls)
+  mutate(col = brewer.pal(length(unique(CP$PolyData$level)),"YlOrBr"), level = unique(CP$PolyData$level))
+
 
 p <- pecjector(area = "spa3",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)),add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = con.dat %>% 
@@ -858,7 +867,6 @@ CL <- contourLines(mc.contours$image.dat,levels=lvls)
 CP <- convCP(CL)
 totCont.poly  <- CP$PolySet
 Ncol=length(lvls)+div
-cont.data<- data.frame(PID=1:length(lvls),col=brewer.pal(Ncol,"Spectral")[c(Ncol:(div+2),1)],border=NA,stringsAsFactors=FALSE)
 
 ##Convert pbsmapping object to sf
 totCont.poly <- as.PolySet(totCont.poly,projection = "LL") #assuming you provide Lat/Lon data and WGS84
@@ -1003,7 +1011,7 @@ totCont.poly <- PolySet2SpatialLines(totCont.poly) # Spatial lines is a bit more
 totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
   st_cast("POLYGON") %>% #Convert multilines to polygons
-  st_make_valid() %>% 
+  st_make_valid() %>%
   mutate(col = brewer.pal(length(lvls),"Spectral"), level = lvls)
 
 p <- pecjector(area = "spa3",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
@@ -1026,12 +1034,11 @@ com.contours<-contour.gen(ScallopSurv.dead %>%  filter(year==survey.year,!STRATA
                             dplyr::select(ID,lon,lat,com),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',
                           blank=T,plot=F,res=0.01)
 
-lvls=c(1,5,10,15,20,25,30,50) #levels to be color coded
+lvls=c(1,5,10,15,20,25,30,50,100) #levels to be color coded
 
 CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
 CP <- convCP(CL)
 totCont.poly <- CP$PolySet
-cont.data<- data.frame(PID=1:length(lvls),col=brewer.pal(length(lvls),"YlGn"),border=NA, stringsAsFactors=FALSE)
 
 ##Convert pbsmapping object to sf
 totCont.poly <- as.PolySet(totCont.poly,projection = "LL") #assuming you provide Lat/Lon data and WGS84
@@ -1040,19 +1047,19 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
   st_cast("POLYGON") %>% #Convert multilines to polygons
   st_make_valid() %>% 
-  mutate(col = brewer.pal(length(lvls),"YlGn"), level = lvls)
+  mutate(col = brewer.pal(length(unique(CP$PolyData$level)),"YlGn"), level = unique(CP$PolyData$level))
 
-#Set aesthetics for plot
-n.breaks <- length(unique(totCont.poly.sf$col)) 
+#Colour aesthetics and breaks for contours
+labels <- c("1-5", "5-10", "10-15", "15-20", "20-23", "23-30", "30-50", "50-100", "100+")
 col <- brewer.pal(length(lvls),"YlGn") #set colours
-cfd <- scale_fill_manual(values = alpha(col[1:n.breaks], 0.4), name = expression(frac(N,tow))) #set custom fill arguments for pecjector.
+cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = expression(frac(N,tow)), limits = labels) #set custom fill arguments for pecjector.
 
 
 # ----FULL BAY -----
 
 #Pecjector with custom contour layer
 p <- pecjector(area = "bof",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv.dead %>% 
@@ -1069,7 +1076,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_BF_ComClappers',survey.year,'.pn
 
 #Pecjector with custom contour layer
 p <- pecjector(area = "spa1A",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv.dead %>% 
@@ -1086,7 +1093,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1A_ComClappers',survey.year,'
 
 #Pecjector with custom contour layer
 p <- pecjector(area = "spa1B",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv.dead %>% 
@@ -1105,8 +1112,8 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1B_ComClappers',survey.year,'
 p <- pecjector(area = "spa4",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
                add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), 
                                 scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% 
-                                                                              mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% 
-                                                                              mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+                                mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% 
+                                dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv.dead %>% 
@@ -1125,12 +1132,11 @@ com.contours<-contour.gen(ScallopSurv.dead %>%  filter(year==survey.year, STRATA
                             dplyr::select(ID,lon,lat,com),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',
                           blank=T,plot=F,res=0.01)
 
-lvls=c(1,5,10,15,20,25,30,50) #levels to be color coded
+lvls=c(1,5,10,15,20,25,30,50,100) #levels to be color coded
 
 CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
 CP <- convCP(CL)
 totCont.poly <- CP$PolySet
-cont.data<- data.frame(PID=1:length(lvls),col=brewer.pal(length(lvls),"YlGn"),border=NA, stringsAsFactors=FALSE)
 
 ##Convert pbsmapping object to sf
 totCont.poly <- as.PolySet(totCont.poly,projection = "LL") #assuming you provide Lat/Lon data and WGS84
@@ -1139,10 +1145,10 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
   st_cast("POLYGON") %>% #Convert multilines to polygons
   st_make_valid() %>% 
-  mutate(col = brewer.pal(length(lvls),"YlGn"), level = lvls)
+  mutate(col = brewer.pal(length(unique(CP$PolyData$level)),"YlGn"), level = unique(CP$PolyData$level))
 
 p <- pecjector(area =list(x=c(-67.5,-66.4), y=c(45.2,44.4), crs=4326),repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 
 p + #Plot survey data and format figure.
@@ -1158,17 +1164,11 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA6_ComClappers',survey.year,'.
 # ----SPA3 -----
 
 #Create contour and specify plot aesthetics
-com.contours<-contour.gen(ScallopSurv.dead %>%  filter(year==survey.year, STRATA_ID %in% c(22, 23, 24)) %>% #Only SPA3
-                            dplyr::select(ID,lon,lat,com),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',
-                          blank=T,plot=F,res=0.01)
-
-
-lvls=c(1,5,10,15,20) #levels to be color coded
+lvls=c(1,5,10,15,20,25,30,50,100) #levels to be color coded
 
 CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
 CP <- convCP(CL)
 totCont.poly <- CP$PolySet
-cont.data<- data.frame(PID=1:length(lvls),col=brewer.pal(length(lvls),"YlGn"),border=NA, stringsAsFactors=FALSE)
 
 ##Convert pbsmapping object to sf
 totCont.poly <- as.PolySet(totCont.poly,projection = "LL") #assuming you provide Lat/Lon data and WGS84
@@ -1177,10 +1177,10 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
   st_cast("POLYGON") %>% #Convert multilines to polygons
   st_make_valid() %>% 
-  mutate(col = brewer.pal(length(lvls),"YlGn"), level = lvls)
+  mutate(col = brewer.pal(length(unique(CP$PolyData$level)),"YlGn"), level = unique(CP$PolyData$level))
 
 p <- pecjector(area = "spa3",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv.dead %>% 
@@ -1198,12 +1198,11 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA3_ComClappers',survey.year,'.
 com.contours<-contour.gen(prop.clappers %>% filter(year==survey.year, !STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)) %>% #Excludes SPA3 and SFA29
                             dplyr::select(ID,lon,lat,prop.dead.com),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata', blank=T,plot=F,res=0.01)
 
-lvls=c(0.01,0.05,0.10,0.15,0.20,0.25,0.30,0.50) #levels to be color coded
+lvls=c(0.01,0.05,0.10,0.15,0.20,0.25,0.30,0.50,1) #levels to be color coded
 
 CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
 CP <- convCP(CL)
 totCont.poly <- CP$PolySet
-cont.data<- data.frame(PID=1:length(lvls),col=brewer.pal(length(lvls),"YlGn"),border=NA, stringsAsFactors=FALSE)
 
 ##Convert pbsmapping object to sf
 totCont.poly <- as.PolySet(totCont.poly,projection = "LL") #assuming you provide Lat/Lon data and WGS84
@@ -1212,19 +1211,19 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
   st_cast("POLYGON") %>% #Convert multilines to polygons
   st_make_valid() %>% 
-  mutate(col = brewer.pal(length(lvls),"YlGn"), level = lvls)
+  mutate(col = brewer.pal(length(unique(CP$PolyData$level)),"YlGn"), level = unique(CP$PolyData$level))
 
-#Set aesthetics for plot
-n.breaks <- length(unique(totCont.poly.sf$col)) 
+
+#Colour aesthetics and breaks for contours
+labels <- c("0.01-0.05", "0.05-0.10", "0.10-0.15", "0.15-0.20", "0.20-0.25", "0.25-0.30", "0.30-0.50", "0.50-1", "1+")
 col <- brewer.pal(length(lvls),"YlGn") #set colours
-cfd <- scale_fill_manual(values = alpha(col[1:n.breaks], 0.4), name = "Proportion") #set custom fill arguments for pecjector.
-
+cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = "Proportion", limits = labels) #set custom fill arguments for pecjector.
 
 # ----FULL BAY -----
 
 #Pecjector with custom contour layer
 p <- pecjector(area = "bof",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)),add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = prop.clappers %>% 
@@ -1242,7 +1241,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_BF_PropComClappers',survey.year,
 
 #Pecjector with custom contour layer
 p <- pecjector(area = "spa1a",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = prop.clappers %>% 
@@ -1259,7 +1258,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1A_PropComClappers',survey.ye
 
 #Pecjector with custom contour layer
 p <- pecjector(area = "spa1b",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = prop.clappers %>% 
@@ -1275,8 +1274,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1B_PropComClappers',survey.ye
 # ----SPA4 and 5 -----
 
 p <- pecjector(area = "spa4",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
-
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 p + #Plot survey data and format figure.
   geom_spatial_point(data = prop.clappers %>% 
                        filter(year == survey.year, !STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)), #Excludes SPA3 and SFA29
@@ -1293,12 +1291,11 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA4_PropComClappers',survey.yea
 com.contours<-contour.gen(prop.clappers %>% filter(year==survey.year, STRATA_ID %in% c(26,30,31,32,54,57)) %>% #Only SPA6
                             dplyr::select(ID,lon,lat,prop.dead.com),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata', blank=T,plot=F,res=0.01)
 
-lvls=c(0.01,0.05,0.10,0.15,0.20,0.25,0.30,0.50) #levels to be color coded
+lvls=c(0.01,0.05,0.10,0.15,0.20,0.25,0.30,0.50,1) #levels to be color coded
 
 CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
 CP <- convCP(CL)
 totCont.poly <- CP$PolySet
-cont.data<- data.frame(PID=1:length(lvls),col=brewer.pal(length(lvls),"YlGn"),border=NA, stringsAsFactors=FALSE)
 
 ##Convert pbsmapping object to sf
 totCont.poly <- as.PolySet(totCont.poly,projection = "LL") #assuming you provide Lat/Lon data and WGS84
@@ -1307,12 +1304,12 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
   st_cast("POLYGON") %>% #Convert multilines to polygons
   st_make_valid() %>% 
-  mutate(col = brewer.pal(length(lvls),"YlGn"), level = lvls)
+  mutate(col = brewer.pal(length(unique(CP$PolyData$level)),"YlGn"), level = unique(CP$PolyData$level))
+
 
 
 p <- pecjector(area =list(x=c(-67.5,-66.4), y=c(45.2,44.4), crs=4326),repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
-
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = prop.clappers %>% 
@@ -1333,12 +1330,11 @@ com.contours<-contour.gen(prop.clappers %>%  filter(year==survey.year, STRATA_ID
                           blank=T,plot=F,res=0.01)
 
 
-lvls=c(0.01,0.05,0.10,0.15,0.20,0.25,0.30,0.50) #levels to be color coded
+lvls=c(0.01,0.05,0.10,0.15,0.20,0.25,0.30,0.50,1) #levels to be color coded
 
 CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
 CP <- convCP(CL)
 totCont.poly <- CP$PolySet
-cont.data<- data.frame(PID=1:length(lvls),col=brewer.pal(length(lvls),"YlGn"),border=NA, stringsAsFactors=FALSE)
 
 ##Convert pbsmapping object to sf
 totCont.poly <- as.PolySet(totCont.poly,projection = "LL") #assuming you provide Lat/Lon data and WGS84
@@ -1347,11 +1343,11 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
   st_cast("POLYGON") %>% #Convert multilines to polygons
   st_make_valid() %>% 
-  mutate(col = brewer.pal(length(lvls),"YlGn"), level = lvls)
+  mutate(col = brewer.pal(length(unique(CP$PolyData$level)),"YlGn"), level = unique(CP$PolyData$level))
 
 
 p <- pecjector(area = "spa3",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = prop.clappers %>% 
@@ -1373,7 +1369,7 @@ rec.contours <- contour.gen(ScallopSurv %>%
                             ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
 
 
-lvls <- c(1,5,10,50,100,200,300) #levels to be color coded
+lvls <- c(1,5,10,50,100,200,300,400,500) #levels to be color coded
 CL <- contourLines(rec.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
 CP <- convCP(CL)
 totCont.poly <- CP$PolySet
@@ -1385,12 +1381,12 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
   st_cast("POLYGON") %>% #Convert multilines to polygons
   st_make_valid() %>% 
-  mutate(col = brewer.pal(length(lvls),"YlGn"), level = lvls)
+  mutate(col = brewer.pal(length(unique(CP$PolyData$level)),"YlGn"), level = unique(CP$PolyData$level))
 
 #Colour aesthetics and breaks for contours
-n.breaks <- length(unique(totCont.poly.sf$col)) 
+labels <- c("1-5", "5-10", "10-50", "50-100", "100-200", "200-300", "300-400", "400-500", "500+")
 col <- brewer.pal(length(lvls),"YlGn") #set colours
-cfd <- scale_fill_manual(values = alpha(col[1:n.breaks], 0.4), name = expression(frac(N,tow))) #set custom fill arguments for pecjector.
+cfd <- scale_fill_manual(values = alpha(col, 0.6), breaks = labels, name = expression(frac(N,tow)), limits = labels) #set custom fill arguments for pecjector.
 
 
 # ----DENSITY PLOTS -----
@@ -1400,7 +1396,9 @@ cfd <- scale_fill_manual(values = alpha(col[1:n.breaks], 0.4), name = expression
 # ----FULL BAY -----
 
 p <- pecjector(area = "bof",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), 
+               add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>%
+                                   mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 
 p + #Plot survey data and format figure.
@@ -1417,7 +1415,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_BF_RecDensity',survey.year,'.png
 # ----SPA1A -----
 
 p <- pecjector(area = "spa1A",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 
 p + #Plot survey data and format figure.
@@ -1434,7 +1432,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1A_RecDensity',survey.year,'.
 # ----SPA1B -----
 
 p <- pecjector(area = "spa1B",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv %>% 
@@ -1451,7 +1449,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1B_RecDensity',survey.year,'.
 # ----SPA4 and 5 -----
 
 p <- pecjector(area = "spa4",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv %>% 
@@ -1472,7 +1470,8 @@ rec.contours <- contour.gen(ScallopSurv %>%
                             ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
 
 
-lvls <- c(1,5,10) #levels to be color coded
+
+lvls <- c(1,5,10,50,100,200,300,400,500) #levels to be color coded
 CL <- contourLines(rec.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
 CP <- convCP(CL)
 totCont.poly <- CP$PolySet
@@ -1484,11 +1483,13 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
   st_cast("POLYGON") %>% #Convert multilines to polygons
   st_make_valid() %>% 
-  mutate(col = brewer.pal(length(lvls),"YlGn"), level = lvls)
+  mutate(col = brewer.pal(length(unique(CP$PolyData$level)),"YlGn"), level = unique(CP$PolyData$level))
+
 
 
 p <- pecjector(area =list(x=c(-67.5,-66.4), y=c(45.2,44.4), crs=4326),repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), 
+               add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 
 p + #Plot survey data and format figure.
@@ -1510,7 +1511,8 @@ rec.contours <- contour.gen(ScallopSurv %>%
                             ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
 
 
-lvls <- c(1,5,10,50) #levels to be color coded
+
+lvls <- c(1,5,10,50,100,200,300,400,500) #levels to be color coded
 CL <- contourLines(rec.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
 CP <- convCP(CL)
 totCont.poly <- CP$PolySet
@@ -1522,10 +1524,12 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
   st_cast("POLYGON") %>% #Convert multilines to polygons
   st_make_valid() %>% 
-  mutate(col = brewer.pal(length(lvls),"YlGn"), level = lvls)
+  mutate(col = brewer.pal(length(unique(CP$PolyData$level)),"YlGn"), level = unique(CP$PolyData$level))
+
 
 p <- pecjector(area = "spa3",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), 
+               add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv %>% 
@@ -1543,7 +1547,7 @@ rec.contours<-contour.gen(ScallopSurv.kg %>% filter(year==survey.year, !STRATA_I
                             dplyr::select(ID,lon,lat,rec.bm),
                           ticks='define', nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
 
-lvls=c(0.01,0.1,1)  #levels to be color coded
+lvls=c(0.01,0.1,1,2,4,6,8)  #levels to be color coded
 
 CL <- contourLines(rec.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
 CP <- convCP(CL)
@@ -1556,17 +1560,18 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
   st_cast("POLYGON") %>% #Convert multilines to polygons
   st_make_valid() %>% 
-  mutate(col = brewer.pal(length(lvls),"YlGn"), level = lvls)
+  mutate(col = brewer.pal(length(unique(CP$PolyData$level)),"YlGn"), level = unique(CP$PolyData$level))
 
 #Set aesthetics for plot
-n.breaks <- length(unique(totCont.poly.sf$col)) 
+
+labels <- c("0.01-0.1", "0.1-1", "1-2", "2-4", "4-6", "6-8", "8+")
 col <- brewer.pal(length(lvls),"YlGn") #set colours
-cfd <- scale_fill_manual(values = alpha(col[1:n.breaks], 0.4), name = expression(frac(kg,tow))) #set custom fill arguments for pecjector.
+cfd <- scale_fill_manual(values = alpha(col, 0.6), breaks = labels, name = expression(frac(kg,tow)), limits = labels) #set custom fill arguments for pecjector.
 
 # ----FULL BAY -----
 
 p <- pecjector(area = "bof",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv.kg %>% 
@@ -1583,7 +1588,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_BF_RecBiomass',survey.year,'.png
 # ----SPA1A -----
 
 p <- pecjector(area = "spa1A",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv.kg %>% 
@@ -1599,7 +1604,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1A_RecBiomass',survey.year,'.
 # ----SPA1B -----
 
 p <- pecjector(area = "spa1B",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv.kg %>% 
@@ -1615,7 +1620,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1B_RecBiomass',survey.year,'.
 # ----SPA4 and 5 -----
 
 p <- pecjector(area = "spa4",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv.kg %>% 
@@ -1629,7 +1634,7 @@ p + #Plot survey data and format figure.
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA4_RecBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 
-# ----SPA6 ----- WILL NOT RUN - NEED TO FIX LEVELS ISSUE
+# ----SPA6 -----
 
 rec.contours<-contour.gen(ScallopSurv.kg %>% filter(year==survey.year, STRATA_ID %in% c(26,30,31,32,54,57)) %>% #Only SPA6
                             dplyr::select(ID,lon,lat,rec.bm),
@@ -1648,10 +1653,10 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
   st_cast("POLYGON") %>% #Convert multilines to polygons
   st_make_valid() %>% 
-  mutate(col = brewer.pal(length(lvls),"YlGn"), level = lvls)
+  mutate(col = brewer.pal(length(unique(CP$PolyData$level)),"YlGn"), level = unique(CP$PolyData$level))
 
 p <- pecjector(area =list(x=c(-67.5,-66.4), y=c(45.2,44.4), crs=4326),repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 
 p + #Plot survey data and format figure.
@@ -1672,7 +1677,7 @@ rec.contours <- contour.gen(ScallopSurv.kg %>%
                               dplyr::select(ID, lon, lat, rec.bm), 
                             ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
 
-lvls=c(0.01,0.1)  #levels to be color coded
+lvls=c(0.01,0.1,1,2,4,6,8)  #levels to be color coded
 CL <- contourLines(rec.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
 CP <- convCP(CL)
 totCont.poly <- CP$PolySet
@@ -1684,10 +1689,10 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
   st_cast("POLYGON") %>% #Convert multilines to polygons
   st_make_valid() %>% 
-  mutate(col = brewer.pal(length(lvls),"YlGn"), level = lvls)
+  mutate(col = brewer.pal(length(unique(CP$PolyData$level)),"YlGn"), level = unique(CP$PolyData$level))
 
 p <- pecjector(area = "spa3",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv.kg %>% 
@@ -1709,7 +1714,6 @@ lvls=c(5,6,7,8,9,10,11,12) #levels to be color coded
 CL <- contourLines(rec.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
 CP <- convCP(CL)
 totCont.poly <- CP$PolySet
-cont.data<- data.frame(PID=1:length(lvls),col=brewer.pal(length(lvls),"YlOrBr"),border=NA, stringsAsFactors=FALSE)  #previously was YlOrBr YlGnBu
 
 ##Convert pbsmapping object to sf
 totCont.poly <- as.PolySet(totCont.poly,projection = "LL") #assuming you provide Lat/Lon data and WGS84
@@ -1718,17 +1722,17 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
   st_cast("POLYGON") %>% #Convert multilines to polygons
   st_make_valid() %>% 
-  mutate(col = brewer.pal(length(lvls),"YlOrBr"), level = lvls)
+  mutate(col = brewer.pal(length(unique(CP$PolyData$level)),"YlOrBr"), level = unique(CP$PolyData$level))
 
-#Set aesthetics for plot
-n.breaks <- length(unique(totCont.poly.sf$col)) 
+#Colour aesthetics and breaks for contours
+labels <- c("5-6", "6-7", "7-8", "8-9", "9-10", "10-11", "11-12", "12+")
 col <- brewer.pal(length(lvls),"YlOrBr") #set colours
-cfd <- scale_fill_manual(values = alpha(col[1:n.breaks], 0.4), name = "Condition (g)") #set custom fill arguments for pecjector.
+cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = "Condition (g)", limits = labels) #set custom fill arguments for pecjector.
 
 # ----FULL BAY -----
 
 p <- pecjector(area = "bof",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = con.dat %>% 
@@ -1744,7 +1748,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_BF_Condition',survey.year,'.png'
 # ----SPA1A -----
 
 p <- pecjector(area = "spa1A",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = con.dat %>% 
@@ -1760,7 +1764,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1A_Condition',survey.year,'.p
 # ----SPA1B -----
 
 p <- pecjector(area = "spa1B",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = con.dat %>% 
@@ -1776,7 +1780,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1B_Condition',survey.year,'.p
 # ----SPA4 and 5 -----
 
 p <- pecjector(area = "spa4",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = con.dat %>% 
@@ -1801,7 +1805,6 @@ lvls=c(5,6,7,8,9,10,11,12) #levels to be color coded
 CL <- contourLines(rec.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
 CP <- convCP(CL)
 totCont.poly <- CP$PolySet
-cont.data<- data.frame(PID=1:length(lvls),col=brewer.pal(length(lvls),"YlOrBr"),border=NA, stringsAsFactors=FALSE)  #previously was YlOrBr YlGnBu
 
 ##Convert pbsmapping object to sf
 totCont.poly <- as.PolySet(totCont.poly,projection = "LL") #assuming you provide Lat/Lon data and WGS84
@@ -1810,10 +1813,12 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
   st_cast("POLYGON") %>% #Convert multilines to polygons
   st_make_valid() %>% 
-  mutate(col = brewer.pal(length(lvls),"YlOrBr"), level = lvls)
+  mutate(col = brewer.pal(length(unique(CP$PolyData$level)),"YlOrBr"), level = unique(CP$PolyData$level))
+
 
 p <- pecjector(area =list(x=c(-67.5,-66.4), y=c(45.2,44.4), crs=4326),repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), 
+               add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 
 p + #Plot survey data and format figure.
@@ -1824,7 +1829,7 @@ p + #Plot survey data and format figure.
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   plot.theme.6
 
-ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA6_RecCondition',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA6_Condition',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA3 -----
 
@@ -1838,7 +1843,6 @@ lvls=c(5,6,7,8,9,10,11,12) #levels to be color coded
 CL <- contourLines(rec.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
 CP <- convCP(CL)
 totCont.poly <- CP$PolySet
-cont.data<- data.frame(PID=1:length(lvls),col=brewer.pal(length(lvls),"YlOrBr"),border=NA, stringsAsFactors=FALSE)  #previously was YlOrBr YlGnBu
 
 ##Convert pbsmapping object to sf
 totCont.poly <- as.PolySet(totCont.poly,projection = "LL") #assuming you provide Lat/Lon data and WGS84
@@ -1847,10 +1851,11 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
   st_cast("POLYGON") %>% #Convert multilines to polygons
   st_make_valid() %>% 
-  mutate(col = brewer.pal(length(lvls),"YlOrBr"), level = lvls)
+  mutate(col = brewer.pal(length(unique(CP$PolyData$level)),"YlOrBr"), level = unique(CP$PolyData$level))
+
 
 p <- pecjector(area = "spa3",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)),add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = con.dat %>% 
@@ -1869,12 +1874,11 @@ rec.contours<-contour.gen(ScallopSurv.dead %>%  filter(year==survey.year,!STRATA
                             dplyr::select(ID,lon,lat,rec),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',
                           blank=T,plot=F,res=0.01)
 
-lvls=c(1,5,10,15,20,25,30,50) #levels to be color coded
+lvls=c(1,5,10,15,20,25,30,50,100) #levels to be color coded
 
 CL <- contourLines(rec.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
 CP <- convCP(CL)
 totCont.poly <- CP$PolySet
-cont.data<- data.frame(PID=1:length(lvls),col=brewer.pal(length(lvls),"YlGn"),border=NA, stringsAsFactors=FALSE)
 
 ##Convert pbsmapping object to sf
 totCont.poly <- as.PolySet(totCont.poly,projection = "LL") #assuming you provide Lat/Lon data and WGS84
@@ -1883,19 +1887,19 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
   st_cast("POLYGON") %>% #Convert multilines to polygons
   st_make_valid() %>% 
-  mutate(col = brewer.pal(length(lvls),"YlGn"), level = lvls)
+  mutate(col = brewer.pal(length(unique(CP$PolyData$level)),"YlGn"), level = unique(CP$PolyData$level))
 
-#Set aesthetics for plot
-n.breaks <- length(unique(totCont.poly.sf$col)) 
+#Colour aesthetics and breaks for contours
+labels <- c("1-5", "5-10", "10-15", "15-20", "20-23", "23-30", "30-50", "50-100", "100+")
 col <- brewer.pal(length(lvls),"YlGn") #set colours
-cfd <- scale_fill_manual(values = alpha(col[1:n.breaks], 0.4), name = expression(frac(N,tow))) #set custom fill arguments for pecjector.
+cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = expression(frac(N,tow)), limits = labels) #set custom fill arguments for pecjector.
 
 
 # ----FULL BAY -----
 
 #Pecjector with custom contour layer
 p <- pecjector(area = "bof",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv.dead %>% 
@@ -1912,7 +1916,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_BF_RecClappers',survey.year,'.pn
 
 #Pecjector with custom contour layer
 p <- pecjector(area = "spa1A",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv.dead %>% 
@@ -1929,7 +1933,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1A_RecClappers',survey.year,'
 
 #Pecjector with custom contour layer
 p <- pecjector(area = "spa1B",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv.dead %>% 
@@ -1948,8 +1952,8 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1B_RecClappers',survey.year,'
 p <- pecjector(area = "spa4",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
                add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), 
                                 scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% 
-                                                                              mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% 
-                                                                              mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+                                                                              mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% 
+                                                                              dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv.dead %>% 
@@ -1968,12 +1972,11 @@ rec.contours<-contour.gen(ScallopSurv.dead %>%  filter(year==survey.year, STRATA
                             dplyr::select(ID,lon,lat,rec),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',
                           blank=T,plot=F,res=0.01)
 
-lvls=c(1,5,10,15,20,25,30,50) #levels to be color coded
+lvls=c(1,5,10,15,20,25,30,50,100) #levels to be color coded
 
 CL <- contourLines(rec.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
 CP <- convCP(CL)
 totCont.poly <- CP$PolySet
-cont.data<- data.frame(PID=1:length(lvls),col=brewer.pal(length(lvls),"YlGn"),border=NA, stringsAsFactors=FALSE)
 
 ##Convert pbsmapping object to sf
 totCont.poly <- as.PolySet(totCont.poly,projection = "LL") #assuming you provide Lat/Lon data and WGS84
@@ -1982,10 +1985,10 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
   st_cast("POLYGON") %>% #Convert multilines to polygons
   st_make_valid() %>% 
-  mutate(col = brewer.pal(length(lvls),"YlGn"), level = lvls)
+  mutate(col = brewer.pal(length(unique(CP$PolyData$level)),"YlGn"), level = unique(CP$PolyData$level))
 
 p <- pecjector(area =list(x=c(-67.5,-66.4), y=c(45.2,44.4), crs=4326),repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 
 p + #Plot survey data and format figure.
@@ -2001,17 +2004,11 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA6_RecClappers',survey.year,'.
 # ----SPA3 -----
 
 #Create contour and specify plot aesthetics
-rec.contours<-contour.gen(ScallopSurv.dead %>%  filter(year==survey.year, STRATA_ID %in% c(22, 23, 24)) %>% #Only SPA3
-                            dplyr::select(ID,lon,lat,rec),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',
-                          blank=T,plot=F,res=0.01)
-
-
-lvls=c(1,5,10,15,20) #levels to be color coded
+lvls=c(1,5,10,15,20,25,30,50,100) #levels to be color coded
 
 CL <- contourLines(rec.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
 CP <- convCP(CL)
 totCont.poly <- CP$PolySet
-cont.data<- data.frame(PID=1:length(lvls),col=brewer.pal(length(lvls),"YlGn"),border=NA, stringsAsFactors=FALSE)
 
 ##Convert pbsmapping object to sf
 totCont.poly <- as.PolySet(totCont.poly,projection = "LL") #assuming you provide Lat/Lon data and WGS84
@@ -2020,16 +2017,16 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
   st_cast("POLYGON") %>% #Convert multilines to polygons
   st_make_valid() %>% 
-  mutate(col = brewer.pal(length(lvls),"YlGn"), level = lvls)
+  mutate(col = brewer.pal(length(unique(CP$PolyData$level)),"YlGn"), level = unique(CP$PolyData$level))
 
 p <- pecjector(area = "spa3",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv.dead %>% 
                        filter(year == survey.year, STRATA_ID %in% c(22, 23, 24)), #only SPA3 strata IDs
                      aes(lon, lat), size = 0.5) +
-  labs(title = paste(survey.year, "", "SPA3 v"), x = "Longitude", y = "Latitude") +
+  labs(title = paste(survey.year, "", "SPA3 Clapper Density (>= 80mm)"), x = "Longitude", y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   plot.theme.3
 
@@ -2041,12 +2038,11 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA3_RecClappers',survey.year,'.
 rec.contours<-contour.gen(prop.clappers %>% filter(year==survey.year, !STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)) %>% #Excludes SPA3 and SFA29
                             dplyr::select(ID,lon,lat,prop.dead.rec),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata', blank=T,plot=F,res=0.01)
 
-lvls=c(0.01,0.05,0.10,0.15,0.20,0.25,0.30,0.50) #levels to be color coded
+lvls=c(0.01,0.05,0.10,0.15,0.20,0.25,0.30,0.50,1) #levels to be color coded
 
 CL <- contourLines(rec.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
 CP <- convCP(CL)
 totCont.poly <- CP$PolySet
-cont.data<- data.frame(PID=1:length(lvls),col=brewer.pal(length(lvls),"YlGn"),border=NA, stringsAsFactors=FALSE)
 
 ##Convert pbsmapping object to sf
 totCont.poly <- as.PolySet(totCont.poly,projection = "LL") #assuming you provide Lat/Lon data and WGS84
@@ -2055,19 +2051,19 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
   st_cast("POLYGON") %>% #Convert multilines to polygons
   st_make_valid() %>% 
-  mutate(col = brewer.pal(length(lvls),"YlGn"), level = lvls)
+  mutate(col = brewer.pal(length(unique(CP$PolyData$level)),"YlGn"), level = unique(CP$PolyData$level))
 
-#Set aesthetics for plot
-n.breaks <- length(unique(totCont.poly.sf$col)) 
+
+#Colour aesthetics and breaks for contours
+labels <- c("0.01-0.05", "0.05-0.10", "0.10-0.15", "0.15-0.20", "0.20-0.25", "0.25-0.30", "0.30-0.50", "0.50-1", "1+")
 col <- brewer.pal(length(lvls),"YlGn") #set colours
-cfd <- scale_fill_manual(values = alpha(col[1:n.breaks], 0.4), name = "Proportion") #set custom fill arguments for pecjector.
-
+cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = "Proportion", limits = labels) #set custom fill arguments for pecjector.
 
 # ----FULL BAY -----
 
 #Pecjector with custom contour layer
 p <- pecjector(area = "bof",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)),add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = prop.clappers %>% 
@@ -2085,7 +2081,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_BF_PropRecClappers',survey.year,
 
 #Pecjector with custom contour layer
 p <- pecjector(area = "spa1a",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = prop.clappers %>% 
@@ -2102,7 +2098,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1A_PropRecClappers',survey.ye
 
 #Pecjector with custom contour layer
 p <- pecjector(area = "spa1b",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = prop.clappers %>% 
@@ -2118,8 +2114,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1B_PropRecClappers',survey.ye
 # ----SPA4 and 5 -----
 
 p <- pecjector(area = "spa4",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
-
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 p + #Plot survey data and format figure.
   geom_spatial_point(data = prop.clappers %>% 
                        filter(year == survey.year, !STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)), #Excludes SPA3 and SFA29
@@ -2136,12 +2131,11 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA4_PropRecClappers',survey.yea
 rec.contours<-contour.gen(prop.clappers %>% filter(year==survey.year, STRATA_ID %in% c(26,30,31,32,54,57)) %>% #Only SPA6
                             dplyr::select(ID,lon,lat,prop.dead.rec),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata', blank=T,plot=F,res=0.01)
 
-lvls=c(0.01,0.05,0.10,0.15,0.20,0.25,0.30,0.50) #levels to be color coded
+lvls=c(0.01,0.05,0.10,0.15,0.20,0.25,0.30,0.50,1) #levels to be color coded
 
 CL <- contourLines(rec.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
 CP <- convCP(CL)
 totCont.poly <- CP$PolySet
-cont.data<- data.frame(PID=1:length(lvls),col=brewer.pal(length(lvls),"YlGn"),border=NA, stringsAsFactors=FALSE)
 
 ##Convert pbsmapping object to sf
 totCont.poly <- as.PolySet(totCont.poly,projection = "LL") #assuming you provide Lat/Lon data and WGS84
@@ -2150,12 +2144,12 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
   st_cast("POLYGON") %>% #Convert multilines to polygons
   st_make_valid() %>% 
-  mutate(col = brewer.pal(length(lvls),"YlGn"), level = lvls)
+  mutate(col = brewer.pal(length(unique(CP$PolyData$level)),"YlGn"), level = unique(CP$PolyData$level))
+
 
 
 p <- pecjector(area =list(x=c(-67.5,-66.4), y=c(45.2,44.4), crs=4326),repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
-
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = prop.clappers %>% 
@@ -2176,12 +2170,11 @@ rec.contours<-contour.gen(prop.clappers %>%  filter(year==survey.year, STRATA_ID
                           blank=T,plot=F,res=0.01)
 
 
-lvls=c(0.01,0.05,0.10,0.15,0.20,0.25,0.30,0.50) #levels to be color coded
+lvls=c(0.01,0.05,0.10,0.15,0.20,0.25,0.30,0.50,1) #levels to be color coded
 
 CL <- contourLines(rec.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
 CP <- convCP(CL)
 totCont.poly <- CP$PolySet
-cont.data<- data.frame(PID=1:length(lvls),col=brewer.pal(length(lvls),"YlGn"),border=NA, stringsAsFactors=FALSE)
 
 ##Convert pbsmapping object to sf
 totCont.poly <- as.PolySet(totCont.poly,projection = "LL") #assuming you provide Lat/Lon data and WGS84
@@ -2190,11 +2183,11 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
   st_cast("POLYGON") %>% #Convert multilines to polygons
   st_make_valid() %>% 
-  mutate(col = brewer.pal(length(lvls),"YlGn"), level = lvls)
+  mutate(col = brewer.pal(length(unique(CP$PolyData$level)),"YlGn"), level = unique(CP$PolyData$level))
 
 
 p <- pecjector(area = "spa3",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = prop.clappers %>% 
@@ -2205,6 +2198,7 @@ p + #Plot survey data and format figure.
   plot.theme.3
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA3_PropRecClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+
 
 
 # ------------------------------PRE-RECRUIT SCALLOP - SURVEY DISTRIBUTION PLOTS -------------------------------------------
