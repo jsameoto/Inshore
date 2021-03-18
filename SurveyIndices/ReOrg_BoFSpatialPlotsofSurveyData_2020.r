@@ -307,13 +307,14 @@ plot.theme <-  theme(plot.title = element_text(size = 14, hjust = 0.5), #plot ti
                      legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.7)), #Legend bkg colour and transparency
                      legend.box.margin = margin(6, 8, 6, 8)) #Legend bkg margin (top, right, bottom, left)
 
-plot.theme.1b <-  theme(plot.title = element_text(size = 14, hjust = 0.5), #plot title size and position
+plot.theme.1b <-  theme(legend.key.size = unit(5,"mm"),
+                        plot.title = element_text(size = 14, hjust = 0.5), #plot title size and position
                         axis.title = element_text(size = 12),
                         axis.text = element_text(size = 10),
-                        legend.title = element_text(size = 10, face = "bold"), 
-                        legend.text = element_text(size = 8),
+                        legend.title = element_text(size = 8, face = "bold"), 
+                        legend.text = element_text(size = 7),
                         legend.direction="horizontal",
-                        legend.position = c(.72, .09),#legend position
+                        legend.position = c(.70, .09),#legend position
                         legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.7)), #Legend bkg colour and transparency
                         legend.box.margin = margin(1, 1, 1, 1))
 
@@ -322,7 +323,7 @@ plot.theme.3 <- theme(plot.title = element_text(size = 14, hjust = 0.5), #plot t
                       axis.text = element_text(size = 10),
                       legend.title = element_text(size = 10, face = "bold"), 
                       legend.text = element_text(size = 8),
-                      legend.position = c(.87,.42), #legend position
+                      legend.position = c(.87,.44), #legend position
                       legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.7)), #Legend bkg colour and transparency
                       legend.box.margin = margin(6, 8, 6, 8))
 
@@ -332,7 +333,7 @@ plot.theme.4 <- theme(plot.title = element_text(size = 14, hjust = 0.5), #plot t
                       legend.title = element_text(size = 10, face = "bold"), 
                       legend.text = element_text(size = 8),
                       #legend.direction="horizontal",
-                      legend.position = c(.90,.22), #legend position
+                      legend.position = c(.91,.22), #legend position
                       legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.8)), #Legend bkg colour and transparency
                       legend.box.margin = margin(1, 1, 1, 1)) #Legend bkg margin (top, right, bottom, left)
 
@@ -341,7 +342,7 @@ plot.theme.6 <- theme(plot.title = element_text(size = 14, hjust = 0.5), #plot t
                       axis.text = element_text(size = 10),
                       legend.title = element_text(size = 10, face = "bold"), 
                       legend.text = element_text(size = 8),
-                      legend.position = c(.10,.70), #legend position
+                      legend.position = c(.10,.68), #legend position
                       legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.7)), #Legend bkg colour and transparency
                       legend.box.margin = margin(6, 8, 6, 8))
 
@@ -924,7 +925,7 @@ p + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv.mtcnt %>% 
                        filter(year == survey.year, !STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)),
                      aes(lon, lat), size = 0.5) +
-  labs(title = paste(survey.year, "", "Meat Count (>= 80mm)"), x = "Longitude",
+  labs(title = paste(survey.year, "", "SPA1B Meat Count (>= 80mm)"), x = "Longitude",
        y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   plot.theme.1b
@@ -1120,6 +1121,7 @@ p + #Plot survey data and format figure.
                      aes(lon, lat), size = 0.5) +
   labs(title = paste(survey.year, "", "SPA4 Clapper Density (>= 80mm)"), x = "Longitude",
        y = "Latitude") +
+  guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   plot.theme.4
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA4_ComClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -1163,6 +1165,9 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA6_ComClappers',survey.year,'.
 # ----SPA3 -----
 
 #Create contour and specify plot aesthetics
+com.contours<-contour.gen(ScallopSurv.dead %>%  filter(year==survey.year, STRATA_ID %in% c(22, 23, 24)) %>% 
+                            dplyr::select(ID,lon,lat,com),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
+
 lvls=c(1,5,10,15,20,25,30,50,100) #levels to be color coded
 
 CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
@@ -1256,6 +1261,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1A_PropComClappers',survey.ye
 # ----SPA1B -----
 
 #Pecjector with custom contour layer
+
 p <- pecjector(area = "spa1b",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
                add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
@@ -1265,10 +1271,10 @@ p + #Plot survey data and format figure.
                      aes(lon, lat), size = 0.5) +
   labs(title = paste(survey.year, "", "SPA1B Clapper Proportion (>= 80mm)"), x = "Longitude",
        y = "Latitude") +
-  guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  guides(fill = guide_legend(override.aes= list(alpha = .7))) +#Legend transparency
   plot.theme.1b
 
-ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1B_PropComClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1B_PropComClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 9, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA4 and 5 -----
 
@@ -1671,12 +1677,12 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA6_RecBiomass',survey.year,'.p
 # ----SPA3 -----
 
 #Create contour and specify plot aesthetics
-rec.contours <- contour.gen(ScallopSurv.kg %>% 
-                              filter(year == survey.year, STRATA_ID %in% c(22, 23, 24)) %>% #only SPA3
-                              dplyr::select(ID, lon, lat, rec.bm), 
-                            ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
+rec.contours<-contour.gen(ScallopSurv.kg %>% filter(year==survey.year, STRATA_ID %in% c(22, 23, 24)) %>% #only SPA3
+                            dplyr::select(ID,lon,lat,rec.bm),
+                          ticks='define', nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
 
 lvls=c(0.01,0.1,1,2,4,6,8)  #levels to be color coded
+
 CL <- contourLines(rec.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
 CP <- convCP(CL)
 totCont.poly <- CP$PolySet
@@ -1689,6 +1695,7 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   st_cast("POLYGON") %>% #Convert multilines to polygons
   st_make_valid() %>% 
   mutate(col = brewer.pal(length(unique(CP$PolyData$level)),"YlGn"), level = unique(CP$PolyData$level))
+
 
 p <- pecjector(area = "spa3",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
                add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
@@ -1742,7 +1749,7 @@ p + #Plot survey data and format figure.
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   plot.theme
 
-ggsave(filename = paste0(saveplot.dir,'ContPlot_BF_Condition',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir,'ContPlot_BF_RecCondition',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA1A -----
 
@@ -1758,7 +1765,7 @@ p + #Plot survey data and format figure.
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   plot.theme
 
-ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1A_Condition',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1A_RecCondition',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA1B -----
 
@@ -1774,7 +1781,7 @@ p + #Plot survey data and format figure.
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   plot.theme.1b
 
-ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1B_Condition',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1B_RecCondition',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA4 and 5 -----
 
@@ -1790,7 +1797,7 @@ p + #Plot survey data and format figure.
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   plot.theme.4
 
-ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA4_Condition',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA4_RecCondition',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 
 # ----SPA6 -----
@@ -1828,7 +1835,7 @@ p + #Plot survey data and format figure.
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   plot.theme.6
 
-ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA6_Condition',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA6_RecCondition',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA3 -----
 
@@ -1864,7 +1871,7 @@ p + #Plot survey data and format figure.
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   plot.theme.3
 
-ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA3_Condition',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA3_RecCondition',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 
 # ----CLAPPERS -----
@@ -2105,7 +2112,7 @@ p + #Plot survey data and format figure.
                      aes(lon, lat), size = 0.5) +
   labs(title = paste(survey.year, "", "SPA1B Clapper Proportion (>= 80mm)"), x = "Longitude",
        y = "Latitude") +
-  guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  guides(fill = guide_legend(override.aes= list(alpha = .7, title.position = "top"))) + #Legend transparency
   plot.theme.1b
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1B_PropRecClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
