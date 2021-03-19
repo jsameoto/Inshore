@@ -120,7 +120,7 @@ ScallopSurv <- ScallopSurv %>%
   #mutate(year = year(TOW_DATE)) %>%  #Formats TOW_DATE as date - works with SFA29
   mutate(lat = convert.dd.dddd(START_LAT)) %>% #Convert to DD
   mutate(lon = convert.dd.dddd(START_LONG)) %>% #Convert to DD 
-  rename(tow = TOW_NO) %>%  #Rename column TOW_NO to tow - required for one of the mapping functions.
+  dplyr::rename(tow = TOW_NO) %>%  #Rename column TOW_NO to tow - required for one of the mapping functions.
   mutate(tot = dplyr::select(., BIN_ID_0:BIN_ID_195) %>% rowSums(na.rm = TRUE)/4267.2) %>%  #add tot for bin 0 to bin 195 and standardize to #/m^2
   unite(ID, c("CRUISE", "tow"), sep = ".", remove = FALSE) %>%  #Creates ID column with cruise and tow number
   mutate(com = dplyr::select(., BIN_ID_100:BIN_ID_195) %>% rowSums(na.rm = TRUE) %>% round(0)) %>% # Commercial scallop - >=100mm; BINS 100 to 195
@@ -150,7 +150,7 @@ ScallopSurv.dead <- ScallopSurv.dead %>%
   #mutate(year = year(TOW_DATE)) %>%  #Formats TOW_DATE as date - works with SFA29
   mutate(lat = convert.dd.dddd(START_LAT)) %>% #Convert to DD
   mutate(lon = convert.dd.dddd(START_LONG)) %>% #Convert to DD 
-  rename(tow = TOW_NO) %>%  #Rename column TOW_NO to tow - required for one of the mapping functions.
+  dplyr::rename(tow = TOW_NO) %>%  #Rename column TOW_NO to tow - required for one of the mapping functions.
   mutate(tot = dplyr::select(., BIN_ID_0:BIN_ID_195) %>% rowSums(na.rm = TRUE)/4267.2) %>%  #add tot for bin 0 to bin 195 and standardize to #/m^2
   unite(ID, c("CRUISE", "tow"), sep = ".", remove = FALSE) %>%  #Creates ID column with cruise and tow number
   mutate(com = dplyr::select(., BIN_ID_100:BIN_ID_195) %>% rowSums(na.rm = TRUE) %>% round(0)) %>% # Commercial scallop - >=100mm; BINS 100 to 195
@@ -174,7 +174,7 @@ sampled.dat <- dbGetQuery(chan, quer3)
 ScallopSurv.kg <- read.csv(paste0("Y:/INSHORE SCALLOP/SFA29/",assessmentyear,"/dataoutput/SFA29liveweight",survey.year,".csv"))  #DEFINE
 # 2014 to current year
 ScallopSurv.kg <- ScallopSurv.kg %>% dplyr::select(-X) %>%  #removes index column X
-	rename(year = YEAR) %>%
+	dplyr::rename(year = YEAR) %>%
 	mutate(lat = convert.dd.dddd(START_LAT)) %>% #Convert to DD
 	mutate(lon = convert.dd.dddd(START_LONG)) %>% #Convert to DD
 	unite(ID, c("CRUISE", "TOW_NO"), sep = ".", remove = FALSE) %>% 
@@ -186,7 +186,7 @@ ScallopSurv.kg <- ScallopSurv.kg %>% dplyr::select(-X) %>%  #removes index colum
 	
 con.dat <- read.csv(paste0("Y:/INSHORE SCALLOP/SFA29/2019/dataoutput/ConditionforMap",survey.year,".csv")) #NOTE: 2014 file made by Jessica (..._JS.csv), will be slightly different than for 2015 assessment since Stephen calculated this using smaller dataset for mtwt sh model 
 con.dat <- con.dat %>% dplyr::select(-X) %>%  #removes index column X
-	 rename(year = YEAR) %>%
+	 dplyr::rename(year = YEAR) %>%
 	 mutate(CRUISE = paste0("SFA29", year)) %>% 
 	 mutate(lat = convert.dd.dddd(START_LAT)) %>% #Convert to DD
 	 mutate(lon = convert.dd.dddd(START_LONG)) %>% #Convert to DD
@@ -235,7 +235,7 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   st_cast("POLYGON") %>% #Convert multilines to polygons
   st_make_valid() %>% 
   st_intersection(sfa29.poly %>% group_by(Id) %>% st_union()) %>% #Dissolve polygon segments and crop contours to sfa29.poly
-  mutate(col = brewer.pal(length(unique(CP$PolyData$level)),"YlGn"), level = unique(CP$PolyData$level))
+  mutate(level = unique(CP$PolyData$level))
 
 #Colour aesthetics and breaks for contours
 labels <- c("1-5", "5-10", "10-50", "50-100", "100-200", "200-300", "300-400", "400-500", "500+")
@@ -293,7 +293,7 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   st_cast("POLYGON") %>% #Convert multilines to polygons
   st_make_valid() %>% 
   st_intersection(sfa29.poly %>% group_by(Id) %>% st_union()) %>% #Dissolve polygon segments and crop contours to sfa29.poly
-  mutate(col = brewer.pal(length(unique(CP$PolyData$level)),"YlGn"), level = unique(CP$PolyData$level))
+  mutate(level = unique(CP$PolyData$level))
 
 #Set aesthetics for plot
 labels <- c("0.01-0.05", "0.05-0.1", "0.1-1", "1-2", "2-3", "3-4", "4-5", "5+")
@@ -338,7 +338,7 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   st_cast("POLYGON") %>% #Convert multilines to polygons
   st_make_valid() %>% 
   st_intersection(sfa29.poly %>% group_by(Id) %>% st_union()) %>% #Dissolve polygon segments and crop contours to sfa29.poly
-  mutate(col = brewer.pal(length(unique(CP$PolyData$level)),"YlOrBr"), level = unique(CP$PolyData$level))
+  mutate(level = unique(CP$PolyData$level))
 
 #Colour aesthetics and breaks for contours
 labels <- c("5-6", "6-7", "7-8", "8-9", "9-10", "10-11", "11-12", "12+")
@@ -347,7 +347,7 @@ cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = "Cond
 
 #Plot with Pecjector
 p <- pecjector(area = "sfa29",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap", scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = con.dat %>% filter(year == survey.year), aes(lon, lat), size = 0.5) +
@@ -363,13 +363,15 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_Condition',survey.year,'.p
 
 mc.contours<-contour.gen(ScallopSurv.mtcnt %>% filter(year==survey.year) %>% dplyr::select(ID, lon, lat, meat.count), ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,interp.method='gstat',blank=T,plot=F,subset.poly='square',subset.eff=0,subscale=0.25,res=0.01)
 
-lvls=seq(10,45,5)
+lvls <- c(10,15,20,25,30,34,40,45)
+#lvls=seq(10,45,5)
 div=2
 
 CL <- contourLines(mc.contours$image.dat,levels=lvls)
 CP <- convCP(CL)
 totCont.poly  <- CP$PolySet
 Ncol=length(lvls)+div
+#cont.data<- data.frame(PID=1:length(lvls),col=brewer.pal(Ncol,"Spectral")[c(Ncol:(div+2),1)],border=NA,stringsAsFactors=FALSE)
 
 ##Convert pbsmapping object to sf
 totCont.poly <- as.PolySet(totCont.poly,projection = "LL") #assuming you provide Lat/Lon data and WGS84
@@ -379,7 +381,7 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   st_cast("POLYGON") %>% #Convert multilines to polygons
   st_make_valid() %>% 
   st_intersection(sfa29.poly %>% group_by(Id) %>% st_union()) %>% #Dissolve polygon segments and crop contours to sfa29.poly
-  mutate(col = brewer.pal(length(unique(CP$PolyData$level)),"Spectral"), level = unique(CP$PolyData$level))
+  mutate(level = unique(CP$PolyData$level))
 
 #Set aesthetics for plot
 labels <- c("10-15", "15-20", "20-25", "25-30", "30-35", "35-40", "40-45", "45+")
@@ -400,8 +402,44 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_MeatCount',survey.year,'.p
 
 # ----CLAPPERS -----
 
+com.contours<-contour.gen(ScallopSurv.dead %>%  filter(year==survey.year) %>% #Excludes SPA3 and SFA29
+                            dplyr::select(ID,lon,lat,com),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',
+                          blank=T,plot=F,res=0.01)
 
-# ----PROPORTION OF CLAPPERS -----
+lvls=c(1,5,10,15,20,25,30,50,100) #levels to be color coded
+
+CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
+CP <- convCP(CL)
+totCont.poly <- CP$PolySet
+
+##Convert pbsmapping object to sf
+totCont.poly <- as.PolySet(totCont.poly,projection = "LL") #assuming you provide Lat/Lon data and WGS84
+totCont.poly <- PolySet2SpatialLines(totCont.poly) # Spatial lines is a bit more general (don't need to have boxes closed)
+totCont.poly.sf <- st_as_sf(totCont.poly) %>%
+  st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
+  st_cast("POLYGON") %>% #Convert multilines to polygons
+  st_make_valid() %>% 
+  st_intersection(sfa29.poly %>% group_by(Id) %>% st_union()) %>% 
+  mutate(level = unique(CP$PolyData$level))
+
+#Colour aesthetics and breaks for contours
+labels <- c("1-5", "5-10", "10-15", "15-20", "20-23", "23-30", "30-50", "50-100", "100+")
+col <- brewer.pal(length(lvls),"YlGn") #set colours
+cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = expression(frac(N,tow)), limits = labels) #set custom fill arguments for pecjector.
+
+p <- pecjector(area = "sfa29",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
+               add_layer = list(land = "grey", bathy = "ScallopMap", scale.bar = c('bl',0.5)),add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+
+
+p + #Plot survey data and format figure.
+  geom_spatial_point(data = ScallopSurv.dead %>% filter(year == survey.year),aes(lon, lat), size = 0.5)+
+  geom_sf(data = sfa29.poly, size = 0.5, colour = "black", fill = NA) +
+  labs(title = paste(survey.year, "", "SFA29 Clapper Density (>= 80mm)"), x = "Longitude",
+       y = "Latitude") +
+  guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  plot.theme
+
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_ComClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 
 
@@ -426,7 +464,7 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   st_cast("POLYGON") %>% #Convert multilines to polygons
   st_make_valid() %>% 
   st_intersection(sfa29.poly %>% group_by(Id) %>% st_union()) %>% #Dissolve polygon segments and crop contours to sfa29.poly
-  mutate(col = brewer.pal(length(unique(CP$PolyData$level)),"YlGn"), level = unique(CP$PolyData$level))
+  mutate(level = unique(CP$PolyData$level))
 
 #Colour aesthetics and breaks for contours
 labels <- c("1-5", "5-10", "10-50", "50-100", "100-200", "200-300", "300-400", "400-500", "500+")
@@ -467,15 +505,131 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_RecDensity',survey.year,'_
 
 # ----BIOMASS PLOTS -----
 
+rec.contours<-contour.gen(ScallopSurv.kg %>% filter(year==survey.year) %>% 
+                            dplyr::select(ID,lon,lat,rec.bm),
+                          ticks='define', nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
+
+lvls=c(0.01,0.05,0.1,1,2,3,4,5) #levels to be color coded
+
+CL <- contourLines(rec.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
+CP <- convCP(CL)
+totCont.poly <- CP$PolySet
+
+##Convert pbsmapping object to sf
+totCont.poly <- as.PolySet(totCont.poly,projection = "LL") #assuming you provide Lat/Lon data and WGS84
+totCont.poly <- PolySet2SpatialLines(totCont.poly) # Spatial lines is a bit more general (don't need to have boxes closed)
+totCont.poly.sf <- st_as_sf(totCont.poly) %>%
+  st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
+  st_cast("POLYGON") %>% #Convert multilines to polygons
+  st_make_valid() %>% 
+  st_intersection(sfa29.poly %>% group_by(Id) %>% st_union()) %>% #Dissolve polygon segments and crop contours to sfa29.poly
+  mutate(level = unique(CP$PolyData$level))
+
+#Set aesthetics for plot
+labels <- c("0.01-0.05", "0.05-0.1", "0.1-1", "1-2", "2-3", "3-4", "4-5", "5+")
+col <- brewer.pal(length(lvls),"YlGn") #set colours
+cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = expression(frac(kg,tow)), limits = labels) #set custom fill arguments for pecjector.
+#Plot with Pecjector
+p <- pecjector(area = "sfa29",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
+               add_layer = list(land = "grey", bathy = "ScallopMap", scale.bar = c('bl',0.5)), 
+               add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>%
+                                   mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+#ENG
+p + #Plot survey data and format figure.
+  geom_spatial_point(data = ScallopSurv.kg %>% 
+                       filter(year == survey.year),
+                     aes(lon, lat), size = 0.5) +
+  geom_sf(data = sfa29.poly, size = 0.5, colour = "black", fill = NA) +
+  labs(title = paste(survey.year, "", "SFA29 Biomass (>= 100mm)"), x = "Longitude", y = "Latitude") +
+  guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  plot.theme
+
+#save
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_RecBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 10, height = 10, dpi = 300, units = "cm", limitsize = TRUE)
+
 # ----CONDITION PLOTS-----
 
-# ----MEAT COUNT -----
+rec.contours <- contour.gen(con.dat %>% filter(year==survey.year) %>% dplyr::select(ID, lon, lat, Condition),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
+
+lvls=c(5,6,7,8,9,10,11,12) #levels to be color coded
+#lvls=c(4,6,8,10,12,14,16) # large scale
+#lvls=c(6,7,8,9,10,11,12,13) # good condition scale # update based on values observed
+
+
+CL <- contourLines(rec.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
+CP <- convCP(CL)
+totCont.poly <- CP$PolySet
+
+##Convert pbsmapping object to sf
+totCont.poly <- as.PolySet(totCont.poly,projection = "LL") #assuming you provide Lat/Lon data and WGS84
+totCont.poly <- PolySet2SpatialLines(totCont.poly) # Spatial lines is a bit more general (don't need to have boxes closed)
+totCont.poly.sf <- st_as_sf(totCont.poly) %>%
+  st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
+  st_cast("POLYGON") %>% #Convert multilines to polygons
+  st_make_valid() %>% 
+  st_intersection(sfa29.poly %>% group_by(Id) %>% st_union()) %>% #Dissolve polygon segments and crop contours to sfa29.poly
+  mutate(level = unique(CP$PolyData$level))
+
+#Colour aesthetics and breaks for contours
+labels <- c("5-6", "6-7", "7-8", "8-9", "9-10", "10-11", "11-12", "12+")
+col <- brewer.pal(length(lvls),"YlOrBr") #set colours
+cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = "Condition (g)", limits = labels) #set custom fill arguments for pecjector.
+
+#Plot with Pecjector
+p <- pecjector(area = "sfa29",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+
+p + #Plot survey data and format figure.
+  geom_spatial_point(data = con.dat %>% filter(year == survey.year), aes(lon, lat), size = 0.5) +
+  geom_sf(data = sfa29.poly, size = 0.5, colour = "black", fill = NA) +
+  labs(title = paste(survey.year, "", "SFA29 Condition"), x = "Longitude", y = "Latitude") +
+  guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  plot.theme
+
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_Condition',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 
 # ----CLAPPERS -----
 
+rec.contours<-contour.gen(ScallopSurv.dead %>%  filter(year==survey.year) %>% #Excludes SPA3 and SFA29
+                            dplyr::select(ID,lon,lat,rec),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',
+                          blank=T,plot=F,res=0.01)
 
-# ----PROPORTION OF CLAPPERS -----
+lvls=c(1,5,10,15,20,25,30,50,100) #levels to be color coded
+
+CL <- contourLines(rec.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
+CP <- convCP(CL)
+totCont.poly <- CP$PolySet
+
+##Convert pbsmapping object to sf
+totCont.poly <- as.PolySet(totCont.poly,projection = "LL") #assuming you provide Lat/Lon data and WGS84
+totCont.poly <- PolySet2SpatialLines(totCont.poly) # Spatial lines is a bit more general (don't need to have boxes closed)
+totCont.poly.sf <- st_as_sf(totCont.poly) %>%
+  st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
+  st_cast("POLYGON") %>% #Convert multilines to polygons
+  st_make_valid() %>% 
+  st_intersection(sfa29.poly %>% group_by(Id) %>% st_union()) %>% 
+  mutate(level = unique(CP$PolyData$level))
+
+#Colour aesthetics and breaks for contours
+labels <- c("1-5", "5-10", "10-15", "15-20", "20-23", "23-30", "30-50", "50-100", "100+")
+col <- brewer.pal(length(lvls),"YlGn") #set colours
+cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = expression(frac(N,tow)), limits = labels) #set custom fill arguments for pecjector.
+
+p <- pecjector(area = "sfa29",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
+               add_layer = list(land = "grey", bathy = "ScallopMap", scale.bar = c('bl',0.5)),add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+
+
+p + #Plot survey data and format figure.
+  geom_spatial_point(data = ScallopSurv.dead %>% filter(year == survey.year), aes(lon, lat), size = 0.5) +
+  geom_sf(data = sfa29.poly, size = 0.5, colour = "black", fill = NA) +
+  labs(title = paste(survey.year, "", "SFA29 Clapper Density (>= 80mm)"), x = "Longitude",
+       y = "Latitude") +
+  guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  plot.theme
+
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_RecClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+
 
 
 # ------------------------------PRE-RECRUIT SCALLOP - SURVEY DISTRIBUTION PLOTS -------------------------------------------
@@ -499,7 +653,7 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   st_cast("POLYGON") %>% #Convert multilines to polygons
   st_make_valid() %>% 
   st_intersection(sfa29.poly %>% group_by(Id) %>% st_union()) %>% #Dissolve polygon segments and crop contours to sfa29.poly
-  mutate(col = brewer.pal(length(unique(CP$PolyData$level)),"YlGn"), level = unique(CP$PolyData$level))
+  mutate(level = unique(CP$PolyData$level))
 
 #Colour aesthetics and breaks for contours
 labels <- c("1-5", "5-10", "10-50", "50-100", "100-200", "200-300", "300-400", "400-500", "500+")
@@ -538,200 +692,133 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_PreDensity',survey.year,'_
 
 # ----BIOMASS PLOTS -----
 
+pre.contours<-contour.gen(ScallopSurv.kg %>% filter(year==survey.year) %>% 
+                            dplyr::select(ID,lon,lat,pre.bm),
+                          ticks='define', nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
+
+lvls=c(0.01,0.05,0.1,1,2,3,4,5) #levels to be color coded
+
+CL <- contourLines(pre.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
+CP <- convCP(CL)
+totCont.poly <- CP$PolySet
+
+##Convert pbsmapping object to sf
+totCont.poly <- as.PolySet(totCont.poly,projection = "LL") #assuming you provide Lat/Lon data and WGS84
+totCont.poly <- PolySet2SpatialLines(totCont.poly) # Spatial lines is a bit more general (don't need to have boxes closed)
+totCont.poly.sf <- st_as_sf(totCont.poly) %>%
+  st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
+  st_cast("POLYGON") %>% #Convert multilines to polygons
+  st_make_valid() %>% 
+  st_intersection(sfa29.poly %>% group_by(Id) %>% st_union()) %>% #Dissolve polygon segments and crop contours to sfa29.poly
+  mutate(level = unique(CP$PolyData$level))
+
+#Set aesthetics for plot
+labels <- c("0.01-0.05", "0.05-0.1", "0.1-1", "1-2", "2-3", "3-4", "4-5", "5+")
+col <- brewer.pal(length(lvls),"YlGn") #set colours
+cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = expression(frac(kg,tow)), limits = labels) #set custom fill arguments for pecjector.
+#Plot with Pecjector
+p <- pecjector(area = "sfa29",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
+               add_layer = list(land = "grey", bathy = "ScallopMap", scale.bar = c('bl',0.5)), 
+               add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>%
+                                   mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+#ENG
+p + #Plot survey data and format figure.
+  geom_spatial_point(data = ScallopSurv.kg %>% 
+                       filter(year == survey.year),
+                     aes(lon, lat), size = 0.5) +
+  geom_sf(data = sfa29.poly, size = 0.5, colour = "black", fill = NA) +
+  labs(title = paste(survey.year, "", "SFA29 Biomass (>= 100mm)"), x = "Longitude", y = "Latitude") +
+  guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  plot.theme
+
+#save
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_PreBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 10, height = 10, dpi = 300, units = "cm", limitsize = TRUE)
+
 # ----CONDITION PLOTS-----
 
-# ----MEAT COUNT -----
+pre.contours <- contour.gen(con.dat %>% filter(year==survey.year) %>% dplyr::select(ID, lon, lat, Condition),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
+
+lvls=c(5,6,7,8,9,10,11,12) #levels to be color coded
+#lvls=c(4,6,8,10,12,14,16) # large scale
+#lvls=c(6,7,8,9,10,11,12,13) # good condition scale # update based on values observed
+
+
+CL <- contourLines(pre.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
+CP <- convCP(CL)
+totCont.poly <- CP$PolySet
+
+##Convert pbsmapping object to sf
+totCont.poly <- as.PolySet(totCont.poly,projection = "LL") #assuming you provide Lat/Lon data and WGS84
+totCont.poly <- PolySet2SpatialLines(totCont.poly) # Spatial lines is a bit more general (don't need to have boxes closed)
+totCont.poly.sf <- st_as_sf(totCont.poly) %>%
+  st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
+  st_cast("POLYGON") %>% #Convert multilines to polygons
+  st_make_valid() %>% 
+  st_intersection(sfa29.poly %>% group_by(Id) %>% st_union()) %>% #Dissolve polygon segments and crop contours to sfa29.poly
+  mutate(level = unique(CP$PolyData$level))
+
+#Colour aesthetics and breaks for contours
+labels <- c("5-6", "6-7", "7-8", "8-9", "9-10", "10-11", "11-12", "12+")
+col <- brewer.pal(length(lvls),"YlOrBr") #set colours
+cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = "Condition (g)", limits = labels) #set custom fill arguments for pecjector.
+
+#Plot with Pecjector
+p <- pecjector(area = "sfa29",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+
+p + #Plot survey data and format figure.
+  geom_spatial_point(data = con.dat %>% filter(year == survey.year), aes(lon, lat), size = 0.5) +
+  geom_sf(data = sfa29.poly, size = 0.5, colour = "black", fill = NA) +
+  labs(title = paste(survey.year, "", "SFA29 Condition"), x = "Longitude", y = "Latitude") +
+  guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  plot.theme
+
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_Condition',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 
 # ----CLAPPERS -----
 
+pre.contours<-contour.gen(ScallopSurv.dead %>%  filter(year==survey.year) %>% #Excludes SPA3 and SFA29
+                            dplyr::select(ID,lon,lat,pre),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',
+                          blank=T,plot=F,res=0.01)
 
-# ----PROPORTION OF CLAPPERS -----
+lvls=c(1,5,10,15,20,25,30,50,100) #levels to be color coded
 
-			
-# SURVEY - Recruit Size 90-99 mm
+CL <- contourLines(pre.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
+CP <- convCP(CL)
+totCont.poly <- CP$PolySet
+
+##Convert pbsmapping object to sf
+totCont.poly <- as.PolySet(totCont.poly,projection = "LL") #assuming you provide Lat/Lon data and WGS84
+totCont.poly <- PolySet2SpatialLines(totCont.poly) # Spatial lines is a bit more general (don't need to have boxes closed)
+totCont.poly.sf <- st_as_sf(totCont.poly) %>%
+  st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
+  st_cast("POLYGON") %>% #Convert multilines to polygons
+  st_make_valid() %>% 
+  st_intersection(sfa29.poly %>% group_by(Id) %>% st_union()) %>% 
+  mutate(level = unique(CP$PolyData$level))
+
+#Colour aesthetics and breaks for contours
+labels <- c("1-5", "5-10", "10-15", "15-20", "20-23", "23-30", "30-50", "50-100", "100+")
+col <- brewer.pal(length(lvls),"YlGn") #set colours
+cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = expression(frac(N,tow)), limits = labels) #set custom fill arguments for pecjector.
+
+p <- pecjector(area = "sfa29",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
+               add_layer = list(land = "grey", bathy = "ScallopMap", scale.bar = c('bl',0.5)),add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 
-		# SURVEY - Prerecruit Size < 90 mm
-			xx <- yr-1
-			pre.contours<-contour.gen(subset(ScallopSurv,year==xx,c('ID','lon','lat','pre')),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
+p + #Plot survey data and format figure.
+  geom_spatial_point(data = ScallopSurv.dead %>% filter(year == survey.year),aes(lon, lat), size = 0.5) +
+  geom_sf(data = sfa29.poly, size = 0.5, colour = "black", fill = NA) +
+  labs(title = paste(survey.year, "", "SFA29 Clapper Density (>= 80mm)"), x = "Longitude",
+       y = "Latitude") +
+  guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  plot.theme
 
-			lvls=c(1,5,10,50,100,200,300,400,500)
-
-			CL <- contourLines(pre.contours$image.dat,levels=lvls)
-			CP <- convCP(CL)
-			sfa29cont.poly <- joinPolys(CP$PolySet,sfa29.poly)
-			cont.data<- data.frame(PID=1:length(lvls),col=brewer.pal(length(lvls),"YlGn"),border=NA, stringsAsFactors=FALSE)
-
-			png(paste0("figures/sfa29preDensity",xx,".png"),9,9,res=200,units='in')
-			ScallopMap('sfa29',bathcol=rgb(0,0,1,0.1),contour=list(sfa29cont.poly,cont.data),title=paste('SFA 29 Density (< 90 mm)'),plot.boundries = F, plot.bathy=T, bathy.source='usgs')	
-			points(lat~lon,ScallopSurv,subset=year==xx,pch=16,cex=0.5)
-			addLines(sfa29strata)
-			legend("topright",c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep='')),fill=cont.data$col,title="#/tow",inset=0.02,bty='n',box.col='white', cex=1)
-			dev.off()
-
-### EN FRANCAIS !!!
-			# SURVEY - Commercial Size >= 100 mm
-			xx <- yr-1
-			com.contours<-contour.gen(subset(ScallopSurv,year==xx,c('ID','lon','lat','com')),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
-			
-			lvls=c(1,5,10,50,100,200,300,400,500) #levels to be color coded
-			
-			CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
-			CP <- convCP(CL)
-			sfa29cont.poly <- joinPolys(CP$PolySet,sfa29.poly)
-			attr(sfa29cont.poly,"projection") <-"LL"
-			cont.data<- data.frame(PID=1:length(lvls),col=brewer.pal(length(lvls),"YlGn"),border=NA, stringsAsFactors=FALSE)
-			
-			png(paste0("figures/sfa29comDensity",xx,'_FR',".png"),9,9,res=200,units='in')
-			ScallopMap('sfa29',bathcol=rgb(0,0,1,0.1),contour=list(sfa29cont.poly,cont.data),title=paste('SFA 29 Density (>= 100mm)'),plot.boundries = F, plot.bathy=T, bathy.source='usgs', boundaries='inshore')
-			points(lat~lon,ScallopSurv,subset=year==xx,pch=16,cex=0.5)
-			addLines(sfa29strata)
-			legend("topright",c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep='')),fill=cont.data$col,title="Nombre par trait",inset=0.02,bty='n',box.col='white', cex=1)
-			dev.off()
-			
-			
-			# SURVEY - Recruit Size 90-99 mm
-			xx <- yr-1
-			rec.contours<-contour.gen(subset(ScallopSurv,year==xx,c('ID','lon','lat','rec')),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
-			
-			lvls=c(1,5,10,50,100,200,300,400,500)
-			
-			CL <- contourLines(rec.contours$image.dat,levels=lvls)
-			CP <- convCP(CL)
-			sfa29cont.poly <- joinPolys(CP$PolySet,sfa29.poly)
-			cont.data<- data.frame(PID=1:length(lvls),col=brewer.pal(length(lvls),"YlGn"),border=NA, stringsAsFactors=FALSE)
-			
-			png(paste0("figures/sfa29recDensity",xx,"_FR.png"),9,9,res=200,units='in')
-			ScallopMap('sfa29',bathcol=rgb(0,0,1,0.1),contour=list(sfa29cont.poly,cont.data),title=paste('SFA 29 Density (90-99 mm)'),plot.boundries = F, plot.bathy=T, bathy.source='usgs')
-			points(lat~lon,ScallopSurv,subset=year==xx,pch=16,cex=0.5)
-			addLines(sfa29strata)
-			legend("topright",c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep='')),fill=cont.data$col,title="Nombre par trait",inset=0.02,bty='n',box.col='white', cex=1)
-			dev.off()
-			
-			
-			# SURVEY - Prerecruit Size < 90 mm
-			xx <- yr-1
-			pre.contours<-contour.gen(subset(ScallopSurv,year==xx,c('ID','lon','lat','pre')),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
-			
-			lvls=c(1,5,10,50,100,200,300,400,500)
-			
-			CL <- contourLines(pre.contours$image.dat,levels=lvls)
-			CP <- convCP(CL)
-			sfa29cont.poly <- joinPolys(CP$PolySet,sfa29.poly)
-			cont.data<- data.frame(PID=1:length(lvls),col=brewer.pal(length(lvls),"YlGn"),border=NA, stringsAsFactors=FALSE)
-			
-			png(paste0("figures/sfa29preDensity",xx,"_FR.png"),9,9,res=200,units='in')
-			ScallopMap('sfa29',bathcol=rgb(0,0,1,0.1),contour=list(sfa29cont.poly,cont.data),title=paste('SFA 29 Density (< 90 mm)'),plot.boundries = F, plot.bathy=T, bathy.source='usgs')	
-			points(lat~lon,ScallopSurv,subset=year==xx,pch=16,cex=0.5)
-			addLines(sfa29strata)
-			legend("topright",c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep='')),fill=cont.data$col,title="Nombre par trait",inset=0.02,bty='n',box.col='white', cex=1)
-			dev.off()
-
-		# SURVEY BIOMASS - Commercial  Size >= 100 mm
-			xx <- yr-1
-			com.contours<-contour.gen(subset(ScallopSurv.kg,year==xx,c('ID','lon','lat','com.bm')),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
-
-			lvls=c(0.01,0.05,0.1,1,2,3,4,5) #levels to be color coded
-
-			CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
-			CP <- convCP(CL)
-			sfa29cont.poly <- joinPolys(CP$PolySet,sfa29.poly)
-			cont.data<- data.frame(PID=1:length(lvls),col=brewer.pal(length(lvls),"YlGn"),border=NA, stringsAsFactors=FALSE)
-
-			png(paste0("figures/sfa29comBiomass",xx,".png"),9,9,res=200,units='in')
-			ScallopMap('sfa29',bathcol=rgb(0,0,1,0.1),contour=list(sfa29cont.poly,cont.data),title=paste('SFA 29 Biomass (>= 100mm)'),plot.boundries = F, plot.bathy=T, bathy.source='usgs')	
-			points(lat~lon,ScallopSurv.kg,subset=year==xx,pch=16,cex=0.5)
-			addLines(sfa29strata)
-			legend("topright",c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep='')),fill=cont.data$col,title="kg/tow",inset=0.02,bty='n',box.col='white', cex=1)
-			dev.off()
-
-		# SURVEY BIOMASS - Recruit Size 90-99 mm
-			xx <- yr-1
-			com.contours<-contour.gen(subset(ScallopSurv.kg,year==xx,c('ID','lon','lat','rec.bm')),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
-
-			lvls=c(0.01,0.05,0.1,1,2,3,4,5) #levels to be color coded
-
-			CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
-			CP <- convCP(CL)
-			sfa29cont.poly <- joinPolys(CP$PolySet,sfa29.poly)
-			cont.data<- data.frame(PID=1:length(lvls),col=brewer.pal(length(lvls),"YlGn"),border=NA, stringsAsFactors=FALSE)
-
-			png(paste0("figures/sfa29recBiomass",xx,".png"),9,9,res=200,units='in')
-			ScallopMap('sfa29',bathcol=rgb(0,0,1,0.1),contour=list(sfa29cont.poly,cont.data),title=paste('SFA 29 Biomass (90-99 mm)'),plot.boundries = F, plot.bathy=T, bathy.source='usgs')	
-			points(lat~lon,ScallopSurv.kg,subset=year==xx,pch=16,cex=0.5)
-			addLines(sfa29strata)
-			legend("topright",c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep='')),fill=cont.data$col,title="kg/tow",inset=0.02,bty='n',box.col='white', cex=1)
-			dev.off()
-
-		# SURVEY BIOMASS - Prerecruit Size < 90 mm
-			xx <- yr-1
-			com.contours<-contour.gen(subset(ScallopSurv.kg,year==xx,c('ID','lon','lat','pre.bm')),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
-
-			lvls=c(0.01,0.05,0.1,1,2,3,4,5) #levels to be color coded
-
-			CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
-			CP <- convCP(CL)
-			sfa29cont.poly <- joinPolys(CP$PolySet,sfa29.poly)
-			cont.data<- data.frame(PID=1:length(lvls),col=brewer.pal(length(lvls),"YlGn"),border=NA, stringsAsFactors=FALSE)
-
-			png(paste0("figures/sfa29preBiomass",xx,".png"),9,9,res=200,units='in')
-			ScallopMap('sfa29',bathcol=rgb(0,0,1,0.1),contour=list(sfa29cont.poly,cont.data),title=paste('SFA 29 Biomass (< 90 mm)'),plot.boundries = F, plot.bathy=T, bathy.source='usgs')	
-			points(lat~lon,ScallopSurv.kg,subset=year==xx,pch=16,cex=0.5)
-			addLines(sfa29strata)
-			legend("topright",c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep='')),fill=cont.data$col,title="kg/tow",inset=0.02,bty='n',box.col='white', cex=1)
-			dev.off()
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_PreClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 
 
-
-		# SURVEY CONDITION (g of 100mm shell height scallop) 
-			xx <- yr-1
-			#subset survey data to be just those tows where detailed sampling was conducted - note from dim(con.dat) this is already done.
-			com.contours<-contour.gen(subset(con.dat,year==xx,c('ID','lon','lat','Condition')),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
-
-			lvls=c(5,6,7,8,9,10,11,12) #levels to be color coded
-			#lvls=c(4,6,8,10,12,14,16) # large scale
-			#lvls=c(6,7,8,9,10,11,12,13) # good condition scale # update based on values observed
-
-			CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
-			CP <- convCP(CL)
-			sfa29cont.poly <- joinPolys(CP$PolySet,sfa29.poly)
-			cont.data<- data.frame(PID=1:length(lvls),col=brewer.pal(length(lvls),"YlOrBr"),border=NA, stringsAsFactors=FALSE)  #previously was YlOrBr YlGnBu
-
-			png(paste0("figures/sfa29comCF",xx,".png"),9,9,res=200,units='in')
-			ScallopMap('sfa29',bathcol=rgb(0,0,1,0.1),contour=list(sfa29cont.poly,cont.data),title=paste('SFA 29 Condition'),plot.boundries = F,plot.bathy=T, bathy.source='quick')
-			points(lat~lon,con.dat,subset=year==xx,pch=16,cex=0.5)
-			addLines(sfa29strata)
-			legend("topright",c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep='')),fill=cont.data$col,title="Condition (g)",inset=0.02,bty='o',box.col='white', cex=1,  bg='white')
-			dev.off()
-
-
-
-		# SURVEY MEAT COUNT - of commerical (>= 100mm) sized animals
-			# SURVEY MEAT COUNT - of commerical (>= 80mm) sized animals
-			xx <- yr-1
-	
-			mc.contours<-contour.gen(na.omit(subset(ScallopSurv.mtcnt,year==xx,c('ID','lon','lat','meat.count'))),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,interp.method='gstat',blank=T,plot=F,subset.poly='square',subset.eff=0,subscale=0.25,res=0.01)
-
-			lvls=seq(10,45,5)
-			div=2
-
-			CL <- contourLines(mc.contours$image.dat,levels=lvls)
-			CP <- convCP(CL)
-			sfa29cont.poly <- joinPolys(CP$PolySet,sfa29.poly)
-			Ncol=length(lvls)+div
-			cont.data<- data.frame(PID=1:length(lvls),col=brewer.pal(Ncol,"Spectral")[c(Ncol:(div+2),1)],border=NA,stringsAsFactors=FALSE)
-
-			png(paste0("figures/sfa29comMeatCnt",xx,".png"),9,9,res=200,units='in')
-			ScallopMap('sfa29',bathcol=rgb(0,0,1,0.1),contour=list(sfa29cont.poly,cont.data),title=paste('Meat Count (>= 100mm)'),plot.boundries = F,plot.bathy=T, bathy.source='usgs')
-			points(lat~lon,ScallopSurv.mtcnt,subset=year==xx,pch=16,cex=0.5)
-			addLines(sfa29strata)
-			legend("topright",c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep='')),fill=cont.data$col,title="Scallops/500g",inset=0.02,bty='n',box.col='white', cex=1)
-			dev.off()
-
-			
-			
 			
 ###...................###
 ### Plot CPUE in grid ###

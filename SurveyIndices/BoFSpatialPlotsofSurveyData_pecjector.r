@@ -3101,6 +3101,9 @@ scstratalabs$DESCRIPTION <- toupper(scstratalabs$DESCRIPTION)
 
 scstrataman <- data.frame(DESCRIPTION=c("2-8 MILES", "8-16 MILES"), X=c(-65.77, -65.85094), Y=c(44.82, 44.9))
 
+#FIRST need to REMOVE object cfd - custom fill discrete environment for the contour plots
+rm(cfd)
+
 p <- pecjector(area =list(x=c(-67.25, -64.3), y=c(43.65, 45.6), crs = 4326),repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
                add_layer = list(land = "grey"))
 
