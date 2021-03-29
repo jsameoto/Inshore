@@ -317,7 +317,7 @@ p + #Plot survey data and format figure.
 #save
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_ComBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 10, height = 10, dpi = 300, units = "cm", limitsize = TRUE)
 
-# ----CONDITION PLOTS-----
+# ----CONDITION PLOT-----
 
 com.contours <- contour.gen(con.dat %>% filter(year==survey.year) %>% dplyr::select(ID, lon, lat, Condition),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
 
@@ -547,48 +547,6 @@ p + #Plot survey data and format figure.
 #save
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_RecBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 10, height = 10, dpi = 300, units = "cm", limitsize = TRUE)
 
-# ----CONDITION PLOTS-----
-
-rec.contours <- contour.gen(con.dat %>% filter(year==survey.year) %>% dplyr::select(ID, lon, lat, Condition),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
-
-lvls=c(5,6,7,8,9,10,11,12) #levels to be color coded
-#lvls=c(4,6,8,10,12,14,16) # large scale
-#lvls=c(6,7,8,9,10,11,12,13) # good condition scale # update based on values observed
-
-
-CL <- contourLines(rec.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
-CP <- convCP(CL)
-totCont.poly <- CP$PolySet
-
-##Convert pbsmapping object to sf
-totCont.poly <- as.PolySet(totCont.poly,projection = "LL") #assuming you provide Lat/Lon data and WGS84
-totCont.poly <- PolySet2SpatialLines(totCont.poly) # Spatial lines is a bit more general (don't need to have boxes closed)
-totCont.poly.sf <- st_as_sf(totCont.poly) %>%
-  st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
-  st_cast("POLYGON") %>% #Convert multilines to polygons
-  st_make_valid() %>% 
-  st_intersection(sfa29.poly %>% group_by(Id) %>% st_union()) %>% #Dissolve polygon segments and crop contours to sfa29.poly
-  mutate(level = unique(CP$PolyData$level))
-
-#Colour aesthetics and breaks for contours
-labels <- c("5-6", "6-7", "7-8", "8-9", "9-10", "10-11", "11-12", "12+")
-col <- brewer.pal(length(lvls),"YlOrBr") #set colours
-cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = "Condition (g)", limits = labels) #set custom fill arguments for pecjector.
-
-#Plot with Pecjector
-p <- pecjector(area = "sfa29",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
-
-p + #Plot survey data and format figure.
-  geom_spatial_point(data = con.dat %>% filter(year == survey.year), aes(lon, lat), size = 0.5) +
-  geom_sf(data = sfa29.poly, size = 0.5, colour = "black", fill = NA) +
-  labs(title = paste(survey.year, "", "SFA29 Condition"), x = "Longitude", y = "Latitude") +
-  guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
-  plot.theme
-
-ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_Condition',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
-
-
 # ----CLAPPERS -----
 
 rec.contours<-contour.gen(ScallopSurv.dead %>%  filter(year==survey.year) %>% #Excludes SPA3 and SFA29
@@ -734,47 +692,6 @@ p + #Plot survey data and format figure.
 #save
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_PreBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 10, height = 10, dpi = 300, units = "cm", limitsize = TRUE)
 
-# ----CONDITION PLOTS-----
-
-pre.contours <- contour.gen(con.dat %>% filter(year==survey.year) %>% dplyr::select(ID, lon, lat, Condition),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
-
-lvls=c(5,6,7,8,9,10,11,12) #levels to be color coded
-#lvls=c(4,6,8,10,12,14,16) # large scale
-#lvls=c(6,7,8,9,10,11,12,13) # good condition scale # update based on values observed
-
-
-CL <- contourLines(pre.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
-CP <- convCP(CL)
-totCont.poly <- CP$PolySet
-
-##Convert pbsmapping object to sf
-totCont.poly <- as.PolySet(totCont.poly,projection = "LL") #assuming you provide Lat/Lon data and WGS84
-totCont.poly <- PolySet2SpatialLines(totCont.poly) # Spatial lines is a bit more general (don't need to have boxes closed)
-totCont.poly.sf <- st_as_sf(totCont.poly) %>%
-  st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
-  st_cast("POLYGON") %>% #Convert multilines to polygons
-  st_make_valid() %>% 
-  st_intersection(sfa29.poly %>% group_by(Id) %>% st_union()) %>% #Dissolve polygon segments and crop contours to sfa29.poly
-  mutate(level = unique(CP$PolyData$level))
-
-#Colour aesthetics and breaks for contours
-labels <- c("5-6", "6-7", "7-8", "8-9", "9-10", "10-11", "11-12", "12+")
-col <- brewer.pal(length(lvls),"YlOrBr") #set colours
-cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = "Condition (g)", limits = labels) #set custom fill arguments for pecjector.
-
-#Plot with Pecjector
-p <- pecjector(area = "sfa29",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
-
-p + #Plot survey data and format figure.
-  geom_spatial_point(data = con.dat %>% filter(year == survey.year), aes(lon, lat), size = 0.5) +
-  geom_sf(data = sfa29.poly, size = 0.5, colour = "black", fill = NA) +
-  labs(title = paste(survey.year, "", "SFA29 Condition"), x = "Longitude", y = "Latitude") +
-  guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
-  plot.theme
-
-ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_Condition',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
-
 
 # ----CLAPPERS -----
 
@@ -825,67 +742,65 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_PreClappers',survey.year,'
 ###...................###
 
 	## Import and prepare Log Data ##
-	log.2001to2011 <- read.csv("logs/logData_2002to2011_sfa29.csv")
-	log.2012 <- read.csv("logs/logsSFA29_2012corrected.csv")
-	log.2013 <- read.csv("logs/dlogSFA29_2013.csv")
-	log.2014 <- read.csv("logs/dlogsSFA29_2014.csv") #Fr db
-	log.2015 <- read.csv("logs/dlogsSFA29_2015.csv") #Fr db
-	log.2016 <- read.csv ("logs/SFA29logs2016.csv")
+
+	#log.2001to2011 <- read.csv(paste0(path.directory, assessmentyear, "/logs/logData_2002to2011_sfa29.csv"))
+	#log.2012 <- read.csv(paste0(path.directory, assessmentyear, "/logs/logsSFA29_2012corrected.csv"))
+	#log.2013 <- read.csv(paste0(path.directory, assessmentyear, "/logs/dlogSFA29_2013.csv"))
+	#log.2014 <- read.csv(paste0(path.directory, assessmentyear, "/logs/dlogsSFA29_2014.csv")) #Fr db
+	#log.2015 <- read.csv(paste0(path.directory, assessmentyear, "/logs/dlogsSFA29_2015.csv")) #Fr db
+	#log.2016 <- read.csv (paste0(path.directory, assessmentyear, "/logs/SFA29logs2016.csv"))
 	# This includes the late season (October) FSC catch
-	log.2017 <- read.csv ("logs/SFA29logs2017_dwnld_Feb2018_JS.csv")
-	log.2018 <- read.csv ("logs/SFA29logs_2018.csv")
-	log.2019 <- read.csv ("logs/SFA29logs_2019.csv")
+	#log.2017 <- read.csv (paste0(path.directory, assessmentyear, "/logs/SFA29logs2017_dwnld_Feb2018_JS.csv"))
+	
+	log.present <- read.csv (paste0(path.directory, assessmentyear, "/logs/SFA29logs_", survey.year, ".csv"))
+	#log.2019 <- read.csv (paste0(path.directory, assessmentyear, "/logs/SFA29logs_2019.csv"))
 	
 	# add YEAR and AREA columns for data years selected directly from the SCALLOP database
 	#is using log data directly from SCALLOP database it's assumed that assigned_ared has been QA/QC'd and this is used as the AREA field
-	log.2018$YEAR <- as.numeric(substr(log.2018$DATE_FISHED,1,4)) #assumed data structure of field DATE_FISHED is character and in format 'YYYY-XX-XX' or "YYYY/XX/XX'
-	log.2019$YEAR <- as.numeric(substr(log.2019$DATE_FISHED,1,4)) 
+	log.present$YEAR <- as.numeric(substr(log.present$DATE_FISHED,1,4)) %>%  #assumed data structure of field DATE_FISHED is character and in format 'YYYY-XX-XX' or "YYYY/XX/XX'
+	    rename(AREA = ASSIGNED_AREA)
 	
-	log.2018$AREA <- log.2018$ASSIGNED_AREA
-	log.2019$AREA <- log.2019$ASSIGNED_AREA
-	
-	log.2018$DDSlat<-convert.dd.dddd(log.2018$LATITUDE)
-	log.2018$DDSlon<--convert.dd.dddd(log.2018$LONGITUDE)
-	log.2018$ID<-1:nrow(log.2018)
-	
-	log.2019$DDSlat<-convert.dd.dddd(log.2019$LATITUDE)
-	log.2019$DDSlon<--convert.dd.dddd(log.2019$LONGITUDE)
-	log.2019$ID<-1:nrow(log.2019)
-
-	# Check for privacy considerations (min 5 trips per area to include in presentation)
-	require (plyr)
-	trips.pa <- ddply (log.2019,. (AREA), summarize, 
-	                   n.trips = length (unique(TRIP_ID)))
-	# Remove observations in E in 2019
-	
-	# if merging multiple years of  data, need to subset columns from those datasets selected directly from SCALLOP database
-	#log.2014 <- log.2014[,c(1:4,6:27,29,39:40)]
-	#log.2015 <- log.2015[,c(1:4,6:27,29,39:40)]
-	
-	# merge data if required
-	#sfa29Logs <- rbind(log.2001to2011, log.2012, log.2013, log.2014, log.2015)
-	#sfa29Logs$DDSlat<-convert.dd.dddd(sfa29Logs$LATITUDE)
-	#sfa29Logs$DDSlon<--convert.dd.dddd(sfa29Logs$LONGITUDE)
-	#sfa29Logs$ID<-1:nrow(sfa29Logs)
+	log.present$DDSlat<-convert.dd.dddd(log.present$LATITUDE)
+	log.present$DDSlon<--convert.dd.dddd(log.present$LONGITUDE)
+	log.present$ID<-1:nrow(log.present)
 
 
+	#Filter out areas for privacy considerations (min 5 trips per area to include in presentation)
+	
+log.2018_priv <- log.2018 %>%
+	 group_by(AREA) %>% 
+	 filter(!n() <=5) %>% #Filter out any areas within the dataset that have less than 5
+	 ungroup() %>% 
+	 dplyr::select(ID, DDSlon, DDSlat, CPUE_KG)
+
+	lvls=seq(5,40,5)  #CPUE levels from 5 to 40 kg/h
+	lvls=seq(5,110,15)  #CPUE levels from 5 to 110 kg/h
+	
+	log.2018.priv.sf <- st_as_sf(log.2018_priv, coords = c("DDSlon", "DDSlat"), crs = 4326)
+	
+	hex <- st_make_grid(log.2018.priv.sf, cellsize=10, square=FALSE) %>%
+	  st_sf() %>%
+	  rowid_to_column('hex_id')
+	plot(hex)
+	
+plot(log.2018.priv.sf)
 	## assign year, select data, plot ##
-	xx <- 2019
+	#xx <- 2019
 	# For 2015: was subarea D closure line: 
 	#Dclosure <- read.csv('Y:/INSHORE SCALLOP/SFA29/2016/Fishery/2015SubareaDClosureLine/SubareaDClosureLine2015.csv')
 	#attr(Dclosure,"projection") <- "LL"
 	
 	## Remove B fishing from plot in 2018 due to privacy considerations
-	log.2018_noB <- log.2018 [!log.2018$ASSIGNED_AREA == "29B",]
-	gridlog<-subset(log.2018_noB, YEAR==xx, c('ID','DDSlon','DDSlat','CPUE_KG'))
+	#log.2018_noB <- log.2018 [!log.2018$ASSIGNED_AREA == "29B",]
+	#gridlog<-subset(log.2018_noB, YEAR==xx, c('ID','DDSlon','DDSlat','CPUE_KG'))
 
 	## Remove E fishing from plot in 2019 due to privacy considerations
-	log.2019_PA <- log.2019 [!log.2019$ASSIGNED_AREA == "29E",]
-	gridlog<-subset(log.2019_PA, YEAR==xx, c('ID','DDSlon','DDSlat','CPUE_KG'))
+	#log.2019_PA <- log.2019 [!log.2019$ASSIGNED_AREA == "29E",]
+	#gridlog<-subset(log.2019_PA, YEAR==xx, c('ID','DDSlon','DDSlat','CPUE_KG'))
 
 	
-	lvls=seq(5,40,5)  #CPUE levels from 5 to 40 kg/h
-	lvls=seq(5,110,15)  #CPUE levels from 5 to 110 kg/h
+	#lvls=seq(5,40,5)  #CPUE levels from 5 to 40 kg/h
+	#lvls=seq(5,110,15)  #CPUE levels from 5 to 110 kg/h
 	
 	cont.data<- data.frame(PID=1:length(lvls),col=brewer.pal(length(lvls),"YlGnBu"),border=NA,stringsAsFactors=FALSE)
 windows()
