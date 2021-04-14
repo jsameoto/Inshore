@@ -197,8 +197,9 @@ ScallopSurv.mtcnt <- ScallopSurv.kg %>%
 	 merge(ScallopSurv %>% dplyr::select(ID, com), by = "ID") %>% 
 	 mutate(meat.count = (0.5/(com.bm/com))) %>% 
 	 filter(!is.na(meat.count))
-	
-#Calculating proportion of clappers:
+
+# --------------------------------Calculating proportion of clappers -----------------------------------------	
+
 live <- ScallopSurv %>% 
   dplyr::select(CRUISE, STRATA_ID, tow, year, lat, lon, tot, ID, com, rec, pre)
 
@@ -260,7 +261,7 @@ p <- pecjector(area = "sfa29",repo ='github',c_sys="ll", gis.repo = 'github', pl
                add_layer = list(land = "grey", bathy = "ScallopMap", scale.bar = c('bl',0.5)), 
                add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>%
                                    mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
-p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
+#p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
 
 #ENG
 p + #Plot survey data and format figure.
@@ -319,7 +320,7 @@ p <- pecjector(area = "sfa29",repo ='github',c_sys="ll", gis.repo = 'github', pl
                add_layer = list(land = "grey", bathy = "ScallopMap", scale.bar = c('bl',0.5)), 
                add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>%
                                    mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
-p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
+#p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
 
 #ENG
 p + #Plot survey data and format figure.
@@ -365,7 +366,7 @@ cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = "Cond
 #Plot with Pecjector
 p <- pecjector(area = "sfa29",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
                add_layer = list(land = "grey", bathy = "ScallopMap", scale.bar = c('bl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
-p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
+#p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = con.dat %>% filter(year == survey.year), aes(lon, lat), size = 0.5) +
@@ -408,12 +409,12 @@ cfd <- scale_fill_manual(values = alpha(col, 0.45), breaks = labels, name = expr
 
 p <- pecjector(area = "sfa29",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
                add_layer = list(land = "grey", bathy = "ScallopMap", scale.bar = c('bl',0.5)),add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
-p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
+#p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv.mtcnt %>% filter(year == survey.year), aes(lon, lat), size = 0.5) +
   geom_sf(data = sfa29.poly, size = 0.5, colour = "black", fill = NA) +
-  labs(title = paste(survey.year, "", "SFA29 Meat Count (>= 100"), x = "Longitude", y = "Latitude") +
+  labs(title = paste(survey.year, "", "SFA29 Meat Count (>= 100)"), x = "Longitude", y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   plot.theme
 
@@ -448,7 +449,7 @@ cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = expre
 
 p <- pecjector(area = "sfa29",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
                add_layer = list(land = "grey", bathy = "ScallopMap", scale.bar = c('bl',0.5)),add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
-p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
+#p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
 
 
 p + #Plot survey data and format figure.
@@ -491,7 +492,7 @@ cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = "Prop
 #Pecjector with custom contour layer
 p <- pecjector(area = "sfa29",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
                add_layer = list(land = "grey", bathy = "ScallopMap", scale.bar = c('bl',0.5)),add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
-p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
+#p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = prop.clappers %>% filter(year == survey.year), aes(lon, lat), size = 0.5) +
@@ -536,7 +537,7 @@ p <- pecjector(area = "sfa29",repo ='github',c_sys="ll", gis.repo = 'github', pl
                add_layer = list(land = "grey", bathy = "ScallopMap", scale.bar = c('bl',0.5)), 
                add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>%
                                    mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
-p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
+#p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
 
 #ENG
 p + #Plot survey data and format figure.
@@ -595,7 +596,7 @@ p <- pecjector(area = "sfa29",repo ='github',c_sys="ll", gis.repo = 'github', pl
                add_layer = list(land = "grey", bathy = "ScallopMap", scale.bar = c('bl',0.5)), 
                add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>%
                                    mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
-p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
+#p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
 
 #ENG
 p + #Plot survey data and format figure.
@@ -639,7 +640,7 @@ cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = expre
 
 p <- pecjector(area = "sfa29",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
                add_layer = list(land = "grey", bathy = "ScallopMap", scale.bar = c('bl',0.5)),add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
-p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
+#p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
 
 
 p + #Plot survey data and format figure.
@@ -657,7 +658,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_RecClappers',survey.year,'
 rec.contours<-contour.gen(prop.clappers %>% filter(year==survey.year) %>% 
                             dplyr::select(ID,lon,lat,prop.dead.rec),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata', blank=T,plot=F,res=0.01)
 
-lvls=c(0.01,0.10,0.20,0.30,0.5,0.6,0.8) #levels to be color coded
+lvls=c(0.01,0.10,0.20,0.30,0.5,0.6,0.8, 1) #levels to be color coded
 
 CL <- contourLines(rec.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
 CP <- convCP(CL)
@@ -670,6 +671,7 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
   st_cast("POLYGON") %>% #Convert multilines to polygons
   st_make_valid() %>% 
+  st_intersection(sfa29.poly %>% group_by(Id) %>% st_union()) %>% 
   mutate(level = unique(CP$PolyData$level))
 
 
@@ -681,7 +683,7 @@ cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = "Prop
 #Pecjector with custom contour layer
 p <- pecjector(area = "sfa29",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
                add_layer = list(land = "grey", bathy = "ScallopMap", scale.bar = c('tl',0.5)),add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
-p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
+#p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = prop.clappers %>% filter(year == survey.year), aes(lon, lat), size = 0.5) +
@@ -726,7 +728,7 @@ p <- pecjector(area = "sfa29",repo ='github',c_sys="ll", gis.repo = 'github', pl
                add_layer = list(land = "grey", bathy = "ScallopMap", scale.bar = c('bl',0.5)), 
                add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>%
                                    mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
-p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
+#p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
 
 #ENG
 p + #Plot survey data and format figure.
@@ -784,7 +786,7 @@ p <- pecjector(area = "sfa29",repo ='github',c_sys="ll", gis.repo = 'github', pl
                add_layer = list(land = "grey", bathy = "ScallopMap", scale.bar = c('bl',0.5)), 
                add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>%
                                    mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
-p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
+#p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
 
 #ENG
 p + #Plot survey data and format figure.
@@ -829,7 +831,7 @@ cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = expre
 
 p <- pecjector(area = "sfa29",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
                add_layer = list(land = "grey", bathy = "ScallopMap", scale.bar = c('bl',0.5)),add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
-p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
+#p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
 
 
 p + #Plot survey data and format figure.
@@ -841,47 +843,6 @@ p + #Plot survey data and format figure.
   plot.theme
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_PreClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 10, height = 10, dpi = 300, units = "cm", limitsize = TRUE)
-
-# ----PROPORTION OF CLAPPERS -----
-
-pre.contours<-contour.gen(prop.clappers %>% filter(year==survey.year) %>% 
-                            dplyr::select(ID,lon,lat,prop.dead.pre),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata', blank=T,plot=F,res=0.01)
-
-lvls=c(0.01,0.10,0.20,0.30,0.5,0.6,0.8, 1) #levels to be color coded
-
-CL <- contourLines(pre.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
-CP <- convCP(CL)
-totCont.poly <- CP$PolySet
-
-##Convert pbsmapping object to sf
-totCont.poly <- as.PolySet(totCont.poly,projection = "LL") #assuming you provide Lat/Lon data and WGS84
-totCont.poly <- PolySet2SpatialLines(totCont.poly) # Spatial lines is a bit more general (don't need to have boxes closed)
-totCont.poly.sf <- st_as_sf(totCont.poly) %>%
-  st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
-  st_cast("POLYGON") %>% #Convert multilines to polygons
-  st_make_valid() %>% 
-  mutate(level = unique(CP$PolyData$level))
-
-
-#Colour aesthetics and breaks for contours
-labels <- c("0.01-0.10", "0.10-0.20", "0.20-0.30", "0.30-0.40", "0.40-0.50","0.50-0.60","0.60-0.80", "0.80-1")
-col <- brewer.pal(length(lvls),"YlGn") #set colours
-cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = "Proportion", limits = labels) #set custom fill arguments for pecjector.
-
-#Pecjector with custom contour layer
-p <- pecjector(area = "sfa29",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", scale.bar = c('tl',0.5)),add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
-p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
-
-p + #Plot survey data and format figure.
-  geom_spatial_point(data = prop.clappers %>% filter(year == survey.year),aes(lon, lat), size = 0.5) +
-  geom_sf(data = sfa29.poly, size = 0.5, colour = "black", fill = NA) +
-  labs(title = paste(survey.year, "", "SFA29 Clapper Proportion (< 90 mm)"), x = "Longitude",
-       y = "Latitude") +
-  guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
-  plot.theme
-
-ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_PropPreClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 			
 ###...................###
