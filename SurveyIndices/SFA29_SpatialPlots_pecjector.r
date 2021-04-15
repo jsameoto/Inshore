@@ -878,19 +878,27 @@ log.2018_priv <- log.present %>%
 	 group_by(AREA) %>% 
 	 filter(!n() <=5) %>% #Filter out any areas within the dataset that have less than 5
 	 ungroup() %>% 
-	 dplyr::select(ID, DDSlon, DDSlat, CPUE_KG)
+	 dplyr::select(ID, LONGITUDE, LATITUDE, CPUE_KG)
 
 lvls=seq(5,40,5)  #CPUE levels from 5 to 40 kg/h
 lvls=seq(5,110,15)  #CPUE levels from 5 to 110 kg/h
 	
-log.2018.priv.sf <- st_as_sf(log.2018_priv, coords = c("DDSlon", "DDSlat"), crs = 4326)
-	
-hex <- st_make_grid(log.2018.priv.sf, cellsize=10, square=FALSE) %>%
-	  st_sf() %>%
-	  rowid_to_column('hex_id')
-	plot(hex)
-	
+log.2018.priv.sf <- st_as_sf(log.2018_priv, coords = c("LONGITUDE", "LATITUDE"), crs = 32619)
 plot(log.2018.priv.sf)
+
+
+hex <- st_make_grid(log.2018.priv.sf, cellsize= 0.015, square=FALSE) %>% 
+  st_as_sf(data.table(id_hex=1:73, geom=sf::st_as_text(hex)), wkt='geom')
+
+plot(st_geometry(hex))
+plot(log.2018.priv.sf, add = TRUE)
+
+J <-  st_join(hex, log.2018.priv.sf, join=st_contains)
+
+plot(log.2018.priv.sf)
+plot(J[5])
+	
+
 	## assign year, select data, plot ##
 	#xx <- 2019
 	# For 2015: was subarea D closure line: 
