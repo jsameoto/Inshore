@@ -2564,14 +2564,21 @@ p + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv.dead %>% 
                        filter(year == survey.year), #survey.year defined in beginning of script
                      aes(lon, lat), size = 0.5) +
-  labs(title = paste(survey.year, "", "SPA4 Clapper Density (< 65 mm)"), x = "Longitude",
-       y = "Latitude") +
+  labs(title = paste(survey.year, "", "SPA4 Clapper Density (< 65 mm)"), x = "Longitude", y = "Latitude") +
+  guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   plot.theme.4
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA4_PreClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 
 # ----SPA3 -----
+
+#Create contour and specify plot aesthetics
+pre.contours <- contour.gen(ScallopSurv.dead %>%  
+                              filter(year == survey.year, STRATA_ID %in% c(22, 23, 24)) %>% #only SPA3
+                              dplyr::select(ID, lon, lat, pre), 
+                            ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
+
 
 #Create contour and specify plot aesthetics
 lvls=c(1,5,10,15,20,25,30,50,100) #levels to be color coded
@@ -2696,6 +2703,6 @@ p +
   xlab("LONGITUDE") + ylab("LATITUDE")
 
 
-ggsave(filename = paste0(saveplot.dir,'ContPlot_BF_Strata',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir,'BoF_Strata.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 ########################################################################################################################################

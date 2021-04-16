@@ -844,10 +844,16 @@ p + #Plot survey data and format figure.
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_PreClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 10, height = 10, dpi = 300, units = "cm", limitsize = TRUE)
 
-			
-###...................###
-### Plot CPUE in grid ###
-###...................###
+
+# ------------------------------END OF CONTOUR PLOTS  -------------------------------------------
+
+
+##############################################################################################################################################################
+
+
+# ------------------------------Plot CPUE in grid -------------------------------------------------------
+
+require(data.table)
 
 	## Import and prepare Log Data ##
 
@@ -860,16 +866,19 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_PreClappers',survey.year,'
 	# This includes the late season (October) FSC catch
 	#log.2017 <- read.csv (paste0(path.directory, assessmentyear, "/logs/SFA29logs2017_dwnld_Feb2018_JS.csv"))
 	
-log.present <- read.csv (paste0(path.directory, assessmentyear, "/logs/SFA29logs_", survey.year, ".csv"))
+log.present <- read.csv(paste0(path.directory, assessmentyear, "/logs/SFA29logs_", survey.year, ".csv"))
 	#log.2019 <- read.csv (paste0(path.directory, assessmentyear, "/logs/SFA29logs_2019.csv"))
 	
+
 	# add YEAR and AREA columns for data years selected directly from the SCALLOP database
 	#is using log data directly from SCALLOP database it's assumed that assigned_ared has been QA/QC'd and this is used as the AREA field
+#*NOTE* - Longitude is not negative in log.present
+
 log.present <- log.present %>% 
   mutate(YEAR = as.numeric(substr(log.present$DATE_FISHED,1,4))) %>%  #assuming character and in format 'YYYY-XX-XX' or "YYYY/XX/XX'
-	rename(AREA = ASSIGNED_AREA) %>% 
+	dplyr::rename(AREA = ASSIGNED_AREA) %>% 
   mutate(DDSlat = convert.dd.dddd(LATITUDE)) %>% 
-	mutate(DDSlon = convert.dd.dddd(LONGITUDE)) %>%
+	mutate(DDSlon = -convert.dd.dddd(LONGITUDE)) %>%
 	mutate(ID = 1:nrow(log.present))
 
 	#Filter out areas for privacy considerations (min 5 trips per area to include in presentation)
@@ -878,25 +887,66 @@ log.2018_priv <- log.present %>%
 	 group_by(AREA) %>% 
 	 filter(!n() <=5) %>% #Filter out any areas within the dataset that have less than 5
 	 ungroup() %>% 
-	 dplyr::select(ID, LONGITUDE, LATITUDE, CPUE_KG)
+	 dplyr::select(ID, DDSlon, DDSlat, CPUE_KG)
 
-lvls=seq(5,40,5)  #CPUE levels from 5 to 40 kg/h
-lvls=seq(5,110,15)  #CPUE levels from 5 to 110 kg/h
+
 	
-log.2018.priv.sf <- st_as_sf(log.2018_priv, coords = c("LONGITUDE", "LATITUDE"), crs = 32619)
+log.2018.priv.sf <- st_as_sf(log.2018_priv, coords = c("DDSlon", "DDSlat"), crs = 4326)
 plot(log.2018.priv.sf)
 
 
-hex <- st_make_grid(log.2018.priv.sf, cellsize= 0.015, square=FALSE) %>% 
-  st_as_sf(data.table(id_hex=1:73, geom=sf::st_as_text(hex)), wkt='geom')
+hex <- st_make_grid(log.2018.priv.sf, cellsize= 0.015, square=FALSE)
+grid <- st_make_grid(log.2018.priv.sf, cellsize= 0.015, square=TRUE)
+
+hex <- st_as_sf(data.table(id_hex=1:2394, geom=sf::st_as_text(hex)), wkt='geom', crs = 4326)
+grid <- st_as_sf(data.table(id_grd=1:2046, geom=sf::st_as_text(grid)), wkt='geom', crs = 4326)
 
 plot(st_geometry(hex))
+plot(st_geometry(grid))
 plot(log.2018.priv.sf, add = TRUE)
 
-J <-  st_join(hex, log.2018.priv.sf, join=st_contains)
+join <- hex %>% 
+  st_join(log.2018.priv.sf, join=st_contains) %>%
+  group_by(id_hex) %>% 
+  dplyr::summarise(sum_CPUE_KG=sum(CPUE_KG, na.rm=T),
+                   mean_CPUE_KG=mean(CPUE_KG, na.rm=T)) %>% 
+  filter(sum_CPUE_KG != 0)
 
-plot(log.2018.priv.sf)
-plot(J[5])
+join <- grid %>% 
+  st_join(log.2018.priv.sf, join=st_contains) %>%
+  group_by(id_grd) %>% 
+  dplyr::summarise(sum_CPUE_KG=sum(CPUE_KG, na.rm=T),
+                   mean_CPUE_KG=mean(CPUE_KG, na.rm=T)) %>% 
+  filter(sum_CPUE_KG != 0)
+
+
+#lvls=seq(5,40,5)  #CPUE levels from 5 to 40 kg/h
+lvls=seq(5,110,15)  #CPUE levels from 5 to 110 kg/h
+
+avg.cpue <- join %>% 
+  mutate(brk = cut(mean_CPUE_KG, breaks = lvls))
+plot(avg.cpue[5])
+
+lvls<-c(lvls,max(lvls)*100)
+labels <- c("5-20", "20-35", "35-50", "50-65", "65-80", "80-95", "95-110", "100+")
+col <- brewer.pal(length(lvls),"YlGnBu")
+#cfd <- scale_fill_manual(values = col, breaks = labels, name = expression(frac(Kg,hr)), limits = labels) 
+
+
+p <- pecjector(area = "sfa29",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
+               add_layer = list(land = "grey", bathy = "ScallopMap", scale.bar = c('bl',0.5)))#, add_custom = list(obj = test, size = 1, fill = "cfd", color = "black"))
+#p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
+
+
+p + #Plot survey data and format figure.
+  geom_sf(data = avg.cpue %>% dplyr::select(brk), aes(fill = factor(brk))) +
+  scale_fill_manual(values = brewer.pal(length(lvls),"YlGnBu"), name = "Kg/hr", labels = labels) +
+  geom_sf(data = sfa29.poly, size = 0.5, colour = "black", fill = NA) +
+  labs(title = paste(survey.year, "", "CPUE"), x = "Longitude",
+       y = "Latitude") +
+  theme(legend.position = c(.90,.83),legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.7)), #Legend bkg colour and transparency
+        legend.box.margin = margin(2, 3, 2, 3))
+
 	
 
 	## assign year, select data, plot ##
@@ -914,55 +964,38 @@ plot(J[5])
 	#gridlog<-subset(log.2019_PA, YEAR==xx, c('ID','DDSlon','DDSlat','CPUE_KG'))
 
 	
-	#lvls=seq(5,40,5)  #CPUE levels from 5 to 40 kg/h
-	#lvls=seq(5,110,15)  #CPUE levels from 5 to 110 kg/h
-	
-	cont.data<- data.frame(PID=1:length(lvls),col=brewer.pal(length(lvls),"YlGnBu"),border=NA,stringsAsFactors=FALSE)
-windows()
-	#png("figures/SFA29_CPUEgridplot2019.png",9,9,res=200,units='in') #NOTE: Not printing correctly to png, save from window
-	ScallopMap('sfa29',bathcol=rgb(0,0,1,0.3),poly.lst=gridPlot(gridlog,sfa29.poly,lvls),title=paste(xx), plot.boundries = F,plot.bathy=T, bathy.source='usgs')
-	legend("topright", c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep='')),fill=cont.data$col,title="kg/h",inset=0.01,bty='n',box.col='white', cex=0.9)
-	addPolys(sfa29strata, border="black")
-	text (-66.42, 43.62, "A", cex=2)   #labels for management subareas, position may need to be adjusted, or text colour can be faded
-	text (-66.2, 43.58, "B", cex=2)
-	text (-65.95, 43.28, "C", cex=2)
-	text (-65.6, 43.31, "D", cex=2)
-	text (-66.26, 43.35, "E", cex=2)
-	#dev.off()
-	
-	
 ## Extra plots	(NOT REQUIRED)
 	### Make histogram by area for distribution of cpue in 2017
-	library (ggplot2)
-	histolog<-subset(log.2018, YEAR==xx, c('AREA','CPUE_KG'))
-	histolog <- subset (histolog, !AREA == '29B')
+	#library (ggplot2)
+	#histolog<-subset(log.2018, YEAR==xx, c('AREA','CPUE_KG'))
+	#histolog <- subset (histolog, !AREA == '29B')
 	
-	cpuehisto <- ggplot (histolog, aes (x = CPUE_KG)) + 
-	  geom_histogram (breaks = seq (0, 300, by = 5), col = 'grey60') + labs (x = 'CPUE (kg/h)', y = 'Count') +
-	  facet_wrap (~AREA, ncol = 1) +
-	  scale_x_continuous(breaks = seq (0, 300, by = 50)) +
-	  theme_bw() +
-	  theme(panel.grid=element_blank()) 
-	cpuehisto
+	#cpuehisto <- ggplot (histolog, aes (x = CPUE_KG)) + 
+	 # geom_histogram (breaks = seq (0, 300, by = 5), col = 'grey60') + labs (x = 'CPUE (kg/h)', y = 'Count') +
+	 # facet_wrap (~AREA, ncol = 1) +
+	 # scale_x_continuous(breaks = seq (0, 300, by = 50)) +
+	 # theme_bw() +
+	 # theme(panel.grid=element_blank()) 
+	# cpuehisto
 
 ## Plot catch rate by date for all areas 
-	depdat <- subset (log.2018, YEAR==xx, c('AREA','CPUE_KG', 'DATE_FISHED'))
-	depdat <- subset (depdat, !AREA == '29B')
-	depdat$DATE_FISHED <- as.Date(depdat$DATE_FISHED)
+	# depdat <- subset (log.2018, YEAR==xx, c('AREA','CPUE_KG', 'DATE_FISHED'))
+	# depdat <- subset (depdat, !AREA == '29B')
+	# depdat$DATE_FISHED <- as.Date(depdat$DATE_FISHED)
 
-		depplot <- ggplot (depdat, aes (y = CPUE_KG, x = DATE_FISHED)) +
-	  geom_point () + labs (y = 'CPUE (kg/h)', x = 'Date') +
-	  scale_x_date(date_breaks = "2 week", date_labels =  "%b-%d") + 
-	  facet_wrap (~AREA, ncol = 2, scales = 'free') +
-	  theme (panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-	         panel.background = element_blank(), axis.line = element_line(colour = "black"))
-	depplot
+	#	depplot <- ggplot (depdat, aes (y = CPUE_KG, x = DATE_FISHED)) +
+	#  geom_point () + labs (y = 'CPUE (kg/h)', x = 'Date') +
+	#  scale_x_date(date_breaks = "2 week", date_labels =  "%b-%d") + 
+	#  facet_wrap (~AREA, ncol = 2, scales = 'free') +
+	#  theme (panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+	#         panel.background = element_blank(), axis.line = element_line(colour = "black"))
+#	depplot
 	
 ## Range of values by area
-	library (plyr)
-	cpuevals <- ddply (log.2018,. (AREA),
-	                   summarize,
-	                   min = min (CPUE_KG), max = max (CPUE_KG), mean = mean (CPUE_KG), median = median (CPUE_KG))
+#	library (plyr)
+#	cpuevals <- ddply (log.2018,. (AREA),
+#	                   summarize,
+#	                   min = min (CPUE_KG), max = max (CPUE_KG), mean = mean (CPUE_KG), median = median (CPUE_KG))
 	
 ## MARCH 2015 
 ### For NEW CF method: 
