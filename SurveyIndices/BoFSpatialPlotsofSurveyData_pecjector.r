@@ -67,10 +67,14 @@ source("Y:/INSHORE SCALLOP/BoF/Assessment_fns/contour.gen.r")
 #source("Y:/INSHORE SCALLOP/BoF/Assessment_fns/gridPlot.r")
 
 #### Import Mar-scal functions
-funcs <- c("https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Maps/convert_coords.R",
-           "https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Maps/add_alpha_function.R",
-           "https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Maps/pectinid_projector_sf.R",
+funcs <- c("https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Maps/pectinid_projector_sf.R",
            #"https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Contour/contour.gen.r",
+           #"https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Contour/image.prep.r",
+           #"https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Contour/grid.data.r",
+           #"https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Contour/blank.bank.r",
+           #"https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Contour/smooth.bank.r",
+           #"https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Contour/tick.def.r",
+           #"https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Contour/area.cal.r",
            "https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Survey_and_OSAC/convert.dd.dddd.r")
 dir <- getwd()
 for(fun in funcs) 
