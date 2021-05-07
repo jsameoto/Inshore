@@ -60,13 +60,14 @@ saveplot.dir <- "C:/Users/WILSONB/Documents/1_Inshore_Scallop/FigureTest/" #Dire
 #ROracle
 chan <- dbConnect(dbDriver("Oracle"),username=uid, password=pwd,'ptran')
 
-# source R functions
-source("Y:/INSHORE SCALLOP/BoF/Assessment_fns/contour.gen.r")
-source("Y:/INSHORE SCALLOP/BoF/Assessment_fns/convert.dd.dddd.r")
+
+# ----Import Source functions and polygons---------------------------------------------------------------------
+
+
 #### Import Mar-scal functions
-funcs <- c("https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Maps/convert_coords.R",
-           "https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Maps/add_alpha_function.R",
-           "https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Maps/pectinid_projector_sf.R")
+funcs <- c("https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Maps/pectinid_projector_sf.R",
+           "https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Survey_and_OSAC/convert.dd.dddd.r",
+           "https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/archive/2016/contour.gen.r")
 dir <- getwd()
 for(fun in funcs) 
 {
@@ -76,11 +77,18 @@ for(fun in funcs)
   file.remove(paste0(dir,"/",basename(fun)))
 }
 
-#import SFA 29W boundaries for plots (sf objects)
-sfa29.poly <- st_read("Y:/INSHORE SCALLOP/Databases/Scallsur/SFA29BottomTypes/SFA29_shp/SFA29_subareas_utm19N.shp") %>% 
+#### Import Mar-scal shapefiles
+
+temp <- tempfile() # Find where tempfiles are stored
+# Download this to the temp directory
+download.file("https://raw.githubusercontent.com/Mar-scal/GIS_layers/master/inshore_boundaries/inshore_boundaries.zip", temp)
+temp2 <- tempfile()# Figure out what this file was saved as
+unzip(zipfile=temp, exdir=temp2) #unzip it
+
+# Now read in the shapefiles
+sfa29.poly <- st_read(paste0(temp2, "/SFA29_subareas_utm19N.shp")) %>% 
   st_transform(crs = 4326)
-	
-sfa29strata <- st_read("Y:/INSHORE SCALLOP/Databases/Scallsur/SFA29BottomTypes/SFA29_shp/SFA29_BoundariesFollowing12nmDD_NoSubareas_WGS84.shp")
+sfa29strata <- st_read(paste0(temp2, "/SFA29_BoundariesFollowing12nmDD_NoSubareas_WGS84.shp"))
 
 #Set working directory #
 setwd(paste0(path.directory,"/",assessmentyear))

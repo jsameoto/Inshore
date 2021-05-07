@@ -57,25 +57,16 @@ saveplot.dir <- "C:/Users/WILSONB/Documents/1_Inshore_Scallop/FigureTest/" #Dire
 #ROracle
 chan <- dbConnect(dbDriver("Oracle"),username=uid, password=pwd,'ptran')
 
+# ----Import Source functions and polygons---------------------------------------------------------------------
 
 
-#### Import Source functions and polygons ####
-# source R functions
-#source("Y:/Offshore scallop/Assessment/Assessment_fns/Maps/ScallopMap.R")
-source("Y:/INSHORE SCALLOP/BoF/Assessment_fns/contour.gen.r")
-#source("Y:/INSHORE SCALLOP/BoF/Assessment_fns/convert.dd.dddd.r")
-#source("Y:/INSHORE SCALLOP/BoF/Assessment_fns/gridPlot.r")
+#source("Y:/INSHORE SCALLOP/BoF/Assessment_fns/contour.gen.r")
 
-#### Import Mar-scal functions
+#### Import Mar-scal functions 
 funcs <- c("https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Maps/pectinid_projector_sf.R",
-           #"https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Contour/contour.gen.r",
-           #"https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Contour/image.prep.r",
-           #"https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Contour/grid.data.r",
-           #"https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Contour/blank.bank.r",
-           #"https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Contour/smooth.bank.r",
-           #"https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Contour/tick.def.r",
-           #"https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Contour/area.cal.r",
-           "https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Survey_and_OSAC/convert.dd.dddd.r")
+           "https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Survey_and_OSAC/convert.dd.dddd.r",
+           "https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/archive/2016/contour.gen.r") 
+# Note: uses older contour.gen.r version (working on alternative to contour.gen altogether).
 dir <- getwd()
 for(fun in funcs) 
 {
@@ -85,24 +76,21 @@ for(fun in funcs)
   file.remove(paste0(dir,"/",basename(fun)))
 }
 
+#### Import Mar-scal shapefiles
 
-spa3.poly <- st_read("Z:/People/Brittany/Survey_shapefiles4Github/SPA3/SPA3_modelledArea.shp") #NEED TO CHANGE DIRECTORY - Github
-inVMS<- st_read("Z:/People/Brittany/Survey_shapefiles4Github/SPA6/SPA6_VMSstrata_OUT_2015.shp")#NEED TO CHANGE DIRECTORY - Github
-outVMS<- st_read("Z:/People/Brittany/Survey_shapefiles4Github/SPA6/SPA6_VMSstrata_IN_2015.shp")#NEED TO CHANGE DIRECTORY - Github
+# Find where tempfiles are stored
+temp <- tempfile()
+# Download this to the temp directory
+download.file("https://raw.githubusercontent.com/Mar-scal/GIS_layers/master/inshore_boundaries/inshore_boundaries.zip", temp)
+# Figure out what this file was saved as
+temp2 <- tempfile()
+# Unzip it
+unzip(zipfile=temp, exdir=temp2)
 
-# BoF.poly <- read.csv("C:/Users/NasmithL/Documents/Mapping/Scallop Boundaries/Survey/XYBoFPoly_new.csv") #use for commercial plots of 1A !!!GET FROM LESLIE
-#BoF.Survpoly <- read.csv("Y:/Offshore scallop/Assessment/Data/Maps/approved/Other_Borders/bofPoly.csv") #use for survey plots
-#Survey.poly<-read.csv("Y:/Offshore scallop/Assessment/Data/Maps/approved/Other_Borders/SCSTRATADEFS.csv")
-#spa4.poly<-read.csv("Y:/Offshore scallop/Assessment/Data/Maps/approved/Other_Borders/spa4stratadefs.csv")
-#spa3.poly<-read.csv("Y:/Offshore scallop/Assessment/Data/Maps/approved/Other_Borders/spa3Poly.csv")
-#BILU.poly<-read.csv("Y:/Offshore scallop/Assessment/Data/Maps/approved/Other_Borders/BILUpoly.csv")
-#VMSpoly<-read.csv("Y:/Offshore scallop/Assessment/Data/Maps/approved/Other_Borders/SPA3_VMSpoly.csv")
-#spa6Poly<-read.csv("Y:/Offshore scallop/Assessment/Data/Maps/approved/Other_Borders/SPA6wgs84.csv")
-#spa6line<-read.csv("Y:/Offshore scallop/Assessment/Data/Maps/approved/Other_Borders/SPA6wgs84_outterline.csv")
-#inVMS<-read.csv("Y:/Offshore scallop/Assessment/Data/Maps/approved/Other_Borders/SPA6_VMS_IN_R_final_MOD.csv")
-#outvms<-read.csv("Y:/Offshore scallop/Assessment/Data/Maps/approved/Other_Borders/SPA6_VMS_OUT_R_final_MOD.csv")
-#attr(inVMS,"projection") <- "LL"
-#attr(outvms,"projection") <- "LL"
+# Now read in the shapefiles
+spa3.poly <- st_read(paste0(temp2, "/SPA3_modelledArea.shp"))
+inVMS <- st_read(paste0(temp2, "/SPA6_VMSstrata_OUT_2015.shp"))
+outVMS <- st_read(paste0(temp2, "/SPA6_VMSstrata_IN_2015.shp"))
 
 # -----------------------------Import SHF data (live and dead)--------------------------------------------
 
@@ -266,29 +254,54 @@ ScallopSurv.kg <- liveweight %>%
   mutate(rec.bm = dplyr::select(., BIN_ID_65:BIN_ID_75) %>% rowSums(na.rm = TRUE) %>% round(0)/1000) %>% # Recruit scallop - BIN_ID_65:BIN_ID_75 /1000
   mutate(pre.bm = dplyr::select(., BIN_ID_0:BIN_ID_60) %>% rowSums(na.rm = TRUE) %>% round(0)/1000) # Pre-recruit scallop - BIN_ID_0:BIN_ID_60 /1000
   
+
+# For Meat Count plot:
+ScallopSurv.mtcnt <- ScallopSurv.kg %>% 
+  dplyr::select(ID, STRATA_ID, year, lat, lon, com.bm) %>% 
+  merge(ScallopSurv %>% dplyr::select(ID, com), by = "ID") %>% 
+  mutate(meat.count = (0.5/(com.bm/com))) %>% 
+  filter(!is.na(meat.count))
+
 # --------------------------------Load Condition data for survey year -----------------------------------------
 
-#Year <- seq(2015,survey.year)
-#num.years <- length(Year)
+#Condition data is read by looking for files with "ConditionforMap" in the file name from the respective SFAs located within the current assessment year folder 
+#(e.g. Y:\INSHORE SCALLOP\BoF\2020\Assessment\Data\SurveyIndices\SPA1A1B4and5\BFConditionforMap2013.csv). This will pull in the data for each year that a contiton file was previously generated and then can be used for assessing multiple years.
 
 #SPA1A1B4and5
-#BF.con.dat <- NULL
-#for(i in 1:num.years)
-#{
-#   Make a list with each years data in it, extract it as needed later
-#  temp <- read.csv(paste0(path.directory,assessmentyear,"/Assessment/Data/SurveyIndices/SPA1A1B4and5/BFConditionForMap",Year[i],".csv",sep="") ,header=T)
-#  BF.con.dat <- rbind(BF.con.dat,temp)
-#}
+con.dat.list <- list.files(path = paste0(path.directory,assessmentyear,"/Assessment/Data/SurveyIndices/SPA1A1B4and5"), pattern = "^BFConditionforMap")
+BF.con.dat <- list()
+for(i in 1:length(con.dat.list)){
+  BF.con.dat[[i]] <- read.csv(paste0(path.directory,assessmentyear,"/Assessment/Data/SurveyIndices/SPA1A1B4and5/",con.dat.list[[i]]))
+}
 
-#SPA1A1B4and5
-BF.con.dat <- read.csv(paste0(path.directory,assessmentyear,"/Assessment/Data/SurveyIndices/SPA1A1B4and5/BFConditionForMap",survey.year,".csv",sep="") ,header=T) %>% mutate(CRUISE = paste0("BF", survey.year))#Add Cruise information
+BF.con.dat <- bind_rows(BF.con.dat) 
+BF.con.dat <- BF.con.dat %>% #Combine the condition data from files that are found
+  mutate(CRUISE = paste0("BF", BF.con.dat$YEAR))#Add Cruise information
 
 #SPA3
-BI.con.dat <- read.csv(paste0(path.directory,assessmentyear,"/Assessment/Data/SurveyIndices/SPA3/BIConditionForMap",survey.year,".csv",sep="") ,header=T)%>% mutate(CRUISE = paste0("BI", survey.year))#Add Cruise information
+con.dat.list <- list.files(path = paste0(path.directory,assessmentyear,"/Assessment/Data/SurveyIndices/SPA3"), pattern = "^BIConditionforMap")
+BI.con.dat <- list()
+for(i in 1:length(con.dat.list)){
+  BI.con.dat[[i]] <- read.csv(paste0(path.directory,assessmentyear,"/Assessment/Data/SurveyIndices/SPA3/",con.dat.list[[i]]))
+}
+
+BI.con.dat <- bind_rows(BI.con.dat)
+BI.con.dat <- BI.con.dat %>% #Combine the condition data from files that are found
+  mutate(CRUISE = paste0("BI", BI.con.dat$YEAR)) #Add Cruise information
+
 
 #SPA6
-GM.con.dat <- read.csv(paste0(path.directory,assessmentyear,"/Assessment/Data/SurveyIndices/SPA6/GMConditionForMap",survey.year,".csv",sep="") ,header=T) %>% mutate(CRUISE = paste0("GM", survey.year))#Add Cruise information
+con.dat.list <- list.files(path = paste0(path.directory,assessmentyear,"/Assessment/Data/SurveyIndices/SPA6"), pattern = "^GMConditionforMap")
+GM.con.dat <- list()
+for(i in 1:length(con.dat.list)){
+  GM.con.dat[[i]] <- read.csv(paste0(path.directory,assessmentyear,"/Assessment/Data/SurveyIndices/SPA6/",con.dat.list[[i]]))
+}
 
+GM.con.dat <- bind_rows(GM.con.dat) 
+GM.con.dat <- GM.con.dat %>% #Combine the condition data from files that are found
+  mutate(CRUISE = paste0("GM", GM.con.dat$YEAR)) #Add Cruise information
+
+#Now combine the Cruise dataframes together
 con.dat <- rbind(BF.con.dat, if(exists("BI.con.dat")) BI.con.dat, if(exists("GM.con.dat")) GM.con.dat) #Combine SPA condition data together if data is available
 
 #check data structure
@@ -303,14 +316,6 @@ con.dat <- con.dat %>%
   mutate(lon = convert.dd.dddd(START_LONG)) %>%  #Convert to DD
   rename(tow = TOW_NO) %>% 
   unite(ID, c("CRUISE", "tow"), sep = ".", remove = FALSE) #No CRUISE column in con.dat - ID column is required for contour.gen function
-
-# For Meat Count plot:
-ScallopSurv.mtcnt <- ScallopSurv.kg %>% 
-  dplyr::select(ID, STRATA_ID, year, lat, lon, com.bm) %>% 
-  merge(ScallopSurv %>% dplyr::select(ID, com), by = "ID") %>% 
-  mutate(meat.count = (0.5/(com.bm/com))) %>% 
-  filter(!is.na(meat.count))
-
 
 # --------------Set plot themes (legend orientation/aesthetics)------------------------------
 
@@ -373,7 +378,7 @@ plot.theme.6 <- theme(plot.title = element_text(size = 14, hjust = 0.5), #plot t
 #Create contour and specify plot aesthetics
 com.contours <- contour.gen(ScallopSurv %>% 
                               filter(year == survey.year, !STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)) %>% #Excludes SPA3 and SFA29
-                                       dplyr::select(ID, lon, lat, com), 
+                                       dplyr::select(ID, lon, lat, com),
                             ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
 
 lvls <- c(1,5,10,50,100,200,300,400,500) #levels to be color coded
@@ -554,7 +559,7 @@ p + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv %>% 
                        filter(year == survey.year, STRATA_ID %in% c(30,31,32,54)), #Only SPA6
                      aes(lon, lat), size = 0.5) +
-  geom_sf(data = outvms, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
+  geom_sf(data = outVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
   geom_sf(data = inVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
   labs(title = paste(survey.year, "", "SPA6 Density (>= 80mm)"), x = "Longitude", y = "Latitude")+
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
@@ -565,8 +570,11 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA6_ComDensity',survey.year,'.p
 
 
 # ----BIOMASS PLOTS -----
+#NOTE: TO PLOT OTHER YEARS CHANGE *biomass.year*
+biomass.year <- "2019" #Year of data to plot (dependant on the files that were loaded in the object liveweight)
 
-com.contours<-contour.gen(ScallopSurv.kg %>% filter(year==survey.year, !STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)) %>% #Excludes SPA3 and SFA29
+#For FULL BAY, SPA1A, SPA1B, SPA4&5
+com.contours<-contour.gen(ScallopSurv.kg %>% filter(year==biomass.year, !STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)) %>% #Excludes SPA3 and SFA29
                             dplyr::select(ID,lon,lat,com.bm),
                           ticks='define', nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
 
@@ -598,14 +606,14 @@ p <- pecjector(area = "bof",repo ='github',c_sys="ll", gis.repo = 'github', plot
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv.kg %>% 
-                       filter(year == survey.year, !STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)),
+                       filter(year == biomass.year, !STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)),
                      aes(lon, lat), size = 0.5) +
-  labs(title = paste(survey.year, "", "BoF Biomass (>= 80mm)"), x = "Longitude",
+  labs(title = paste(biomass.year, "", "BoF Biomass (>= 80mm)"), x = "Longitude",
        y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   plot.theme
 
-ggsave(filename = paste0(saveplot.dir,'ContPlot_BF_ComBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir,'ContPlot_BF_ComBiomass',biomass.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 
 # ----SPA1A -----
@@ -616,14 +624,14 @@ p <- pecjector(area = "spa1A",repo ='github',c_sys="ll", gis.repo = 'github', pl
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv.kg %>% 
-                       filter(year == survey.year, !STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)), #excludes SPA3 and SFA29 data
+                       filter(year == biomass.year, !STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)), #excludes SPA3 and SFA29 data
                      aes(lon, lat), size = 0.5) +
-  labs(title = paste(survey.year, "", "SPA1A Biomass (>= 80mm)"), x = "Longitude",
+  labs(title = paste(biomass.year, "", "SPA1A Biomass (>= 80mm)"), x = "Longitude",
        y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   plot.theme
 
-ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1A_ComBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1A_ComBiomass',biomass.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA1B -----
 
@@ -633,14 +641,14 @@ p <- pecjector(area = "spa1B",repo ='github',c_sys="ll", gis.repo = 'github', pl
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv.kg %>% 
-                       filter(year == survey.year,!STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)), #excludes SPA3 and SFA29 data
+                       filter(year == biomass.year,!STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)), #excludes SPA3 and SFA29 data
                      aes(lon, lat), size = 0.5) +
-  labs(title = paste(survey.year, "", "SPA1B Biomass (>= 80mm)"), x = "Longitude",
+  labs(title = paste(biomass.year, "", "SPA1B Biomass (>= 80mm)"), x = "Longitude",
        y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   plot.theme.1b
 
-ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1B_ComBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1B_ComBiomass',biomass.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA4 and 5 -----
 
@@ -650,21 +658,21 @@ p <- pecjector(area = "spa4",repo ='github',c_sys="ll", gis.repo = 'github', plo
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv.kg %>% 
-                       filter(year == survey.year, !STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)), #excludes SPA3 and SFA29 data
+                       filter(year == biomass.year, !STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)), #excludes SPA3 and SFA29 data
                      aes(lon, lat), size = 0.5) +
-  labs(title = paste(survey.year, "", "SPA4 Biomass (>= 80mm)"), x = "Longitude",
+  labs(title = paste(biomass.year, "", "SPA4 Biomass (>= 80mm)"), x = "Longitude",
        y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   plot.theme.4
 
-ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA4_ComBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA4_ComBiomass',biomass.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 
 # ----SPA3 -----
 
 #Create contour and specify plot aesthetics
 com.contours <- contour.gen(ScallopSurv.kg %>% 
-                              filter(year == survey.year, STRATA_ID %in% c(22, 23, 24)) %>% #only SPA3
+                              filter(year == biomass.year, STRATA_ID %in% c(22, 23, 24)) %>% #only SPA3
                               dplyr::select(ID, lon, lat, com.bm), 
                             ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
 
@@ -693,19 +701,19 @@ p <- pecjector(area = "spa3",repo ='github',c_sys="ll", gis.repo = 'github', plo
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv.kg %>% 
-                       filter(year == survey.year, STRATA_ID %in% c(22, 23, 24)), #only SPA3 strata IDs
+                       filter(year == biomass.year, STRATA_ID %in% c(22, 23, 24)), #only SPA3 strata IDs
                      aes(lon, lat), size = 0.5) +
   geom_sf(data = spa3.poly, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
-  labs(title = paste(survey.year, "", "SPA3 Biomass (>= 80mm)"), x = "Longitude", y = "Latitude") +
+  labs(title = paste(biomass.year, "", "SPA3 Biomass (>= 80mm)"), x = "Longitude", y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   plot.theme.3
 
-ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA3_ComBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA3_ComBiomass',biomass.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 
 # ----SPA6 -----
 
-com.contours<-contour.gen(ScallopSurv.kg %>% filter(year==survey.year, STRATA_ID %in% c(30,31,32,54)) %>% #Only SPA6
+com.contours<-contour.gen(ScallopSurv.kg %>% filter(year==biomass.year, STRATA_ID %in% c(30,31,32,54)) %>% #Only SPA6
                             dplyr::select(ID,lon,lat,com.bm),
                           ticks='define', nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
 
@@ -736,19 +744,24 @@ p <- pecjector(area =list(x=c(-67.5,-66.4), y=c(45.2,44.4), crs=4326),repo ='git
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv.kg %>% 
-                       filter(year == survey.year, STRATA_ID %in% c(30,31,32,54)), #Only SPA6
+                       filter(year == biomass.year, STRATA_ID %in% c(30,31,32,54)), #Only SPA6
                      aes(lon, lat), size = 0.5) +
-  geom_sf(data = outvms, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
-  geom_sf(data = inVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
-  labs(title = paste(survey.year, "", "SPA6 Biomass (>= 80mm)"), x = "Longitude", y = "Latitude")+
+  #geom_sf(data = outVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
+  #geom_sf(data = inVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
+  labs(title = paste(biomass.year, "", "SPA6 Biomass (>= 80mm)"), x = "Longitude", y = "Latitude")+
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   plot.theme.6
 
-ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA6_ComBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA6_ComBiomass',biomass.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----CONDITION PLOTS-----
 
-com.contours <- contour.gen(con.dat %>% filter(year==survey.year, CRUISE == "BF2019") %>% dplyr::select(ID, lon, lat, Condition),ticks='define',nstrata=7,str.min=0,place=2,id.par=5,interp.method='gstat',key='strata',blank=T,plot=F,res=0.01,blank.dist = 0.1)
+#NOTE: TO PLOT OTHER YEARS CHANGE *cond.year*
+cond.year <- "2019" #Year of data to plot (dependant on the files that were loaded in the object con.dat)
+
+#For FULL BAY, SPA1A, SPA1B, SPA4&5
+
+com.contours <- contour.gen(con.dat %>% filter(year== cond.year, str_detect(CRUISE, "BF")) %>% dplyr::select(ID, lon, lat, Condition),ticks='define',nstrata=7,str.min=0,place=2,id.par=5,interp.method='gstat',key='strata',blank=T,plot=F,res=0.01,blank.dist = 0.1)
 
 lvls=c(5,6,7,8,9,10,11,12) #levels to be color coded
 
@@ -778,14 +791,14 @@ p <- pecjector(area = "bof",repo ='github',c_sys="ll", gis.repo = 'github', plot
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = con.dat %>% 
-                       filter(year == survey.year, CRUISE == "BF2019"), #survey.year defined in beginning of script
+                       filter(year == cond.year, CRUISE == "BF2019"),
                      aes(lon, lat), size = 0.5) +
-  labs(title = paste(survey.year, "", "BoF Condition"), x = "Longitude",
+  labs(title = paste(cond.year, "", "BoF Condition"), x = "Longitude",
        y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   plot.theme
 
-ggsave(filename = paste0(saveplot.dir,'ContPlot_BF_Condition',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir,'ContPlot_BF_Condition',cond.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA1A -----
 
@@ -795,14 +808,14 @@ p <- pecjector(area = "spa1A",repo ='github',c_sys="ll", gis.repo = 'github', pl
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = con.dat %>% 
-                       filter(year == survey.year, CRUISE == "BF2019"), #survey.year defined in beginning of script
+                       filter(year == cond.year, CRUISE == "BF2019"),
                      aes(lon, lat), size = 0.5) +
-  labs(title = paste(survey.year, "", "SPA1A Condition"), x = "Longitude",
+  labs(title = paste(cond.year, "", "SPA1A Condition"), x = "Longitude",
        y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   plot.theme
 
-ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1A_Condition',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1A_Condition',cond.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA1B -----
 
@@ -812,14 +825,14 @@ p <- pecjector(area = "spa1B",repo ='github',c_sys="ll", gis.repo = 'github', pl
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = con.dat %>% 
-                       filter(year == survey.year, CRUISE == "BF2019"), #survey.year defined in beginning of script
+                       filter(year == cond.year, CRUISE == "BF2019"),
                      aes(lon, lat), size = 0.5) +
-  labs(title = paste(survey.year, "", "SPA1B Condition"), x = "Longitude",
+  labs(title = paste(cond.year, "", "SPA1B Condition"), x = "Longitude",
        y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   plot.theme.1b
 
-ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1B_Condition',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1B_Condition',cond.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA4 and 5 -----
 
@@ -829,20 +842,21 @@ p <- pecjector(area = "spa4",repo ='github',c_sys="ll", gis.repo = 'github', plo
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = con.dat %>% 
-                       filter(year == survey.year, CRUISE == "BF2019"), #survey.year defined in beginning of script
+                       filter(year == cond.year, CRUISE == "BF2019"),
                      aes(lon, lat), size = 0.5) +
-  labs(title = paste(survey.year, "", "SPA4 Condition"), x = "Longitude",
+  labs(title = paste(cond.year, "", "SPA4 Condition"), x = "Longitude",
        y = "Latitude") + 
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   plot.theme.4
 
-ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA4_Condition',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA4_Condition',cond.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 
 # ----SPA3 -----
 
-#Create contour and specify plot aesthetics
-com.contours<-contour.gen(con.dat %>% filter(year==survey.year, CRUISE == "BI2019") %>% #Only SPA6
+cond.year <- "2019" #Year of data to plot (dependant on the files that were loaded in the object con.dat)
+
+com.contours <- contour.gen(con.dat %>% filter(year== cond.year, str_detect(CRUISE, "BI")) %>% #Only SPA3
                             dplyr::select(ID,lon,lat,Condition),
                           ticks='define', nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
 
@@ -872,19 +886,21 @@ p <- pecjector(area = "spa3",repo ='github',c_sys="ll", gis.repo = 'github', plo
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = con.dat %>% 
-                       filter(year == survey.year, CRUISE == "BI2019"), #only SPA3 strata IDs
+                       filter(year == cond.year, CRUISE == "BI2019"), #only SPA3 strata IDs
                      aes(lon, lat), size = 0.5) +
   geom_sf(data = spa3.poly, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
-  labs(title = paste(survey.year, "", "SPA3 Condition"), x = "Longitude", y = "Latitude") +
+  labs(title = paste(cond.year, "", "SPA3 Condition"), x = "Longitude", y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   plot.theme.3
 
-ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA3_Condition',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA3_Condition',cond.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 
 # ----SPA6 -----
 
-com.contours<-contour.gen(con.dat %>% filter(year==survey.year, CRUISE == "GM2019") %>% #Only SPA6
+cond.year <- "2019" #Year of data to plot (dependant on the files that were loaded in the object con.dat)
+
+com.contours <- contour.gen(con.dat %>% filter(year== cond.year, str_detect(CRUISE, "GM")) %>% #Only SPA6
                             dplyr::select(ID,lon,lat,Condition),
                           ticks='define', nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
 
@@ -916,20 +932,21 @@ p <- pecjector(area =list(x=c(-67.5,-66.4), y=c(45.2,44.4), crs=4326),repo ='git
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = con.dat %>% 
-                       filter(year == survey.year, CRUISE == "GM2019"),
+                       filter(year == cond.year, CRUISE == "GM2019"),
                      aes(lon, lat), size = 0.5) +
-  geom_sf(data = outvms, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
-  geom_sf(data = inVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
-  labs(title = paste(survey.year, "", "SPA6 Condition"), x = "Longitude", y = "Latitude")+
+  #geom_sf(data = outVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
+  #geom_sf(data = inVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
+  labs(title = paste(cond.year, "", "SPA6 Condition"), x = "Longitude", y = "Latitude")+
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   plot.theme.6
 
-ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA6_Condition',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA6_Condition',cond.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 
 # ----MEAT COUNT -----
 
-mc.contours<-contour.gen(ScallopSurv.mtcnt %>% filter(year==survey.year, !STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)) %>% #Excludes SPA3 and SFA29
+#For FULL BAY, SPA1A, SPA1B, SPA4&5
+mc.contours <-contour.gen(ScallopSurv.mtcnt %>% filter(year==survey.year, !STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)) %>% #Excludes SPA3 and SFA29
                            dplyr::select(ID, lon, lat, meat.count), ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,interp.method='gstat',blank=T,plot=F,subset.poly='square',subset.eff=0,subscale=0.25,res=0.01)
 
 lvls=seq(10,45,5)
@@ -1108,8 +1125,8 @@ p + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv.mtcnt %>% 
                        filter(year == survey.year, STRATA_ID %in% c(30,31,32,54)), #Only SPA6
                      aes(lon, lat), size = 0.5) +
-  geom_sf(data = outvms, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
-  geom_sf(data = inVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
+  #geom_sf(data = outVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
+  #geom_sf(data = inVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
   labs(title = paste(survey.year, "", "SPA6 Meat Count (>= 80mm)"), x = "Longitude", y = "Latitude")+
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   plot.theme.6
@@ -1118,6 +1135,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA6_Meatcount',survey.year,'.pn
 
 # ----CLAPPERS -----
 
+#For FULL BAY, SPA1A, SPA1B, SPA4&5
 com.contours<-contour.gen(ScallopSurv.dead %>%  filter(year==survey.year,!STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)) %>% #Excludes SPA3 and SFA29
                             dplyr::select(ID,lon,lat,com),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',
                           blank=T,plot=F,res=0.01)
@@ -1295,8 +1313,8 @@ p + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv.dead %>% 
                        filter(year == survey.year, STRATA_ID %in% c(30,31,32,54)), #Only SPA6
                      aes(lon, lat), size = 0.5) +
-  geom_sf(data = outvms, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
-  geom_sf(data = inVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
+  #geom_sf(data = outVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
+  #geom_sf(data = inVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
   labs(title = paste(survey.year, "", "SPA6 Clapper Density (>= 80mm)"), x = "Longitude", y = "Latitude")+
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   plot.theme.6
@@ -1306,6 +1324,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA6_ComClappers',survey.year,'.
 
 # ----PROPORTION OF CLAPPERS -----
 
+#For FULL BAY, SPA1A, SPA1B, SPA4&5
 com.contours<-contour.gen(prop.clappers %>% filter(year==survey.year, !STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)) %>% #Excludes SPA3 and SFA29
                             dplyr::select(ID,lon,lat,prop.dead.com),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata', blank=T,plot=F,res=0.01)
 
@@ -1481,8 +1500,8 @@ p + #Plot survey data and format figure.
   geom_spatial_point(data = prop.clappers %>% 
                        filter(year == survey.year, STRATA_ID %in% c(30,31,32,54)), #Only SPA6
                      aes(lon, lat), size = 0.5) +
-  geom_sf(data = outvms, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
-  geom_sf(data = inVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
+  #geom_sf(data = outVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
+  #geom_sf(data = inVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
   labs(title = paste(survey.year, "", "SPA6 Clapper Proportion (>= 80mm)"), x = "Longitude", y = "Latitude")+
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   plot.theme.6
@@ -1681,8 +1700,8 @@ p + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv %>% 
                        filter(year == survey.year, STRATA_ID %in% c(30,31,32,54)), #Only SPA6
                      aes(lon, lat), size = 0.5) +
-  geom_sf(data = outvms, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
-  geom_sf(data = inVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
+  #geom_sf(data = outVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
+  #geom_sf(data = inVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
   labs(title = paste(survey.year, "", "SPA6 Density (65-79 mm)"), x = "Longitude", y = "Latitude")+
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   plot.theme.6
@@ -1864,8 +1883,8 @@ p + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv.kg %>% 
                        filter(year == survey.year, STRATA_ID %in% c(30,31,32,54)), #Only SPA6
                      aes(lon, lat), size = 0.5) +
-  geom_sf(data = outvms, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
-  geom_sf(data = inVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
+  #geom_sf(data = outVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
+  #geom_sf(data = inVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
   labs(title = paste(survey.year, "", "SPA6 Biomass (65-79 mm)"), x = "Longitude", y = "Latitude")+
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   plot.theme.6
@@ -2049,8 +2068,8 @@ p + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv.dead %>% 
                        filter(year == survey.year, STRATA_ID %in% c(30,31,32,54)), #Only SPA6
                      aes(lon, lat), size = 0.5) +
-  geom_sf(data = outvms, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
-  geom_sf(data = inVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
+  #geom_sf(data = outVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
+ #geom_sf(data = inVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
   labs(title = paste(survey.year, "", "SPA6 Clapper Density (65-79 mm)"), x = "Longitude", y = "Latitude")+
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   plot.theme.6
@@ -2234,8 +2253,8 @@ p + #Plot survey data and format figure.
   geom_spatial_point(data = prop.clappers %>% 
                        filter(year == survey.year, STRATA_ID %in% c(30,31,32,54)), #Only SPA6
                      aes(lon, lat), size = 0.5) +
-  geom_sf(data = outvms, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
-  geom_sf(data = inVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
+  #geom_sf(data = outVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
+  #geom_sf(data = inVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
   labs(title = paste(survey.year, "", "SPA6 Clapper Proportion (65-79 mm)"), x = "Longitude", y = "Latitude")+
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   plot.theme.6
@@ -2435,8 +2454,8 @@ p + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv %>% 
                        filter(year == survey.year, STRATA_ID %in% c(30,31,32,54)), #Only SPA6
                      aes(lon, lat), size = 0.5) +
-  geom_sf(data = outvms, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
-  geom_sf(data = inVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
+  #geom_sf(data = outVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
+  #geom_sf(data = inVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
   labs(title = paste(survey.year, "", "SPA6 Density (< 65 mm)"), x = "Longitude", y = "Latitude")+
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   plot.theme.6
@@ -2617,8 +2636,8 @@ p + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv.kg %>% 
                        filter(year == survey.year, STRATA_ID %in% c(30,31,32,54)), #Only SPA6
                      aes(lon, lat), size = 0.5) +
-  geom_sf(data = outvms, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
-  geom_sf(data = inVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
+  #geom_sf(data = outVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
+  #geom_sf(data = inVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
   labs(title = paste(survey.year, "", "SPA6 Biomass (< 65 mm)"), x = "Longitude", y = "Latitude")+
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   plot.theme.6
@@ -2808,8 +2827,8 @@ p + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv.dead %>% 
                        filter(year == survey.year, STRATA_ID %in% c(30,31,32,54)), #Only SPA6
                      aes(lon, lat), size = 0.5) +
-  geom_sf(data = outvms, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
-  geom_sf(data = inVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
+  #geom_sf(data = outVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
+  #geom_sf(data = inVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
   labs(title = paste(survey.year, "", "SPA6 Clapper Density (< 65 mm)"), x = "Longitude", y = "Latitude")+
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   plot.theme.6
