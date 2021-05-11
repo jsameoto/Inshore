@@ -110,12 +110,45 @@ z.crop <- S.idw  %>%
 plot(z.crop)
 
 
+p <- pecjector(area = "bof",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), 
+               add_custom = list(obj = z.crop , size = 1, fill = "cfd", color = NA))
+##p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
+#adding transparency slows down plot creating and saving significantly....
+
+p + #Plot survey data and format figure.
+  geom_spatial_point(data = ScallopSurv %>% 
+                       filter(year == survey.year, !STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)), #excludes SPA3 and SFA29 data
+                     aes(lon, lat), size = 0.5) +
+  labs(title = paste(survey.year, "", "BoF Density (>= 80mm)"), x = "Longitude", y = "Latitude") +
+  guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  plot.theme
+
+
 #####################################
 #With contours? Work in progress - trying to get closed contours using b_box..
+#Need to extend the idw boundaries, and merge b_box with contours to close the lines, convert to polygons....
+
 cont <- S.idw %>%
   st_contour(na.rm = FALSE, breaks = c(1,5,10,50,100,200,300,400,500), contour_lines = TRUE) %>% 
   st_cast("MULTILINESTRING") %>% 
   st_intersection(b_box)
+
+plot(cont)
+
+b_box_line <- b_box %>% 
+  st_cast("MULTILINESTRING")
+
+test <- st_union(cont, b_box)
+plot(test)
+
+test.poly <- test %>% 
+  st_cast("POLYGON")
+
+ggplot()+
+  geom_sf(data = test, aes(fill = "var1.pred"))+
+  cfd
+
 ########################################
 
 #lvls <- c(1,5,10,50,100,200,300,400,500)

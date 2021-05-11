@@ -7,6 +7,7 @@
 ###       (on https://github.com/Mar-scal/Inshore/tree/main/SurveyIndices)         ###
 ###................................................................................###
 
+# Spatial figures of commercial, recruit and pre-recruit scallop sizes of Survey Density, Survey Biomass, Condition, Meat count and Clappers for SFA29.
 
 options(stringsAsFactors = FALSE)
 
@@ -39,7 +40,7 @@ uid <- un.bwilson
 pwd <- pw.bwilson
 
 survey.year <- 2018  #This is the last survey year 
-assessmentyear <- 2019 #year in which you are conducting the survey
+assessmentyear <- 2019 #year in which you are providing advice for - (e.g. 2017 survey is 2018 assessment) - Save to folder year
 cruise <- "'SFA292018'"
 
 #for multiple cruises:
@@ -60,13 +61,14 @@ saveplot.dir <- "C:/Users/WILSONB/Documents/1_Inshore_Scallop/FigureTest/" #Dire
 #ROracle
 chan <- dbConnect(dbDriver("Oracle"),username=uid, password=pwd,'ptran')
 
-# source R functions
-source("Y:/INSHORE SCALLOP/BoF/Assessment_fns/contour.gen.r")
-source("Y:/INSHORE SCALLOP/BoF/Assessment_fns/convert.dd.dddd.r")
+
+# ----Import Source functions and polygons---------------------------------------------------------------------
+
+
 #### Import Mar-scal functions
-funcs <- c("https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Maps/convert_coords.R",
-           "https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Maps/add_alpha_function.R",
-           "https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Maps/pectinid_projector_sf.R")
+funcs <- c("https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Maps/pectinid_projector_sf.R",
+           "https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Survey_and_OSAC/convert.dd.dddd.r",
+           "https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/archive/2016/contour.gen.r")
 dir <- getwd()
 for(fun in funcs) 
 {
@@ -76,11 +78,18 @@ for(fun in funcs)
   file.remove(paste0(dir,"/",basename(fun)))
 }
 
-#import SFA 29W boundaries for plots (sf objects)
-sfa29.poly <- st_read("Y:/INSHORE SCALLOP/Databases/Scallsur/SFA29BottomTypes/SFA29_shp/SFA29_subareas_utm19N.shp") %>% 
+#### Import Mar-scal shapefiles
+
+temp <- tempfile() # Find where tempfiles are stored
+# Download this to the temp directory
+download.file("https://raw.githubusercontent.com/Mar-scal/GIS_layers/master/inshore_boundaries/inshore_boundaries.zip", temp)
+temp2 <- tempfile()# Figure out what this file was saved as
+unzip(zipfile=temp, exdir=temp2) #unzip it
+
+# Now read in the shapefiles
+sfa29.poly <- st_read(paste0(temp2, "/SFA29_subareas_utm19N.shp")) %>% 
   st_transform(crs = 4326)
-	
-sfa29strata <- st_read("Y:/INSHORE SCALLOP/Databases/Scallsur/SFA29BottomTypes/SFA29_shp/SFA29_BoundariesFollowing12nmDD_NoSubareas_WGS84.shp")
+sfa29strata <- st_read(paste0(temp2, "/SFA29_BoundariesFollowing12nmDD_NoSubareas_WGS84.shp"))
 
 #Set working directory #
 setwd(paste0(path.directory,"/",assessmentyear))
@@ -168,8 +177,15 @@ quer3 <- paste(
 sampled.dat <- dbGetQuery(chan, quer3)
 	
 # --------------------------------Import Biomass per tow data-----------------------------------------
-# Current year only
-ScallopSurv.kg <- read.csv(paste0("Y:/INSHORE SCALLOP/SFA29/",assessmentyear,"/dataoutput/SFA29liveweight",survey.year,".csv"))  #DEFINE
+
+#Biomass data is read in from the previously generated "liveweightYYYY.csv" files in Y:\INSHORE SCALLOP\SFA29\YYYY\dataoutput directories.
+
+# Current year only - DEFINE
+#ScallopSurv.kg <- read.csv(paste0("Y:/INSHORE SCALLOP/SFA29/",assessmentyear,"/dataoutput/SFA29liveweight",survey.year,".csv"))
+
+#Multiple years - DEFINE
+ScallopSurv.kg <- read.csv(paste0("Y:/INSHORE SCALLOP/SFA29/",assessmentyear,"/dataoutput/SFA29liveweight2014to2018.csv"))  
+
 # 2014 to current year
 ScallopSurv.kg <- ScallopSurv.kg %>% dplyr::select(-X) %>%  #removes index column X
 	dplyr::rename(year = YEAR) %>%
@@ -181,7 +197,9 @@ ScallopSurv.kg <- ScallopSurv.kg %>% dplyr::select(-X) %>%  #removes index colum
   mutate(pre.bm = dplyr::select(., BIN_ID_0:BIN_ID_85) %>% rowSums(na.rm = TRUE) %>% round(0)/1000)# Pre-recruit scallop - 0-85 mm; BINS 0 to 85
 
 # --------------------------------Load Condition data for survey year -----------------------------------------
-	
+
+#Condition data is read in from the previously generated "ConditionforMapYYYY.csv" files in Y:\INSHORE SCALLOP\SFA29\YYYY\dataoutput directories.
+
 con.dat <- read.csv(paste0("Y:/INSHORE SCALLOP/SFA29/2019/dataoutput/ConditionforMap",survey.year,".csv")) #NOTE: 2014 file made by Jessica (..._JS.csv), will be slightly different than for 2015 assessment since Stephen calculated this using smaller dataset for mtwt sh model 
 con.dat <- con.dat %>% dplyr::select(-X) %>%  #removes index column X
 	 dplyr::rename(year = YEAR) %>%
@@ -223,8 +241,8 @@ plot.theme <-   theme(legend.key.size = unit(5,"mm"),
                       axis.text = element_text(size = 10),
                       legend.title = element_text(size = 10, face = "bold"), 
                       legend.text = element_text(size = 8),
-                      legend.position = c(.90,.83), #legend position
-                      legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.7)), #Legend bkg colour and transparency
+                      legend.position = c(.90,.80), #legend position
+                      legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.8)), #Legend bkg colour and transparency
                       legend.box.margin = margin(2, 3, 2, 3))
 
 
@@ -258,7 +276,7 @@ cfd <- scale_fill_manual(values = alpha(col, 0.3), breaks = labels, name = expre
 
 #Plot with Pecjector
 p <- pecjector(area = "sfa29",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", scale.bar = c('bl',0.5)), 
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('bl',0.5)), 
                add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>%
                                    mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 #p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
@@ -268,25 +286,25 @@ p + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv %>% 
                        filter(year == survey.year),
                      aes(lon, lat), size = 0.5) +
-  geom_sf(data = sfa29.poly, size = 0.5, colour = "black", fill = NA) +
+  #geom_sf(data = sfa29.poly, size = 0.5, colour = "black", fill = NA) +
   labs(title = paste(survey.year, "", "SFA29 Density (>= 100mm)"), x = "Longitude", y = "Latitude") +
-  guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  guides(fill = guide_legend(override.aes= list(alpha = .8))) + #Legend transparency
   plot.theme
 
 #save
-ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_ComDensity',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 10, height = 10, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_ComDensity',survey.year,'.png'), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 #FR
 p + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv %>% 
                        filter(year == survey.year),
                      aes(lon, lat), size = 0.5) +
-  geom_sf(data = sfa29.poly, size = 0.5, colour = "black", fill = NA) +
+  #geom_sf(data = sfa29.poly, size = 0.5, colour = "black", fill = NA) +
   labs(title = paste(survey.year, "", "SFA29 Density (>= 100mm)"), x = "Longitude", y = "Latitude") +
   guides(fill = guide_legend(title="Nombre par trait", override.aes= list(alpha = .7))) + #Legend transparency
   plot.theme
 #save
-ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_ComDensity',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 10, height = 10, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_ComDensity',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 
 # ----BIOMASS PLOTS -----
@@ -317,7 +335,7 @@ col <- brewer.pal(length(lvls),"YlGn") #set colours
 cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = expression(frac(kg,tow)), limits = labels) #set custom fill arguments for pecjector.
 #Plot with Pecjector
 p <- pecjector(area = "sfa29",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", scale.bar = c('bl',0.5)), 
+               add_layer = list(land = "grey", bathy = "ScallopMap",survey = c("inshore", "outline"), scale.bar = c('bl',0.5)), 
                add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>%
                                    mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 #p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
@@ -327,13 +345,13 @@ p + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv.kg %>% 
                        filter(year == survey.year),
                      aes(lon, lat), size = 0.5) +
-  geom_sf(data = sfa29.poly, size = 0.5, colour = "black", fill = NA) +
+  #geom_sf(data = sfa29.poly, size = 0.5, colour = "black", fill = NA) +
   labs(title = paste(survey.year, "", "SFA29 Biomass (>= 100mm)"), x = "Longitude", y = "Latitude") +
-  guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  guides(fill = guide_legend(override.aes= list(alpha = .8))) + #Legend transparency
   plot.theme
 
 #save
-ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_ComBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 10, height = 10, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_ComBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----CONDITION PLOT-----
 
@@ -365,17 +383,17 @@ cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = "Cond
 
 #Plot with Pecjector
 p <- pecjector(area = "sfa29",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", scale.bar = c('bl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('bl',0.5)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 #p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = con.dat %>% filter(year == survey.year), aes(lon, lat), size = 0.5) +
-  geom_sf(data = sfa29.poly, size = 0.5, colour = "black", fill = NA) +
+  #geom_sf(data = sfa29.poly, size = 0.5, colour = "black", fill = NA) +
   labs(title = paste(survey.year, "", "SFA29 Condition"), x = "Longitude", y = "Latitude") +
-  guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  guides(fill = guide_legend(override.aes= list(alpha = .8))) + #Legend transparency
   plot.theme
 
-ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_Condition',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 10, height = 10, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_Condition',survey.year,'.png'), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 
 # ----MEAT COUNT -----
@@ -405,20 +423,20 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
 #Set aesthetics for plot
 labels <- c("10-15", "15-20", "20-25", "25-30", "30-35", "35-40", "40-45", "45+")
 col <- rev(brewer.pal(length(lvls),"Spectral")) #set colours
-cfd <- scale_fill_manual(values = alpha(col, 0.45), breaks = labels, name = expression(frac(Scallops,"500g"), limits = labels, drop = FALSE)) #set custom fill arguments for pecjector.
+cfd <- scale_fill_manual(values = alpha(col, 0.45), breaks = labels, name = expression(frac(Meats,"500g"), limits = labels, drop = FALSE)) #set custom fill arguments for pecjector.
 
 p <- pecjector(area = "sfa29",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", scale.bar = c('bl',0.5)),add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap",survey = c("inshore", "outline"), scale.bar = c('bl',0.5)),add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 #p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv.mtcnt %>% filter(year == survey.year), aes(lon, lat), size = 0.5) +
-  geom_sf(data = sfa29.poly, size = 0.5, colour = "black", fill = NA) +
+  #geom_sf(data = sfa29.poly, size = 0.5, colour = "black", fill = NA) +
   labs(title = paste(survey.year, "", "SFA29 Meat Count (>= 100)"), x = "Longitude", y = "Latitude") +
-  guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  guides(fill = guide_legend(override.aes= list(alpha = .8))) + #Legend transparency
   plot.theme
 
-ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_MeatCount',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 10, height = 10, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_MeatCount',survey.year,'.png'), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----CLAPPERS -----
 
@@ -448,19 +466,19 @@ col <- brewer.pal(length(lvls),"YlGn") #set colours
 cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = expression(frac(N,tow)), limits = labels) #set custom fill arguments for pecjector.
 
 p <- pecjector(area = "sfa29",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", scale.bar = c('bl',0.5)),add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('bl',0.5)),add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 #p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
 
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv.dead %>% filter(year == survey.year),aes(lon, lat), size = 0.5)+
-  geom_sf(data = sfa29.poly, size = 0.5, colour = "black", fill = NA) +
+  #geom_sf(data = sfa29.poly, size = 0.5, colour = "black", fill = NA) +
   labs(title = paste(survey.year, "", "SFA29 Clapper Density (>= 100mm)"), x = "Longitude",
        y = "Latitude") +
-  guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  guides(fill = guide_legend(override.aes= list(alpha = .8))) + #Legend transparency
   plot.theme
 
-ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_ComClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 10, height = 10, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_ComClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----PROPORTION OF CLAPPERS -----
 
@@ -491,15 +509,15 @@ cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = "Prop
 
 #Pecjector with custom contour layer
 p <- pecjector(area = "sfa29",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", scale.bar = c('bl',0.5)),add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('bl',0.5)),add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 #p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = prop.clappers %>% filter(year == survey.year), aes(lon, lat), size = 0.5) +
-  geom_sf(data = sfa29.poly, size = 0.5, colour = "black", fill = NA) +
+  #geom_sf(data = sfa29.poly, size = 0.5, colour = "black", fill = NA) +
   labs(title = paste(survey.year, "", "SFA29 Clapper Proportion (>= 100mm)"), x = "Longitude",
        y = "Latitude") +
-  guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  guides(fill = guide_legend(override.aes= list(alpha = .8))) + #Legend transparency
   plot.theme
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_PropComClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -534,7 +552,7 @@ cfd <- scale_fill_manual(values = alpha(col, 0.5), breaks = labels, name = expre
 
 #Plot with Pecjector
 p <- pecjector(area = "sfa29",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", scale.bar = c('bl',0.5)), 
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('bl',0.5)), 
                add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>%
                                    mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 #p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
@@ -544,25 +562,25 @@ p + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv %>% 
                        filter(year == survey.year),
                      aes(lon, lat), size = 0.5) +
-  geom_sf(data = sfa29.poly, size = 0.5, colour = "black", fill = NA) +
+  #geom_sf(data = sfa29.poly, size = 0.5, colour = "black", fill = NA) +
   labs(title = paste(survey.year, "", "SFA29 Density (90-99 mm)"), x = "Longitude", y = "Latitude") +
-  guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  guides(fill = guide_legend(override.aes= list(alpha = .8))) + #Legend transparency
   plot.theme
 
 #save
-ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_RecDensity',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 10, height = 10, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_RecDensity',survey.year,'.png'), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 #FR
 p + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv %>% 
                        filter(year == survey.year),
                      aes(lon, lat), size = 0.5) +
-  geom_sf(data = sfa29.poly, size = 0.5, colour = "black", fill = NA) +
+  #geom_sf(data = sfa29.poly, size = 0.5, colour = "black", fill = NA) +
   labs(title = paste(survey.year, "", "SFA29 Density (90-99 mm)"), x = "Longitude", y = "Latitude") +
   guides(fill = guide_legend(title="Nombre par trait", override.aes= list(alpha = .7))) + #Legend transparency
   plot.theme
 #save
-ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_RecDensity',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 10, height = 10, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_RecDensity',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 
 # ----BIOMASS PLOTS -----
@@ -593,7 +611,7 @@ col <- brewer.pal(length(lvls),"YlGn") #set colours
 cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = expression(frac(kg,tow)), limits = labels) #set custom fill arguments for pecjector.
 #Plot with Pecjector
 p <- pecjector(area = "sfa29",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", scale.bar = c('bl',0.5)), 
+               add_layer = list(land = "grey", bathy = "ScallopMap",survey = c("inshore", "outline"), scale.bar = c('bl',0.5)), 
                add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>%
                                    mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 #p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
@@ -603,13 +621,13 @@ p + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv.kg %>% 
                        filter(year == survey.year),
                      aes(lon, lat), size = 0.5) +
-  geom_sf(data = sfa29.poly, size = 0.5, colour = "black", fill = NA) +
+  #geom_sf(data = sfa29.poly, size = 0.5, colour = "black", fill = NA) +
   labs(title = paste(survey.year, "", "SFA29 Biomass (90-99 mm)"), x = "Longitude", y = "Latitude") +
-  guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  guides(fill = guide_legend(override.aes= list(alpha = .8))) + #Legend transparency
   plot.theme
 
 #save
-ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_RecBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 10, height = 10, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_RecBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----CLAPPERS -----
 
@@ -639,19 +657,19 @@ col <- brewer.pal(length(lvls),"YlGn") #set colours
 cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = expression(frac(N,tow)), limits = labels) #set custom fill arguments for pecjector.
 
 p <- pecjector(area = "sfa29",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", scale.bar = c('bl',0.5)),add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap",survey = c("inshore", "outline"), scale.bar = c('bl',0.5)),add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 #p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
 
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv.dead %>% filter(year == survey.year), aes(lon, lat), size = 0.5) +
-  geom_sf(data = sfa29.poly, size = 0.5, colour = "black", fill = NA) +
+  #geom_sf(data = sfa29.poly, size = 0.5, colour = "black", fill = NA) +
   labs(title = paste(survey.year, "", "SFA29 Clapper Density (90-99 mm)"), x = "Longitude",
        y = "Latitude") +
-  guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  guides(fill = guide_legend(override.aes= list(alpha = .8))) + #Legend transparency
   plot.theme
 
-ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_RecClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 10, height = 10, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_RecClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----PROPORTION OF CLAPPERS -----
 
@@ -682,15 +700,15 @@ cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = "Prop
 
 #Pecjector with custom contour layer
 p <- pecjector(area = "sfa29",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", scale.bar = c('tl',0.5)),add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap",survey = c("inshore", "outline"), scale.bar = c('bl',0.5)),add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 #p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = prop.clappers %>% filter(year == survey.year), aes(lon, lat), size = 0.5) +
-  geom_sf(data = sfa29.poly, size = 0.5, colour = "black", fill = NA) +
+  #geom_sf(data = sfa29.poly, size = 0.5, colour = "black", fill = NA) +
   labs(title = paste(survey.year, "", "SFA29 Clapper Proportion (90-99mm)"), x = "Longitude",
        y = "Latitude") +
-  guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  guides(fill = guide_legend(override.aes= list(alpha = .8))) + #Legend transparency
   plot.theme
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_PropRecClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -725,7 +743,7 @@ cfd <- scale_fill_manual(values = alpha(col, 0.5), breaks = labels, name = expre
 
 #Plot with Pecjector
 p <- pecjector(area = "sfa29",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", scale.bar = c('bl',0.5)), 
+               add_layer = list(land = "grey", bathy = "ScallopMap",survey = c("inshore", "outline"), scale.bar = c('bl',0.5)), 
                add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>%
                                    mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 #p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
@@ -735,13 +753,13 @@ p + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv %>% 
                        filter(year == survey.year),
                      aes(lon, lat), size = 0.5) +
-  geom_sf(data = sfa29.poly, size = 0.5, colour = "black", fill = NA) +
+  #geom_sf(data = sfa29.poly, size = 0.5, colour = "black", fill = NA) +
   labs(title = paste(survey.year, "", "SFA29 Density (< 90 mm)"), x = "Longitude", y = "Latitude") +
-  guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  guides(fill = guide_legend(override.aes= list(alpha = .8))) + #Legend transparency
   plot.theme
 
 #save
-ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_PreDensity',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 10, height = 10, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_PreDensity',survey.year,'.png'), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 #FR
 p + #Plot survey data and format figure.
@@ -753,7 +771,7 @@ p + #Plot survey data and format figure.
   guides(fill = guide_legend(title="Nombre par trait", override.aes= list(alpha = .7))) + #Legend transparency
   plot.theme
 #save
-ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_PreDensity',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 10, height = 10, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_PreDensity',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----BIOMASS PLOTS -----
 
@@ -783,7 +801,7 @@ col <- brewer.pal(length(lvls),"YlGn") #set colours
 cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = expression(frac(kg,tow)), limits = labels) #set custom fill arguments for pecjector.
 #Plot with Pecjector
 p <- pecjector(area = "sfa29",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", scale.bar = c('bl',0.5)), 
+               add_layer = list(land = "grey", bathy = "ScallopMap",survey = c("inshore", "outline"), scale.bar = c('bl',0.5)), 
                add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>%
                                    mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 #p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
@@ -793,13 +811,13 @@ p + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv.kg %>% 
                        filter(year == survey.year),
                      aes(lon, lat), size = 0.5) +
-  geom_sf(data = sfa29.poly, size = 0.5, colour = "black", fill = NA) +
+  #geom_sf(data = sfa29.poly, size = 0.5, colour = "black", fill = NA) +
   labs(title = paste(survey.year, "", "SFA29 Biomass (< 90 mm)"), x = "Longitude", y = "Latitude") +
-  guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  guides(fill = guide_legend(override.aes= list(alpha = .8))) + #Legend transparency
   plot.theme
 
 #save
-ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_PreBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 10, height = 10, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_PreBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 
 # ----CLAPPERS -----
@@ -830,216 +848,22 @@ col <- brewer.pal(length(lvls),"YlGn") #set colours
 cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = expression(frac(N,tow)), limits = labels) #set custom fill arguments for pecjector.
 
 p <- pecjector(area = "sfa29",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", scale.bar = c('bl',0.5)),add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(land = "grey", bathy = "ScallopMap",survey = c("inshore", "outline"), scale.bar = c('bl',0.5)),add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 #p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
 
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv.dead %>% filter(year == survey.year),aes(lon, lat), size = 0.5) +
-  geom_sf(data = sfa29.poly, size = 0.5, colour = "black", fill = NA) +
+  #geom_sf(data = sfa29.poly, size = 0.5, colour = "black", fill = NA) +
   labs(title = paste(survey.year, "", "SFA29 Clapper Density (< 90 mm)"), x = "Longitude",
        y = "Latitude") +
-  guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  guides(fill = guide_legend(override.aes= list(alpha = .8))) + #Legend transparency
   plot.theme
 
-ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_PreClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 10, height = 10, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_PreClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 
 # ------------------------------END OF CONTOUR PLOTS  -------------------------------------------
 
 
-##############################################################################################################################################################
 
-
-# ------------------------------Plot CPUE in grid -------------------------------------------------------
-
-require(data.table)
-
-	## Import and prepare Log Data ##
-
-	#log.2001to2011 <- read.csv(paste0(path.directory, assessmentyear, "/logs/logData_2002to2011_sfa29.csv"))
-	#log.2012 <- read.csv(paste0(path.directory, assessmentyear, "/logs/logsSFA29_2012corrected.csv"))
-	#log.2013 <- read.csv(paste0(path.directory, assessmentyear, "/logs/dlogSFA29_2013.csv"))
-	#log.2014 <- read.csv(paste0(path.directory, assessmentyear, "/logs/dlogsSFA29_2014.csv")) #Fr db
-	#log.2015 <- read.csv(paste0(path.directory, assessmentyear, "/logs/dlogsSFA29_2015.csv")) #Fr db
-	#log.2016 <- read.csv (paste0(path.directory, assessmentyear, "/logs/SFA29logs2016.csv"))
-	# This includes the late season (October) FSC catch
-	#log.2017 <- read.csv (paste0(path.directory, assessmentyear, "/logs/SFA29logs2017_dwnld_Feb2018_JS.csv"))
-	
-log.present <- read.csv(paste0(path.directory, assessmentyear, "/logs/SFA29logs_", survey.year, ".csv"))
-	#log.2019 <- read.csv (paste0(path.directory, assessmentyear, "/logs/SFA29logs_2019.csv"))
-	
-
-	# add YEAR and AREA columns for data years selected directly from the SCALLOP database
-	#is using log data directly from SCALLOP database it's assumed that assigned_ared has been QA/QC'd and this is used as the AREA field
-#*NOTE* - Longitude is not negative in log.present
-
-log.present <- log.present %>% 
-  mutate(YEAR = as.numeric(substr(log.present$DATE_FISHED,1,4))) %>%  #assuming character and in format 'YYYY-XX-XX' or "YYYY/XX/XX'
-	dplyr::rename(AREA = ASSIGNED_AREA) %>% 
-  mutate(DDSlat = convert.dd.dddd(LATITUDE)) %>% 
-	mutate(DDSlon = -convert.dd.dddd(LONGITUDE)) %>%
-	mutate(ID = 1:nrow(log.present))
-
-	#Filter out areas for privacy considerations (min 5 trips per area to include in presentation)
-	
-log.2018_priv <- log.present %>%
-	 group_by(AREA) %>% 
-	 filter(!n() <=5) %>% #Filter out any areas within the dataset that have less than 5
-	 ungroup() %>% 
-	 dplyr::select(ID, DDSlon, DDSlat, CPUE_KG)
-
-
-	
-log.2018.priv.sf <- st_as_sf(log.2018_priv, coords = c("DDSlon", "DDSlat"), crs = 4326)
-plot(log.2018.priv.sf)
-
-
-hex <- st_make_grid(log.2018.priv.sf, cellsize= 0.015, square=FALSE)
-grid <- st_make_grid(log.2018.priv.sf, cellsize= 0.015, square=TRUE)
-
-hex <- st_as_sf(data.table(id_hex=1:2394, geom=sf::st_as_text(hex)), wkt='geom', crs = 4326)
-grid <- st_as_sf(data.table(id_grd=1:2046, geom=sf::st_as_text(grid)), wkt='geom', crs = 4326)
-
-plot(st_geometry(hex))
-plot(st_geometry(grid))
-plot(log.2018.priv.sf, add = TRUE)
-
-join <- hex %>% 
-  st_join(log.2018.priv.sf, join=st_contains) %>%
-  group_by(id_hex) %>% 
-  dplyr::summarise(sum_CPUE_KG=sum(CPUE_KG, na.rm=T),
-                   mean_CPUE_KG=mean(CPUE_KG, na.rm=T)) %>% 
-  filter(sum_CPUE_KG != 0)
-
-join <- grid %>% 
-  st_join(log.2018.priv.sf, join=st_contains) %>%
-  group_by(id_grd) %>% 
-  dplyr::summarise(sum_CPUE_KG=sum(CPUE_KG, na.rm=T),
-                   mean_CPUE_KG=mean(CPUE_KG, na.rm=T)) %>% 
-  filter(sum_CPUE_KG != 0)
-
-
-#lvls=seq(5,40,5)  #CPUE levels from 5 to 40 kg/h
-lvls=seq(5,110,15)  #CPUE levels from 5 to 110 kg/h
-
-avg.cpue <- join %>% 
-  mutate(brk = cut(mean_CPUE_KG, breaks = lvls))
-plot(avg.cpue[5])
-
-lvls<-c(lvls,max(lvls)*100)
-labels <- c("5-20", "20-35", "35-50", "50-65", "65-80", "80-95", "95-110", "100+")
-col <- brewer.pal(length(lvls),"YlGnBu")
-#cfd <- scale_fill_manual(values = col, breaks = labels, name = expression(frac(Kg,hr)), limits = labels) 
-
-
-p <- pecjector(area = "sfa29",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", scale.bar = c('bl',0.5)))#, add_custom = list(obj = test, size = 1, fill = "cfd", color = "black"))
-#p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
-
-
-p + #Plot survey data and format figure.
-  geom_sf(data = avg.cpue %>% dplyr::select(brk), aes(fill = factor(brk))) +
-  scale_fill_manual(values = brewer.pal(length(lvls),"YlGnBu"), name = "Kg/hr", labels = labels) +
-  geom_sf(data = sfa29.poly, size = 0.5, colour = "black", fill = NA) +
-  labs(title = paste(survey.year, "", "CPUE"), x = "Longitude",
-       y = "Latitude") +
-  theme(legend.position = c(.90,.83),legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.7)), #Legend bkg colour and transparency
-        legend.box.margin = margin(2, 3, 2, 3))
-
-	
-
-	## assign year, select data, plot ##
-	#xx <- 2019
-	# For 2015: was subarea D closure line: 
-	#Dclosure <- read.csv('Y:/INSHORE SCALLOP/SFA29/2016/Fishery/2015SubareaDClosureLine/SubareaDClosureLine2015.csv')
-	#attr(Dclosure,"projection") <- "LL"
-	
-	## Remove B fishing from plot in 2018 due to privacy considerations
-	#log.2018_noB <- log.2018 [!log.2018$ASSIGNED_AREA == "29B",]
-	#gridlog<-subset(log.2018_noB, YEAR==xx, c('ID','DDSlon','DDSlat','CPUE_KG'))
-
-	## Remove E fishing from plot in 2019 due to privacy considerations
-	#log.2019_PA <- log.2019 [!log.2019$ASSIGNED_AREA == "29E",]
-	#gridlog<-subset(log.2019_PA, YEAR==xx, c('ID','DDSlon','DDSlat','CPUE_KG'))
-
-	
-## Extra plots	(NOT REQUIRED)
-	### Make histogram by area for distribution of cpue in 2017
-	#library (ggplot2)
-	#histolog<-subset(log.2018, YEAR==xx, c('AREA','CPUE_KG'))
-	#histolog <- subset (histolog, !AREA == '29B')
-	
-	#cpuehisto <- ggplot (histolog, aes (x = CPUE_KG)) + 
-	 # geom_histogram (breaks = seq (0, 300, by = 5), col = 'grey60') + labs (x = 'CPUE (kg/h)', y = 'Count') +
-	 # facet_wrap (~AREA, ncol = 1) +
-	 # scale_x_continuous(breaks = seq (0, 300, by = 50)) +
-	 # theme_bw() +
-	 # theme(panel.grid=element_blank()) 
-	# cpuehisto
-
-## Plot catch rate by date for all areas 
-	# depdat <- subset (log.2018, YEAR==xx, c('AREA','CPUE_KG', 'DATE_FISHED'))
-	# depdat <- subset (depdat, !AREA == '29B')
-	# depdat$DATE_FISHED <- as.Date(depdat$DATE_FISHED)
-
-	#	depplot <- ggplot (depdat, aes (y = CPUE_KG, x = DATE_FISHED)) +
-	#  geom_point () + labs (y = 'CPUE (kg/h)', x = 'Date') +
-	#  scale_x_date(date_breaks = "2 week", date_labels =  "%b-%d") + 
-	#  facet_wrap (~AREA, ncol = 2, scales = 'free') +
-	#  theme (panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-	#         panel.background = element_blank(), axis.line = element_line(colour = "black"))
-#	depplot
-	
-## Range of values by area
-#	library (plyr)
-#	cpuevals <- ddply (log.2018,. (AREA),
-#	                   summarize,
-#	                   min = min (CPUE_KG), max = max (CPUE_KG), mean = mean (CPUE_KG), median = median (CPUE_KG))
-	
-## MARCH 2015 
-### For NEW CF method: 
-
-
-#		# SURVEY CONDITION FACTOR(g/dm3)
-#			xx <- 2014
-#			#subset survey data to be just those tows where detailed sampling was conducted
-#			sfa29surv.detailed <- sfa29surv.dat
-#			com.contours<-contour.gen(subset(sfa29surv.detailed,year==xx,c('ID','lon','lat','Condition')),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
-#
-#			lvls=c(5,6,7,8,9,10,11,12) #levels to be color coded
-#
-#			CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
-#			CP <- convCP(CL)
-#			cont.data<- data.frame(PID=1:length(lvls),col=brewer.pal(length(lvls),"YlOrBr"),border=NA, stringsAsFactors=FALSE)  #previously was YlOrBr YlGnB
-#			png("figures/sfa29comCF2014.png",9,9,res=200,units='in')
-#			ScallopMap('sfa29',plot.lines=F,bathcol=rgb(0,0,1,0.3),bathy.source='USGS',contour=list(sfa29cont.poly,cont.data),title=paste('SFA 29 Condition'),cex=1.2)
-#			points(lat~lon,sfa29surv.detailed,subset=year==xx,pch=16,cex=0.5)
-#			addLines(sfa29strata)
-#			legend("topright",c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep='')),fill=cont.data$col,title=expression("" * g/dm^3*""),inset=0.02,bty='n',box.col='white', cex=1)
-#			dev.off()
-#
-#		# SURVEY MEAT COUNT - of commerical (>= 100mm) sized animals
-#			#sfa29.poly <- read.csv("Y:/INSHORE SCALLOP/SFA29/2015/SFA29_Boundaries_NoE.csv")
-#			xx <- 2014
-#			sfa29surv.dat$meat.count<-0.5/(sfa29surv.dat$Commercial_kg/sfa29surv.dat$com)
-#			sfa29surv.mc <- sfa29surv.dat[-which(is.na(sfa29surv.dat$meat.count)),]
-#			mc.contours<-contour.gen(na.omit(subset(sfa29surv.mc,year==xx,c('ID','lon','lat','meat.count'))),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,interp.method='gstat',blank=F,plot=F,subset.poly='square',subset.eff=0,subscale=0.25,res=0.01)
-#
-#			lvls=seq(10,45,5)
-#			div=2
-#
-#			CL <- contourLines(mc.contours$image.dat,levels=lvls)
-#			CP <- convCP(CL)
-#			sfa29cont.poly <- joinPolys(CP$PolySet,sfa29.poly)
-#			Ncol=length(lvls)+div
-#			cont.data<- data.frame(PID=1:length(lvls),col=brewer.pal(Ncol,"Spectral")[c(Ncol:(div+2),1)],border=NA,stringsAsFactors=FALSE)
-#
-#			png("figures/sfa29comMeatCnt2014.png",9,9,res=200,units='in')
-#			ScallopMap('sfa29',plot.lines=F,bathcol=rgb(0,0,1,0.3),bathy.source='USGS',contour=list(sfa29cont.poly,cont.data),title="",cex=1.2)
-#			points(lat~lon,sfa29surv.mc,subset=year==xx,pch=16,cex=0.5)
-#			addLines(sfa29strata)
-#			legend("topright",c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep='')),fill=cont.data$col,title="Scallops/500g",inset=0.02,bty='n',box.col='white', cex=1)
-#			dev.off()
-#
-			
