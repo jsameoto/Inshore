@@ -241,8 +241,8 @@ plot.theme <-   theme(legend.key.size = unit(5,"mm"),
                       axis.text = element_text(size = 10),
                       legend.title = element_text(size = 10, face = "bold"), 
                       legend.text = element_text(size = 8),
-                      legend.position = c(.90,.83), #legend position
-                      legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.7)), #Legend bkg colour and transparency
+                      legend.position = c(.90,.80), #legend position
+                      legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.8)), #Legend bkg colour and transparency
                       legend.box.margin = margin(2, 3, 2, 3))
 
 
@@ -288,11 +288,11 @@ p + #Plot survey data and format figure.
                      aes(lon, lat), size = 0.5) +
   #geom_sf(data = sfa29.poly, size = 0.5, colour = "black", fill = NA) +
   labs(title = paste(survey.year, "", "SFA29 Density (>= 100mm)"), x = "Longitude", y = "Latitude") +
-  guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  guides(fill = guide_legend(override.aes= list(alpha = .8))) + #Legend transparency
   plot.theme
 
 #save
-ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_ComDensity',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 10, height = 10, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_ComDensity',survey.year,'.png'), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 #FR
 p + #Plot survey data and format figure.
@@ -304,7 +304,7 @@ p + #Plot survey data and format figure.
   guides(fill = guide_legend(title="Nombre par trait", override.aes= list(alpha = .7))) + #Legend transparency
   plot.theme
 #save
-ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_ComDensity',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 10, height = 10, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_ComDensity',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 
 # ----BIOMASS PLOTS -----
@@ -347,11 +347,11 @@ p + #Plot survey data and format figure.
                      aes(lon, lat), size = 0.5) +
   #geom_sf(data = sfa29.poly, size = 0.5, colour = "black", fill = NA) +
   labs(title = paste(survey.year, "", "SFA29 Biomass (>= 100mm)"), x = "Longitude", y = "Latitude") +
-  guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  guides(fill = guide_legend(override.aes= list(alpha = .8))) + #Legend transparency
   plot.theme
 
 #save
-ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_ComBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 10, height = 10, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_ComBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----CONDITION PLOT-----
 
@@ -390,10 +390,10 @@ p + #Plot survey data and format figure.
   geom_spatial_point(data = con.dat %>% filter(year == survey.year), aes(lon, lat), size = 0.5) +
   #geom_sf(data = sfa29.poly, size = 0.5, colour = "black", fill = NA) +
   labs(title = paste(survey.year, "", "SFA29 Condition"), x = "Longitude", y = "Latitude") +
-  guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  guides(fill = guide_legend(override.aes= list(alpha = .8))) + #Legend transparency
   plot.theme
 
-ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_Condition',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 10, height = 10, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_Condition',survey.year,'.png'), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 
 # ----MEAT COUNT -----
@@ -433,10 +433,10 @@ p + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv.mtcnt %>% filter(year == survey.year), aes(lon, lat), size = 0.5) +
   #geom_sf(data = sfa29.poly, size = 0.5, colour = "black", fill = NA) +
   labs(title = paste(survey.year, "", "SFA29 Meat Count (>= 100)"), x = "Longitude", y = "Latitude") +
-  guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  guides(fill = guide_legend(override.aes= list(alpha = .8))) + #Legend transparency
   plot.theme
 
-ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_MeatCount',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 10, height = 10, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_MeatCount',survey.year,'.png'), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----CLAPPERS -----
 
@@ -475,10 +475,10 @@ p + #Plot survey data and format figure.
   #geom_sf(data = sfa29.poly, size = 0.5, colour = "black", fill = NA) +
   labs(title = paste(survey.year, "", "SFA29 Clapper Density (>= 100mm)"), x = "Longitude",
        y = "Latitude") +
-  guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  guides(fill = guide_legend(override.aes= list(alpha = .8))) + #Legend transparency
   plot.theme
 
-ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_ComClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 10, height = 10, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_ComClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----PROPORTION OF CLAPPERS -----
 
@@ -517,7 +517,7 @@ p + #Plot survey data and format figure.
   #geom_sf(data = sfa29.poly, size = 0.5, colour = "black", fill = NA) +
   labs(title = paste(survey.year, "", "SFA29 Clapper Proportion (>= 100mm)"), x = "Longitude",
        y = "Latitude") +
-  guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  guides(fill = guide_legend(override.aes= list(alpha = .8))) + #Legend transparency
   plot.theme
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_PropComClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -564,11 +564,11 @@ p + #Plot survey data and format figure.
                      aes(lon, lat), size = 0.5) +
   #geom_sf(data = sfa29.poly, size = 0.5, colour = "black", fill = NA) +
   labs(title = paste(survey.year, "", "SFA29 Density (90-99 mm)"), x = "Longitude", y = "Latitude") +
-  guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  guides(fill = guide_legend(override.aes= list(alpha = .8))) + #Legend transparency
   plot.theme
 
 #save
-ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_RecDensity',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 10, height = 10, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_RecDensity',survey.year,'.png'), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 #FR
 p + #Plot survey data and format figure.
@@ -580,7 +580,7 @@ p + #Plot survey data and format figure.
   guides(fill = guide_legend(title="Nombre par trait", override.aes= list(alpha = .7))) + #Legend transparency
   plot.theme
 #save
-ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_RecDensity',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 10, height = 10, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_RecDensity',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 
 # ----BIOMASS PLOTS -----
@@ -623,11 +623,11 @@ p + #Plot survey data and format figure.
                      aes(lon, lat), size = 0.5) +
   #geom_sf(data = sfa29.poly, size = 0.5, colour = "black", fill = NA) +
   labs(title = paste(survey.year, "", "SFA29 Biomass (90-99 mm)"), x = "Longitude", y = "Latitude") +
-  guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  guides(fill = guide_legend(override.aes= list(alpha = .8))) + #Legend transparency
   plot.theme
 
 #save
-ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_RecBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 10, height = 10, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_RecBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----CLAPPERS -----
 
@@ -666,10 +666,10 @@ p + #Plot survey data and format figure.
   #geom_sf(data = sfa29.poly, size = 0.5, colour = "black", fill = NA) +
   labs(title = paste(survey.year, "", "SFA29 Clapper Density (90-99 mm)"), x = "Longitude",
        y = "Latitude") +
-  guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  guides(fill = guide_legend(override.aes= list(alpha = .8))) + #Legend transparency
   plot.theme
 
-ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_RecClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 10, height = 10, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_RecClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----PROPORTION OF CLAPPERS -----
 
@@ -708,7 +708,7 @@ p + #Plot survey data and format figure.
   #geom_sf(data = sfa29.poly, size = 0.5, colour = "black", fill = NA) +
   labs(title = paste(survey.year, "", "SFA29 Clapper Proportion (90-99mm)"), x = "Longitude",
        y = "Latitude") +
-  guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  guides(fill = guide_legend(override.aes= list(alpha = .8))) + #Legend transparency
   plot.theme
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_PropRecClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -755,11 +755,11 @@ p + #Plot survey data and format figure.
                      aes(lon, lat), size = 0.5) +
   #geom_sf(data = sfa29.poly, size = 0.5, colour = "black", fill = NA) +
   labs(title = paste(survey.year, "", "SFA29 Density (< 90 mm)"), x = "Longitude", y = "Latitude") +
-  guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  guides(fill = guide_legend(override.aes= list(alpha = .8))) + #Legend transparency
   plot.theme
 
 #save
-ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_PreDensity',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 10, height = 10, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_PreDensity',survey.year,'.png'), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 #FR
 p + #Plot survey data and format figure.
@@ -771,7 +771,7 @@ p + #Plot survey data and format figure.
   guides(fill = guide_legend(title="Nombre par trait", override.aes= list(alpha = .7))) + #Legend transparency
   plot.theme
 #save
-ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_PreDensity',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 10, height = 10, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_PreDensity',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----BIOMASS PLOTS -----
 
@@ -813,11 +813,11 @@ p + #Plot survey data and format figure.
                      aes(lon, lat), size = 0.5) +
   #geom_sf(data = sfa29.poly, size = 0.5, colour = "black", fill = NA) +
   labs(title = paste(survey.year, "", "SFA29 Biomass (< 90 mm)"), x = "Longitude", y = "Latitude") +
-  guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  guides(fill = guide_legend(override.aes= list(alpha = .8))) + #Legend transparency
   plot.theme
 
 #save
-ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_PreBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 10, height = 10, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_PreBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 
 # ----CLAPPERS -----
@@ -857,10 +857,10 @@ p + #Plot survey data and format figure.
   #geom_sf(data = sfa29.poly, size = 0.5, colour = "black", fill = NA) +
   labs(title = paste(survey.year, "", "SFA29 Clapper Density (< 90 mm)"), x = "Longitude",
        y = "Latitude") +
-  guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  guides(fill = guide_legend(override.aes= list(alpha = .8))) + #Legend transparency
   plot.theme
 
-ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_PreClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 10, height = 10, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_PreClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 
 # ------------------------------END OF CONTOUR PLOTS  -------------------------------------------
