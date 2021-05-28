@@ -56,6 +56,58 @@ p
 
 
 ########################################################################################################################################
+#Solution Terra package
+########################################################################################################################################
+library(terra)
+library(raster)
+
+b_box <- ScallopSurv %>% 
+  st_as_sf(coords = c("lon","lat"), crs = 4326) %>%  #convert to sf
+  filter(year == survey.year) %>%  #filters out survey year, formerly defined as xx in contour.gen() function.
+  dplyr::select(year, ID, com) %>%  
+  st_buffer(0.06) %>% #create sf object around data points
+  st_union() %>% 
+  st_as_sf()
+
+ScallopSurv.sp <- ScallopSurv %>% #Save data as new object
+  filter(year == survey.year) %>%  #filters out survey year, formerly defined as xx in contour.gen() function.
+  dplyr::select(year, ID, com, lon, lat) %>% 
+  filter(com != 0, !is.na(com)) #Remove NAs and zero values #Check.
+
+coordinates(ScallopSurv.sp) <- c("lon", "lat")
+grd <- as.data.frame(spsample(ScallopSurv.sp, "regular", n = 12000))
+names(grd) <- c("lon", "lat")
+coordinates(grd) <- c("lon", "lat")
+gridded(grd)     <- TRUE  # Create SpatialPixel object
+fullgrid(grd)    <- TRUE  # Create SpatialGrid object
+proj4string(ScallopSurv.sp) <- CRS("+init=epsg:4326")
+proj4string(grd) <- proj4string(ScallopSurv.sp)
+
+S.idw <- gstat::idw(com ~ 1, ScallopSurv.sp, newdata=grd, idp = 3.5)
+plot(S.idw)
+
+S.idw <- raster(S.idw)
+S.idw <- S.idw %>% 
+  mask(mask = b_box)
+
+plot(b_box)
+plot(S.idw)
+
+#Reclassify:
+#lvls <- c(1,5,10,50,100,200,300,400,500)
+m <- c(0, 4.9999, 1, 5, 9.9999, 5, 10, 49.999, 10, 50, 99.9999, 50, 100, 199.999, 100, 200, 299.999, 200, 300, 399.999, 300, 400, 499.999, 400, 500, 1000, 500) 
+rclmat <- matrix(m, ncol=3, byrow=TRUE)
+rc <- reclassify(S.idw, rclmat)
+plot(rc)
+class(rc)
+
+S.idw <- as(rc, "SpatRaster")
+plot(S.idw)
+
+poly.idw <- as.polygons(S.idw, values = TRUE)
+plot(poly.idw)
+
+########################################################################################################################################
 #Solution 1 - sp, grid, stars, sf, using idw, and cropping to bounding box  **Really close to old plot, but still needs some tweeking**
 ########################################################################################################################################
 
@@ -108,7 +160,7 @@ z.crop <- S.idw  %>%
   smooth(method = "ksmooth", smoothness = 2)
 
 plot(z.crop)
-
+class(z.crop)
 
 p <- pecjector(area = "bof",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
                add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), 
@@ -129,21 +181,26 @@ p + #Plot survey data and format figure.
 #With contours? Work in progress - trying to get closed contours using b_box..
 #Need to extend the idw boundaries, and merge b_box with contours to close the lines, convert to polygons....
 
+
+
 cont <- S.idw %>%
   st_contour(na.rm = FALSE, breaks = c(1,5,10,50,100,200,300,400,500), contour_lines = TRUE) %>% 
   st_cast("MULTILINESTRING") %>% 
   st_intersection(b_box)
 
+conc_bbox <- st_zm(concaveman(cont))
+plot(conc_bbox)
 plot(cont)
 
-b_box_line <- b_box %>% 
+b_box_line <- conc_bbox %>% 
   st_cast("MULTILINESTRING")
 
-test <- st_union(cont, b_box)
+test <- st_union(cont, b_box_line) %>% 
+  st_make_valid()
 plot(test)
 
 test.poly <- test %>% 
-  st_cast("POLYGON")
+  st_cast("MULTIPOLYGON")
 
 ggplot()+
   geom_sf(data = test, aes(fill = "var1.pred"))+
@@ -151,7 +208,7 @@ ggplot()+
 
 ########################################
 
-#lvls <- c(1,5,10,50,100,200,300,400,500)
+lvls <- c(1,5,10,50,100,200,300,400,500)
 n.breaks <- length(lvls)
 col <- brewer.pal(length(lvls),"YlGn") #set colours
 cfd <- scale_fill_manual(values = alpha(col[1:n.breaks], 0.6), name = expression(frac(N,tow))) #set custom fill arguments for pecjector.
