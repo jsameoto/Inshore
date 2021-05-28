@@ -43,8 +43,8 @@ library(ROracle)
 #pwd <- pw.sameotoj
 #uid <- un.raperj
 #pwd <- un.raperj
-uid <- un.bwilson
-pwd <- pw.bwilson
+uid <- keyring::key_list("Oracle")[1,2]
+pwd <- keyring::key_get("Oracle", "WILSONBR")
 
 #set year 
 survey.year <- 2019  #removed maxyear in script and changed to survey year

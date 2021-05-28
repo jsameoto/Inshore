@@ -34,7 +34,7 @@ dir <- ("C:/Users/WILSONB/Documents/GitHub/Inshore") #Brittany
 #dir <- () #Jamie
 #dir <- () #Jessica
 
-#Remember to follow github workflow (i.e. commiting all changes with details (see commit protocol document (not yet made)), pushing those changes up to your github forked repository and merging with the master Inshore repo on Marscal.
+#Remember to follow github workflow (i.e. commiting all changes with details (see commit protocol document (*To be made*)), pushing those changes up to your github forked repository and merging with the master Inshore repo on Marscal.
 ```
 
 
@@ -58,7 +58,7 @@ The inshore assessment is separated by area:
 usethis::edit_file(paste0(dir, "/StandardDepth/Standardize_depth.R")) #Opens Standardize_depth.R
 ```
 
-  * **Path:** 
+  * **Script Directory:** 
   
       To be your forked Marscal Inshore repository path (e.g. `r paste0(dir, "/StandardDepth")` )
 
@@ -85,7 +85,7 @@ Ensure that all changes made to the script Standardize_depth.R have been saved a
 -------------------------------------------------------------------------
 
 
-## 2. Growth - Meat Weight Shell Height and Condition
+## 2. Meat Weight - Shell Height and Condition modeling (Growth)
 
 ```{r open MeatweightShellHeight.R files, include = FALSE}
 #year <- year(Sys.Date())-1 #Extract previous years folder structure for example
@@ -102,7 +102,7 @@ usethis::edit_file("Y:/INSHORE SCALLOP/BoF/2020/Assessment/Scripts/Growth/SPA6_M
 ```
 
 
-  * **Path:** 
+  * **Script Directory:** 
   
       Y:/INSHORE SCALLOP/BoF/2020/Assessment/Scripts/Growth 
       (eventually to be our forked Marscal/inshore repository, e.g. `r paste0(dir, "/Growth")`)
@@ -181,18 +181,17 @@ Ensure that all changes made to scripts MeatWeightShellHeight.R for each SPA hav
 -------------------------------------------------------------------------
 
 
-## 3. Survey Indicies - Spatial plots
+## 3. Spatial plots (Survey Indices)
 
 ```{r open Spatial plot scripts, include = FALSE}
 #year <- year(Sys.Date())-1 #Extract previous years folder structure for example
 usethis::edit_file(paste0(dir, "/SurveyIndices/BoFSpatialPlotsofSurveyData_pecjector.r"))
-usethis::edit_file(paste0(dir, "/SurveyIndices/SFA29_SpatialPlots_pecjector.r"))
 ```
 
 
   * **Purpose:** Plot spatial patterns for Density, Biomass, Condition, Meat Count and Clapper data for the Full Bay of Fundy extent, SPA1A, 1B, 3, 4 and 5, and 6.
     
-  * **Path:** To be your forked Marscal Inshore repository path (e.g. C:/Users/WILSONB/Documents/GitHub/Inshore/SurveyIndicies)
+  * **Script Directory:** To be your forked Marscal Inshore repository path (e.g. C:/Users/WILSONB/Documents/GitHub/Inshore/SurveyIndicies)
   
   * **Output(s):**
   
@@ -224,12 +223,80 @@ Ensure that all changes made to BoFSpatialPlotsofSurveyData_pecjector.r have bee
 -------------------------------------------------------------------------
 
 
-## 4. Growth - Shell Height Frequencies, Biomass
+## 4. VonB (Growth)
 
-  * **Purpose:**
+```{r Open AREA_VonB_YYYY.R, include = FALSE}
+
+usethis::edit_file("Y:/INSHORE SCALLOP/BoF/2020/Assessment/Scripts/Growth/BoF_VonB_2016.R") #Script for SPA 1A, 1B, 4 and 5 (last updated 2016).
+usethis::edit_file("Y:/INSHORE SCALLOP/BoF/2020/Assessment/Scripts/Growth/SPA3_VonB_2017.R") #Script for SPA 3 (last updated 2017)
+usethis::edit_file("Y:/INSHORE SCALLOP/BoF/2020/Assessment/Scripts/Growth/SPA6_VonB_2017.R") #Script for SPA 6 (last updated 2017)
+```
     
-  * **Path:** 
+  * **Script Directory:** 
+  
+  * **Purpose:**
   
   * **Output(s):**
     
   * **Output Directory(s):** 
+  
+  
+-------------------------------------------------------------------------
+
+::: {.infobox .caution data-latex="{caution}"}
+**COMMIT CHANGES**
+
+Ensure that all changes made to BoFSpatialPlotsofSurveyData_pecjector.r have been saved and pushed to Marscal Inshore repository before continuing!
+:::
+
+-------------------------------------------------------------------------
+
+## 5. Shell Height Frequencies (Growth)
+
+```{r Open AREA_SHF_YYYY.R, include = FALSE}
+
+usethis::edit_file("Y:/INSHORE SCALLOP/BoF/2020/Assessment/Scripts/Growth/SPA1A_SHF_2020_new.R")
+usethis::edit_file("Y:/INSHORE SCALLOP/BoF/2020/Assessment/Scripts/Growth/SPA1B_SHF_2020_new.R")
+usethis::edit_file("Y:/INSHORE SCALLOP/BoF/2020/Assessment/Scripts/Growth/SPA3_SHF_2020.R")
+usethis::edit_file("Y:/INSHORE SCALLOP/BoF/2020/Assessment/Scripts/Growth/SPA4_SHF_2020.R")
+usethis::edit_file("Y:/INSHORE SCALLOP/BoF/2020/Assessment/Scripts/Growth/SPA4_SHF_2020.R")
+```
+    
+  * **Script Directory:** 
+  
+  * **Purpose:**
+  
+  * **Output(s):**
+    
+  * **Output Directory(s):** 
+  
+-------------------------------------------------------------------------
+
+::: {.infobox .caution data-latex="{caution}"}
+**COMMIT CHANGES**
+
+Ensure that all changes made to BoFSpatialPlotsofSurveyData_pecjector.r have been saved and pushed to Marscal Inshore repository before continuing!
+:::
+
+-------------------------------------------------------------------------
+
+
+## 6. Growth Rates (Growth)
+    
+  * **Script Directory:** 
+  
+  * **Purpose:**
+  
+  * **Output(s):**
+    
+  * **Output Directory(s):** 
+  
+-------------------------------------------------------------------------
+
+::: {.infobox .caution data-latex="{caution}"}
+**COMMIT CHANGES**
+
+Ensure that all changes made to BoFSpatialPlotsofSurveyData_pecjector.r have been saved and pushed to Marscal Inshore repository before continuing!
+:::
+
+-------------------------------------------------------------------------
