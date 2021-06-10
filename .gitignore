@@ -36,7 +36,7 @@ vignettes/*.pdf
 # Shiny token, see https://shiny.rstudio.com/articles/shinyapps.html
 rsconnect/
 
-# ignore archive folder
+# ignore folder
 /archive/
 archive/
 Archive/
@@ -49,13 +49,6 @@ Archive/
 *.doc
 *.pdf
 *.png
-*.html
-
-
-# ignore these script files which we will change regularly and don't need to deal with
-/markdown/
-markdown/
-
-*presentation.R
-*.tex
-*.css
+InshoreAssessmentWorkflow/*.html
+InshoreAssessmentWorkflow/*.tex
+InshoreAssessmentWorkflow/*.css
