@@ -49,6 +49,7 @@ Archive/
 *.doc
 *.pdf
 *.png
+*.html
 
 
 # ignore these script files which we will change regularly and don't need to deal with
@@ -57,3 +58,4 @@ markdown/
 
 *presentation.R
 *.tex
+*.css
