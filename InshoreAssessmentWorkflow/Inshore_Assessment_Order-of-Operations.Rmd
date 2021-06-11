@@ -23,7 +23,7 @@ require(tidyverse)
 require(flextable)
 require(shinyWidgets)
 #devtools::install_github("timelyportfolio/sweetalertR") #required for pop up reminders to save changes to github.
-require(sweetalertR)
+#require(sweetalertR)
 
 
 #To use this Rmarkdown as a guide to run scripts, it requires you to have forked the Marscal Inshore repository (https://github.com/Mar-scal)
@@ -40,7 +40,7 @@ dir <- ("C:/Users/WILSONB/Documents/GitHub/Inshore") #Brittany
 
 # Overview
 
-This document is intended as a guide to the inshore scallop assessment workflow and to highlight the R-scripts that are used to facilitate the assessment process. This document can be used as a Rmarkdown allowing the user to open the required scripts within Rstudio, or be read as a html or PDF document where the user can review the workflow and manually locate the scripts witin the specified directory.
+This document is intended as a guide to the inshore scallop assessment workflow and the R-scripts that are used in the assessment process. This document can be used as a Rmarkdown allowing the user to open the required scripts within Rstudio, or be read as a html or PDF document where the user can review the workflow and manually locate the scripts witin the specified directory.
 
 The inshore assessment is separated by area:
 
@@ -90,6 +90,7 @@ Ensure that all changes made to the script Standardize_depth.R have been saved a
 ```{r open MeatweightShellHeight.R files, include = FALSE}
 #year <- year(Sys.Date())-1 #Extract previous years folder structure for example
 #dir_tree(path = paste0("Y:/INSHORE SCALLOP/BoF/", year, "/Assessment/Scripts/Growth")) #Prints out directory structure
+rm(list = ls()) #Clear Global Environment
 
 usethis::edit_file("Y:/INSHORE SCALLOP/BoF/2020/Assessment/Scripts/Growth/BoF_MeatWeightShellHeight_2020.R") #Script for SPA 1A, 1B, 4 and 5.
 usethis::edit_file("Y:/INSHORE SCALLOP/BoF/2020/Assessment/Scripts/Growth/SPA3_MeatWeightShellHeight_2020.R") #Script for SPA 3
@@ -110,7 +111,37 @@ usethis::edit_file("Y:/INSHORE SCALLOP/BoF/2020/Assessment/Scripts/Growth/SPA6_M
   * **Purpose:** 
   
       The MeatWeightShellHeight.R scripts predicts meat weight with shell height and depth.
+      
+  * **Overview:** 
   
+    1. Set up data for modelling:
+      - Query detailed meat weight/shell height sampling data from database (scallsur.scwgthgt) for specified cruises (SPA1A1B4and5, SPA3, SPA6).
+      - Query Shell height bin data from database (scallsur.scliveres) for specified cruises (SPA1A1B4and5, SPA3, SPA6).
+      - Format and merge depth information (from towsdd_StdDepth.csv) to the meat weight/shell height dataframe (BFdetail).
+      - Format and merge depth information (from towsdd_StdDepth.csv) to the shell height bin data (BFlivefreq).
+      
+      Run the Meat Weight Shell Height Model:
+      - Subset for the survey year, shell height > 40mm
+      - Centre Height and Depth values (e.g log height - mean(log height))
+      - Run model (GLM) predicting meat weight (wet) with shell height (centred), depth (centred) and mixed effects of log height and tow number.
+      - Assess/plot residuals (full area and by tow) and fitted data.
+    
+      Predicting:
+      - Subset for the survey year
+      - Centre Height values (log of the midpoint of the bins - mean of the log height)
+      - Centre Depth values (log depth - mean(test.data$Log.DEPTH)
+      - Create a matrix of depths by tow to use in predict function
+      - Predict using Random effects for tows where meat weight shell height samples were taken - gives MWT-SH relationship for one individual
+      - Predict using Fixed effects for tows where meat weight shell height samples were not taken - gives MWT-SH relationship for one individual
+      - Multiply prediction matrix (weight) by live numbers to get weight/bin size
+      
+   2. Condition data for Spatial plots
+      - centre depth using same mean depth used in the MWTSH model (mean(test.data$Log.DEPTH))
+      - Subset for tows that were sampled for meat weight shell height
+      - Predict a meat weight for 100mm for just sampled tows.
+      
+      
+      
   * **Output(s):** 
   
     - **SPA 1A, 1B, 4 and 5**
