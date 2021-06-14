@@ -10,12 +10,22 @@ options(stringsAsFactors = FALSE)
 #pwd <- pw.sameotoj
 #uid <- un.raperj
 #pwd <- un.raperj
-uid <- un.bwilson
-pwd <- pw.bwilson
+uid <- keyring::key_list("Oracle")[1,2]
+pwd <- keyring::key_get("Oracle", "WILSONBR")
 
 #### Import Source functions####
-# source R functions
-source("Y:/INSHORE SCALLOP/BoF/Assessment_fns/convert.dd.dddd.r")
+
+funcs <- "https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Survey_and_OSAC/convert.dd.dddd.r"
+dir <- getwd()
+for(fun in funcs) 
+{
+  temp <- dir
+  download.file(fun,destfile = basename(fun))
+  source(paste0(dir,"/",basename(fun)))
+  file.remove(paste0(dir,"/",basename(fun)))
+}
+#source("Y:/INSHORE SCALLOP/BoF/Assessment_fns/convert.dd.dddd.r")
+
 
 #ROracle
 chan <- dbConnect(dbDriver("Oracle"),username=uid, password=pwd,'ptran')
@@ -55,7 +65,7 @@ ScallopSurv.sf <- st_as_sf(ScallopSurv, coords = c("lon", "lat"), crs = 4326)
 bathy <- raster("Y:/INSHORE SCALLOP/BoF/StandardDepth/ScotianShelfDEM_Olex/mdem_olex/w001001.adf")
 
 olex.depth <- raster::extract(bathy, ScallopSurv.sf) #extract bathy data from ScallopSurv.sf point locations.
-#warning given: Transforming SpatialPoints to the CRS of the Raster
+#warning given: Transforming SpatialPoints to the CRS of the Raster - THIS IS OKAY.
 
 #Append depth to survey data
 ScallopSurv.dpth <-cbind(ScallopSurv.sf, olex.depth) %>% 
