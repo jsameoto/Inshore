@@ -6,7 +6,7 @@ To install Git: https://git-scm.com/download/win
 
 Some tips/best practices: https://guides.github.com/introduction/flow/
 
-We have modified the typical GitHub workflow so that we can work from our network and users can access their scripts from a remote VPN connection. Our general idea for a workflow comes from here https://nvie.com/files/Git-branching-model.pdf, with some revisions to work from a network and minimize uncessary duplication.
+Freya and Dave have modified the typical GitHub workflow so that we can work from our network and users can access their scripts from a remote VPN connection. Their general idea for a workflow comes from here https://nvie.com/files/Git-branching-model.pdf, with some revisions to work from a network and minimize uncessary duplication.
 
 The workflow is as follows
 
@@ -30,7 +30,7 @@ The workflow is as follows
 7: Test your changes to ensure there are no bugs within your FORK
 
 8: You can now submit a PULL REQUEST from your FORK to the Mar-scal MASTER 
-  - For Inshore related Pull Requests, BW will review the PULL REQUEST to ensure it does not cause any issues.
+  - For Inshore related Pull Requests, BW will review the PULL REQUEST to ensure it does not cause any issues, for all other pull requests, FK and DK will review.
       -BW will also identify any ISSUES that need to be opened and/or closed, and integrated with pull requests too.
   - If you are aware of ISSUES being resolved/opened feel free to integrate these into the PULL REQUEST yourself
 
