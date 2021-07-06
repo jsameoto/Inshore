@@ -799,7 +799,7 @@ p <- pecjector(area = "bof",repo ='github',c_sys="ll", gis.repo = 'github', plot
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = con.dat %>% 
-                       filter(year == cond.year, CRUISE == "BF2019"),
+                       filter(year == cond.year, str_detect(CRUISE, "BF")),
                      aes(lon, lat), size = 0.5) +
   labs(title = paste(cond.year, "", "BoF Condition"), x = "Longitude",
        y = "Latitude") +
@@ -816,7 +816,7 @@ p <- pecjector(area = "spa1A",repo ='github',c_sys="ll", gis.repo = 'github', pl
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = con.dat %>% 
-                       filter(year == cond.year, CRUISE == "BF2019"),
+                       filter(year == cond.year, str_detect(CRUISE, "BF")),
                      aes(lon, lat), size = 0.5) +
   labs(title = paste(cond.year, "", "SPA1A Condition"), x = "Longitude",
        y = "Latitude") +
@@ -833,7 +833,7 @@ p <- pecjector(area = "spa1B",repo ='github',c_sys="ll", gis.repo = 'github', pl
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = con.dat %>% 
-                       filter(year == cond.year, CRUISE == "BF2019"),
+                       filter(year == cond.year, str_detect(CRUISE, "BF")),
                      aes(lon, lat), size = 0.5) +
   labs(title = paste(cond.year, "", "SPA1B Condition"), x = "Longitude",
        y = "Latitude") +
@@ -850,7 +850,7 @@ p <- pecjector(area = "spa4",repo ='github',c_sys="ll", gis.repo = 'github', plo
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = con.dat %>% 
-                       filter(year == cond.year, CRUISE == "BF2019"),
+                       filter(year == cond.year, str_detect(CRUISE, "BF")),
                      aes(lon, lat), size = 0.5) +
   labs(title = paste(cond.year, "", "SPA4 Condition"), x = "Longitude",
        y = "Latitude") + 
@@ -868,7 +868,8 @@ com.contours <- contour.gen(con.dat %>% filter(year== cond.year, str_detect(CRUI
                             dplyr::select(ID,lon,lat,Condition),
                           ticks='define', nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
 
-lvls=c(5,6,7,8,9,10,11,12) #levels to be color coded
+#lvls=c(5,6,7,8,9,10,11,12) #levels to be color coded
+lvls=c(4,6,8,10,12,14,16) #levels to be color coded
 
 CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
 CP <- convCP(CL)
@@ -884,7 +885,8 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   mutate(level = unique(CP$PolyData$level))
 
 #Colour aesthetics and breaks for contours
-labels <- c("5-6", "6-7", "7-8", "8-9", "9-10", "10-11", "11-12", "12+")
+#labels <- c("5-6", "6-7", "7-8", "8-9", "9-10", "10-11", "11-12", "12+")
+labels <- c("4-6", "6-8", "8-10", "10-12", "12-14","14-16", "16+")
 col <- brewer.pal(length(lvls),"YlOrBr") #set colours
 cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = "Condition (g)", limits = labels) #set custom fill arguments for pecjector.
 
@@ -894,14 +896,14 @@ p <- pecjector(area = "spa3",repo ='github',c_sys="ll", gis.repo = 'github', plo
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = con.dat %>% 
-                       filter(year == cond.year, CRUISE == "BI2019"), #only SPA3 strata IDs
+                       filter(year == cond.year, str_detect(CRUISE, "BI")), #only SPA3 strata IDs
                      aes(lon, lat), size = 0.5) +
   geom_sf(data = spa3.poly, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
   labs(title = paste(cond.year, "", "SPA3 Condition"), x = "Longitude", y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   plot.theme.3
 
-ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA3_Condition',cond.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA3_Condition',cond.year,'_4-16.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 
 # ----SPA6 -----
@@ -940,7 +942,7 @@ p <- pecjector(area =list(x=c(-67.5,-66.4), y=c(45.2,44.4), crs=4326),repo ='git
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = con.dat %>% 
-                       filter(year == cond.year, CRUISE == "GM2019"),
+                       filter(year == cond.year, str_detect(CRUISE, "GM")),
                      aes(lon, lat), size = 0.5) +
   #geom_sf(data = outVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
   #geom_sf(data = inVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
