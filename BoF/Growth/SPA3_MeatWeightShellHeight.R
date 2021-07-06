@@ -15,13 +15,15 @@ library (lme4)
 library(lattice)
 
 # Define: 
-uid <- un.sameotoj
-pwd <- pw.sameotoj
+#uid <- un.sameotoj
+#pwd <- pw.sameotoj
+uid <- keyring::key_list("Oracle")[1,2]
+pwd <- keyring::key_get("Oracle", "WILSONBR")
 
-surveyyear <- 2019  #This is the last survey year for which you want to include  - not should match year of cruise below 
-cruise <- "BI2019"  #note should match year for surveyyear set above 
+surveyyear <- 2021  #This is the last survey year for which you want to include  - not should match year of cruise below 
+cruise <- "BI2021"  #note should match year for surveyyear set above 
 
-assessmentyear <- 2020 #year in which you are conducting the survey 
+assessmentyear <- 2021 #year in which you are conducting the survey 
 area <- "3"  #SPA assessing recall SPA 1A, 1B, and 4 are grouped; options: "1A1B4and5", "3", "6" 
 path.directory <- "Y:/INSHORE SCALLOP/BoF/"
 
@@ -66,7 +68,7 @@ BIlivefreq.dat$ID <- paste(BIlivefreq.dat$CRUISE,BIlivefreq.dat$TOW_NO,sep='.')
 detail.ID <- unique(BIdetail.dat$ID)
 livefreq.ID <- unique(BIlivefreq.dat$ID)
 
-OlexTows_all <- read.csv("Y:/INSHORE SCALLOP/BoF/StandardDepth/TowData/towsdd_StdDepth.csv")
+OlexTows_all <- read.csv("Y:/INSHORE SCALLOP/StandardDepth/towsdd_StdDepth.csv")
 names(OlexTows_all)[which(colnames(OlexTows_all)=="RASTERVALU")] <- "OLEXDEPTH_M"   #rename "RASTERVALU" column
 OlexTows_all$OLEXDEPTH_M[OlexTows_all$OLEXDEPTH_M==-9999] <- NA
 OlexTows_all$ID <- paste(OlexTows_all$CRUISE,OlexTows_all$TOW_NO,sep='.')
