@@ -31,10 +31,10 @@ for(fun in funcs)
 chan <- dbConnect(dbDriver("Oracle"),username=uid, password=pwd,'ptran')
 
 #set survey.year and cruise - *Note: requires single quotations within double quotations*
-survey.year <- "'2019'"
-cruise <- "'SFA292019'"
-appendingfile_year <- "2019" # for importing the current spreadsheet to append to.
-updatefile_year <- "2019" #For saving file
+survey.year <- "'2021'"
+cruise <- "'BI2021'"
+#appendingfile_year <- "2021" # for importing the current spreadsheet to append to.
+#updatefile_year <- "2021" #For saving file
 
 #Db Query:
 quer2 <- paste(
@@ -74,13 +74,22 @@ ScallopSurv.dpth <-cbind(ScallopSurv.sf, olex.depth) %>%
   st_set_geometry(NULL) #removes geometry
   
 #Load previous towsdd_stdDepth.csv file to append to.
-towsdd <- read.csv(paste0("Y:/INSHORE SCALLOP/StandardDepth/towsdd_StdDepth_", appendingfile_year, ".csv"))
+towsdd <- read.csv(paste0("Y:/INSHORE SCALLOP/StandardDepth/towsdd_StdDepth.csv"))
 
-##############################################################################################################
-###Checks - will remove this section once workflow has been confirmed to be equivilent to previous workflow ##
-##############################################################################################################
+#Appending to towsdd
+towsdd.updt <- rbind(towsdd, ScallopSurv.dpth)
+
+#Save
+write.csv(towsdd.updt, "Y:/INSHORE SCALLOP/StandardDepth/towsdd_StdDepth.csv", row.names = FALSE)
+
+#**make copy manually and add year to name - move file to Archived folder under Y:/INSHORE SCALLOP/StandardDepth **
+
+
+###################################################################################################################
+### Checks - used to run older tows to see if R script workflow generates the same values as ArcGIS workflow     ##
+###################################################################################################################
 towsdd.test <- towsdd %>% 
-  filter(CRUISE == "SFA292019") %>% ## Will need to change CRUISE if checking other years/cruises.
+  filter(CRUISE == "BF2006") %>% ## Will need to change CRUISE if checking other years/cruises.
   arrange(TOW_NO)
 
 #check depth values
@@ -93,14 +102,3 @@ format(round(towsdd.test$DDSlat,7), nsmall = 7) == format(round(ScallopSurv.dpth
 towsdd.test$diff <- towsdd.test$DDSlat - ScallopSurv.dpth$DDSlat
 plot(abs(towsdd.test$diff))
 #################################################################################################
-
-#Appending to towsdd
-towsdd.updt <- rbind(towsdd, ScallopSurv.dpth)
-
-#Save with year in filename
-setwd("Y:/INSHORE SCALLOP/StandardDepth")
-write.csv(towsdd.updt, paste0("towsdd_StdDepth_", updatefile_year,"test.csv")) #remove test when finalized**
-
-#**manually move last years file to Archived folder under Y:/INSHORE SCALLOP/StandardDepth **
-
-
