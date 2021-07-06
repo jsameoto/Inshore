@@ -2,7 +2,7 @@
 ###                               Spatial Figures                                  ###
 ###                           Full BoF and Approaches                              ###
 ###                         J.Sameoto Nov 2017, Oct 2018                           ###
-###                     B.Wilson - Overhauled Dec 2020                             ###
+###                     B.Wilson - Modified   Dec 2020                             ###
 ###       (on https://github.com/Mar-scal/Inshore/tree/main/SurveyIndices)         ###
 ###................................................................................###
 
