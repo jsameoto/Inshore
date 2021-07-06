@@ -174,7 +174,11 @@ rm(un.sameotoj)
 rm(pw.sameotoj)
 
 #!!!Now save workspace as .RData object: e.g. BIgrowth2019.RData
-save.image(file = paste0(path.directory, assessmentyear, "/Assessment/Data/Growth/SPA",area,"/BIgrowth",surveyyear,".RData"))
+#save.image(file = paste0(path.directory, assessmentyear, "/Assessment/Data/Growth/SPA",area,"/BIgrowth",surveyyear,".RData"))
+
+#NEW - save only the objects we need later
+save(MWTSHBI.YYYY, latt, liveweightYYYY, BIdetailYYYY, BIlivefreq, livefreqYYYY,
+     file=paste0(path.directory, assessmentyear, "/Assessment/Data/Growth/SPA",area,"/BIgrowth",surveyyear,".RData"))
 
 
 # ----  Condition for Spatial Map ----
