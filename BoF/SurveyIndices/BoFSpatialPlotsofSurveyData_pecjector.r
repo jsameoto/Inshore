@@ -47,12 +47,12 @@ uid <- keyring::key_list("Oracle")[1,2]
 pwd <- keyring::key_get("Oracle", "WILSONBR")
 
 #set year 
-survey.year <- 2019  #removed maxyear in script and changed to survey year
-assessmentyear <- 2020 #year in which you are providing advice for- determines where to save files to
+survey.year <- 2021  #removed maxyear in script and changed to survey year
+assessmentyear <- 2021 #year in which you are providing advice for- determines where to save files to
 path.directory <- "Y:/INSHORE SCALLOP/BoF/"
 
 #set up directory to save plot
-saveplot.dir <- "C:/Users/WILSONB/Documents/1_Inshore_Scallop/FigureTest/" #Directory to save plots to #paste0("Y:/INSHORE SCALLOP/BoF/",assessmentyear,"/Assessment/Figures")
+saveplot.dir <- paste0(path.directory,assessmentyear,"/Assessment/Figures/")
 
 #ROracle
 chan <- dbConnect(dbDriver("Oracle"),username=uid, password=pwd,'ptran')
@@ -206,6 +206,7 @@ sampled.dat <- dbGetQuery(chan, quer4)
 
 max.yr <- max(na.omit(ScallopSurv$year))
 Year <- seq((max.yr-4),max.yr)
+Year <- Year[! Year %in% 2020] #No 2020 data - remove from data query.
 num.years <- length(Year)
 
 #SPA1A1B4and5
@@ -484,6 +485,9 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA4_ComDensity',survey.year,'.p
 
 # ----SPA3 -----
 
+#NOTE: TO PLOT OTHER YEARS CHANGE *biomass.year*
+biomass.year <- survey.year # change year (e.g. biomass.year <- "2019") to plot other years (dependant on the files that were loaded in the object liveweight)
+
 #Create contour and specify plot aesthetics
 com.contours <- contour.gen(ScallopSurv %>% filter(year == survey.year, STRATA_ID %in% c(22, 23, 24)) %>% #only SPA3
                               dplyr::select(ID, lon, lat, com), ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
@@ -524,6 +528,9 @@ p + #Plot survey data and format figure.
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA3_ComDensity',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA6 -----
+#NOTE: TO PLOT OTHER YEARS CHANGE *biomass.year*
+biomass.year <- survey.year # change year (e.g. biomass.year <- "2019") to plot other years (dependant on the files that were loaded in the object liveweight)
+
 #Create contour and specify plot aesthetics
 com.contours <- contour.gen(ScallopSurv %>% 
                               filter(year == survey.year, STRATA_ID %in% c(30,31,32,54)) %>% #Only SPA6
@@ -570,8 +577,9 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA6_ComDensity',survey.year,'.p
 
 
 # ----BIOMASS PLOTS -----
+
 #NOTE: TO PLOT OTHER YEARS CHANGE *biomass.year*
-biomass.year <- "2019" #Year of data to plot (dependant on the files that were loaded in the object liveweight)
+biomass.year <- survey.year # change year (e.g. biomass.year <- "2019") to plot other years (dependant on the files that were loaded in the object liveweight)
 
 #For FULL BAY, SPA1A, SPA1B, SPA4&5
 com.contours<-contour.gen(ScallopSurv.kg %>% filter(year==biomass.year, !STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)) %>% #Excludes SPA3 and SFA29
@@ -757,7 +765,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA6_ComBiomass',biomass.year,'.
 # ----CONDITION PLOTS-----
 
 #NOTE: TO PLOT OTHER YEARS CHANGE *cond.year*
-cond.year <- "2019" #Year of data to plot (dependant on the files that were loaded in the object con.dat)
+cond.year <- survey.year # change year (e.g. cond.year <- "2019") to plot other years (dependant on the files that were loaded in the object con.dat)
 
 #For FULL BAY, SPA1A, SPA1B, SPA4&5
 
@@ -854,7 +862,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA4_Condition',cond.year,'.png'
 
 # ----SPA3 -----
 
-cond.year <- "2019" #Year of data to plot (dependant on the files that were loaded in the object con.dat)
+cond.year <- survey.year # change year (e.g. cond.year <- "2019") to plot other years (dependant on the files that were loaded in the object con.dat)
 
 com.contours <- contour.gen(con.dat %>% filter(year== cond.year, str_detect(CRUISE, "BI")) %>% #Only SPA3
                             dplyr::select(ID,lon,lat,Condition),
@@ -898,7 +906,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA3_Condition',cond.year,'.png'
 
 # ----SPA6 -----
 
-cond.year <- "2019" #Year of data to plot (dependant on the files that were loaded in the object con.dat)
+cond.year <- survey.year # change year (e.g. cond.year <- "2019") to plot other years (dependant on the files that were loaded in the object con.dat)
 
 com.contours <- contour.gen(con.dat %>% filter(year== cond.year, str_detect(CRUISE, "GM")) %>% #Only SPA6
                             dplyr::select(ID,lon,lat,Condition),
@@ -1997,6 +2005,9 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA4_RecClappers',survey.year,'.
 
 # ----SPA3 -----
 
+rec.contours<-contour.gen(ScallopSurv.dead %>%  filter(year==survey.year, STRATA_ID %in% c(22, 23, 24)) %>% #Only SPA3
+                            dplyr::select(ID,lon,lat,rec),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
+
 #Create contour and specify plot aesthetics
 lvls=c(1,5,10,15,20,25,30,50,100) #levels to be color coded
 
@@ -2035,7 +2046,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA3_RecClappers',survey.year,'.
 
 # ----SPA6 -----
 
-rec.contours<-contour.gen(ScallopSurv.dead %>%  filter(year==survey.year, STRATA_ID %in% c(30,31,32,54)) %>% #Only SPA6
+rec.contours<-contour.gen(ScallopSurv.dead %>% filter(year==survey.year, STRATA_ID %in% c(30,31,32,54)) %>% #Only SPA6
                             dplyr::select(ID,lon,lat,rec),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',
                           blank=T,plot=F,res=0.01)
 
