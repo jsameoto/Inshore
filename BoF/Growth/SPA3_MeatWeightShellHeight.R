@@ -216,7 +216,7 @@ write.csv(livefreq.condition.spatial, paste0(path.directory, assessmentyear, "/A
 
 
 #Bring in file with depths by area, note some are by strata groups within area
-mean.depth <- read.csv('Y:/INSHORE SCALLOP/BoF/StandardDepth/BoFMeanDepths.csv')[ ,c("AREA", "MeanDepth_m")] #File for the constant depth to predict on by area
+mean.depth <- read.csv('Y:/INSHORE SCALLOP/StandardDepth/BoFMeanDepths.csv')[ ,c("AREA", "MeanDepth_m")] #File for the constant depth to predict on by area
 unique(mean.depth$AREA)
 length(mean.depth$AREA)
 
@@ -253,7 +253,7 @@ BI.con.ts <- read.csv(paste0(path.directory, assessmentyear-1,"/Assessment/Data/
 #BI.con.ts <- BI.con.ts[BI.con.ts$YEAR!=2019,]
 
 #update timeseries and write out new file: 
-BI.con.ts <- rbind(BI.con.ts %>% select(YEAR, STRATA, CONDITION), mean.depth.BI %>% select("YEAR",STRATA="AREA_NAME",CONDITION="Condition"))
+BI.con.ts <- rbind(BI.con.ts %>% dplyr::select(YEAR, STRATA, CONDITION), mean.depth.BI %>% dplyr::select(YEAR, STRATA = AREA_NAME, CONDITION= Condition))
 
 BI.con.ts <- BI.con.ts[order(BI.con.ts$STRATA, BI.con.ts$YEAR),]
 BI.con.ts
@@ -267,7 +267,7 @@ condition.ts.plot <- ggplot(BI.con.ts,aes(x=YEAR, y=CONDITION,group_by(STRATA), 
   geom_line(aes(linetype=STRATA)) + geom_point(aes(shape=STRATA)) + 
 #  scale_linetype_manual(values=c("dotted", "twodash")) + 
 #  scale_shape_manual(values=c(1,6)) + 
-#  scale_color_manual(values=c("black","gray34" )) + 
+#  scale_color_manual(values=c("black","gray34" )) +
   xlab("Year") + ylab("Condition (meat weight, g)") + theme_bw() #+ 
 #  theme(legend.position = c(.8, .99),
 #        legend.justification = c("left", "top"),
