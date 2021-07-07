@@ -62,7 +62,7 @@ ScallopSurv.sf <- st_as_sf(ScallopSurv, coords = c("lon", "lat"), crs = 4326)
 
 #Read in Bathy (with raster):  #Former process involved importing raster (UTM zone 20 into Arcmap, and extracting imported points from database. ArcMap converts data points to UTM zone 20 in order to extract.)  *DO NOT TRANSFORM THE RASTER OR DATA*. raster::extract() gives warning "Transforming SpatialPoints to the CRS of the Raster".
 
-bathy <- raster("Y:/INSHORE SCALLOP/BoF/StandardDepth/ScotianShelfDEM_Olex/mdem_olex/w001001.adf")
+bathy <- raster("Y:/INSHORE SCALLOP/StandardDepth/ScotianShelfDEM_Olex/mdem_olex/w001001.adf")
 
 olex.depth <- raster::extract(bathy, ScallopSurv.sf) #extract bathy data from ScallopSurv.sf point locations.
 #warning given: Transforming SpatialPoints to the CRS of the Raster - THIS IS OKAY.
