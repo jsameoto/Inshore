@@ -485,9 +485,6 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA4_ComDensity',survey.year,'.p
 
 # ----SPA3 -----
 
-#NOTE: TO PLOT OTHER YEARS CHANGE *biomass.year*
-biomass.year <- survey.year # change year (e.g. biomass.year <- "2019") to plot other years (dependant on the files that were loaded in the object liveweight)
-
 #Create contour and specify plot aesthetics
 com.contours <- contour.gen(ScallopSurv %>% filter(year == survey.year, STRATA_ID %in% c(22, 23, 24)) %>% #only SPA3
                               dplyr::select(ID, lon, lat, com), ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
@@ -528,8 +525,6 @@ p + #Plot survey data and format figure.
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA3_ComDensity',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA6 -----
-#NOTE: TO PLOT OTHER YEARS CHANGE *biomass.year*
-biomass.year <- survey.year # change year (e.g. biomass.year <- "2019") to plot other years (dependant on the files that were loaded in the object liveweight)
 
 #Create contour and specify plot aesthetics
 com.contours <- contour.gen(ScallopSurv %>% 
@@ -677,6 +672,8 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA4_ComBiomass',biomass.year,'.
 
 
 # ----SPA3 -----
+#NOTE: TO PLOT OTHER YEARS CHANGE *biomass.year*
+biomass.year <- survey.year # change year (e.g. biomass.year <- "2019") to plot other years (dependant on the files that were loaded in the object biomass.year)
 
 #Create contour and specify plot aesthetics
 com.contours <- contour.gen(ScallopSurv.kg %>% 
@@ -720,6 +717,8 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA3_ComBiomass',biomass.year,'.
 
 
 # ----SPA6 -----
+#NOTE: TO PLOT OTHER YEARS CHANGE *biomass.year*
+biomass.year <- survey.year # change year (e.g. biomass.year <- "2019") to plot other years (dependant on the files that were loaded in the object biomass.year)
 
 com.contours<-contour.gen(ScallopSurv.kg %>% filter(year==biomass.year, STRATA_ID %in% c(30,31,32,54)) %>% #Only SPA6
                             dplyr::select(ID,lon,lat,com.bm),
