@@ -157,8 +157,15 @@ plot(coords.sf)
 strata.match <- st_intersection(strata, coords.sf)
 strata.match <- strata.match %>% dplyr::select(STRATA_ID, ID)
 
-spa.match <- st_intersection(SPA_all, coords.sf)
+#SFA29W
+#strata.match <- st_intersection(SFA29W , coords.sf)
+#strata.match <- strata.match %>% dplyr::select(ET_ID, ID)
+
+#BOF SPA
+spa.match <- st_intersection(SPA_BoF , coords.sf)
 spa.match <- spa.match %>% dplyr::select(ET_ID, ID)
+
+
 
 #All points should have strata, and spa matches. If there are discrepincies - check 
 
