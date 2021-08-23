@@ -13,6 +13,7 @@ library(tidyverse)
 library(ROracle)
 library (lme4)
 library(lattice)
+require(data.table)
 
 # Define: 
 #uid <- un.sameotoj
@@ -251,32 +252,52 @@ mean.depth.BI$Condition <- round(mean.depth.BI$Condition,3)
 #note contains IN and OUT VMS strata condition; they don't vary much since the only predictor is depth and SH is constant at 100mm 
 BI.con.ts <- read.csv(paste0(path.directory, assessmentyear-1,"/Assessment/Data/SurveyIndices/SPA3/SPA3_ConditionTimeSeries.csv"))
 #BI.con.ts <- BI.con.ts[BI.con.ts$YEAR!=2019,]
+BI.con.ts <- BI.con.ts %>% add_row(YEAR = 2020, STRATA = "InVMS_SMB", CONDITION = NA) %>% 
+  add_row(YEAR = 2020, STRATA = "OutVMS", CONDITION = NA) %>% 
+  add_row(YEAR = 2020, STRATA = "InVMS", CONDITION = NA) %>%
+  add_row(YEAR = 2020, STRATA = "SMB", CONDITION = NA)
+#BI.con.ts <- BI.con.ts %>% arrange(STRATA, YEAR)
 
 #update timeseries and write out new file: 
 BI.con.ts <- rbind(BI.con.ts %>% dplyr::select(YEAR, STRATA, CONDITION), mean.depth.BI %>% dplyr::select(YEAR, STRATA = AREA_NAME, CONDITION= Condition))
 
-BI.con.ts <- BI.con.ts[order(BI.con.ts$STRATA, BI.con.ts$YEAR),]
+#Compare previous Year
+#left_join(BI.con.ts %>% dplyr::select(YEAR, STRATA, CONDITION) %>% filter(YEAR == 2019),mean.depth.BI %>% dplyr::select(YEAR, STRATA = AREA_NAME, CONDITION= Condition), by = "STRATA")
+
+BI.con.ts <- BI.con.ts %>% group_by(STRATA) %>% 
+  arrange(STRATA, YEAR) %>% 
+  ungroup()
+
 BI.con.ts
 
 write.csv(BI.con.ts, paste0(path.directory, assessmentyear, "/Assessment/Data/SurveyIndices/SPA",area,"/SPA3_ConditionTimeSeries.csv"))
 
 
 #... Plot Condition Time Series Figure:
+BI.con.ts$STRATA <- factor(BI.con.ts$STRATA, levels=c("SMB", "InVMS", "OutVMS", "InVMS_SMB"), labels=c("St. Mary's Bay", "InsideVMS", "OutsideVMS", "InsideVMS_SMB"))
 
-condition.ts.plot <- ggplot(BI.con.ts,aes(x=YEAR, y=CONDITION,group_by(STRATA), color=STRATA)) +  
-  geom_line(aes(linetype=STRATA)) + geom_point(aes(shape=STRATA)) + 
-#  scale_linetype_manual(values=c("dotted", "twodash")) + 
-#  scale_shape_manual(values=c(1,6)) + 
-#  scale_color_manual(values=c("black","gray34" )) +
-  xlab("Year") + ylab("Condition (meat weight, g)") + theme_bw() #+ 
-#  theme(legend.position = c(.8, .99),
-#        legend.justification = c("left", "top"),
-#        legend.box.just = "left",
-#        legend.margin = margin(6, 6, 6, 6)) 
+condition.ts.plot <- ggplot(BI.con.ts %>% filter(STRATA %in% c("St. Mary's Bay", "InsideVMS", "OutsideVMS")),
+  aes(x=YEAR, y=CONDITION,group_by(STRATA), color=STRATA)) +  
+  geom_line(aes(linetype=STRATA)) + geom_point( size = 3, aes(shape=STRATA)) +
+  scale_linetype_manual(values=c("solid","longdash", "dashed")) + 
+  scale_shape_manual(values=c(15, 16 ,17)) + 
+  scale_color_manual(values=c("black", "red", "limegreen")) +
+  labs(title = paste("SPA",area, "annual trend in condition"))+
+  xlab("Year") + ylab("Condition (meat weight, g)") + theme_bw() +
+  coord_cartesian(ylim=c(5, 20)) +
+  scale_y_continuous(breaks=seq(5, 20, 5))+
+  theme(legend.position = c(.01, .16),
+        legend.justification = c("left", "top"),
+        legend.box.just = "left",
+        legend.margin = margin(6, 6, 6, 6),
+        legend.title = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        text = element_text(size=18))
 condition.ts.plot
 
 #Export plot 
-png(paste0(path.directory, assessmentyear, "/Assessment/Figures/SPA3_conditionTrends.png" ))
+png(paste0(path.directory, assessmentyear, "/Assessment/Figures/SPA3_conditionTrends.png" ), width = 672, height = 672)
 condition.ts.plot
 dev.off()
 
