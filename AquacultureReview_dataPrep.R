@@ -1,5 +1,5 @@
 
-#This script is built to help provide information for Aquaculture Site Review Requests provided that site boundary information is provided (typically by the Coastal Oceanography & Ecosystem Research Section (COERS) - contact Lindsay Brager)), and overlap with commercial fishing occurs. The script looks at mean and total CPUE over the last 5 years and determines overlap with the proposed Aquaculture site boundary.  The script includes options for quick plotting (mapview) to visualize the area the surrounding CPUE data, as well as plotting using pecjector with defined extents.
+#This script is built to help provide information for Aquaculture Site Review Requests. This script requires coordinates of the zone of influence or boundaries related to the site (typically provided by the Coastal Oceanography & Ecosystem Research Section (COERS) - contact Lindsay Brager)), and overlap with commercial fishing. The script looks at total catch and effort from usable records over the last 5 years and determines overlap with the proposed Aquaculture site boundary.
 
 #July 16, 2021
 
@@ -18,6 +18,7 @@ require(forcats)
 library(ROracle)
 library(mapview)
 library(data.table)
+library(raster)
 
 uid <- keyring::key_list("Oracle")[1,2]
 pwd <- keyring::key_get("Oracle", "WILSONBR")
@@ -40,76 +41,93 @@ for(fun in funcs)
 
 #Directory
 dir <- "Y:/Admin/Request and Review Tracking/Aquaculture_Reviews/2021/Beaver_Harbour/" #to save logs and read in ll data
-#set year
 last.fishing.yr <- 2020
-start.year <- last.fishing.yr - 5 #Get data from latest survey year back 5 years.
+start.year <- last.fishing.yr - 5 #Get data from latest year back 5 years (6 years inclusive).
+cruise <- "SPA6" #Set Cruise parameters
 
-#READ IN STRATA
+
+## READ IN DATA ########################################################################################################
+
+#Read in the inshore boundaries shapefile
 temp <- tempfile()
 # Download this to the temp directory
-download.file("https://raw.githubusercontent.com/Mar-scal/GIS_layers/master/inshore_boundaries/inshore_survey_strata/inshore_survey_strata.zip", temp)
+download.file("https://raw.githubusercontent.com/Mar-scal/GIS_layers/master/inshore_boundaries/inshore_boundaries.zip", temp)
 # Figure out what this file was saved as
 temp2 <- tempfile()
 # Unzip it
 unzip(zipfile=temp, exdir=temp2)
 
-# Now read in the shapefiles
-strata <- st_read(paste0(temp2, "/PolygonSCSTRATAINFO_rm46-26-57-31.shp"))
 
-#SET Cruise parameters
-cruise <- "SPA6"
+
+# Now read in the shapefiles
+SPA1A <- st_read(paste0(temp2, "/SPA1A_polygon_NAD83.shp"))
+SPA1B <- st_read(paste0(temp2, "/SPA1B_polygon_NAD83.shp"))
+SPA2 <- st_read(paste0(temp2, "/SPA2_polygon_NAD83.shp"))
+SPA3 <- st_read(paste0(temp2, "/SPA3_polygon_NAD83.shp"))
+SPA4 <- st_read(paste0(temp2, "/SPA4_polygon_NAD83.shp"))
+SPA5 <- st_read(paste0(temp2, "/SPA5_polygon_NAD83.shp"))
+SPA6A <- st_read(paste0(temp2, "/SPA6A_polygon_NAD83.shp")) %>% mutate(ET_ID = "6A")
+SPA6B <- st_read(paste0(temp2, "/SPA6B_polygon_NAD83.shp")) %>% mutate(ET_ID = "6B")
+SPA6C <- st_read(paste0(temp2, "/SPA6C_polygon_NAD83.shp")) %>% mutate(ET_ID = "6C")
+SPA6D <- st_read(paste0(temp2, "/SPA6D_polygon_NAD83.shp")) %>% mutate(ET_ID = "6D")
+SPA6_all <- rbind(SPA6A, SPA6B, SPA6C, SPA6D)
+#SPA1A <- st_read("Y:/INSHORE SCALLOP/BoFBoundaries/SPABoundaries_Redrawn2014/SPA New Polys/shp polygons/SPA1A_polygon_NAD83.shp") %>% mutate(ET_ID = "6A")
+
+
+
+#READ IN SITE INFO (Zone of Influence) - PROVIDED BY Coastal Oceanography & Ecosystem Research Section (COERS) (Lindsay Brager)
+site.name <- "BeaverHarbour"
+data <- read.table(paste0(dir,"rams_head_pez_pelagic_speed26.6_cms_ttrack_3h.ll"))
+
+zoi <- data %>% 
+  mutate(ID = seq(1,nrow(data),1)) %>% 
+  mutate(Site = site.name)
+
+zoi.sf <- st_as_sf(zoi, coords = c("V1", "V2"), crs = 4326) %>% #May need to adjust Lat long headers in coords = c()
+  summarise(do_union = FALSE) %>% 
+  st_cast("LINESTRING") %>% 
+  st_transform(crs = 4269) #convert projection to match managment zone boundaries (NAD83)
+
+#Read in land shapefile - used for filtering out points on land.
+land <- st_read("Z:/People/Brittany/1_GISdata/Shapefiles/canada_wvs_geo_wgs84.shp", crs = 4326) %>% 
+  st_transform(crs = 4269) %>%
+  filter(PROVINCE %in% c("Nova Scotia", "New Brunswick", "Prince Edward Island", "Newfoundland and Labrador")) %>% 
+  st_make_valid() %>%  #shapefile contains invalid geometry
+  dplyr::select(PROVINCE)
+
+#### Select Commercial data ####
 
 #Run for determining subareas for data query.
 if(cruise == "SPA1A") {
   sub.area <- paste0("'1A'")
-  strata <- strata %>% filter(STRATA_ID %in% c(6,7,12, 13, 14, 15, 16, 17, 18, 19, 20, 39))
+  mgmt_zone <- SPA1A
 }
 if(cruise == "SPA1B") {
   sub.area <- paste0("'1B'")
-  strata <- strata %>% filter(STRATA_ID %in% c(37, 38, 53, 35, 49, 52, 50, 51))
+  mgmt_zone <- SPA1B
+}
+if(cruise == "SPA2") {
+  sub.area <- paste0("'SPA2'")
+  mgmt_zone <- SPA2
 }
 if(cruise == "SPA3") {
   sub.area <- paste0("'SPA3'")
-  strata <- strata %>% filter(STRATA_ID %in% c(22, 23, 24))
-
+  mgmt_zone <- SPA3
 }
 if(cruise == "SPA4") {
-  sub.area <- paste0("'SPA4', 'SPA5'")
-  strata <- strata %>% filter(STRATA_ID %in% c(1,8,2,9,3,10,4,5,47,21))
+  sub.area <- paste0("'SPA4'")
+  mgmt_zone <- SPA4
+}
+if(cruise == "SPA5") {
+  sub.area <- paste0("'SPA5'")
+  mgmt_zone <- SPA5
 }
 sub.area <- NULL
 if(cruise == "SPA6") {
   sub.area <- paste0("'6A','6B','6C','6D'")
-  strata <- strata %>% filter(STRATA_ID %in% c(30,31,32,54))
+  mgmt_zone <- SPA6_all
 }
 
-
-
-#READ IN SITE INFO - PROVIDED BY Coastal Oceanography & Ecosystem Research Section (COERS) (Lindsay Brager)
-site.name <- "BeaverHarbour"
-data <- read.table(paste0(dir,"rams_head_pez_pelagic_speed26.6_cms_ttrack_3h.ll"))
-
-
-site.boundary <- data %>% 
-  mutate(ID = seq(1,nrow(data),1)) %>% 
-  mutate(Site = site.name)
-
-site.boundary.sf <- st_as_sf(site.boundary, coords = c("V1", "V2"), crs = 4326) %>% #May need to adjust Lat long headers in coords = c()
-  summarise(do_union = FALSE) %>% 
-  st_cast("LINESTRING") # %>% 
-  #st_cast("POLYGON")
-plot(site.boundary.sf)
-
-#Define boundary to filter out data points with errors in coordinates
-#boundary <- convert.coords(plot.extent = cruise)
-#bbox <- st_bbox(boundary[[1]])
-#plot(bbox)
-
-mapview::mapview(site.boundary.sf)+
-  mapview(strata)
-#mapview::mapview(bbox)+
-
-#### Select Commercial data ####
 quer2 <- paste(
   "SELECT * 			                             ",
   "FROM scallop.scallop_log_marfis s		         ",
@@ -127,6 +145,8 @@ chan <- dbConnect(drv = dbDriver("Oracle"), username=uid,  password = pwd,  dbna
 logs <- dbGetQuery(chan, quer2)
 dim(logs)
 
+###########################################################################################################################
+
 logs <- logs %>% 
   mutate(YEAR = as.Date(logs$DATE_FISHED, format="%Y-%m-%d")) %>%  #assuming character and in format 'YYYY-XX-XX' or "YYYY/XX/XX'
   rename(AREA = ASSIGNED_AREA) %>% 
@@ -135,44 +155,90 @@ logs <- logs %>%
   mutate(ID = 1:nrow(logs)) %>% 
   mutate(EFFORT_HOURS = (AVG_TOW_TIME * NUM_OF_TOWS)/60)
 
+str(logs)
+
 #Filter out areas for privacy considerations (min 5 trips per area to include in presentation)
 log.priv <- logs %>%
   group_by(AREA) %>% 
   filter(!n() <=5) %>% #Filter out any areas within the dataset that have less than 5
   ungroup() %>%
-  dplyr::select(ID, AREA, DDSlon, DDSlat, DAY_CATCH_KG, EFFORT_HOURS)
-
-log.priv.sf <- st_as_sf(log.priv, coords = c("DDSlon", "DDSlat"), crs = 4326) # Create sf object
-plot(log.priv.sf) #Note any coordinate errors
+  dplyr::select(ID, AREA, DDSlon, DDSlat, DAY_CATCH_KG, EFFORT_HOURS, YEAR, LICENCE_ID)
 
 #Create log and Print out records removed by rule of 5
-cat(nrow(logs)-nrow(log.priv), "records are removed - rule of 5\n", file = paste0(dir,site.name,"_AquacultureReview.log")) 
+cat(nrow(logs)-nrow(log.priv), "records are removed - rule of 5\n") 
 
-num.rec.in.site <- nrow(log.priv.sf %>% st_crop(site.boundary.sf)) #How many records are in the site boundaries
-cat(num.rec.in.site, "- usable commercial record(s) within the site boundary\n", file = paste0(dir,site.name,"_AquacultureReview.log"), append = TRUE)
+# Create sf object
+log.priv.sf <- st_as_sf(log.priv, coords = c("DDSlon", "DDSlat"), crs = 4326) %>% 
+  st_transform(crs = 4269) #convert projection to match managment zone boundaries (NAD83)
+plot(log.priv.sf) #Note any coordinate errors
 
-spa.site.overlap <- log.priv.sf %>% #What subareas overlap with the site boundary?
-  st_crop(site.boundary.sf) %>%
+#Remove any data points outside the management zone boundaries
+log.priv.sf <- log.priv.sf %>% 
+  st_crop(mgmt_zone)
+
+#Remove any data points on land
+log.priv.sf <- st_difference(log.priv.sf, st_combine(land))
+mapview::mapview(log.priv.sf)+
+  mapview::mapview(zoi.sf)
+
+#Calculate average distance to shore
+#library(osmdata)
+#library(geosphere)
+
+#log.dist <- st_transform(log.priv.sf, crs = 4326) %>% 
+#  filter(DAY_CATCH_KG != 0)
+#land.wgs84 <- st_transform(land, crs = 4326) %>% 
+#  st_cast("MULTILINESTRING")
+
+#dist <- geosphere::dist2Line(p = st_coordinates(log.dist), line = st_coordinates(land.wgs84)[,1:2])
+#df <- cbind( d1 %>% rename(y=lat,x=long),dist) %>%
+#  mutate(miles=distance/1609)
+
+# print # of records removed
+cat(nrow(log.priv)-nrow(log.priv.sf), "record(s) removed due to coordinate errors")
+
+
+#How many records are in the zone of influence?
+num.rec.in.site <- nrow(log.priv.sf %>% st_crop(zoi.sf)) 
+cat(num.rec.in.site, "- usable commercial record(s) within the zone of influence")
+
+#What subareas overlap with the zone of influence?
+spa.site.overlap <- log.priv.sf %>% 
+  st_crop(zoi.sf) %>%
   summarise(AREA) %>% 
   unique() %>%
   st_set_geometry(NULL) %>% 
   pull()
 
-cat(spa.site.overlap, "- subarea(s) overlap with the site boundary\n", file = paste0(dir,site.name,"_AquacultureReview.log"), append = TRUE)
+cat(spa.site.overlap, "- subarea(s) overlap with the zone of influence")
 
-#Remove any data points outside bounding box (defined by SPA strata)
-log.priv.sf <- log.priv.sf %>% 
-  st_crop(strata)
+#How many usable records are within the area and subarea?
+area_total <- log.priv.sf %>% 
+  nrow()
+area_total
 
-# print # of records removed
-cat(nrow(log.priv)-nrow(log.priv.sf), "record(s) removed due to coordinate errors\n", file = paste0(dir,site.name,"_AquacultureReview.log"), append = TRUE)
+subarea_total <- log.priv.sf %>% 
+  filter(AREA == spa.site.overlap) %>% 
+  nrow()
+subarea_total
 
-##GRID DATA:
+cat(paste0(area_total, " usable records fall within ", cruise, " and of those records ", subarea_total, " fall within subarea ", spa.site.overlap))
+
+#How many licences are reported in the zone of influence
+licence.no <- log.priv.sf %>% 
+  st_crop(zoi.sf)
+licence.no <- n_distinct(licence.no$LICENCE_ID)
+licence.no 
+
+cat(paste0(licence.no, "out of", n_distinct(log.priv$LICENCE_ID), " licences from usable records are reported within the zone of influence."))
+
+
+#### GRID DATA: ####
 #hex <- st_make_grid(log.priv.sf , cellsize= 0.015, square=FALSE) #Hexagon grid shape
 grid <- st_make_grid(log.priv.sf , cellsize= 0.015, square=TRUE) #Square grid shape
 
 #hex <- st_as_sf(data.table(id_hex=1:length(hex), geom=sf::st_as_text(hex)), wkt='geom', crs = 4326) #id_hex = 1:#of elements in grid
-grid <- st_as_sf(data.table(id_grd=1:length(grid), geom=sf::st_as_text(grid)), wkt='geom', crs = 4326)
+grid <- st_as_sf(data.table(id_grd=1:length(grid), geom=sf::st_as_text(grid)), wkt='geom', crs = 4269)
 
 #plot(st_geometry(hex))
 plot(st_geometry(grid))
@@ -185,53 +251,77 @@ plot(log.priv.sf, add = TRUE)
   #                 mean_CPUE_KG=mean(CPUE_KG, na.rm=T)) %>% 
   #filter(sum_CPUE_KG != 0))
 
+#Whole SPA (catch in kg)
 grid.data <- suppressMessages(grid %>% #supresses message - "although coordinates are longitude/latitude, st_union assumes that they are planar"
   st_join(log.priv.sf, join=st_contains) %>%
   group_by(id_grd) %>% 
   dplyr::summarise(sum_CATCH=sum(DAY_CATCH_KG, na.rm=T),
                    sum_EFFORT=sum(EFFORT_HOURS, na.rm=T)) %>% 
   filter(sum_CATCH != 0))
-  
-plot(grid.data[2])
-plot(grid.data[3])
 
-#Whole SPA
 mapview::mapview(grid.data, zcol="sum_CATCH") + 
   mapview::mapview(grid.data, zcol = "sum_EFFORT")+
-  mapview::mapview(site.boundary.sf)
+  mapview::mapview(zoi.sf)
 
+#What is the total catch (MT) and Effort for all of SPA #?
 tot.catch.eff <- grid.data %>% 
-  dplyr::summarise(tot_CATCH=sum(sum_CATCH, na.rm=T),
+  dplyr::summarise(tot_CATCH_MT=sum(sum_CATCH, na.rm=T)/1000, #convert kg to metric tonnes
                    tot_EFFORT=sum(sum_EFFORT, na.rm=T))
 tot.catch.eff
 
+#Subarea (catch in kg)
+subarea.grid.data <- suppressMessages(grid %>% 
+                                st_join(log.priv.sf %>% filter(AREA == spa.site.overlap), join=st_contains) %>%
+                                group_by(id_grd) %>% 
+                                dplyr::summarise(sum_CATCH=sum(DAY_CATCH_KG, na.rm=T),
+                                                 sum_EFFORT=sum(EFFORT_HOURS, na.rm=T)) %>% 
+                                filter(sum_CATCH != 0))
 
-#Within Site boundary
+mapview::mapview(subarea.grid.data, zcol="sum_CATCH") + 
+  mapview::mapview(subarea.grid.data, zcol = "sum_EFFORT")+
+  mapview::mapview(zoi.sf)
+
+#What is the total catch (MT) and Effort for the subarea
+subarea.tot.catch.eff <- subarea.grid.data %>% 
+  dplyr::summarise(tot_CATCH_MT=sum(sum_CATCH, na.rm=T)/1000, #convert kg to metric tonnes
+                   tot_EFFORT=sum(sum_EFFORT, na.rm=T))
+subarea.tot.catch.eff
+
+#Within zone of influence
 site.grid <- grid.data %>% 
-  st_crop(site.boundary.sf)
+  st_crop(zoi.sf)
 
 mapview::mapview(site.grid,  zcol="sum_CATCH") +
   mapview::mapview(site.grid,  zcol="sum_EFFORT") +
-mapview::mapview(site.boundary.sf)
+mapview::mapview(zoi.sf)
 
+#What is the total catch (MT) and effort for the zone of influence?
 site.catch.eff <- site.grid %>% 
-  dplyr::summarise(tot_CATCH=sum(sum_CATCH, na.rm=T),
+  dplyr::summarise(tot_CATCH_MT=sum(sum_CATCH, na.rm=T)/1000, #convert kg to metric tonnes
                    tot_EFFORT=sum(sum_EFFORT, na.rm=T))
 site.catch.eff
 
-prop.catch <- round(site.catch.eff$tot_CATCH/tot.catch.eff$tot_CATCH *100, digits = 2) #percent of catch within site boundary
-prop.catch
 
-prop.effort <- round(site.catch.eff$tot_EFFORT/tot.catch.eff$tot_EFFORT *100, digits = 2) #percent of effort within site boundary
-prop.effort
+##### Calucualte proportion of catch and effort in all of the Scallop Production Area and Subarea #############################
+prop.catch.spa <- round((site.catch.eff$tot_CATCH_MT/tot.catch.eff$tot_CATCH_MT) *100, digits = 2) #percent catch in zone of influence from within whole SPA
+
+prop.catch.subarea <- round((site.catch.eff$tot_CATCH_MT/subarea.tot.catch.eff$tot_CATCH_MT) *100, digits = 2) #percent catch zone of influence from just the subarea 
+
+prop.effort.spa <- round((site.catch.eff$tot_EFFORT/tot.catch.eff$tot_EFFORT) *100, digits = 2) #percent effort within zone of influence from within whole SPA
+
+prop.effort.subarea <- round((site.catch.eff$tot_EFFORT/subarea.tot.catch.eff$tot_EFFORT) *100, digits = 2) #percent of effort in zone of influence from just the subarea 
 
 tot.catch.eff
-site.tot.catch.eff
+site.catch.eff
 
-prop.catch
-prop.effort
+prop.catch.spa
+prop.effort.spa
 
-cat(paste("Summary: The site boundary falls within",cruise, "and overlaps with subarea(s)", spa.site.overlap,".\n From ",start.year, "to", last.fishing.yr,", total landings within the site boundary were", site.catch.eff$tot_CATCH, "metric tonnes (", prop.catch, "% of total catch in", cruise,").\n This represents",num.rec.in.site, "out of", nrow(log.priv.sf), "usable log records from", start.year, "to", last.fishing.yr, "\n and represents ", prop.effort,"% of the total effort in", cruise, "."), file = paste0(dir,site.name,"_AquacultureReview.log"), append = TRUE)
+prop.catch.subarea
+prop.effort.subarea
+
+#REPORT THE FOLLOWING INFORMATION:
+cat(paste("Summary: The Zone of Influence (ZOI) falls within",cruise, "and overlaps with subarea(s)", spa.site.overlap,".\n From ",start.year, "to", last.fishing.yr,"inclusive (6 years), from usable logs, landings within the ZOI were\n", round(site.catch.eff$tot_CATCH_MT, 2), "metric tonnes corresponding to", prop.catch.spa, "% of landings in", cruise,"(", prop.catch.subarea,"% of landings within subarea", spa.site.overlap,").\n"), file = paste0(dir,site.name,"_AquacultureReview.log"))
 
       
 #######PECJECTOR PLOTS#################################################################################################################
@@ -247,7 +337,7 @@ cat(paste("Summary: The site boundary falls within",cruise, "and overlaps with s
 #               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('br',0.5)),add_custom = list(obj = avg#.cpue %>% arrange(levels) %>% mutate(brk = labels[1:length(levels)]) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 #p + #Plot survey data and format figure.
-#  geom_sf(data = site.boundary.sf %>% dplyr::select(geometry), fill = NA, colour = "black")+
+#  geom_sf(data = zoi.sf %>% dplyr::select(geometry), fill = NA, colour = "black")+
   #geom_sf(data = avg.cpue %>% dplyr::select(brk), aes(fill = factor(brk))) +
   #scale_fill_manual(values = brewer.pal(length(lvls),"YlGnBu"), name = "Kg/hr", labels = labels) +
 #  labs(title = paste(start.year, "-", last.surv.yr, "", "CPUE"), x = "Longitude", y = "Latitude") +
