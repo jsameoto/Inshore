@@ -15,15 +15,31 @@ library(PEDstrata) #v.1.0.2
 library(tidyverse)
 library(ggplot2)
 library(PBSmapping)
-source("Y:/INSHORE SCALLOP/BoF/Assessment_fns/convert.dd.dddd.r")
+
+#### Import Source functions####
+
+funcs <- "https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Survey_and_OSAC/convert.dd.dddd.r"
+dir <- getwd()
+for(fun in funcs) 
+{
+  temp <- dir
+  download.file(fun,destfile = basename(fun))
+  source(paste0(dir,"/",basename(fun)))
+  file.remove(paste0(dir,"/",basename(fun)))
+}
+#source("Y:/INSHORE SCALLOP/BoF/Assessment_fns/convert.dd.dddd.r")
+
 
 # ///.... DEFINE THESE ENTRIES ....////
 
 # Define: 
-uid <- un.sameotoj
-pwd <- pw.sameotoj
-surveyyear <- 2019  #This is the last survey year 
-assessmentyear <- 2020 #year in which you are conducting the survey 
+#uid <- un.sameotoj
+#pwd <- pw.sameotoj
+uid <- keyring::key_list("Oracle")[1,2]
+pwd <- keyring::key_get("Oracle", "WILSONBR")
+
+surveyyear <- 2021  #This is the last survey year 
+assessmentyear <- 2021 #year in which you are conducting the survey 
 area <- "1A1B4and5"  #SPA assessing recall SPA 1A, 1B, and 4 are grouped; options: "1A1B4and5", "3", "6" 
 path.directory <- "Y:/INSHORE SCALLOP/BoF/"
 
@@ -46,8 +62,7 @@ livefreq <- dbGetQuery(chan, query1)
 livefreq$YEAR <- as.numeric(substr(livefreq$CRUISE,3,6))
 
 # creates range of years
-years <- seq(1997,surveyyear, by=1)
-
+years <-c(1997:2019, 2021:surveyyear) #Skipping 2020 (add as NAs later)
 
 # for Midbay North, need to assign strata to East/West
 SPA1B.MBN.E <- data.frame(PID = 58,POS = 1:4,X=c(-65.710, -65.586, -65.197, -65.264),Y=c(45.280, 45.076, 45.237, 45.459)) #New strata
@@ -85,10 +100,13 @@ round(SPA1B.MBNW.SHFmeans,2)
 colnames(SPA1B.MBNW.SHFmeans) #data from 1998 on but missing data from 2001 and 2004  
 
 #add rows to SPA1B.MBNW.SHFmeans matrix (to fill in missing years) so it can be combined with MBNE
-
 #this adds a new column for 2001 & 2004 and makes is zeros;
-SPA1B.MBNW.SHFmeans <- cbind(SPA1B.MBNW.SHFmeans[, 1:3], matrix(0, nrow = 40), SPA1B.MBNW.SHFmeans[,4:5], matrix(0, nrow = 40), SPA1B.MBNW.SHFmeans[,6:dim(SPA1B.MBNW.SHFmeans)[2]])
-colnames(SPA1B.MBNW.SHFmeans) <- c(colnames(SPA1B.MBNW.SHFmeans)[1:3], c("2001"), colnames(SPA1B.MBNW.SHFmeans)[5:6],c("2004"), colnames(SPA1B.MBNW.SHFmeans)[8:dim(SPA1B.MBNW.SHFmeans)[2]])
+SPA1B.MBNW.SHFmeans <- data.frame(SPA1B.MBNW.SHFmeans)
+SPA1B.MBNW.SHFmeans <- SPA1B.MBNW.SHFmeans %>% add_column("X2001" = 0, .after="X2000")
+SPA1B.MBNW.SHFmeans <- SPA1B.MBNW.SHFmeans %>% add_column("X2004" = 0, .after="X2003")
+#SPA1B.MBNW.SHFmeans <- cbind(SPA1B.MBNW.SHFmeans[, 1:3], matrix(0, nrow = 40), SPA1B.MBNW.SHFmeans[,4:5], matrix(0, nrow = 40), SPA1B.MBNW.SHFmeans[,6:dim(SPA1B.MBNW.SHFmeans)[2]])
+#colnames(SPA1B.MBNW.SHFmeans) <- c(colnames(SPA1B.MBNW.SHFmeans)[1:3], c("2001"), colnames(SPA1B.MBNW.SHFmeans)[5:6],c("2004"), colnames(SPA1B.MBNW.SHFmeans)[8:dim(SPA1B.MBNW.SHFmeans)[2]])
+
 
 #combine matrices proportionally (SPA1B.MBNE.SHFmeans from 1998 on and SPA1B.MBNW.SHFmeans is just from 1998 on 
 SPA1B.MBN.SHFmeans <- (SPA1B.MBNE.SHFmeans[,10:dim(SPA1B.MBNE.SHFmeans)[2]]*0.732 ) + (SPA1B.MBNW.SHFmeans*0.268) 
@@ -101,8 +119,10 @@ round(SPA1B.28C.SHFmeans, 2)
 colnames(SPA1B.28C.SHFmeans) #data from 1998 on but missing data 2004
 
 #this adds a new column for 2004 and makes is zeros;
-SPA1B.28C.SHFmeans <- cbind(SPA1B.28C.SHFmeans[,1:6], matrix(0, nrow = 40), SPA1B.28C.SHFmeans[,7:dim(SPA1B.28C.SHFmeans)[2]])
-colnames(SPA1B.28C.SHFmeans) <- c(colnames(SPA1B.28C.SHFmeans)[1:6],c("2004"), colnames(SPA1B.28C.SHFmeans)[8:dim(SPA1B.28C.SHFmeans)[2]])
+SPA1B.28C.SHFmeans <- data.frame(SPA1B.28C.SHFmeans)
+SPA1B.28C.SHFmeans <- SPA1B.28C.SHFmeans %>% add_column("X2004" = 0, .after="X2003")
+#SPA1B.28C.SHFmeans <- cbind(SPA1B.28C.SHFmeans[,1:6], matrix(0, nrow = 40), SPA1B.28C.SHFmeans[,7:dim(SPA1B.28C.SHFmeans)[2]])
+#colnames(SPA1B.28C.SHFmeans) <- c(colnames(SPA1B.28C.SHFmeans)[1:6],c("2004"), colnames(SPA1B.28C.SHFmeans)[8:dim(SPA1B.28C.SHFmeans)[2]])
 
 
 #4. Advocate Harbour
@@ -112,8 +132,10 @@ round(SPA1B.AH.SHFmeans, 2)
 colnames(SPA1B.AH.SHFmeans) #data from 1998 on but missing data 2004
 
 #this adds a new column for 2004 and makes is zeros;
-SPA1B.AH.SHFmeans <- cbind(SPA1B.AH.SHFmeans[,1:6], matrix(0, nrow = 40), SPA1B.AH.SHFmeans[,7:dim(SPA1B.AH.SHFmeans)[2]])
-colnames(SPA1B.AH.SHFmeans) <- c(colnames(SPA1B.AH.SHFmeans)[1:6],c("2004"), colnames(SPA1B.AH.SHFmeans)[8:dim(SPA1B.AH.SHFmeans)[2]])
+SPA1B.AH.SHFmeans <- data.frame(SPA1B.AH.SHFmeans)
+SPA1B.AH.SHFmeans <- SPA1B.AH.SHFmeans %>% add_column("X2004" = 0, .after="X2003")
+#SPA1B.AH.SHFmeans <- cbind(SPA1B.AH.SHFmeans[,1:6], matrix(0, nrow = 40), SPA1B.AH.SHFmeans[,7:dim(SPA1B.AH.SHFmeans)[2]])
+#colnames(SPA1B.AH.SHFmeans) <- c(colnames(SPA1B.AH.SHFmeans)[1:6],c("2004"), colnames(SPA1B.AH.SHFmeans)[8:dim(SPA1B.AH.SHFmeans)[2]])
 
 #5. 28D Outer D
 Outlivefreq <- subset(livefreq, STRATA_ID == 49 & TOW_TYPE_ID == 1)
@@ -122,8 +144,10 @@ round(SPA1B.Out.SHFmeans, 2)
 colnames(SPA1B.Out.SHFmeans) #data from 1998 on but missing data 2004
 
 #this adds a new column for 2004 and makes is zeros;
-SPA1B.Out.SHFmeans <- cbind(SPA1B.Out.SHFmeans[,1:6], matrix(0, nrow = 40), SPA1B.Out.SHFmeans[,7:dim(SPA1B.Out.SHFmeans)[2]])
-colnames(SPA1B.Out.SHFmeans) <- c(colnames(SPA1B.Out.SHFmeans)[1:6],c("2004"), colnames(SPA1B.Out.SHFmeans)[8:dim(SPA1B.Out.SHFmeans)[2]])
+SPA1B.Out.SHFmeans <- data.frame(SPA1B.Out.SHFmeans)
+SPA1B.Out.SHFmeans <- SPA1B.Out.SHFmeans %>% add_column("X2004" = 0, .after="X2003")
+#SPA1B.Out.SHFmeans <- cbind(SPA1B.Out.SHFmeans[,1:6], matrix(0, nrow = 40), SPA1B.Out.SHFmeans[,7:dim(SPA1B.Out.SHFmeans)[2]])
+#colnames(SPA1B.Out.SHFmeans) <- c(colnames(SPA1B.Out.SHFmeans)[1:6],c("2004"), colnames(SPA1B.Out.SHFmeans)[8:dim(SPA1B.Out.SHFmeans)[2]])
 
 
 #6. Spencers Island
@@ -145,6 +169,7 @@ colnames(SPA1B.SB.SHFmeans) #data from 2005 on
 
 #..1. SHF: Cape Spencer Strata 
 SPA1B.CS.for.plot <- data.frame(bin.label = row.names(SPA1B.CS.SHFmeans), SPA1B.CS.SHFmeans)
+SPA1B.CS.for.plot$X2020 <- NA # add 2020 column.
 head(SPA1B.CS.for.plot)
 SPA1B.CS.for.plot$bin.mid.pt <- seq(2.5,200,by=5)
 
@@ -179,6 +204,7 @@ dev.off()
 
 #..2. SHF: Mid Bay North Strata 
 SPA1B.MBN.for.plot <- data.frame(bin.label = row.names(SPA1B.MBN.SHFmeans), SPA1B.MBN.SHFmeans)
+SPA1B.MBN.for.plot$X2020 <- NA # add 2020 column.
 head(SPA1B.MBN.for.plot)
 SPA1B.MBN.for.plot$bin.mid.pt <- seq(2.5,200,by=5)
 
@@ -206,13 +232,14 @@ plot.SPA1B.MBN.SHF <- ggplot() + geom_col(data = SPA1B.MBN.for.plot, aes(x = bin
 plot.SPA1B.MBN.SHF
 
 # Save out plot
-png(paste0(path.directory,"Figures/SPA1B_SHF_MBN.png"), type="cairo", width=18, height=24, units = "cm", res=400)
+png(paste0(path.directory,assessmentyear, "/Assessment/Figures/SPA1B_SHF_MBN.png"), type="cairo", width=18, height=24, units = "cm", res=400)
 print(plot.SPA1B.MBN.SHF)
 dev.off()
 
 
 #..3. SHF: Upper Bay 28C Strata 
 SPA1B.28C.for.plot <- data.frame(bin.label = row.names(SPA1B.28C.SHFmeans), SPA1B.28C.SHFmeans)
+SPA1B.28C.for.plot$X2020 <- NA # add 2020 column.
 head(SPA1B.28C.for.plot)
 SPA1B.28C.for.plot$bin.mid.pt <- seq(2.5,200,by=5)
 
@@ -240,13 +267,14 @@ plot.SPA1B.28C.SHF <- ggplot() + geom_col(data = SPA1B.28C.for.plot, aes(x = bin
 plot.SPA1B.28C.SHF
 
 # Save out plot
-png(paste0(path.directory,"Figures/SPA1B_SHF_28C.png"), type="cairo", width=18, height=24, units = "cm", res=400)
+png(paste0(path.directory,assessmentyear, "/Assessment/Figures/SPA1B_SHF_28C.png"), type="cairo", width=18, height=24, units = "cm", res=400)
 print(plot.SPA1B.28C.SHF)
 dev.off()
 
 
 #4. SHF: Advocate Harbour (AH) Strata 
 SPA1B.AH.for.plot <- data.frame(bin.label = row.names(SPA1B.AH.SHFmeans), SPA1B.AH.SHFmeans)
+SPA1B.AH.for.plot$X2020 <- NA # add 2020 column.
 head(SPA1B.AH.for.plot)
 SPA1B.AH.for.plot$bin.mid.pt <- seq(2.5,200,by=5)
 
@@ -274,12 +302,13 @@ plot.SPA1B.AH.SHF <- ggplot() + geom_col(data = SPA1B.AH.for.plot, aes(x = bin.m
 plot.SPA1B.AH.SHF
 
 # Save out plot
-png(paste0(path.directory,"Figures/SPA1B_SHF_AH.png"), type="cairo", width=18, height=24, units = "cm", res=400)
+png(paste0(path.directory,assessmentyear, "/Assessment/Figures/SPA1B_SHF_AH.png"), type="cairo", width=18, height=24, units = "cm", res=400)
 print(plot.SPA1B.AH.SHF)
 dev.off()
 
 #..5. SHF: 28D Outer D Strata 
 SPA1B.Outer.for.plot <- data.frame(bin.label = row.names(SPA1B.Out.SHFmeans), SPA1B.Out.SHFmeans)
+SPA1B.Outer.for.plot$X2020 <- NA # add 2020 column.
 head(SPA1B.Outer.for.plot)
 SPA1B.Outer.for.plot$bin.mid.pt <- seq(2.5,200,by=5)
 
@@ -307,12 +336,13 @@ plot.SPA1B.Out.SHF <- ggplot() + geom_col(data = SPA1B.Outer.for.plot, aes(x = b
 plot.SPA1B.Out.SHF
 
 # Save out plot
-png(paste0(path.directory,"Figures/SPA1B_SHF_Out.png"), type="cairo", width=18, height=24, units = "cm", res=400)
+png(paste0(path.directory,assessmentyear, "/Assessment/Figures/SPA1B_SHF_Out.png"), type="cairo", width=18, height=24, units = "cm", res=400)
 print(plot.SPA1B.Out.SHF)
 dev.off()
 
 #6. SHF: Spencers Island Strata 
 SPA1B.SI.for.plot <- data.frame(bin.label = row.names(SPA1B.SI.SHFmeans), SPA1B.SI.SHFmeans)
+SPA1B.SI.for.plot$X2020 <- NA # add 2020 column.
 head(SPA1B.SI.for.plot)
 SPA1B.SI.for.plot$bin.mid.pt <- seq(2.5,200,by=5)
 
@@ -340,13 +370,14 @@ plot.SPA1B.SI.SHF <- ggplot() + geom_col(data = SPA1B.SI.for.plot, aes(x = bin.m
 plot.SPA1B.SI.SHF
 
 # Save out plot
-png(paste0(path.directory,"Figures/SPA1B_SHF_SI.png"), type="cairo", width=18, height=24, units = "cm", res=400)
+png(paste0(path.directory,assessmentyear, "/Assessment/Figures/SPA1B_SHF_SI.png"), type="cairo", width=18, height=24, units = "cm", res=400)
 print(plot.SPA1B.SI.SHF)
 dev.off()
 
 
 #7. SHF: Scots Bay Strata 
 SPA1B.SB.for.plot <- data.frame(bin.label = row.names(SPA1B.SB.SHFmeans), SPA1B.SB.SHFmeans)
+SPA1B.SB.for.plot$X2020 <- NA # add 2020 column.
 head(SPA1B.SB.for.plot)
 SPA1B.SB.for.plot$bin.mid.pt <- seq(2.5,200,by=5)
 
@@ -375,7 +406,7 @@ plot.SPA1B.SB.SHF <- ggplot() + geom_col(data = SPA1B.SB.for.plot, aes(x = bin.m
 plot.SPA1B.SB.SHF
 
 # Save out plot
-png(paste0(path.directory,"Figures/SPA1B_SHF_SB.png"), type="cairo", width=18, height=24, units = "cm", res=400)
+png(paste0(path.directory,assessmentyear, "/Assessment/Figures/SPA1B_SHF_SB.png"), type="cairo", width=18, height=24, units = "cm", res=400)
 print(plot.SPA1B.SB.SHF)
 dev.off()
 
@@ -392,8 +423,6 @@ SPA1B.AH.SHFmeans.df <- data.frame(SPA1B.AH.SHFmeans)
 SPA1B.Out.SHFmeans.df <- data.frame(SPA1B.Out.SHFmeans)
 SPA1B.SI.SHFmeans.df <- data.frame(SPA1B.SI.SHFmeans)
 SPA1B.SB.SHFmeans.df <- data.frame(SPA1B.SB.SHFmeans)
-
-years <- 1997:surveyyear
 
 bin <- as.numeric(substr(names(livefreq[c(grep("BIN_ID_0", colnames(livefreq)):grep("BIN_ID_195", colnames(livefreq)))]),8,nchar(names(livefreq[c(11:50)]))))
 SPA1B.SHF <- data.frame(Bin=bin, X1997 = rep(NA,40))
@@ -426,6 +455,7 @@ SPA1B.SHF <- cbind(SPA1B.SHF , SPA1B.SHF.2005topresent)
 
 # SHF plot for 1A ALL  SPA1A.ALL.SHFmeans
 SPA1B.shf.data.for.plot <- data.frame(bin.label = row.names(SPA1B.SHF), SPA1B.SHF)
+SPA1B.shf.data.for.plot$X2020 <- NA # add 2020 column.
 head(SPA1B.shf.data.for.plot)
 SPA1B.shf.data.for.plot$bin.mid.pt <- seq(2.5,200,by=5)
 
@@ -470,7 +500,9 @@ for (i in 1:length(years)) {
 
 #add year and make as df 
 SPA1B.SHactual.Com <- data.frame((t(rbind(years, SPA1B.SHactual.Com))))
-
+SPA1B.SHactual.Com <-  rbind(SPA1B.SHactual.Com, c(2020, NA)) %>%  #ADD IN 2020 as NA
+  arrange(years)#Sort by Year
+SPA1B.SHactual.Com
 
 #Recruit size >= 80 mm Shell height 
 SPA1B.SHactual.Rec <- rep(length(years))
@@ -480,7 +512,9 @@ for (i in 1:length(years)) {
 
 #add year and make as df 
 SPA1B.SHactual.Rec <- data.frame((t(rbind(years, SPA1B.SHactual.Rec))))
-
+SPA1B.SHactual.Rec <-  rbind(SPA1B.SHactual.Rec, c(2020, NA)) %>%  #ADD IN 2020 as NA
+  arrange(years)#Sort by Year
+SPA1B.SHactual.Rec
 
 # PREDICTED shell height per year; where the value in 1997 (first value) is the predicted height for 1998
 # inputs from Von B files; All BoF was modelled over all years (Y:\INSHORE SCALLOP\BoF\2015\Growth\BoF_VonB.R)
@@ -490,30 +524,32 @@ SPA1B.SHactual.Rec <- data.frame((t(rbind(years, SPA1B.SHactual.Rec))))
 # 148.19668  -1.57621  -0.36559
 
 #the value in 1997 (first value) is the predicted height for 1998
+years.predict <- 1998:(surveyyear+1)
+
 # Commercial Size 
-SPA1B.SHpredict.Com <- rep(length(years))
-for (i in 1:length(years)) {
+SPA1B.SHpredict.Com <- rep(length(years.predict))
+for (i in 1:length(years.predict)) {
   temp.data <- SPA1B.SHactual.Com$SPA1B.SHactual.Com[i] #commercial size
   SPA1B.SHpredict.Com[i] <- 144.75*(1 - exp(-exp(-1.576))) + exp(-exp(-1.576))*temp.data }
 
 #add year and make as df 
-SPA1B.SHpredict.Com <- data.frame((t(rbind(years, SPA1B.SHpredict.Com))))
+SPA1B.SHpredict.Com <- data.frame((t(rbind(years.predict, SPA1B.SHpredict.Com))))
 
 
 #the value in 1997 (first value) is the predicted height for 1998
-SPA1B.SHpredict.Rec <- rep(length(years))
-for (i in 1:length(years)) {
+SPA1B.SHpredict.Rec <- rep(length(years.predict))
+for (i in 1:length(years.predict)) {
   temp.data <- SPA1B.SHactual.Rec$SPA1B.SHactual.Rec[i]  #recruit size
   SPA1B.SHpredict.Rec[i] <- 144.75*(1-exp(-exp(-1.576))) + exp(-exp(-1.576))*temp.data }
 
 #add year and make as df 
-SPA1B.SHpredict.Rec <- data.frame((t(rbind(years, SPA1B.SHpredict.Rec))))
+SPA1B.SHpredict.Rec <- data.frame((t(rbind(years.predict, SPA1B.SHpredict.Rec))))
 
 
 # Export the objects to use in predicting mean weight/growth
-dump (c("SPA1B.SHactual.Com","SPA1B.SHactual.Rec","SPA1B.SHpredict.Com","SPA1B.SHpredict.Rec"), paste0(path.directory,"dataoutput/SPA1B",surveyyear,".SHobj.R"))
+dump (c("SPA1B.SHactual.Com","SPA1B.SHactual.Rec","SPA1B.SHpredict.Com","SPA1B.SHpredict.Rec"), paste0(path.directory,assessmentyear, "/Assessment/Data/Growth/SPA",area,"/SPA1B",surveyyear,".SHobj.R"))
 
-write.csv(cbind(SPA1B.SHactual.Com, SPA1B.SHactual.Rec, SPA1B.SHpredict.Com, SPA1B.SHpredict.Rec), paste0(path.directory,"dataoutput/SPA1B_SHactualpredict.",surveyyear,".csv")) 
+write.csv(cbind(SPA1B.SHactual.Com, SPA1B.SHactual.Rec, SPA1B.SHpredict.Com, SPA1B.SHpredict.Rec), paste0(path.directory,assessmentyear, "/Assessment/Data/Growth/SPA",area,"/SPA1B_SHactualpredict.",surveyyear,".csv")) 
 
 
 #---- CALCULATE lbar BY SUBAREA TO PLOT ----
@@ -527,9 +563,12 @@ for (i in 1:length(years)) {
 CS.lbar.strata[i,2] <- sum(temp.data*seq(82.5,197.5,by = 5))/sum(temp.data)
  }
 CS.lbar.strata
+CS.lbar.strata <-  rbind(CS.lbar.strata, c(2020, NaN)) %>%  #ADD IN 2020 as NA
+  arrange(Year)#Sort by Year
+CS.lbar.strata
 
 # Mid Bay North (MBN)
-years.MBN <- 1998:surveyyear #since MBN starts in 1998 
+years.MBN <- c(1998:2019, 2021:surveyyear) #since MBN starts in 1998, Skipping 2020 (add as NAs later) 
 X <- length(years.MBN) 
 MBN.lbar.strata <- data.frame(Year = years.MBN, lbar.MBN = rep(NA,X))
 for (i in 1:length(years.MBN)) {
@@ -537,16 +576,22 @@ for (i in 1:length(years.MBN)) {
 MBN.lbar.strata[i,2] <- sum(temp.data*seq(82.5,197.5,by = 5))/sum(temp.data)
  }
 MBN.lbar.strata
+MBN.lbar.strata <-  rbind(MBN.lbar.strata, c(2020, NaN)) %>%  #ADD IN 2020 as NA
+  arrange(Year)#Sort by Year
+MBN.lbar.strata
 
 
 # 28C 
-years.28C <- 1998:surveyyear #since 28C starts in 1998 
+years.28C <- c(1998:2019, 2021:surveyyear) #since 28C starts in 1998. Skipping 2020 (add as NAs later) 
 X <- length(years.28C)
 C28.lbar.strata <- data.frame(Year = years.28C, lbar.28C = rep(NA,X))
 for (i in 1:length(years.28C)) {
   temp.data <- SPA1B.28C.SHFmeans[c(17:40),0 + i]
 C28.lbar.strata[i,2] <- sum(temp.data*seq(82.5,197.5,by = 5))/sum(temp.data)
  }
+C28.lbar.strata
+C28.lbar.strata <-  rbind(C28.lbar.strata, c(2020, NaN)) %>%  #ADD IN 2020 as NA
+  arrange(Year)#Sort by Year
 C28.lbar.strata
 
 #8. 28D (all)
@@ -556,12 +601,14 @@ SPA1B.28D.SHFmeans <- sapply(split(D28livefreq[c(grep("BIN_ID_0", colnames(livef
 round(SPA1B.28D.SHFmeans, 2)
 
 #add dummy column for 2004
-SPA1B.28D.SHFmeans <- cbind(SPA1B.28D.SHFmeans[, c(grep("1998", colnames(SPA1B.28D.SHFmeans)):grep("2003", colnames(SPA1B.28D.SHFmeans)))], matrix(0, nrow = 40), SPA1B.28D.SHFmeans[,c(grep("2005", colnames(SPA1B.28D.SHFmeans)):grep(surveyyear, colnames(SPA1B.28D.SHFmeans)))]) 
-colnames(SPA1B.28D.SHFmeans) <- c(colnames(SPA1B.28D.SHFmeans)[c(grep("1998", colnames(SPA1B.28D.SHFmeans)):grep("2003", colnames(SPA1B.28D.SHFmeans)))],c("2004"), colnames(SPA1B.28D.SHFmeans)[c(grep("2005", colnames(SPA1B.28D.SHFmeans)):grep(surveyyear, colnames(SPA1B.28D.SHFmeans)))])
-
+SPA1B.28D.SHFmeans <- data.frame(SPA1B.28D.SHFmeans)
+SPA1B.28D.SHFmeans <- SPA1B.28D.SHFmeans %>% add_column("X2004" = 0, .after="X2003")
 SPA1B.28D.SHFmeans
+#SPA1B.28D.SHFmeans <- cbind(SPA1B.28D.SHFmeans[, c(grep("1998", colnames(SPA1B.28D.SHFmeans)):grep("2003", colnames(SPA1B.28D.SHFmeans)))], matrix(0, nrow = 40), SPA1B.28D.SHFmeans[,c(grep("2005", colnames(SPA1B.28D.SHFmeans)):grep(surveyyear, colnames(SPA1B.28D.SHFmeans)))]) 
+#colnames(SPA1B.28D.SHFmeans) <- c(colnames(SPA1B.28D.SHFmeans)[c(grep("1998", colnames(SPA1B.28D.SHFmeans)):grep("2003", colnames(SPA1B.28D.SHFmeans)))],c("2004"), colnames(SPA1B.28D.SHFmeans)[c(grep("2005", colnames(SPA1B.28D.SHFmeans)):grep(surveyyear, colnames(SPA1B.28D.SHFmeans)))])
 
-years.28D <- 1998:surveyyear
+
+years.28D <- c(1998:2019, 2021:surveyyear) #Skipping 2020 (add as NAs later) 
 X <- length(years.28D)
 D28.lbar.strata <- data.frame(Year = years.28D, lbar.28D = rep(NA,X))
 for (i in 1:length(years.28D)) {
@@ -569,17 +616,20 @@ for (i in 1:length(years.28D)) {
 D28.lbar.strata[i,2] <- sum(temp.data*seq(82.5,197.5,by = 5))/sum(temp.data)
  }
 D28.lbar.strata
+D28.lbar.strata <-  rbind(D28.lbar.strata, c(2020, NaN)) %>%  #ADD IN 2020 as NA
+  arrange(Year)#Sort by Year
+D28.lbar.strata
 
 
 #Add 1997 to "MBN.lbar.strata","C28.lbar.strata","D28.lbar.strata" object 
-MBN.lbar.strata <- rbind(data.frame(Year=1997, lbar.MBN=NA) , MBN.lbar.strata)
-C28.lbar.strata <- rbind(data.frame(Year=1997, lbar.28C=NA) , C28.lbar.strata)
-D28.lbar.strata <- rbind(data.frame(Year=1997, lbar.28D=NA) , D28.lbar.strata)
+MBN.lbar.strata <- rbind(data.frame(Year=1997, lbar.MBN=NaN) , MBN.lbar.strata)
+C28.lbar.strata <- rbind(data.frame(Year=1997, lbar.28C=NaN) , C28.lbar.strata)
+D28.lbar.strata <- rbind(data.frame(Year=1997, lbar.28D=NaN) , D28.lbar.strata)
 
 SPA1B.lbar.strata.groups <- cbind(CS.lbar.strata, select(MBN.lbar.strata, "lbar.MBN") ,select(C28.lbar.strata, "lbar.28C"), select(D28.lbar.strata, "lbar.28D"))
 
 # Save out data - mean Commercial SHell Height by Strata Group 
-dump(c("SPA1B.lbar.strata.groups"), paste0(path.directory,"dataoutput/SPA1B",surveyyear,".lbarbyStrataGroup.R"))
+dump(c("SPA1B.lbar.strata.groups"), paste0(path.directory,assessmentyear, "/Assessment/Data/Growth/SPA",area,"/SPA1B",surveyyear,".lbarbyStrataGroup.R"))
 
 
 # Prep for plot: 
@@ -604,7 +654,7 @@ plot.SPA1B.lbar.strata <- ggplot(SPA1B.lbar.strata) + geom_line(aes(x = Year, y 
 plot.SPA1B.lbar.strata
 
 # Save out plot
-png(paste0(path.directory,"Figures/SPA1B_lbar.png"), type="cairo", width=15, height=15, units = "cm", res=400)
+png(paste0(path.directory,assessmentyear, "/Assessment/Figures/SPA1B_lbar.png"), type="cairo", width=15, height=15, units = "cm", res=400)
 print(plot.SPA1B.lbar.strata)
 dev.off()
 
@@ -624,12 +674,12 @@ livefreq$CruiseID <- paste(livefreq$CRUISE,livefreq$TOW_NO,sep = '.')  #create C
 crossref.BoF <- merge(crossref.BoF, subset(livefreq, select = c("STRATA_ID", "CruiseID")), by.x = "CruiseID", all = FALSE)
 
 #Subset to years you want to look at for repeated tows 
-crossref.BoF.prioryear <- subset(crossref.BoF, CRUISE == paste0("BF",surveyyear-1))
+crossref.BoF.prioryear <- subset(crossref.BoF, CRUISE == paste0("BF",surveyyear-2)) #CHANGE BACK TO -1 AFTER 2021
 crossref.BoF.currentyear <- subset(crossref.BoF, CRUISE == paste0("BF",surveyyear))
 
 #subset for years; 1 regular and 5 repeats 
 tows <- c(1,5)
-livefreq.prioryear <- subset(livefreq, YEAR == surveyyear-1 & TOW_TYPE_ID %in% tows)
+livefreq.prioryear <- subset(livefreq, YEAR == surveyyear-2 & TOW_TYPE_ID %in% tows)
 livefreq.currentyear <- subset(livefreq, YEAR == surveyyear & TOW_TYPE_ID %in% tows)
 data.before <- livefreq.prioryear
 data.after <- livefreq.currentyear 
@@ -667,7 +717,7 @@ MBN.repeats.shf.for.plot$SH <- round(MBN.repeats.shf.for.plot$SH,3)
 ylimits <- c(0,max(MBN.repeats.shf.for.plot$SH)+10)
 xlimits <- c(0,200)
 recruitlimits <- c(65,80)
-anno <- data.frame(year = c(surveyyear-1, surveyyear), n.tows = c(before.tows.n, after.tows.n), lab = c(paste0("N=",before.tows.n), paste0("N=",after.tows.n)))
+anno <- data.frame(year = c(surveyyear-2, surveyyear), n.tows = c(before.tows.n, after.tows.n), lab = c(paste0("N=",before.tows.n), paste0("N=",after.tows.n)))
 
 # plot SHF
 plot.MBN.repeats.shf.for.plot <- ggplot() + geom_col(data = MBN.repeats.shf.for.plot, aes(x = bin.mid.pt, y = SH)) + 
@@ -679,7 +729,7 @@ plot.MBN.repeats.shf.for.plot <- ggplot() + geom_col(data = MBN.repeats.shf.for.
 plot.MBN.repeats.shf.for.plot
 
 # Save out plot
-png(paste0(path.directory,"Figures/SPA1B_SHF_MBN_RepeatTows.png"), type="cairo", width=18, height=24, units = "cm", res=400)
+png(paste0(path.directory,assessmentyear, "/Assessment/Figures/SPA1B_SHF_MBN_RepeatTows.png"), type="cairo", width=18, height=24, units = "cm", res=400)
 print(plot.MBN.repeats.shf.for.plot)
 dev.off()
 
@@ -716,7 +766,7 @@ AH.repeats.shf.for.plot$SH <- round(AH.repeats.shf.for.plot$SH,3)
 ylimits <- c(0,max(AH.repeats.shf.for.plot$SH)+10)
 xlimits <- c(0,200)
 recruitlimits <- c(65,80)
-anno <- data.frame(year = c(surveyyear-1, surveyyear), n.tows = c(before.tows.n, after.tows.n), lab = c(paste0("N=",before.tows.n), paste0("N=",after.tows.n)))
+anno <- data.frame(year = c(surveyyear-2, surveyyear), n.tows = c(before.tows.n, after.tows.n), lab = c(paste0("N=",before.tows.n), paste0("N=",after.tows.n)))
 
 # plot SHF
 plot.AH.repeats.shf.for.plot <- ggplot() + geom_col(data = AH.repeats.shf.for.plot, aes(x = bin.mid.pt, y = SH)) + 
@@ -728,7 +778,7 @@ plot.AH.repeats.shf.for.plot <- ggplot() + geom_col(data = AH.repeats.shf.for.pl
 plot.AH.repeats.shf.for.plot
 
 # Save out plot
-png(paste0(path.directory,"Figures/SPA1B_SHF_AH_RepeatTows.png"), type="cairo", width=18, height=24, units = "cm", res=400)
+png(paste0(path.directory,assessmentyear, "/Assessment/Figures/SPA1B_SHF_AH_RepeatTows.png"), type="cairo", width=18, height=24, units = "cm", res=400)
 print(plot.AH.repeats.shf.for.plot)
 dev.off()
 
@@ -765,7 +815,7 @@ C28.repeats.shf.for.plot$SH <- round(C28.repeats.shf.for.plot$SH,3)
 ylimits <- c(0,max(C28.repeats.shf.for.plot$SH)+10)
 xlimits <- c(0,200)
 recruitlimits <- c(65,80)
-anno <- data.frame(year = c(surveyyear-1, surveyyear), n.tows = c(before.tows.n, after.tows.n), lab = c(paste0("N=",before.tows.n), paste0("N=",after.tows.n)))
+anno <- data.frame(year = c(surveyyear-2, surveyyear), n.tows = c(before.tows.n, after.tows.n), lab = c(paste0("N=",before.tows.n), paste0("N=",after.tows.n)))
 
 # plot SHF
 plot.C28.repeats.shf.for.plot <- ggplot() + geom_col(data = C28.repeats.shf.for.plot, aes(x = bin.mid.pt, y = SH)) + 
@@ -777,7 +827,7 @@ plot.C28.repeats.shf.for.plot <- ggplot() + geom_col(data = C28.repeats.shf.for.
 plot.C28.repeats.shf.for.plot
 
 # Save out plot
-png(paste0(path.directory,"Figures/SPA1B_SHF_28C_RepeatTows.png"), type="cairo", width=18, height=24, units = "cm", res=400)
+png(paste0(path.directory,assessmentyear, "/Assessment/Figures/SPA1B_SHF_28C_RepeatTows.png"), type="cairo", width=18, height=24, units = "cm", res=400)
 print(plot.C28.repeats.shf.for.plot)
 dev.off()
 
@@ -819,7 +869,7 @@ Out.repeats.shf.for.plot$SH <- round(Out.repeats.shf.for.plot$SH,3)
 ylimits <- c(0,max(Out.repeats.shf.for.plot$SH)+10)
 xlimits <- c(0,200)
 recruitlimits <- c(65,80)
-anno <- data.frame(year = c(surveyyear-1, surveyyear), n.tows = c(before.tows.n, after.tows.n), lab = c(paste0("N=",before.tows.n), paste0("N=",after.tows.n)))
+anno <- data.frame(year = c(surveyyear-2, surveyyear), n.tows = c(before.tows.n, after.tows.n), lab = c(paste0("N=",before.tows.n), paste0("N=",after.tows.n)))
 
 # plot SHF
 plot.Out.repeats.shf.for.plot <- ggplot() + geom_col(data = Out.repeats.shf.for.plot, aes(x = bin.mid.pt, y = SH)) + 
@@ -831,7 +881,7 @@ plot.Out.repeats.shf.for.plot <- ggplot() + geom_col(data = Out.repeats.shf.for.
 plot.Out.repeats.shf.for.plot
 
 # Save out plot
-png(paste0(path.directory,"Figures/SPA1B_SHF_Out_RepeatTows.png"), type="cairo", width=18, height=24, units = "cm", res=400)
+png(paste0(path.directory,assessmentyear, "/Assessment/Figures/SPA1B_SHF_Out_RepeatTows.png"), type="cairo", width=18, height=24, units = "cm", res=400)
 print(plot.Out.repeats.shf.for.plot)
 dev.off()
 
