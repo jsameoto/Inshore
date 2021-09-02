@@ -420,6 +420,7 @@ p + #Plot survey data and format figure.
                      aes(lon, lat), size = 0.5) +
   labs(title = paste(survey.year, "", "BoF Density (>= 80mm)"), x = "Longitude", y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.50,-64.30), ylim = c(44.25,45.80), expand = FALSE)+
   plot.theme
 
 #save
@@ -440,6 +441,7 @@ p + #Plot survey data and format figure.
                      aes(lon, lat), size = 0.5) +
   labs(title = paste(survey.year, "", "SPA1A Density (>= 80mm)"), x = "Longitude", y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.40,-64.80), ylim = c(44.37,45.30), expand = FALSE)+
   plot.theme
 
 #save
@@ -459,6 +461,7 @@ p + #Plot survey data and format figure.
                      aes(lon, lat), size = 0.5) +
   labs(title = paste(survey.year, "", "SPA1B Density (>= 80mm)"), x = "Longitude", y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.20,-64.30), ylim = c(44.80,45.70), expand = FALSE)+
   plot.theme.1b
 
 
@@ -479,6 +482,7 @@ p + #Plot survey data and format figure.
                      aes(lon, lat), size = 0.5) +
   labs(title = paste(survey.year, "", "SPA4 Density (>= 80mm)"), x = "Longitude", y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.20,-65.51), ylim = c(44.48,44.96), expand = FALSE)+
   plot.theme.4
   
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA4_ComDensity',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -520,6 +524,7 @@ p + #Plot survey data and format figure.
   geom_sf(data = spa3.poly, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
   labs(title = paste(survey.year, "", "SPA3 Density (>= 80mm)"), x = "Longitude", y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.82,-65.80), ylim = c(43.62,44.60), expand = FALSE)+
   plot.theme.3
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA3_ComDensity',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -565,6 +570,7 @@ p + #Plot survey data and format figure.
   #geom_sf(data = inVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
   labs(title = paste(survey.year, "", "SPA6 Density (>= 80mm)"), x = "Longitude", y = "Latitude")+
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-67.40,-65.90), ylim = c(44.30,45.25), expand = FALSE)+
   plot.theme.6
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA6_ComDensity',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -614,6 +620,7 @@ p + #Plot survey data and format figure.
   labs(title = paste(biomass.year, "", "BoF Biomass (>= 80mm)"), x = "Longitude",
        y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.50,-64.30), ylim = c(44.25,45.80), expand = FALSE)+
   plot.theme
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_BF_ComBiomass',biomass.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -632,6 +639,7 @@ p + #Plot survey data and format figure.
   labs(title = paste(biomass.year, "", "SPA1A Biomass (>= 80mm)"), x = "Longitude",
        y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.40,-64.80), ylim = c(44.37,45.30), expand = FALSE)+
   plot.theme
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1A_ComBiomass',biomass.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -649,6 +657,7 @@ p + #Plot survey data and format figure.
   labs(title = paste(biomass.year, "", "SPA1B Biomass (>= 80mm)"), x = "Longitude",
        y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.20,-64.30), ylim = c(44.80,45.70), expand = FALSE)+
   plot.theme.1b
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1B_ComBiomass',biomass.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -666,6 +675,7 @@ p + #Plot survey data and format figure.
   labs(title = paste(biomass.year, "", "SPA4 Biomass (>= 80mm)"), x = "Longitude",
        y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.20,-65.51), ylim = c(44.48,44.96), expand = FALSE)+
   plot.theme.4
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA4_ComBiomass',biomass.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -711,6 +721,7 @@ p + #Plot survey data and format figure.
   geom_sf(data = spa3.poly, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
   labs(title = paste(biomass.year, "", "SPA3 Biomass (>= 80mm)"), x = "Longitude", y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.82,-65.80), ylim = c(43.62,44.60), expand = FALSE)+
   plot.theme.3
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA3_ComBiomass',biomass.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -757,6 +768,7 @@ p + #Plot survey data and format figure.
   #geom_sf(data = inVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
   labs(title = paste(biomass.year, "", "SPA6 Biomass (>= 80mm)"), x = "Longitude", y = "Latitude")+
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-67.40,-65.90), ylim = c(44.30,45.25), expand = FALSE)+
   plot.theme.6
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA6_ComBiomass',biomass.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -770,7 +782,8 @@ cond.year <- survey.year # change year (e.g. cond.year <- "2019") to plot other 
 
 com.contours <- contour.gen(con.dat %>% filter(year== cond.year, str_detect(CRUISE, "BF")) %>% dplyr::select(ID, lon, lat, Condition),ticks='define',nstrata=7,str.min=0,place=2,id.par=5,interp.method='gstat',key='strata',blank=T,plot=F,res=0.01,blank.dist = 0.1)
 
-lvls=c(5,6,7,8,9,10,11,12) #levels to be color coded
+#lvls=c(5,6,7,8,9,10,11,12) #levels to be color coded
+lvls=c(4,6,8,10,12,14,16) #for higher conditions
 
 CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
 CP <- convCP(CL)
@@ -786,7 +799,8 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   mutate(level = unique(CP$PolyData$level))
 
 #Colour aesthetics and breaks for contours
-labels <- c("5-6", "6-7", "7-8", "8-9", "9-10", "10-11", "11-12", "12+")
+#labels <- c("5-6", "6-7", "7-8", "8-9", "9-10", "10-11", "11-12", "12+")
+labels <- c("4-6", "6-8", "8-10", "10-12", "12-14", "14-16","16+") #for higher conditions
 col <- brewer.pal(length(lvls),"YlOrBr") #set colours
 cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = "Condition (g)", limits = labels) #set custom fill arguments for pecjector.
 
@@ -803,6 +817,7 @@ p + #Plot survey data and format figure.
   labs(title = paste(cond.year, "", "BoF Condition"), x = "Longitude",
        y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.50,-64.30), ylim = c(44.25,45.80), expand = FALSE)+
   plot.theme
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_BF_Condition',cond.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -820,6 +835,7 @@ p + #Plot survey data and format figure.
   labs(title = paste(cond.year, "", "SPA1A Condition"), x = "Longitude",
        y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.40,-64.80), ylim = c(44.37,45.30), expand = FALSE)+
   plot.theme
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1A_Condition',cond.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -837,6 +853,7 @@ p + #Plot survey data and format figure.
   labs(title = paste(cond.year, "", "SPA1B Condition"), x = "Longitude",
        y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.20,-64.30), ylim = c(44.80,45.70), expand = FALSE)+
   plot.theme.1b
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1B_Condition',cond.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -854,6 +871,7 @@ p + #Plot survey data and format figure.
   labs(title = paste(cond.year, "", "SPA4 Condition"), x = "Longitude",
        y = "Latitude") + 
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.20,-65.51), ylim = c(44.48,44.96), expand = FALSE)+
   plot.theme.4
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA4_Condition',cond.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -900,6 +918,7 @@ p + #Plot survey data and format figure.
   geom_sf(data = spa3.poly, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
   labs(title = paste(cond.year, "", "SPA3 Condition"), x = "Longitude", y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.82,-65.80), ylim = c(43.62,44.60), expand = FALSE)+
   plot.theme.3
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA3_Condition',cond.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -947,6 +966,7 @@ p + #Plot survey data and format figure.
   #geom_sf(data = inVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
   labs(title = paste(cond.year, "", "SPA6 Condition"), x = "Longitude", y = "Latitude")+
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-67.40,-65.90), ylim = c(44.30,45.25), expand = FALSE)+
   plot.theme.6
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA6_Condition',cond.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -995,6 +1015,7 @@ p + #Plot survey data and format figure.
   labs(title = paste(survey.year, "", "BOF Meat Count (>= 80mm)"), x = "Longitude",
        y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.50,-64.30), ylim = c(44.25,45.80), expand = FALSE)+
   plot.theme
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_BF_Meatcount',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -1012,6 +1033,7 @@ p + #Plot survey data and format figure.
   labs(title = paste(survey.year, "", "SPA1A Meat Count (>= 80mm)"), x = "Longitude",
        y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.40,-64.80), ylim = c(44.37,45.30), expand = FALSE)+
   plot.theme
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1A_Meatcount',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -1029,6 +1051,7 @@ p + #Plot survey data and format figure.
   labs(title = paste(survey.year, "", "SPA1B Meat Count (>= 80mm)"), x = "Longitude",
        y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.20,-64.30), ylim = c(44.80,45.70), expand = FALSE)+
   plot.theme.1b
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1B_Meatcount',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -1047,6 +1070,7 @@ p + #Plot survey data and format figure.
   labs(title = paste(survey.year, "", "SPA4 Meat Count (>= 80mm)"), x = "Longitude",
        y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.20,-65.51), ylim = c(44.48,44.96), expand = FALSE)+
   plot.theme.4
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA4_Meatcount',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -1093,6 +1117,7 @@ p + #Plot survey data and format figure.
   geom_sf(data = spa3.poly, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
   labs(title = paste(survey.year, "", "SPA3 Meat Count (>= 80mm)"), x = "Longitude", y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.82,-65.80), ylim = c(43.62,44.60), expand = FALSE)+
   plot.theme.3
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA3_Meatcount',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -1138,6 +1163,7 @@ p + #Plot survey data and format figure.
   #geom_sf(data = inVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
   labs(title = paste(survey.year, "", "SPA6 Meat Count (>= 80mm)"), x = "Longitude", y = "Latitude")+
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-67.40,-65.90), ylim = c(44.30,45.25), expand = FALSE)+
   plot.theme.6
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA6_Meatcount',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -1184,6 +1210,7 @@ p + #Plot survey data and format figure.
   labs(title = paste(survey.year, "", "BoF Clapper Density (>= 80mm)"), x = "Longitude",
        y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.50,-64.30), ylim = c(44.25,45.80), expand = FALSE)+
   plot.theme
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_BF_ComClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -1202,6 +1229,7 @@ p + #Plot survey data and format figure.
   labs(title = paste(survey.year, "", "SPA1A Clapper Density (>= 80mm)"), x = "Longitude",
        y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.40,-64.80), ylim = c(44.37,45.30), expand = FALSE)+
   plot.theme
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1A_ComClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -1220,6 +1248,7 @@ p + #Plot survey data and format figure.
   labs(title = paste(survey.year, "", "SPA1B Clapper Density (>= 80mm)"), x = "Longitude",
        y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.20,-64.30), ylim = c(44.80,45.70), expand = FALSE)+
   plot.theme.1b
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1B_ComClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -1241,6 +1270,7 @@ p + #Plot survey data and format figure.
   labs(title = paste(survey.year, "", "SPA4 Clapper Density (>= 80mm)"), x = "Longitude",
        y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.20,-65.51), ylim = c(44.48,44.96), expand = FALSE)+
   plot.theme.4
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA4_ComClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -1283,6 +1313,7 @@ p + #Plot survey data and format figure.
   geom_sf(data = spa3.poly, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
   labs(title = paste(survey.year, "", "SPA3 Clapper Density (>= 80mm)"), x = "Longitude", y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.82,-65.80), ylim = c(43.62,44.60), expand = FALSE)+
   plot.theme.3
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA3_ComClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -1326,6 +1357,7 @@ p + #Plot survey data and format figure.
   #geom_sf(data = inVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
   labs(title = paste(survey.year, "", "SPA6 Clapper Density (>= 80mm)"), x = "Longitude", y = "Latitude")+
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-67.40,-65.90), ylim = c(44.30,45.25), expand = FALSE)+
   plot.theme.6
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA6_ComClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -1372,6 +1404,7 @@ p + #Plot survey data and format figure.
   labs(title = paste(survey.year, "", "BoF Clapper Proportion (>= 80mm)"), x = "Longitude",
        y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.50,-64.30), ylim = c(44.25,45.80), expand = FALSE)+
   plot.theme
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_BF_PropComClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -1391,6 +1424,7 @@ p + #Plot survey data and format figure.
   labs(title = paste(survey.year, "", "SPA1A Clapper Proportion (>= 80mm)"), x = "Longitude",
        y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.40,-64.80), ylim = c(44.37,45.30), expand = FALSE)+
   plot.theme
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1A_PropComClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -1410,6 +1444,7 @@ p + #Plot survey data and format figure.
   labs(title = paste(survey.year, "", "SPA1B Clapper Proportion (>= 80mm)"), x = "Longitude",
        y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) +#Legend transparency
+  coord_sf(xlim = c(-66.20,-64.30), ylim = c(44.80,45.70), expand = FALSE)+
   plot.theme.1b
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1B_PropComClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -1427,6 +1462,7 @@ p + #Plot survey data and format figure.
   labs(title = paste(survey.year, "", "SPA4 Clapper Proportion (>= 80mm)"), x = "Longitude",
        y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.20,-65.51), ylim = c(44.48,44.96), expand = FALSE)+
   plot.theme.4
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA4_PropComClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -1471,6 +1507,7 @@ p + #Plot survey data and format figure.
   geom_sf(data = spa3.poly, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
   labs(title = paste(survey.year, "", "SPA3 Clapper Proportion (>= 80mm)"), x = "Longitude", y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.82,-65.80), ylim = c(43.62,44.60), expand = FALSE)+
   plot.theme.3
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA3_PropComClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -1513,6 +1550,7 @@ p + #Plot survey data and format figure.
   #geom_sf(data = inVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
   labs(title = paste(survey.year, "", "SPA6 Clapper Proportion (>= 80mm)"), x = "Longitude", y = "Latitude")+
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-67.40,-65.90), ylim = c(44.30,45.25), expand = FALSE)+
   plot.theme.6
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA6_PropComClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -1548,7 +1586,6 @@ labels <- c("1-5", "5-10", "10-50", "50-100", "100-200", "200-300", "300-400", "
 col <- brewer.pal(length(lvls),"YlGn") #set colours
 cfd <- scale_fill_manual(values = alpha(col, 0.6), breaks = labels, name = expression(frac(N,tow)), limits = labels) #set custom fill arguments for pecjector.
 
-
 # ----DENSITY PLOTS -----
 
 #Plot with Pecjector for each area:
@@ -1567,6 +1604,7 @@ p + #Plot survey data and format figure.
                      aes(lon, lat), size = 0.5) +
   labs(title = paste(survey.year, "", "BoF Density (65-79 mm)"), x = "Longitude", y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.50,-64.30), ylim = c(44.25,45.80), expand = FALSE)+
   plot.theme
 
 #save
@@ -1584,6 +1622,7 @@ p + #Plot survey data and format figure.
                      aes(lon, lat), size = 0.5) +
   labs(title = paste(survey.year, "", "SPA1A Density (65-79 mm)"), x = "Longitude", y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.40,-64.80), ylim = c(44.37,45.30), expand = FALSE)+
   plot.theme
 
 #save
@@ -1601,6 +1640,7 @@ p + #Plot survey data and format figure.
                      aes(lon, lat), size = 0.5) +
   labs(title = paste(survey.year, "", "SPA1B Density (65-79 mm)"), x = "Longitude", y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.20,-64.30), ylim = c(44.80,45.70), expand = FALSE)+
   plot.theme.1b
 
 
@@ -1619,6 +1659,7 @@ p + #Plot survey data and format figure.
                      aes(lon, lat), size = 0.5) +
   labs(title = paste(survey.year, "", "SPA4 Density (65-79 mm)"), x = "Longitude", y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.20,-65.51), ylim = c(44.48,44.96), expand = FALSE)+
   plot.theme.4
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA4_RecDensity',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -1667,6 +1708,7 @@ p + #Plot survey data and format figure.
   geom_sf(data = spa3.poly, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
   labs(title = paste(survey.year, "", "SPA3 Density (65-79 mm)"), x = "Longitude", y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.82,-65.80), ylim = c(43.62,44.60), expand = FALSE)+
   plot.theme.3
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA3_RecDensity',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -1713,6 +1755,7 @@ p + #Plot survey data and format figure.
   #geom_sf(data = inVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
   labs(title = paste(survey.year, "", "SPA6 Density (65-79 mm)"), x = "Longitude", y = "Latitude")+
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-67.40,-65.90), ylim = c(44.30,45.25), expand = FALSE)+
   plot.theme.6
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA6_RecDensity',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -1756,6 +1799,7 @@ p + #Plot survey data and format figure.
   labs(title = paste(survey.year, "", "BoF Biomass (65-79 mm)"), x = "Longitude",
        y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.50,-64.30), ylim = c(44.25,45.80), expand = FALSE)+
   plot.theme
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_BF_RecBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -1774,6 +1818,7 @@ p + #Plot survey data and format figure.
   labs(title = paste(survey.year, "", "SPA1A Biomass (65-79 mm)"), x = "Longitude",
        y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.40,-64.80), ylim = c(44.37,45.30), expand = FALSE)+
   plot.theme
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1A_RecBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -1791,6 +1836,7 @@ p + #Plot survey data and format figure.
   labs(title = paste(survey.year, "", "SPA1B Biomass (65-79 mm)"), x = "Longitude",
        y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.20,-64.30), ylim = c(44.80,45.70), expand = FALSE)+
   plot.theme.1b
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1B_RecBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -1808,6 +1854,7 @@ p + #Plot survey data and format figure.
   labs(title = paste(survey.year, "", "SPA4 Biomass (65-79 mm)"), x = "Longitude",
        y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.20,-65.51), ylim = c(44.48,44.96), expand = FALSE)+
   plot.theme.4
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA4_RecBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -1852,6 +1899,7 @@ p + #Plot survey data and format figure.
   geom_sf(data = spa3.poly, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
   labs(title = paste(survey.year, "", "SPA3 Biomass (65-79 mm)"), x = "Longitude", y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.82,-65.80), ylim = c(43.62,44.60), expand = FALSE)+
   plot.theme.3
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA3_RecBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -1896,6 +1944,7 @@ p + #Plot survey data and format figure.
   #geom_sf(data = inVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
   labs(title = paste(survey.year, "", "SPA6 Biomass (65-79 mm)"), x = "Longitude", y = "Latitude")+
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-67.40,-65.90), ylim = c(44.30,45.25), expand = FALSE)+
   plot.theme.6
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA6_RecBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -1942,6 +1991,7 @@ p + #Plot survey data and format figure.
   labs(title = paste(survey.year, "", "BoF Clapper Density (65-79 mm)"), x = "Longitude",
        y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.50,-64.30), ylim = c(44.25,45.80), expand = FALSE)+
   plot.theme
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_BF_RecClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -1960,6 +2010,7 @@ p + #Plot survey data and format figure.
   labs(title = paste(survey.year, "", "SPA1A Clapper Density (65-79 mm)"), x = "Longitude",
        y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.40,-64.80), ylim = c(44.37,45.30), expand = FALSE)+
   plot.theme
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1A_RecClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -1978,6 +2029,7 @@ p + #Plot survey data and format figure.
   labs(title = paste(survey.year, "", "SPA1B Clapper Density (65-79 mm)"), x = "Longitude",
        y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.20,-64.30), ylim = c(44.80,45.70), expand = FALSE)+
   plot.theme.1b
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1B_RecClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -1999,6 +2051,7 @@ p + #Plot survey data and format figure.
   labs(title = paste(survey.year, "", "SPA4 Clapper Density (65-79 mm)"), x = "Longitude",
        y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.20,-65.51), ylim = c(44.48,44.96), expand = FALSE)+
   plot.theme.4
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA4_RecClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -2041,6 +2094,7 @@ p + #Plot survey data and format figure.
   geom_sf(data = spa3.poly, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
   labs(title = paste(survey.year, "", "SPA3 Clapper Density (65-79 mm)"), x = "Longitude", y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.82,-65.80), ylim = c(43.62,44.60), expand = FALSE)+
   plot.theme.3
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA3_RecClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -2084,6 +2138,7 @@ p + #Plot survey data and format figure.
  #geom_sf(data = inVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
   labs(title = paste(survey.year, "", "SPA6 Clapper Density (65-79 mm)"), x = "Longitude", y = "Latitude")+
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-67.40,-65.90), ylim = c(44.30,45.25), expand = FALSE)+
   plot.theme.6
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA6_RecClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -2129,6 +2184,7 @@ p + #Plot survey data and format figure.
   labs(title = paste(survey.year, "", "BoF Clapper Proportion (65-79 mm)"), x = "Longitude",
        y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.50,-64.30), ylim = c(44.25,45.80), expand = FALSE)+
   plot.theme
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_BF_PropRecClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -2148,6 +2204,7 @@ p + #Plot survey data and format figure.
   labs(title = paste(survey.year, "", "SPA1A Clapper Proportion (65-79 mm)"), x = "Longitude",
        y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.40,-64.80), ylim = c(44.37,45.30), expand = FALSE)+
   plot.theme
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1A_PropRecClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -2166,6 +2223,7 @@ p + #Plot survey data and format figure.
   labs(title = paste(survey.year, "", "SPA1B Clapper Proportion (65-79 mm)"), x = "Longitude",
        y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7, title.position = "top"))) + #Legend transparency
+  coord_sf(xlim = c(-66.20,-64.30), ylim = c(44.80,45.70), expand = FALSE)+
   plot.theme.1b
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1B_PropRecClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -2183,6 +2241,7 @@ p + #Plot survey data and format figure.
   labs(title = paste(survey.year, "", "SPA4 Clapper Proportion (65-79 mm)"), x = "Longitude",
        y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.20,-65.51), ylim = c(44.48,44.96), expand = FALSE)+
   plot.theme.4
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA4_PropRecClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -2226,6 +2285,7 @@ p + #Plot survey data and format figure.
   geom_sf(data = spa3.poly, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
   labs(title = paste(survey.year, "", "SPA3 Clapper Proportion (65-79 mm)"), x = "Longitude", y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.82,-65.80), ylim = c(43.62,44.60), expand = FALSE)+
   plot.theme.3
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA3_PropRecClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -2269,6 +2329,7 @@ p + #Plot survey data and format figure.
   #geom_sf(data = inVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
   labs(title = paste(survey.year, "", "SPA6 Clapper Proportion (65-79 mm)"), x = "Longitude", y = "Latitude")+
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-67.40,-65.90), ylim = c(44.30,45.25), expand = FALSE)+
   plot.theme.6
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA6_PropRecClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -2324,6 +2385,7 @@ p + #Plot survey data and format figure.
                      aes(lon, lat), size = 0.5) +
   labs(title = paste(survey.year, "", "BoF Density (< 65 mm)"), x = "Longitude", y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.50,-64.30), ylim = c(44.25,45.80), expand = FALSE)+
   plot.theme
 
 #save
@@ -2342,6 +2404,7 @@ p + #Plot survey data and format figure.
                      aes(lon, lat), size = 0.5) +
   labs(title = paste(survey.year, "", "SPA1A Density (< 65 mm)"), x = "Longitude", y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.40,-64.80), ylim = c(44.37,45.30), expand = FALSE)+
   plot.theme
 
 #save
@@ -2359,6 +2422,7 @@ p + #Plot survey data and format figure.
                      aes(lon, lat), size = 0.5) +
   labs(title = paste(survey.year, "", "SPA1B Density (< 65 mm)"), x = "Longitude", y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.20,-64.30), ylim = c(44.80,45.70), expand = FALSE)+
   plot.theme.1b
 
 
@@ -2377,6 +2441,7 @@ p + #Plot survey data and format figure.
                      aes(lon, lat), size = 0.5) +
   labs(title = paste(survey.year, "", "SPA4 Density (< 65 mm)"), x = "Longitude", y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.20,-65.51), ylim = c(44.48,44.96), expand = FALSE)+
   plot.theme.4
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA4_PreDensity',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -2424,6 +2489,7 @@ p + #Plot survey data and format figure.
   geom_sf(data = spa3.poly, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
   labs(title = paste(survey.year, "", "SPA3 Density (< 65 mm)"), x = "Longitude", y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.82,-65.80), ylim = c(43.62,44.60), expand = FALSE)+
   plot.theme.3
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA3_PreDensity',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -2470,6 +2536,7 @@ p + #Plot survey data and format figure.
   #geom_sf(data = inVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
   labs(title = paste(survey.year, "", "SPA6 Density (< 65 mm)"), x = "Longitude", y = "Latitude")+
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-67.40,-65.90), ylim = c(44.30,45.25), expand = FALSE)+
   plot.theme.6
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA6_PreDensity',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -2514,6 +2581,7 @@ p + #Plot survey data and format figure.
   labs(title = paste(survey.year, "", "BoF Biomass (< 65 mm)"), x = "Longitude",
        y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.50,-64.30), ylim = c(44.25,45.80), expand = FALSE)+
   plot.theme
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_BF_PreBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -2532,6 +2600,7 @@ p + #Plot survey data and format figure.
   labs(title = paste(survey.year, "", "SPA1A Biomass (< 65 mm)"), x = "Longitude",
        y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.40,-64.80), ylim = c(44.37,45.30), expand = FALSE)+
   plot.theme
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1A_PreBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -2549,6 +2618,7 @@ p + #Plot survey data and format figure.
   labs(title = paste(survey.year, "", "SPA1B Biomass (< 65 mm)"), x = "Longitude",
        y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.20,-64.30), ylim = c(44.80,45.70), expand = FALSE)+
   plot.theme.1b
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1B_PreBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -2566,6 +2636,7 @@ p + #Plot survey data and format figure.
   labs(title = paste(survey.year, "", "SPA4 Biomass (< 65 mm)"), x = "Longitude",
        y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.20,-65.51), ylim = c(44.48,44.96), expand = FALSE)+
   plot.theme.4
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA4_PreBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -2609,6 +2680,7 @@ p + #Plot survey data and format figure.
   geom_sf(data = spa3.poly, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
   labs(title = paste(survey.year, "", "SPA3 Biomass (< 65 mm)"), x = "Longitude", y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.82,-65.80), ylim = c(43.62,44.60), expand = FALSE)+
   plot.theme.3
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA3_PreBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -2652,6 +2724,7 @@ p + #Plot survey data and format figure.
   #geom_sf(data = inVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
   labs(title = paste(survey.year, "", "SPA6 Biomass (< 65 mm)"), x = "Longitude", y = "Latitude")+
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-67.40,-65.90), ylim = c(44.30,45.25), expand = FALSE)+
   plot.theme.6
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA6_PreBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -2698,6 +2771,7 @@ p + #Plot survey data and format figure.
   labs(title = paste(survey.year, "", "BoF Clapper Density (< 65 mm)"), x = "Longitude",
        y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.50,-64.30), ylim = c(44.25,45.80), expand = FALSE)+
   plot.theme
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_BF_PreClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -2716,6 +2790,7 @@ p + #Plot survey data and format figure.
   labs(title = paste(survey.year, "", "SPA1A Clapper Density (< 65 mm)"), x = "Longitude",
        y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.40,-64.80), ylim = c(44.37,45.30), expand = FALSE)+
   plot.theme
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1A_PreClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -2734,6 +2809,7 @@ p + #Plot survey data and format figure.
   labs(title = paste(survey.year, "", "SPA1B Clapper Density (< 65 mm)"), x = "Longitude",
        y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.20,-64.30), ylim = c(44.80,45.70), expand = FALSE)+
   plot.theme.1b
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1B_PreClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -2754,6 +2830,7 @@ p + #Plot survey data and format figure.
                      aes(lon, lat), size = 0.5) +
   labs(title = paste(survey.year, "", "SPA4 Clapper Density (< 65 mm)"), x = "Longitude", y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.20,-65.51), ylim = c(44.48,44.96), expand = FALSE)+
   plot.theme.4
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA4_PreClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -2843,6 +2920,7 @@ p + #Plot survey data and format figure.
   #geom_sf(data = inVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
   labs(title = paste(survey.year, "", "SPA6 Clapper Density (< 65 mm)"), x = "Longitude", y = "Latitude")+
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-67.40,-65.90), ylim = c(44.30,45.25), expand = FALSE)+
   plot.theme.6
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA6_PreClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
