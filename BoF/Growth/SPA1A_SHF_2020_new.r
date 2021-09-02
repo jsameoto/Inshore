@@ -14,16 +14,30 @@ library(PEDstrata) #v.1.0.2
 library(tidyverse)
 library(ggplot2)
 
+#source strata definitions from Github
+funcs <- "https://raw.githubusercontent.com/Mar-scal/Inshore/master/BoF/BoFstratadef.R" 
+dir <- getwd()
+for(fun in funcs) 
+{
+  temp <- dir
+  download.file(fun,destfile = basename(fun))
+  source(paste0(dir,"/",basename(fun)))
+  file.remove(paste0(dir,"/",basename(fun)))
+}
+
 # source strata definitions
-source("Y:/INSHORE SCALLOP/BoF/SurveyDesignTables/BoFstratadef.R")
+#source("Y:/INSHORE SCALLOP/BoF/SurveyDesignTables/BoFstratadef.R")
 
 # ///.... DEFINE THESE ENTRIES ....////
 
 # Define: 
-uid <- un.sameotoj
-pwd <- pw.sameotoj
-surveyyear <- 2019  #This is the last survey year 
-assessmentyear <- 2020 #year in which you are conducting the survey 
+#uid <- un.sameotoj
+#pwd <- pw.sameotoj
+uid <- keyring::key_list("Oracle")[1,2]
+pwd <- keyring::key_get("Oracle", "WILSONBR")
+
+surveyyear <- 2021  #This is the last survey year 
+assessmentyear <- 2021 #year in which you are conducting the survey 
 area <- "1A1B4and5"  #SPA assessing recall SPA 1A, 1B, and 4 are grouped; options: "1A1B4and5", "3", "6" 
 path.directory <- "Y:/INSHORE SCALLOP/BoF/"
 
@@ -44,7 +58,7 @@ livefreq <- dbGetQuery(chan, query1)
 livefreq$YEAR <- as.numeric(substr(livefreq$CRUISE,3,6))
 
 # creates range of years
-years <- seq(1997,surveyyear, by=1)
+years <-c(1998:2019, 2021:surveyyear) #Skipping 2020 (add as NAs later)
 
 # The Number of Tows by years by strata in 1A: 
 options(tibble.print_max = Inf)
@@ -59,10 +73,19 @@ livefreq %>% group_by(YEAR) %>% filter(STRATA_ID %in% c(39)) %>% summarize(n())
 
 # ---- CALCULATE SHF FOR EACH YEAR BY STRATA   (use yrs:1998+ for all areas) ----
 
+#livefreq <- livefreq %>% 
+#  add_row(CRUISE = NA)
+
+#livefreq$CRUISE[is.na(livefreq$CRUISE)] <- "BF2020"
+#livefreq$YEAR[is.na(livefreq$YEAR)] <- 2020
+
+livefreq <- subset(livefreq, YEAR >= 1998)
+
 #1. 2to8
 SPA1A.2to8.SHFmeans <- data.frame(Year=years,Mean.nums=rep(NA,length(years)))
-for(i in 1:length(years) ){
-temp.data<-livefreq[livefreq$YEAR==1996+i,]
+for(i in 1:length(years)){
+  temp.data <- livefreq[livefreq$YEAR== years[i],] #uses only the values in years. i.e. skips 2020
+
 for(j in 1:40){
 SPA1A.2to8.SHFmeans[j,i] <- summary(PEDstrata(temp.data,strata.SPA1A.2to8.new,"STRATA_ID",catch=temp.data[,10+j], Subset=temp.data$TOW_TYPE_ID==1))$yst
 }}
@@ -70,10 +93,11 @@ names(SPA1A.2to8.SHFmeans) <- c(as.character(years))
 round(SPA1A.2to8.SHFmeans,2)
 
 
+
 #2. 8to16
 SPA1A.8to16.SHFmeans <- data.frame(Year=years, Mean.nums=rep(NA,length(years)))
 for(i in 1:length(years)){
-temp.data <- livefreq[livefreq$YEAR==1996+i,]
+temp.data <- livefreq[livefreq$YEAR== years[i],]
 for(j in 1:40){
 SPA1A.8to16.SHFmeans[j,i] <- summary(PEDstrata(temp.data,strata.SPA1A.8to16.noctrville.new,"STRATA_ID",catch=temp.data[,10+j], Subset=temp.data$TOW_TYPE_ID==1))$yst
 }}
@@ -85,9 +109,15 @@ round(SPA1A.8to16.SHFmeans,2)
 MBSlivefreq <- subset(livefreq, STRATA_ID==39 & TOW_TYPE_ID==1)
 SPA1A.MBS.SHFmeans <- sapply(split(MBSlivefreq[c(11:50)], MBSlivefreq$YEAR), function(x){apply(x,2,mean)})
 round (SPA1A.MBS.SHFmeans,2)
+
 # MBS has early years and missing years (2003,2004), needs to match 2to8 and 8to16 to combine
-SPA1A.MBS.SHFmeans <- cbind(SPA1A.MBS.SHFmeans[,5:10], matrix(0, nrow=40),matrix(0, nrow=40), SPA1A.MBS.SHFmeans[,11:dim(SPA1A.MBS.SHFmeans)[2]])
-colnames(SPA1A.MBS.SHFmeans) <- c(colnames(SPA1A.MBS.SHFmeans)[1:6], c("2003", "2004"), colnames(SPA1A.MBS.SHFmeans)[9:length(colnames(SPA1A.MBS.SHFmeans))])
+SPA1A.MBS.SHFmeans <- data.frame(SPA1A.MBS.SHFmeans)
+SPA1A.MBS.SHFmeans <- SPA1A.MBS.SHFmeans %>% add_column("X2003" = 0, .after="X2002")
+SPA1A.MBS.SHFmeans <- SPA1A.MBS.SHFmeans %>% add_column("X2004" = 0, .after="X2003")
+
+# MBS has early years and missing years (2003,2004), needs to match 2to8 and 8to16 to combine
+#SPA1A.MBS.SHFmeans <- cbind(SPA1A.MBS.SHFmeans[,5:10], matrix(0, nrow=40),matrix(0, nrow=40), SPA1A.MBS.SHFmeans[,11:dim(SPA1A#.MBS.SHFmeans)[2]])
+#colnames(SPA1A.MBS.SHFmeans) <- c(colnames(SPA1A.MBS.SHFmeans)[1:6], c("2003", "2004"), colnames(SPA1A.MBS.SHFmeans)[9:length3(colnames(SPA1A.MBS.SHFmeans))])
 
 
 #---- PLOT SHF FOR EACH YEAR BY STRATA ----
@@ -95,6 +125,7 @@ colnames(SPA1A.MBS.SHFmeans) <- c(colnames(SPA1A.MBS.SHFmeans)[1:6], c("2003", "
 
 # SHF plot for 2 to 8 mile:  SPA1A.2to8.SHFmeans
 SPA1A.2to8.data.for.plot <- data.frame(bin.label = row.names(SPA1A.2to8.SHFmeans), SPA1A.2to8.SHFmeans)
+SPA1A.2to8.data.for.plot$X2020 <- NA # add 2020 column.
 head(SPA1A.2to8.data.for.plot)
 SPA1A.2to8.data.for.plot$bin.mid.pt <- seq(2.5,200,by=5)
 
@@ -130,6 +161,7 @@ dev.off()
 
 # SHF plot for 8 to 16 mile:  SPA1A.8to16.SHFmeans
 SPA1A.8to16.data.for.plot <- data.frame(bin.label = row.names(SPA1A.8to16.SHFmeans), SPA1A.8to16.SHFmeans)
+SPA1A.8to16.data.for.plot$X2020 <- NA # add 2020 column.
 head(SPA1A.8to16.data.for.plot)
 SPA1A.8to16.data.for.plot$bin.mid.pt <- seq(2.5,200,by=5)
 
@@ -165,6 +197,7 @@ dev.off()
 
 # SHF plot for Mid Bay South (MBS):  SPA1A.MBS.SHFmeans
 MBS.data.for.plot <- data.frame(bin.label = row.names(SPA1A.MBS.SHFmeans), SPA1A.MBS.SHFmeans)
+MBS.data.for.plot$X2020 <- NA # add 2020 column.
 head(MBS.data.for.plot)
 MBS.data.for.plot$bin.mid.pt <- seq(2.5,200,by=5)
   
@@ -200,7 +233,9 @@ dev.off()
 #---- CALCULATE STRATIFIED SHF FOR ALL OF SPA 1A FOR EACH YEAR ----
 
 # create bin names and merge to combined SHF 
-bin <- as.numeric(substr(names(livefreq[c(11:50)]),8,nchar(names(livefreq[c(11:50)]))))
+
+bin <- as.numeric(substr(names(livefreq[c(grep("BIN_ID_0", colnames(livefreq)):grep("BIN_ID_195", colnames(livefreq)))]),8,nchar(names(livefreq[c(grep("BIN_ID_0", colnames(livefreq)):grep("BIN_ID_195", colnames(livefreq)))]))))
+#bin <- as.numeric(substr(names(livefreq[c(11:50)]),8,nchar(names(livefreq[c(11:50)]))))
 SPA1A.SHF.bin.names <- data.frame(Bin=bin)
 SPA1A.SHF <- (SPA1A.2to8.SHFmeans*0.1147) + (SPA1A.8to16.SHFmeans*0.4409) + (SPA1A.MBS.SHFmeans*0.4444)
 SPA1A.SHF <- cbind(SPA1A.SHF.bin.names, SPA1A.SHF)
@@ -241,8 +276,6 @@ dev.off()
 
 
 
-
-
 #---- CALCULATE lbar FOR ALL OF SPA 1A TO BE USED FOR CALCULATING GROWTH ----
 
 # ACTUAL shell height by year
@@ -254,6 +287,8 @@ for(i in 1:length(years)){
   SPA1A.SHactual.Com[i] <- sum(temp.data*seq(82.5,197.5,by=5))/sum(temp.data) }
 
 SPA1A.SHactual.Com <- data.frame((t(rbind(years, SPA1A.SHactual.Com))))
+SPA1A.SHactual.Com <-  rbind(SPA1A.SHactual.Com, c(2020, NA)) %>%  #ADD IN 2020 as NA
+  arrange(years)#Sort by Year
 
 #Recruit Size 
 SPA1A.SHactual.Rec <- rep(length(years))
@@ -263,32 +298,38 @@ for(i in 1:length(years)){
 }
 
 SPA1A.SHactual.Rec <- data.frame((t(rbind(years, SPA1A.SHactual.Rec))))
+SPA1A.SHactual.Rec <-  rbind(SPA1A.SHactual.Rec, c(2020, NA)) %>%  #ADD IN 2020 as NA
+  arrange(years)#Sort by Year
+SPA1A.SHactual.Rec
 
 
 # Predicted expected mean shell height for year t+1 (eg., for year 1997 output is expected SH in 1998)
 #the value in 1997 (first value) is the predicted height for 1998
+years.predict <- 1999:(surveyyear+1)
 
 # Commercial Size 
-SPA1A.SHpredict.Com <- rep(length(years))
-for(i in 1:length(years)){
+SPA1A.SHpredict.Com <- rep(length(years.predict))
+for(i in 1:length(years.predict)){
   temp.data <- SPA1A.SHactual.Com$SPA1A.SHactual.Com[i] #commercial size
   SPA1A.SHpredict.Com[i] <- 148.197*(1-exp(-exp(-1.576)))+exp(-exp(-1.576))*temp.data }
 
-SPA1A.SHpredict.Com <- data.frame((t(rbind(years, SPA1A.SHpredict.Com))))
+SPA1A.SHpredict.Com <- data.frame((t(rbind(years.predict, SPA1A.SHpredict.Com))))
 
 #Recruit size
-SPA1A.SHpredict.Rec <- rep(length(years))
-for(i in 1:length(years)){
+SPA1A.SHpredict.Rec <- rep(length(years.predict))
+for(i in 1:length(years.predict)){
   temp.data <- SPA1A.SHactual.Rec$SPA1A.SHactual.Rec[i]  #recruit size
   SPA1A.SHpredict.Rec[i] <- 148.197*(1-exp(-exp(-1.576)))+exp(-exp(-1.576))*temp.data }
 
-SPA1A.SHpredict.Rec <- data.frame((t(rbind(years, SPA1A.SHpredict.Rec))))
+SPA1A.SHpredict.Rec <- data.frame((t(rbind(years.predict, SPA1A.SHpredict.Rec))))
 
 
 # Export the objects to use in predicting mean weight/growth
-dump (c("SPA1A.SHactual.Com","SPA1A.SHactual.Rec","SPA1A.SHpredict.Com","SPA1A.SHpredict.Rec"), paste0(path.directory,"dataoutput/SPA1A",surveyyear,".SHobj.R"))
+dump (c("SPA1A.SHactual.Com","SPA1A.SHactual.Rec","SPA1A.SHpredict.Com","SPA1A.SHpredict.Rec"), paste0(path.directory,assessmentyear, "/Assessment/Data/Growth/SPA",area,"/SPA1A",surveyyear,".SHobj.R"))
 
-write.csv(cbind(SPA1A.SHactual.Com, SPA1A.SHactual.Rec, SPA1A.SHpredict.Com, SPA1A.SHpredict.Rec), paste0(path.directory,"dataoutput/SPA1A_SHactualpredict.",surveyyear,".csv")) 
+
+write.csv(cbind(SPA1A.SHactual.Com, SPA1A.SHactual.Rec, SPA1A.SHpredict.Com, SPA1A.SHpredict.Rec), paste0(path.directory,assessmentyear, "/Assessment/Data/Growth/SPA",area,"/SPA1A.lbar.to",surveyyear,".csv")) 
+
 
 #---- CALCULATE lbar BY SUBAREA TO PLOT ----
 
@@ -300,7 +341,10 @@ for(i in 1:length(SPA1A.lbar.strata$Year)){
 SPA1A.lbar.strata[i,2]<-sum(temp.data*seq(82.5,197.5,by=5))/sum(temp.data)
  SPA1A.lbar.strata[i,3]<-sum(temp.data2*seq(82.5,197.5,by=5))/sum(temp.data2)
 SPA1A.lbar.strata[i,4]<-sum(temp.data3*seq(82.5,197.5,by=5))/sum(temp.data3)
- }
+}
+
+SPA1A.lbar.strata <- rbind(SPA1A.lbar.strata, c(2020, NaN, NaN, NaN)) %>% #ADD IN 2020 as NA
+  arrange(Year)
 SPA1A.lbar.strata
 
 #Reshape into long format
@@ -313,7 +357,7 @@ SPA1A.lbar.strata <- pivot_longer(SPA1A.lbar.strata,
 )
 
 #Save out data - mean Commercial SHell Height by Strata 
-write.csv(SPA1A.lbar.strata, paste0(path.directory,"dataoutput/SPA1A.lbar.by.strata.",surveyyear,".csv"))
+write.csv(SPA1A.lbar.strata, paste0(path.directory,assessmentyear, "/Assessment/Data/Growth/SPA",area,"/SPA1A.lbar.by.strata.",surveyyear,".csv"))
 
 # Plot of Mean Commercial SHell Height by Strata 
 plot.SPA1A.lbar.strata <- ggplot(SPA1A.lbar.strata) + geom_line(aes(x = Year, y = lbar, color = Strata)) + 
@@ -327,7 +371,7 @@ plot.SPA1A.lbar.strata <- ggplot(SPA1A.lbar.strata) + geom_line(aes(x = Year, y 
 plot.SPA1A.lbar.strata
 
 # Save out plot
-png(paste0(path.directory,"Figures/SPA1A_lbar.png"), type="cairo", width=15, height=15, units = "cm", res=400)
+png(paste0(path.directory,assessmentyear, "/Assessment/Figures/SPA1A_lbar.png"), type="cairo", width=15, height=15, units = "cm", res=400)
 print(plot.SPA1A.lbar.strata)
 dev.off()
 
@@ -342,7 +386,7 @@ chan <- dbConnect(dbDriver("Oracle"), username = uid, password = pwd,'ptran')
 sql.56 <- "SELECT * FROM scallsur.scliveres WHERE strata_id = 56"
 
 # Select data from database; execute query with ROracle; numbers by shell height bin
-spa1a.56 <- dbGetQuery(chan, quer1)
+spa1a.56 <- dbGetQuery(chan, sql.56)
 
 #add YEAR column to data
 spa1a.56$YEAR <- as.numeric(substr(spa1a.56$CRUISE,3,6))
@@ -352,4 +396,5 @@ spa1a.56.SHFmeans <- sapply(split(spa1a.56[c(11:50)], spa1a.56$YEAR), function(x
 round(spa1a.56.SHFmeans,2)
 
 # PLOT OF SHF for strata 56 --- TO DO 
+
 
