@@ -15,16 +15,30 @@ library(tidyverse)
 library(ggplot2)
 library(egg)
 
+#source strata definitions from Github
+funcs <- "https://raw.githubusercontent.com/Mar-scal/Inshore/master/BoF/BoFstratadef.R" 
+dir <- getwd()
+for(fun in funcs) 
+{
+  temp <- dir
+  download.file(fun,destfile = basename(fun))
+  source(paste0(dir,"/",basename(fun)))
+  file.remove(paste0(dir,"/",basename(fun)))
+}
+
 # source strata definitions
-source("Y:/INSHORE SCALLOP/BoF/SurveyDesignTables/BoFstratadef.R")
+#source("Y:/INSHORE SCALLOP/BoF/SurveyDesignTables/BoFstratadef.R")
 
 # ///.... DEFINE THESE ENTRIES ....////
 
 # Define: 
-uid <- un.sameotoj
-pwd <- pw.sameotoj
-surveyyear <- 2019  #This is the last survey year 
-assessmentyear <- 2020 #year in which you are conducting the survey 
+#uid <- un.sameotoj
+#pwd <- pw.sameotoj
+uid <- keyring::key_list("Oracle")[1,2]
+pwd <- keyring::key_get("Oracle", "WILSONBR")
+
+surveyyear <- 2021  #This is the last survey year 
+assessmentyear <- 2021 #year in which you are conducting the survey 
 area <- "1A1B4and5"  #SPA assessing recall SPA 1A, 1B, and 4 are grouped; options: "1A1B4and5", "3", "6" 
 path.directory <- "Y:/INSHORE SCALLOP/BoF/"
 
@@ -58,24 +72,21 @@ livefreq %>% group_by(YEAR) %>% filter(STRATA_ID %in% strata.SPA4.new$Strata) %>
 
 # ---- CALCULATE SHF for SPA 4 Strata in Modelled area (strata 1:5, 8:10) ----
 
-years <- min(livefreq$YEAR):max(livefreq$YEAR) # Runs to the most recent year by default  
-X <- length(years)
+years <- c(min(livefreq$YEAR):2019, 2021:surveyyear) # Runs to the most recent year by default, skips 2020.
 
-SPA4.SHFmeans <-  data.frame(Year=years, Mean.nums=rep(NA,X)) 
-for(i in 1:X){
-temp.data <- livefreq[livefreq$YEAR==1980+i,]
+SPA4.SHFmeans <-  data.frame(Year=years, Mean.nums=rep(NA,length(years))) 
+for(i in 1:length(years)){
+temp.data <- livefreq[livefreq$YEAR==years[i],]
 for(j in 1:40){
 SPA4.SHFmeans[j,i] <- summary(PEDstrata(temp.data,strata.SPA4.new,"STRATA_ID",catch=temp.data[,10+j], Subset=temp.data$TOW_TYPE_ID==1))$yst
 }}
-SPA4.SHFmeans
 colnames(SPA4.SHFmeans) <- c(paste0("X",years))
+SPA4.SHFmeans
 
 SPA4.SHFmeans <- data.frame(bin.label = row.names(SPA4.SHFmeans), SPA4.SHFmeans)
+SPA4.SHFmeans$X2020 <- NA # add 2020 column.
 SPA4.SHFmeans$bin.mid.pt <- seq(2.5,200,by=5)
 head(SPA4.SHFmeans)
-
-#export SHF (if needed)
-write.csv(SPA4.SHFmeans, paste0(path.directory,assessmentyear,"/Assessment/Data/SurveyIndices/SPA1A1B4and5/SPA4.SHFmeans.to",surveyyear,".csv"))
 
 ###
 ### ---- PLOT SHF FOR EACH YEAR ----
@@ -104,6 +115,9 @@ plot.SPA4.SHF <- ggplot() + geom_col(data = SPA4.data.for.plot, aes(x = bin.mid.
   geom_vline(xintercept = recruitlimits, linetype = "dotted") + scale_x_continuous(breaks = seq(0,max(xlimits),20))
 plot.SPA4.SHF
 
+#export SHF (if needed)
+write.csv(SPA4.SHFmeans, paste0(path.directory,assessmentyear,"/Assessment/Data/SurveyIndices/SPA1A1B4and5/SPA4.SHFmeans.to",surveyyear,".csv"))
+
 # Save out plot
 png(paste0(path.directory,assessmentyear, "/Assessment/Figures/SPA4_SHF.png"), type="cairo", width=18, height=24, units = "cm", res=400)
 print(plot.SPA4.SHF)
@@ -117,33 +131,43 @@ dev.off()
 #1996+ onwards
 
 #Lbar in year t
-#years <- 1996:surveyyear
+years <- c(min(livefreq$YEAR):2019, 2021:surveyyear) # Runs to the most recent year by default, skips 2020.
 
-#Just take SHF columns of commercial size 
+#Just take SHF columns of commercial size
 SPA4.SHactual.Com <- SPA4.SHFmeans[ SPA4.SHFmeans$bin.mid.pt>=80, grepl( "X" , names( SPA4.SHFmeans ))]
+SPA4.SHactual.Com
 
 #average commercial size by year 
 SPA4.SHactual.Com.lbar <- NA
 for(i in 1:length(years)){
   SPA4.SHactual.Com.lbar[i] <- sum(SPA4.SHactual.Com[i]*seq(82.5,197.5,by=5))/sum(SPA4.SHactual.Com[i])
-  }
+}
+
+SPA4.SHactual.Com.lbar <- data.frame((t(rbind(years, SPA4.SHactual.Com.lbar))))
+SPA4.SHactual.Com.lbar <-  rbind(SPA4.SHactual.Com.lbar, c(2020, NaN)) %>%  #ADD IN 2020 as NA
+  arrange(years)#Sort by Year
 SPA4.SHactual.Com.lbar
 
 #Just take SHF columns of recruit size 
 SPA4.SHactual.Rec <- SPA4.SHFmeans[ SPA4.SHFmeans$bin.mid.pt >= 65 & SPA4.SHFmeans$bin.mid.pt < 80, grepl( "X" , names( SPA4.SHFmeans ))]
-
 #average recruit size by year 
 SPA4.SHactual.Rec.lbar <- NA
 for(i in 1:length(years)){
   SPA4.SHactual.Rec.lbar[i] <- sum(SPA4.SHactual.Rec[i]*seq(67.5,77.5,by=5))/sum(SPA4.SHactual.Rec[i])
   }
+
+SPA4.SHactual.Rec.lbar <- data.frame((t(rbind(years, SPA4.SHactual.Rec.lbar))))
+SPA4.SHactual.Rec.lbar <-  rbind(SPA4.SHactual.Rec.lbar, c(2020, NaN)) %>%  #ADD IN 2020 as NA
+  arrange(years)#Sort by Year
 SPA4.SHactual.Rec.lbar
 
-SPA4.lbar <- data.frame(Year = years,l.bar = SPA4.SHactual.Com.lbar, lr.bar = SPA4.SHactual.Rec.lbar)
+
+SPA4.lbar <- cbind(SPA4.SHactual.Com.lbar, SPA4.SHactual.Rec.lbar[,2])
+colnames(SPA4.lbar) <- c("Year", "l.bar.com", "lbar.rec")
 
 
 # Plot of Mean Commercial Shell Height (lbar)
-plot.SPA4.lbar <- ggplot(SPA4.lbar, aes(x = Year, y = l.bar)) + 
+plot.SPA4.lbar <- ggplot(SPA4.lbar, aes(x = Year, y = l.bar.com)) + 
   geom_line() + 
   geom_point() +
   theme_bw() + ylab("Mean Commercial Shell Height (mm)") 
@@ -155,7 +179,7 @@ print(plot.SPA4.lbar)
 dev.off()
 
 #Export lbar
-write.csv(SPA4.lbar, paste0(path.directory,assessmentyear,"/Assessment/Data/SurveyIndices/SPA1A1B4and5/SPA4.lbar.to",surveyyear,".csv"))
+write.csv(SPA4.lbar, paste0(path.directory,assessmentyear, "/Assessment/Data/Growth/SPA",area,"/SPA4.lbar.to",surveyyear,".csv"))
 
 
 # ---- Predicted Lbar in t+1 ----
@@ -173,28 +197,34 @@ write.csv(SPA4.lbar, paste0(path.directory,assessmentyear,"/Assessment/Data/Surv
 # Linf      logK        T0
 # 148.19668  -1.57621  -0.36559
 
+years.predict <- c((min(livefreq$YEAR)+1):(surveyyear+1))
 
-#years <- 1996:max(livefreq$YEAR) #UPDATE
+#Commercial size
 #the value in 1996 (first value) is the predicted height for 1997
-SPA4.SHpredict.Com <- SPA4.SHactual.Com.lbar
-for(i in 1:length(years)){
-  temp.data <- SPA4.SHactual.Com.lbar[i] #commercial size
+SPA4.SHpredict.Com <- rep(length(years.predict))
+for(i in 1:length(years.predict)){
+  temp.data <- SPA4.SHactual.Com.lbar$SPA4.SHactual.Com.lbar[i] #commercial size
   SPA4.SHpredict.Com[i] <- 148.19668*(1-exp(-exp(-1.576)))+exp(-exp(-1.576))*temp.data }
 
+SPA4.SHpredict.Com <- data.frame((t(rbind(years.predict, SPA4.SHpredict.Com))))
+
 #the value in 1996 (first value) is the predicted height for 1997
-SPA4.SHpredict.Rec <- SPA4.SHactual.Rec.lbar
-for(i in 1:length(years)){
-  temp.data <- SPA4.SHactual.Rec.lbar[i]  #recruit size
+SPA4.SHpredict.Rec <- rep(length(years.predict))
+for(i in 1:length(years.predict)){
+  temp.data <- SPA4.SHactual.Rec.lbar$SPA4.SHactual.Rec.lbar[i]  #recruit size
   SPA4.SHpredict.Rec[i]<-148.19668*(1-exp(-exp(-1.576)))+exp(-exp(-1.576))*temp.data }
+
+SPA4.SHpredict.Rec <- data.frame((t(rbind(years.predict, SPA4.SHpredict.Rec))))
 
 #export the objects to use in predicting mean weight
 #just export 1996+ for growth rate calculation
 #export all whole time series as of 2020 
-sh.actual <- data.frame(years, SPA4.SHactual.Com = SPA4.SHactual.Com.lbar, SPA4.SHactual.Rec = SPA4.SHactual.Rec.lbar)
-sh.predict <- data.frame(years, SPA4.SHpredict.Com, SPA4.SHpredict.Rec)
+sh.actual <- data.frame(SPA4.SHactual.Com = SPA4.SHactual.Com.lbar, SPA4.SHactual.Rec = SPA4.SHactual.Rec.lbar)
+sh.predict <- data.frame(SPA4.SHpredict.Com, SPA4.SHpredict.Rec)
 
 dump(c('sh.actual','sh.predict'),paste0(path.directory,assessmentyear,"/Assessment/Data/Growth/SPA1A1B4and5/SPA4.SHobj.",surveyyear,".R"))
 
+write.csv(cbind(SPA4.SHactual.Com.lbar, SPA4.SHactual.Rec.lbar, SPA4.SHpredict.Com, SPA4.SHpredict.Rec), paste0(path.directory,assessmentyear, "/Assessment/Data/Growth/SPA",area,"/SPA4.lbar.to",surveyyear,".csv"))
 
 # ---- SPA 4 strata_id 47 (inside 0-2 miles) SHF ----
 
@@ -222,6 +252,7 @@ TowsbyYear
 SPA4.Inside.SHFmeans <- sapply(split(spa4inside[c(11:50)], spa4inside$YEAR), function(x){apply(x,2,mean)})
 SPA4.Inside.SHFmeans <- round(SPA4.Inside.SHFmeans,3)
 SPA4.Inside.SHFmeans <- data.frame(bin.label = row.names(SPA4.Inside.SHFmeans), SPA4.Inside.SHFmeans)
+SPA4.Inside.SHFmeans$X2020 <- NA # add 2020 column.
 SPA4.Inside.SHFmeans$bin.mid.pt <- seq(2.5,200,by=5)
 head(SPA4.Inside.SHFmeans)
 
@@ -246,18 +277,18 @@ plot.SPA4.Inside.SHF.temp <- ggplot() + geom_col(data = SPA4.Inside.for.plot, ae
   facet_wrap(~year, ncol = 1) + 
   theme_bw() + ylim(ylimits) + xlim(xlimits) + ylab("Survey mean no./tow") + xlab("Shell Height (mm)") + 
   geom_vline(xintercept = recruitlimits, linetype = "dotted") + scale_x_continuous(breaks = seq(0,max(xlimits),20)) 
+plot.SPA4.Inside.SHF.temp
 
-
-my_tag <- paste0("N = ",TowsbyYear$TOW_NO[TowsbyYear$YEAR%in%unique(SPA4.Inside.for.plot$year)])
-plot.SPA4.Inside.SHF <- tag_facet(plot.SPA4.Inside.SHF.temp, 
-          x = 190, y = 40, 
-          vjust = -1, hjust = -0.25,
-          open = "", close = "",
-          fontface = 3,
-          size = 4,
-          family = "arial",
-          tag_pool = my_tag)
-plot.SPA4.Inside.SHF
+#my_tag <- paste0("N = ",TowsbyYear$TOW_NO[TowsbyYear$YEAR%in%unique(SPA4.Inside.for.plot$year)])
+#plot.SPA4.Inside.SHF <- tag_facet(plot.SPA4.Inside.SHF.temp, 
+ #         x = 190, y = 40, 
+#          vjust = -1, hjust = -0.25,
+#          open = "", close = "",
+#          fontface = 3,
+#          size = 4,
+#          family = "arial",
+#          tag_pool = my_tag)
+#plot.SPA4.Inside.SHF
  
 
 # Save out plot
