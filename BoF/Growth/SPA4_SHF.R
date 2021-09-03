@@ -293,6 +293,6 @@ plot.SPA4.Inside.SHF.temp
 
 # Save out plot
 png(paste0(path.directory,assessmentyear, "/Assessment/Figures/SPA4_SHF_0to2mile.png"), type="cairo", width=18, height=24, units = "cm", res=400)
-print(plot.SPA4.Inside.SHF)
+print(plot.SPA4.Inside.SHF.temp)
 dev.off()
 

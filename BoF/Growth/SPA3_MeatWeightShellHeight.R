@@ -117,6 +117,11 @@ MWTSHBI.YYYY <- glmer(WET_MEAT_WGT~Log.HEIGHT.CTR+Log.DEPTH.CTR+(Log.HEIGHT.CTR|
 
 summary(MWTSHBI.YYYY)
 
+#Save summary to txt file
+sink(paste0(path.directory, assessmentyear, "/Assessment/Data/Growth/SPA",area,"/MWTSHBI2021_ModelSummary.txt"))
+print(summary(MWTSHBI.YYYY))
+sink()
+
 #diagnostics
 latt <- data.frame(test.data, res=residuals(MWTSHBI.YYYY,"pearson"),fit=fitted(MWTSHBI.YYYY)) 
 
