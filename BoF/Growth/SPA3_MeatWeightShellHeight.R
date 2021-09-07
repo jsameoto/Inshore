@@ -302,7 +302,7 @@ condition.ts.plot <- ggplot(BI.con.ts %>% filter(STRATA %in% c("St. Mary's Bay",
 condition.ts.plot
 
 #Export plot 
-png(paste0(path.directory, assessmentyear, "/Assessment/Figures/SPA3_conditionTrends.png" ), width = 672, height = 672)
+png(paste0(path.directory, assessmentyear, "/Assessment/Figures/SPA3_ConditionTimeSeries.png" ), width = 672, height = 672)
 condition.ts.plot
 dev.off()
 

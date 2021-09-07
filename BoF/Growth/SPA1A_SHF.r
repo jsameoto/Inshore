@@ -244,6 +244,7 @@ dim(SPA1A.SHF)
 
 # SHF plot for 1A ALL  SPA1A.ALL.SHFmeans
 SPA1A.shf.data.for.plot <- data.frame(bin.label = row.names(SPA1A.SHF), SPA1A.SHF)
+SPA1A.shf.data.for.plot$X2020 <- NA # add 2020 column.
 head(SPA1A.shf.data.for.plot)
 SPA1A.shf.data.for.plot$bin.mid.pt <- seq(2.5,200,by=5)
 
@@ -395,6 +396,38 @@ spa1a.56$YEAR <- as.numeric(substr(spa1a.56$CRUISE,3,6))
 spa1a.56.SHFmeans <- sapply(split(spa1a.56[c(11:50)], spa1a.56$YEAR), function(x){apply(x,2,mean)})
 round(spa1a.56.SHFmeans,2)
 
-# PLOT OF SHF for strata 56 --- TO DO 
+# PLOT OF SHF for strata 56
+
+spa1a.56.data.for.plot <- data.frame(bin.label = row.names(spa1a.56.SHFmeans), spa1a.56.SHFmeans)
+spa1a.56.data.for.plot$X2020 <- NA # add 2020 column.
+head(spa1a.56.data.for.plot)
+spa1a.56.data.for.plot$bin.mid.pt <- seq(2.5,200,by=5)
+
+spa1a.56.data.for.plot <- pivot_longer(spa1a.56.data.for.plot, 
+                                       cols = starts_with("X"),
+                                       names_to = "year",
+                                       names_prefix = "X",
+                                       values_to = "SH",
+                                       values_drop_na = FALSE)
+spa1a.56.data.for.plot$year <- as.numeric(spa1a.56.data.for.plot$year)
+
+spa1a.56.data.for.plot <- spa1a.56.data.for.plot %>% filter(year > surveyyear-7)
+#shorten SH data for plot or else get warning when run ggplot 
+spa1a.56.data.for.plot$SH <- round(spa1a.56.data.for.plot$SH,3)
+
+ylimits <- c(0,30)
+xlimits <- c(0,200)
+recruitlimits <- c(65,80)
+
+# plot SHF for 2to8 mile strata
+plot.spa1a.56.SHF <- ggplot() + geom_col(data = spa1a.56.data.for.plot, aes(x = bin.mid.pt, y = SH)) + 
+  facet_wrap(~year, ncol = 1) + 
+  theme_bw() + ylim(ylimits) + xlim(xlimits) + ylab("Survey mean no./tow") + xlab("Shell Height (mm)") + 
+  geom_vline(xintercept = recruitlimits, linetype = "dotted") + scale_x_continuous(breaks = seq(0,max(xlimits),20))
+plot.spa1a.56.SHF
 
 
+# Save out plot
+png(paste0(path.directory,assessmentyear, "/Assessment/Figures/SPA1A_SHF_56.png"), type="cairo", width=18, height=24, units = "cm", res=400)
+print(plot.spa1a.56.SHF)
+dev.off()
