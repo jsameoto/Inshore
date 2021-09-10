@@ -83,8 +83,7 @@ str(BFliveweight)
 ####
 
 #Recruit
-years <-c(1990:2019, 2021:surveyyear) #Skipping 2020 (add as NAs later)
-#years <- 1990:surveyyear
+years <- 1990:surveyyear
 
 #Recruit no/tow and population
 SPA5.Rec <- data.frame(Year=years, Mean.nums=rep(NA,length(years)),method=rep("simple",length(years)), Area=rep("SPA5", length(years)), Age=rep("Recruit", length(years)))
@@ -93,11 +92,6 @@ temp.data <- spa5freq[spa5freq$YEAR == years[i],]
 SPA5.Rec[i,2] <- mean(apply(temp.data[temp.data$STRATA_ID==21, 24:26],1,sum))
 }
 
-SPA5.Rec<- rbind(SPA5.Rec, c(2020, NaN, NaN, NaN, NaN)) %>% #ADD IN 2020 as NA
-  mutate(method = "simple") %>%
-  mutate(Area = "SPA5") %>% 
-  mutate(Age = "Recruit") %>% 
-  arrange(Year)
 SPA5.Rec
 
 SPA5.Comm <- data.frame(Year=years, Mean.nums=rep(NA,length(years)), method=rep("simple",length(years)), Area=rep("SPA5", length(years)), Age=rep("Commercial", length(years)))
@@ -105,11 +99,7 @@ for(i in 1:length(years)){
 temp.data<-spa5freq[spa5freq$YEAR== years[i],]
 SPA5.Comm[i,2]<- mean(apply(temp.data[temp.data$STRATA_ID==21, 27:50],1,sum))
 }
-SPA5.Comm<- rbind(SPA5.Comm, c(2020, NaN, NaN, NaN, NaN)) %>% #ADD IN 2020 as NA
-  mutate(method = "simple") %>%
-  mutate(Area = "SPA5") %>% 
-  mutate(Age = "Commercial") %>% 
-  arrange(Year)
+
 SPA5.Comm
 
 #NOTE no survey in 2020 but bc SPA 5 not modelled, don't need to interpolate data for 2020 
@@ -126,7 +116,6 @@ write.csv(SPA5.Numbers, paste0(path.directory, assessmentyear, "/Assessment/Data
 ### ---- RECRUIT AND COMMERCIAL WEIGHT PER TOW -----
 ###
 ####
-years <-c(1990:2019, 2021:surveyyear) #Skipping 2020 (add as NAs later)
 
 #Recruit no/tow and population
 SPA5.RecWt <- data.frame(Year=years, Mean.wt=rep(NA,length(years)),method=rep("simple",length(years)), Area=rep("SPA5", length(years)), Age=rep("Recruit", length(years)))
@@ -135,11 +124,6 @@ for(i in 1:length(years)){
   SPA5.RecWt[i,2] <- mean(apply(temp.data[temp.data$STRATA_ID==21, 26:28],1,sum))
 }
 
-SPA5.RecWt<- rbind(SPA5.RecWt, c(2020, NaN, NaN, NaN, NaN)) %>% #ADD IN 2020 as NA
-  mutate(method = "simple") %>%
-  mutate(Area = "SPA5") %>% 
-  mutate(Age = "Recruit") %>% 
-  arrange(Year)
 SPA5.RecWt
 
 SPA5.CommWt <- data.frame(Year=years, Mean.wt=rep(NA,length(years)),method=rep("simple",length(years)), Area=rep("SPA5", length(years)), Age=rep("Commercial", length(years)))
@@ -148,11 +132,6 @@ temp.data <- BFliveweight[BFliveweight$YEAR==years[i],]
 SPA5.CommWt[i,2] <- mean(apply(temp.data[temp.data$STRATA_ID==21, 29:52],1,sum))
 }
 
-SPA5.CommWt<- rbind(SPA5.CommWt, c(2020, NaN, NaN, NaN, NaN)) %>% #ADD IN 2020 as NA
-  mutate(method = "simple") %>%
-  mutate(Area = "SPA5") %>% 
-  mutate(Age = "Commercial") %>% 
-  arrange(Year)
 SPA5.CommWt
 
 
@@ -289,7 +268,6 @@ spa5dead <- dbGetQuery(chan, dead.sql)
 spa5dead$YEAR <- as.numeric(substr(spa5dead$CRUISE,3,6))
 
 #Recruit
-years <-c(1990:2019, 2021:surveyyear) #Skipping 2020 (add as NAs later)
 
 #Recruit no/tow and population
 SPA5.Rec.dead <- data.frame(Year=years, Mean.nums=rep(NA,length(years)),method=rep("simple",length(years)), Area=rep("SPA5", length(years)), Age=rep("Recruit", length(years)))
@@ -297,11 +275,6 @@ for(i in 1:length(years)){
 temp.data<-spa5dead[spa5dead$YEAR== years[i],]
 SPA5.Rec.dead[i,2] <- mean(apply(temp.data[temp.data$STRATA_ID==21, 24:26],1,sum))
 }
-SPA5.Rec.dead <- rbind(SPA5.Rec.dead, c(2020, NaN, NaN, NaN, NaN)) %>% #ADD IN 2020 as NA
-  mutate(method = "simple") %>%
-  mutate(Area = "SPA5") %>% 
-  mutate(Age = "Recruit") %>% 
-  arrange(Year)
 SPA5.Rec.dead
 #NOTE no survey in 2020 but bc SPA 5 not modelled, don't need to interpolate data for 2020 
 
@@ -311,11 +284,7 @@ for(i in 1:length(years)){
 temp.data<-spa5dead[spa5dead$YEAR== years[i],]
 SPA5.Comm.dead[i,2]<- mean(apply(temp.data[temp.data$STRATA_ID==21, 27:50],1,sum))
 }
-SPA5.Comm.dead <- rbind(SPA5.Comm.dead, c(2020, NaN, NaN, NaN, NaN)) %>% #ADD IN 2020 as NA
-  mutate(method = "simple") %>%
-  mutate(Area = "SPA5") %>% 
-  mutate(Age = "Commercial") %>% 
-  arrange(Year)
+
 SPA5.Comm.dead
 #NOTE no survey in 2020 but bc SPA 5 not modelled, don't need to interpolate data for 2020 
 

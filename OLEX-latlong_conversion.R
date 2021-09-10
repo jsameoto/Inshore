@@ -108,7 +108,7 @@ strata <- st_read(paste0(temp2, "/PolygonSCSTRATAINFO_rm46-26-57-31.shp"))
 #Garnstopp - stop
 #Brunsirkel - brown circle (points along trackline?)
 
-zz <- read.csv(gzfile('Y:/INSHORE SCALLOP/Survey/OLEX tow tracks/2021/aug112021_BF.gz'))
+zz <- read.csv(gzfile('Y:/INSHORE SCALLOP/Survey/OLEX tow tracks/2021/aug172021.gz'))
 
 str(zz)
 zz$Ferdig.forenklet <- as.character(zz$Ferdig.forenklet)
@@ -192,7 +192,17 @@ mapview::mapview(coords.sf) + #%>% filter(ID %in% c(96,98)) #option to filter ou
   mapview::mapview(VMS_out, col.regions=list("red"))+
   mapview::mapview(VMS_in, col.regions=list("red"))
 
-tow <- read.csv("Y:/INSHORE SCALLOP/Survey/2021/data entry templates and examples/BF2021/BF2021tow_CONVERTED.csv")
+#Save for copying into tow.csv
+
+coords.sf <- coords.sf%>% 
+  st_drop_geometry()
+
+write.csv(coords.sf, "Y:/INSHORE SCALLOP/Survey/OLEX tow tracks/Olex-latlong_conversion/GM2021_coords_check.csv")
+
+###########################################################################################################
+
+#check file
+tow <- read.csv("Y:/INSHORE SCALLOP/Survey/2021/data entry templates and examples/GM2021/GM2021tow_CONVERTED.csv")
 
 #Convert decimal degrees to decimal minutes seconds.
 tow$Start_Latitude <- convert.dd.dddd(tow$Start_lat, format = 'dec.deg')
@@ -205,19 +215,9 @@ tow.start.sf <- st_as_sf(tow, coords = c("Start_Longitude", "Start_Latitude"), c
 
 tow.end.sf <- st_as_sf(tow, coords = c("End_Longitude", "End_Latitude"), crs = 4326)
 
-mapview::mapview(tow.start.sf %>% filter(Oracle.tow..%in% c(269, 270, 272))) + #%>% c(3,6,7,8,9,15,28:33,91,105,106)filter(ID %in% c(96,98)) #option to filter out specific points
-  mapview::mapview(coords.sf) +
-  #mapview::mapview(tow.sf %>% filter(Oracle.tow.. %in% c(1, 34:48, 51:77, 79:89, 94, 96)))+
-  mapview::mapview(tow.end.sf %>% filter(Oracle.tow..%in% c(49, 50, 108))) +
-  mapview::mapview(strata) +
-  mapview::mapview(SPA_BoF)
-
-  
-
-coords.sf <- coords.sf%>% 
-  st_drop_geometry()
-
-write.csv(coords.sf, "Y:/INSHORE SCALLOP/Survey/OLEX tow tracks/Olex-latlong_conversion/GM2021_coords_check.csv")
+mapview::mapview(tow.start.sf %>% filter(Oracle.tow..%in% c(2,15,24,32,37,53,61,71,73,78,82,90,93,107,110,112))) + 
+  mapview::mapview(VMS_in) +
+  mapview::mapview(VMS_out)
 
 ####################################################################################
 

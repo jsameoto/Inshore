@@ -99,6 +99,15 @@ SPA6D <- st_read(paste0(temp2, "/SPA6D_polygon_NAD83.shp")) %>% mutate(ET_ID = "
 SPA6 <- rbind(SPA6A, SPA6B, SPA6D) %>% #SPA6C
   st_transform(crs = 4326)
 
+#need to save out and store on github
+USCAN.border<-read.csv("Y:/Offshore scallop/Assessment/Data/Maps/approved/Other_Borders/SPA6wgs84_outterline.csv") %>% 
+  st_as_sf(coords = c("X","Y"), crs = 4326) %>% 
+  filter(!POS %in% c(1:7, 69:71)) %>% 
+  dplyr::group_by(PID) %>% 
+  dplyr::summarise(do_union = FALSE) %>% 
+  st_cast("LINESTRING")
+
+
 # -----------------------------Import SHF data (live and dead)--------------------------------------------
 
 ##.. LIVE ..##
@@ -2945,6 +2954,214 @@ p + #Plot survey data and format figure.
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA6_PreClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
+
+# --------------Plots for Industry Supplemental Update Document (Markdown) ----------------------------------
+
+#Markdown document directory - paste0("Y:/INSHORE SCALLOP/BoF/",surveyyear,"/Assessment/Documents/CSAS")
+
+#READ IN STRATA FILE FROM GITHUB
+# Find where tempfiles are stored
+temp <- tempfile()
+# Download this to the temp directory
+download.file("https://raw.githubusercontent.com/Mar-scal/GIS_layers/master/inshore_boundaries/inshore_survey_strata/inshore_survey_strata.zip", temp)
+# Figure out what this file was saved as
+temp2 <- tempfile()
+# Unzip it
+unzip(zipfile=temp, exdir=temp2)
+
+# Now read in the strata shapefile
+strata <- st_read(paste0(temp2, "/PolygonSCSTRATAINFO_rm46-26-57-31.shp"))
+strata <- strata %>% filter(!STRATA_ID %in% c(30,32,41:45,54,55,56))
+#mapview::mapview(strata)
+
+
+# ----Commercial Biomass - full bay -----
+
+#NOTE: TO PLOT OTHER YEARS CHANGE *biomass.year*
+biomass.year <- survey.year # change year (e.g. biomass.year <- "2019") to plot other years (dependant on the files that were loaded in the object liveweight)
+
+#For FULL BAY, (SPA1A, SPA1B, SPA3, SPA4, SPA5, SPA6)
+com.contours<-contour.gen(ScallopSurv.kg %>% filter(year==biomass.year) %>%
+                            dplyr::select(ID,lon,lat,com.bm),
+                          ticks='define', nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
+
+lvls=c(0.01,0.1,1,2,4,6,8)  #levels to be color coded
+
+CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
+CP <- convCP(CL)
+totCont.poly <- CP$PolySet
+
+##Convert pbsmapping object to sf
+totCont.poly <- as.PolySet(totCont.poly,projection = "LL") #assuming you provide Lat/Lon data and WGS84
+totCont.poly <- PolySet2SpatialLines(totCont.poly) # Spatial lines is a bit more general (don't need to have boxes closed)
+totCont.poly.sf <- st_as_sf(totCont.poly) %>%
+  st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
+  st_cast("POLYGON") %>% #Convert multilines to polygons
+  st_make_valid() %>% 
+  mutate(level = unique(CP$PolyData$level))
+
+#Set aesthetics for plot
+labels <- c("0.01-0.1", "0.1-1", "1-2", "2-4", "4-6", "6-8", "8+")
+col <- brewer.pal(length(lvls),"YlGn") #set colours
+cfd <- scale_fill_manual(values = alpha(col, 0.6), breaks = labels, name = expression(frac(kg,tow)), limits = labels) #set custom fill arguments for pecjector.
+
+
+p <- pecjector(area =list(x=c(-67.08,-64.4), y=c(45.62, 43.65), crs=4326), repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',add_layer = list(land = "grey", bathy = "ScallopMap", scale.bar = c('tl',0.5,-1,-1)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+
+
+p+ #Plot survey data and format figure.
+  geom_spatial_point(data = ScallopSurv.kg %>% filter(year==biomass.year), aes(lon, lat), size = 0.5) +
+  geom_sf(data = strata, size = 0.3, colour= "black", alpha = 0.4, fill = NA)+
+  geom_sf(data = outVMS, linetype = "dashed", size = 0.4, colour = "black", alpha = 0.7, fill = NA) + #SPA6 - VMS OUT
+  geom_sf(data = inVMS, linetype = "dashed",size = 0.4, colour = "black", alpha = 0.7, fill = NA) + #SPA6 - VMS IN
+  geom_sf(data = USCAN.border, size = 0.7, colour = "black")+ #USCAN border
+  geom_sf(data = spa3.poly, linetype = "dashed",size = 0.45, colour = "black", alpha = 0.7, fill = NA) +
+  labs(x = "Longitude", y = "Latitude")+
+  guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-67.08,-64.4), ylim = c(43.65, 45.62), expand = FALSE)+
+  theme(plot.title = element_text(size = 14, hjust = 0.5), #plot title size and position
+                     axis.title = element_text(size = 12),
+                     axis.text = element_text(size = 10),
+                     legend.title = element_text(size = 10, face = "bold"), 
+                     legend.text = element_text(size = 8),
+                     legend.position = c(.87,.20), #legend position
+                     legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.95)), #Legend bkg colour and border
+                     legend.box.margin = margin(6, 10, 6, 8)) #Legend bkg margin (top, right, bottom, left)
+
+ggsave(filename = paste0(saveplot.dir,'ContPlot_BoFAll_ComBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+
+
+# ----Recruit Biomass - full bay -----
+
+rec.contours<-contour.gen(ScallopSurv.kg %>% filter(year==biomass.year) %>%  dplyr::select(ID,lon,lat,rec.bm),
+                          ticks='define', nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
+
+lvls=c(0.01,0.1,1,2,4,6,8)  #levels to be color coded
+
+CL <- contourLines(rec.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
+CP <- convCP(CL)
+totCont.poly <- CP$PolySet
+
+##Convert pbsmapping object to sf
+totCont.poly <- as.PolySet(totCont.poly,projection = "LL") #assuming you provide Lat/Lon data and WGS84
+totCont.poly <- PolySet2SpatialLines(totCont.poly) # Spatial lines is a bit more general (don't need to have boxes closed)
+totCont.poly.sf <- st_as_sf(totCont.poly) %>%
+  st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
+  st_cast("POLYGON") %>% #Convert multilines to polygons
+  st_make_valid() %>% 
+  mutate(level = unique(CP$PolyData$level))
+
+#Set aesthetics for plot
+labels <- c("0.01-0.1", "0.1-1", "1-2", "2-4", "4-6", "6-8", "8+")
+col <- brewer.pal(length(lvls),"YlGn") #set colours
+cfd <- scale_fill_manual(values = alpha(col, 0.6), breaks = labels, name = expression(frac(kg,tow)), limits = labels) #set custom fill arguments for pecjector.
+
+p <- pecjector(area =list(x=c(-67.08,-64.4), y=c(45.62, 43.65), crs=4326), repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',add_layer = list(land = "grey", bathy = "ScallopMap", scale.bar = c('tl',0.5,-1,-1)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+
+
+p + #Plot survey data and format figure.
+  geom_spatial_point(data = ScallopSurv.kg %>% filter(year==biomass.year), aes(lon, lat), size = 0.5) +
+  geom_sf(data = strata, size = 0.3, colour= "black", alpha = 0.4, fill = NA)+
+  geom_sf(data = outVMS, linetype = "dashed", size = 0.4, colour = "black", alpha = 0.7, fill = NA) + #SPA6 - VMS OUT
+  geom_sf(data = inVMS, linetype = "dashed",size = 0.4, colour = "black", alpha = 0.7, fill = NA) + #SPA6 - VMS IN
+  geom_sf(data = USCAN.border, size = 0.7, colour = "black")+ #USCAN border
+  geom_sf(data = spa3.poly, linetype = "dashed",size = 0.45, colour = "black", alpha = 0.7, fill = NA) +
+  labs(x = "Longitude", y = "Latitude")+
+  guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-67.08,-64.4), ylim = c(43.65, 45.62), expand = FALSE)+
+  theme(plot.title = element_text(size = 14, hjust = 0.5), #plot title size and position
+        axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        legend.title = element_text(size = 10, face = "bold"), 
+        legend.text = element_text(size = 8),
+        legend.position = c(.87,.20), #legend position
+        legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.95)), #Legend bkg colour and border
+        legend.box.margin = margin(6, 10, 6, 8)) #Legend bkg margin (top, right, bottom, left)
+
+ggsave(filename = paste0(saveplot.dir,'ContPlot_BoFAll_RecBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+
+# ----Pre-Recruit numbers per tow - full bay -----
+
+#Create contour and specify plot aesthetics
+pre.contours <- contour.gen(ScallopSurv %>% 
+                              filter(year == survey.year) %>%
+                              dplyr::select(ID, lon, lat, pre), 
+                            ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
+
+
+lvls <- c(1,5,10,50,100,200,300,400,500) #levels to be color coded
+CL <- contourLines(pre.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
+CP <- convCP(CL)
+totCont.poly <- CP$PolySet
+
+##Convert pbsmapping object to sf
+totCont.poly <- as.PolySet(totCont.poly,projection = "LL") #assuming you provide Lat/Lon data and WGS84
+totCont.poly <- PolySet2SpatialLines(totCont.poly) # Spatial lines is a bit more general (don't need to have boxes closed)
+totCont.poly.sf <- st_as_sf(totCont.poly) %>%
+  st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
+  st_cast("POLYGON") %>% #Convert multilines to polygons
+  st_make_valid() %>% 
+  mutate(level = unique(CP$PolyData$level))
+
+#Colour aesthetics and breaks for contours
+labels <- c("1-5", "5-10", "10-50", "50-100", "100-200", "200-300", "300-400", "400-500", "500+")
+col <- brewer.pal(length(lvls),"YlGn") #set colours
+cfd <- scale_fill_manual(values = alpha(col, 0.6), breaks = labels, name = expression(frac(N,tow)), limits = labels) #set custom fill arguments for pecjector.
+
+p <- pecjector(area =list(x=c(-67.08,-64.4), y=c(45.62, 43.65), crs=4326), repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',add_layer = list(land = "grey", bathy = "ScallopMap", scale.bar = c('tl',0.5,-1,-1)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+
+
+p + #Plot survey data and format figure.
+  geom_spatial_point(data = ScallopSurv.kg %>% filter(year==biomass.year), aes(lon, lat), size = 0.5) +
+  geom_sf(data = strata, size = 0.3, colour= "black", alpha = 0.4, fill = NA)+
+  geom_sf(data = outVMS, linetype = "dashed", size = 0.4, colour = "black", alpha = 0.7, fill = NA) + #SPA6 - VMS OUT
+  geom_sf(data = inVMS, linetype = "dashed",size = 0.4, colour = "black", alpha = 0.7, fill = NA) + #SPA6 - VMS IN
+  geom_sf(data = USCAN.border, size = 0.7, colour = "black")+ #USCAN border
+  geom_sf(data = spa3.poly, linetype = "dashed",size = 0.45, colour = "black", alpha = 0.7, fill = NA) +
+  labs(x = "Longitude", y = "Latitude")+
+  guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-67.08,-64.4), ylim = c(43.65, 45.62), expand = FALSE)+
+  theme(plot.title = element_text(size = 14, hjust = 0.5), #plot title size and position
+        axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        legend.title = element_text(size = 10, face = "bold"), 
+        legend.text = element_text(size = 8),
+        legend.position = c(.87,.25), #legend position
+        legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.95)), #Legend bkg colour and border
+        legend.box.margin = margin(6, 10, 6, 8)) #Legend bkg margin (top, right, bottom, left)
+
+ggsave(filename = paste0(saveplot.dir,'ContPlot_BoFAll_PrerecDensity',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+
+# ----DENSITY PLOTS -----
+
+#Plot with Pecjector for each area:
+
+# ----FULL BAY -----
+
+p <- pecjector(area = "bof",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
+               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5)), 
+               add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>%
+                                   mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+#p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
+
+
+p + #Plot survey data and format figure.
+  geom_spatial_point(data = ScallopSurv %>% 
+                       filter(year == survey.year, !STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)), #excludes SPA3 and SFA29 data
+                     aes(lon, lat), size = 0.5) +
+  labs(title = paste(survey.year, "", "BoF Density (< 65 mm)"), x = "Longitude", y = "Latitude") +
+  guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-66.50,-64.30), ylim = c(44.25,45.80), expand = FALSE)+
+  plot.theme
+
+#save
+ggsave(filename = paste0(saveplot.dir,'ContPlot_BF_PreDensity',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+
+### Pre-rec Survey Distribution (0-64 mm) ###
+
+com.contours<-contour.gen(subset(ScallopSurv.all,year==2019,c('ID','lon','lat','pre')),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
+
+lvls=c(1,5,10,50,100,200,300,400,500)
 
 # --------------STATIC BoF strata plot for appendix by F.Keyser - Modified for pecjector by B.Wilson (2021) ----------------------------------
 
