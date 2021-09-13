@@ -161,13 +161,10 @@ SPA4.SHactual.Rec.lbar <-  rbind(SPA4.SHactual.Rec.lbar, c(2020, NaN)) %>%  #ADD
   arrange(years)#Sort by Year
 SPA4.SHactual.Rec.lbar
 
-
-SPA4.lbar <- cbind(SPA4.SHactual.Com.lbar, SPA4.SHactual.Rec.lbar[,2])
-colnames(SPA4.lbar) <- c("Year", "l.bar.com", "lbar.rec")
-
+sh.actual <- data.frame(SPA4.SHactual.Com.lbar, SPA4.SHactual.Rec.lbar %>% dplyr::select(SPA4.SHactual.Rec.lbar))
 
 # Plot of Mean Commercial Shell Height (lbar)
-plot.SPA4.lbar <- ggplot(SPA4.lbar, aes(x = Year, y = l.bar.com)) + 
+plot.SPA4.lbar <- ggplot(sh.actual, aes(x = years, y = SPA4.SHactual.Com.lbar)) + 
   geom_line() + 
   geom_point() +
   theme_bw() + ylab("Mean Commercial Shell Height (mm)") 
@@ -177,10 +174,6 @@ plot.SPA4.lbar
 png(paste0(path.directory,assessmentyear, "/Assessment/Figures/SPA4_lbar.png"), type="cairo", width=15, height=15, units = "cm", res=400)
 print(plot.SPA4.lbar)
 dev.off()
-
-#Export lbar
-write.csv(SPA4.lbar, paste0(path.directory,assessmentyear, "/Assessment/Data/Growth/SPA",area,"/SPA4.lbar.to",surveyyear,".csv"))
-
 
 # ---- Predicted Lbar in t+1 ----
 # expected mean shell height for year t+1 (eg., for year 1983 output is expected SH in 1984)
@@ -216,15 +209,15 @@ for(i in 1:length(years.predict)){
 
 SPA4.SHpredict.Rec <- data.frame((t(rbind(years.predict, SPA4.SHpredict.Rec))))
 
+sh.predict <- data.frame(SPA4.SHactual.Com.lbar %>% dplyr::select(years), SPA4.SHpredict.Com, SPA4.SHpredict.Rec %>% dplyr::select(SPA4.SHpredict.Rec)) #years = current year, years.predict = prediction year. (i.e. at year = 1999 acutal sh = X, year.predict = 2000, predicted sh = Y)
+
 #export the objects to use in predicting mean weight
 #just export 1996+ for growth rate calculation
 #export all whole time series as of 2020 
-sh.actual <- data.frame(SPA4.SHactual.Com = SPA4.SHactual.Com.lbar, SPA4.SHactual.Rec = SPA4.SHactual.Rec.lbar)
-sh.predict <- data.frame(SPA4.SHpredict.Com, SPA4.SHpredict.Rec)
 
 dump(c('sh.actual','sh.predict'),paste0(path.directory,assessmentyear,"/Assessment/Data/Growth/SPA1A1B4and5/SPA4.SHobj.",surveyyear,".R"))
 
-write.csv(cbind(SPA4.SHactual.Com.lbar, SPA4.SHactual.Rec.lbar, SPA4.SHpredict.Com, SPA4.SHpredict.Rec), paste0(path.directory,assessmentyear, "/Assessment/Data/Growth/SPA",area,"/SPA4.lbar.to",surveyyear,".csv"))
+write.csv(cbind(sh.actual, sh.predict %>% dplyr::select(!years)), paste0(path.directory,assessmentyear, "/Assessment/Data/Growth/SPA",area,"/SPA4.lbar.to",surveyyear,".csv"))
 
 # ---- SPA 4 strata_id 47 (inside 0-2 miles) SHF ----
 

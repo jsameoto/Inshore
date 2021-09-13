@@ -58,7 +58,7 @@ livefreq <- dbGetQuery(chan, query1)
 livefreq$YEAR <- as.numeric(substr(livefreq$CRUISE,3,6))
 
 # creates range of years
-years <-c(1998:2019, 2021:surveyyear) #Skipping 2020 (add as NAs later)
+years <-c(1997:2019, 2021:surveyyear) #Skipping 2020 (add as NAs later)
 
 # The Number of Tows by years by strata in 1A: 
 options(tibble.print_max = Inf)
@@ -73,13 +73,7 @@ livefreq %>% group_by(YEAR) %>% filter(STRATA_ID %in% c(39)) %>% summarize(n())
 
 # ---- CALCULATE SHF FOR EACH YEAR BY STRATA   (use yrs:1998+ for all areas) ----
 
-#livefreq <- livefreq %>% 
-#  add_row(CRUISE = NA)
-
-#livefreq$CRUISE[is.na(livefreq$CRUISE)] <- "BF2020"
-#livefreq$YEAR[is.na(livefreq$YEAR)] <- 2020
-
-livefreq <- subset(livefreq, YEAR >= 1998)
+livefreq <- subset(livefreq, YEAR >= 1997)
 
 #1. 2to8
 SPA1A.2to8.SHFmeans <- data.frame(Year=years,Mean.nums=rep(NA,length(years)))
@@ -303,10 +297,11 @@ SPA1A.SHactual.Rec <-  rbind(SPA1A.SHactual.Rec, c(2020, NA)) %>%  #ADD IN 2020 
   arrange(years)#Sort by Year
 SPA1A.SHactual.Rec
 
+sh.actual <- data.frame(SPA1A.SHactual.Com, SPA1A.SHactual.Rec %>% dplyr::select(SPA1A.SHactual.Rec))
 
 # Predicted expected mean shell height for year t+1 (eg., for year 1997 output is expected SH in 1998)
 #the value in 1997 (first value) is the predicted height for 1998
-years.predict <- 1999:(surveyyear+1)
+years.predict <- 1998:(surveyyear+1)
 
 # Commercial Size 
 SPA1A.SHpredict.Com <- rep(length(years.predict))
@@ -324,12 +319,14 @@ for(i in 1:length(years.predict)){
 
 SPA1A.SHpredict.Rec <- data.frame((t(rbind(years.predict, SPA1A.SHpredict.Rec))))
 
+sh.predict <- data.frame(SPA1A.SHactual.Com %>% dplyr::select(years), SPA1A.SHpredict.Com, SPA1A.SHpredict.Rec %>% dplyr::select(SPA1A.SHpredict.Rec)) #years = current year, years.predict = prediction year. (i.e. at year = 1999 acutal sh = X, year.predict = 2000, predicted sh = Y)
+
 
 # Export the objects to use in predicting mean weight/growth
-dump (c("SPA1A.SHactual.Com","SPA1A.SHactual.Rec","SPA1A.SHpredict.Com","SPA1A.SHpredict.Rec"), paste0(path.directory,assessmentyear, "/Assessment/Data/Growth/SPA",area,"/SPA1A",surveyyear,".SHobj.R"))
+dump (c('sh.actual','sh.predict'), paste0(path.directory,assessmentyear, "/Assessment/Data/Growth/SPA",area,"/SPA1A",surveyyear,".SHobj.R"))
 
 
-write.csv(cbind(SPA1A.SHactual.Com, SPA1A.SHactual.Rec, SPA1A.SHpredict.Com, SPA1A.SHpredict.Rec), paste0(path.directory,assessmentyear, "/Assessment/Data/Growth/SPA",area,"/SPA1A.lbar.to",surveyyear,".csv")) 
+write.csv(cbind(sh.actual, sh.predict %>% dplyr::select(!years)), paste0(path.directory,assessmentyear, "/Assessment/Data/Growth/SPA",area,"/SPA1A.lbar.to",surveyyear,".csv")) 
 
 
 #---- CALCULATE lbar BY SUBAREA TO PLOT ----

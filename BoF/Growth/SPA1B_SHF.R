@@ -516,6 +516,8 @@ SPA1B.SHactual.Rec <-  rbind(SPA1B.SHactual.Rec, c(2020, NA)) %>%  #ADD IN 2020 
   arrange(years)#Sort by Year
 SPA1B.SHactual.Rec
 
+sh.actual <- data.frame(SPA1B.SHactual.Com, SPA1B.SHactual.Rec %>% dplyr::select(SPA1B.SHactual.Rec))
+
 # PREDICTED shell height per year; where the value in 1997 (first value) is the predicted height for 1998
 # inputs from Von B files; All BoF was modelled over all years (Y:\INSHORE SCALLOP\BoF\2015\Growth\BoF_VonB.R)
 # Note, no new aging done in 2017-2019, use 2016 VonB relationship 
@@ -545,11 +547,13 @@ for (i in 1:length(years.predict)) {
 #add year and make as df 
 SPA1B.SHpredict.Rec <- data.frame((t(rbind(years.predict, SPA1B.SHpredict.Rec))))
 
+sh.predict <- data.frame(SPA1B.SHactual.Com %>% dplyr::select(years), SPA1B.SHpredict.Com, SPA1B.SHpredict.Rec %>% dplyr::select(SPA1B.SHpredict.Rec)) #years = current year, years.predict = prediction year. (i.e. at year = 1999 acutal sh = X, year.predict = 2000, predicted sh = Y)
 
 # Export the objects to use in predicting mean weight/growth
-dump (c("SPA1B.SHactual.Com","SPA1B.SHactual.Rec","SPA1B.SHpredict.Com","SPA1B.SHpredict.Rec"), paste0(path.directory,assessmentyear, "/Assessment/Data/Growth/SPA",area,"/SPA1B",surveyyear,".SHobj.R"))
+dump (c('sh.actual','sh.predict'), paste0(path.directory,assessmentyear, "/Assessment/Data/Growth/SPA",area,"/SPA1B",surveyyear,".SHobj.R"))
 
-write.csv(cbind(SPA1B.SHactual.Com, SPA1B.SHactual.Rec, SPA1B.SHpredict.Com, SPA1B.SHpredict.Rec), paste0(path.directory,assessmentyear, "/Assessment/Data/Growth/SPA",area,"/SPA1B_SHactualpredict.",surveyyear,".csv")) 
+#Note that years 2001-2003 are those that with NEW SHF script for 1B are SLIGHTLY different than historical values (slightly is ~ 1 mm ) 
+write.csv(cbind(sh.actual, sh.predict %>% dplyr::select(!years)), paste0(path.directory,assessmentyear, "/Assessment/Data/Growth/SPA",area,"/SPA1B.lbar.to",surveyyear,".csv")) 
 
 
 #---- CALCULATE lbar BY SUBAREA TO PLOT ----
