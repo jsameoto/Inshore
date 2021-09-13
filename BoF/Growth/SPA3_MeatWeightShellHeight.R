@@ -282,29 +282,25 @@ write.csv(BI.con.ts, paste0(path.directory, assessmentyear, "/Assessment/Data/Su
 BI.con.ts$STRATA <- factor(BI.con.ts$STRATA, levels=c("SMB", "InVMS", "OutVMS", "InVMS_SMB"), labels=c("St. Mary's Bay", "InsideVMS", "OutsideVMS", "InsideVMS_SMB"))
 
 condition.ts.plot <- ggplot(BI.con.ts %>% filter(STRATA %in% c("St. Mary's Bay", "InsideVMS", "OutsideVMS")),
-  aes(x=YEAR, y=CONDITION,group_by(STRATA), color=STRATA)) +  
+                            aes(x=YEAR, y=CONDITION,group_by(STRATA), color=STRATA)) +  
   geom_line(aes(linetype=STRATA)) + geom_point( size = 3, aes(shape=STRATA)) +
-  scale_linetype_manual(values=c("solid","longdash", "dashed")) + 
-  scale_shape_manual(values=c(15, 16 ,17)) + 
-  scale_color_manual(values=c("black", "red", "limegreen")) +
-  labs(title = paste("SPA",area, "annual trend in condition"))+
   xlab("Year") + ylab("Condition (meat weight, g)") + theme_bw() +
   coord_cartesian(ylim=c(5, 20)) +
   scale_y_continuous(breaks=seq(5, 20, 5))+
-  theme(legend.position = c(.01, .16),
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 8),
+        legend.position = c(.008, .20),
         legend.justification = c("left", "top"),
         legend.box.just = "left",
         legend.margin = margin(6, 6, 6, 6),
         legend.title = element_blank(),
-        panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank(),
-        text = element_text(size=18))
+        text = element_text(size=20)) +
+  guides(linetype=guide_legend(keywidth = 2.0, keyheight = 1.2))
 condition.ts.plot
 
+
 #Export plot 
-png(paste0(path.directory, assessmentyear, "/Assessment/Figures/SPA3_ConditionTimeSeries.png" ), width = 672, height = 672)
-condition.ts.plot
-dev.off()
+ggsave(filename = paste0(path.directory, assessmentyear, "/Assessment/Figures/SPA3_ConditionTimeSeries.png"), plot = condition.ts.plot, scale = 2.5, width = 9, height = 6, dpi = 300, units = "cm", limitsize = TRUE)
 
 
 
