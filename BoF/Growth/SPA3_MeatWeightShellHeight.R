@@ -279,16 +279,21 @@ write.csv(BI.con.ts, paste0(path.directory, assessmentyear, "/Assessment/Data/Su
 
 
 #... Plot Condition Time Series Figure:
-BI.con.ts$STRATA <- factor(BI.con.ts$STRATA, levels=c("SMB", "InVMS", "OutVMS", "InVMS_SMB"), labels=c("St. Mary's Bay", "InsideVMS", "OutsideVMS", "InsideVMS_SMB"))
+BI.con.ts$strata.name <- NA 
+BI.con.ts$strata.name[BI.con.ts$STRATA=="SMB"] <- "St. Mary's Bay"
+BI.con.ts$strata.name[BI.con.ts$STRATA=="InVMS"] <- "Inside VMS"
+BI.con.ts$strata.name[BI.con.ts$STRATA=="OutVMS"] <- "Outside VMS"
+BI.con.ts$strata.name[BI.con.ts$STRATA=="InVMS_SMB"] <- "Inside VMS (St. Mary's Bay)"
 
-condition.ts.plot <- ggplot(BI.con.ts %>% filter(STRATA %in% c("St. Mary's Bay", "InsideVMS", "OutsideVMS")),
-                            aes(x=YEAR, y=CONDITION,group_by(STRATA), color=STRATA)) +  
-  geom_line(aes(linetype=STRATA)) + geom_point( size = 3, aes(shape=STRATA)) +
+
+condition.ts.plot <- ggplot(BI.con.ts %>% filter(STRATA %in% c("SMB", "InVMS", "OutVMS")),
+                            aes(x=YEAR, y=CONDITION,group_by(strata.name), color=strata.name)) +  
+  geom_line(aes(linetype=strata.name)) + geom_point( size = 3, aes(shape=strata.name)) +
   xlab("Year") + ylab("Condition (meat weight, g)") + theme_bw() +
   coord_cartesian(ylim=c(5, 20)) +
   scale_y_continuous(breaks=seq(5, 20, 5))+
-  theme(axis.title = element_text(size = 12),
-        axis.text = element_text(size = 8),
+  theme(axis.title = element_text(size = 15),
+        axis.text = element_text(size = 12),
         legend.position = c(.008, .20),
         legend.justification = c("left", "top"),
         legend.box.just = "left",
