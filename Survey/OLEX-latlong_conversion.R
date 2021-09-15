@@ -11,6 +11,10 @@
 # - check number of tows and number of track logs match
 # - Can use lat long to match strata ID and SPAs to auto fill these columns.
 
+#Data entry considerations:
+#SPA6 management boundaries might not match with database - check these against field notes. These will be flagged in checks
+#Other SPAs may also have this issue.
+
 # Load libraries and functions and Strata/management shapefiles
 
 library(data.table)
@@ -51,22 +55,25 @@ SPA6B <- st_read(paste0(temp2, "/SPA6B_polygon_NAD83.shp")) %>% mutate(ET_ID = "
 SPA6C <- st_read(paste0(temp2, "/SPA6C_polygon_NAD83.shp")) %>% mutate(ET_ID = "6C")
 SPA6D <- st_read(paste0(temp2, "/SPA6D_polygon_NAD83.shp")) %>% mutate(ET_ID = "6D")
 
+VMS_out <- st_read(paste0(temp2, "/SPA6_VMSstrata_OUT_2015.shp")) %>% mutate(ET_ID = "OUT")
+VMS_in <- st_read(paste0(temp2, "/SPA6_VMSstrata_IN_2015.shp")) %>% mutate(ET_ID = "IN")
+
 SFA29 <- st_read(paste0(temp2, "/SFA29_subareas_utm19N.shp")) %>% mutate(ID = seq(1,5,1)) %>%  #TO FIX IN COPY ON GITHUB (ET_ID missing so adding it here)
   mutate(ET_ID = case_when(ID == 1 ~ "A", 
                            ID == 2 ~ "B",
                            ID == 3 ~ "C",
                            ID == 4 ~ "D",
                            ID == 5 ~ "E")) %>% 
-  select(Id = ID, ET_ID) %>% st_transform(crs = 4326)
+  dplyr::select(Id = ID, ET_ID) %>% st_transform(crs = 4326)
 
 #Because SPA6A, 6B, 6D overlap - need to cut out (#TO FIX IN COPY ON GITHUB)
 SPA6A <- rmapshaper::ms_erase(SPA6A,SPA6B)%>% 
-  select(Id, ET_ID) %>% 
+  dplyr::select(Id, ET_ID) %>% 
   st_make_valid()
 #plot(SPA6A)
 
 SPA6B <- rmapshaper::ms_erase(SPA6B,SPA6D)%>% 
-  select(Id, ET_ID) %>% 
+  dplyr::select(Id, ET_ID) %>% 
   st_make_valid()
 #plot(SPA6B)
 
@@ -117,7 +124,7 @@ zz <- cSplit(zz, "Ferdig.forenklet", sep = " ", type.convert = FALSE)
 #Occasionally a "Grønnramme" occurs where a "Garnstopp" should be or between tow tracks. 
 #RUN but Check if number of "Garnstart" == "Garnstopp"!! 
 zz <- zz %>% filter(Ferdig.forenklet_4 %in% c("Garnstart", "Garnstopp", "Grønnramme")) %>% 
-  select(Ferdig.forenklet_1, Ferdig.forenklet_2, Ferdig.forenklet_4) %>% 
+  dplyr::select(Ferdig.forenklet_1, Ferdig.forenklet_2, Ferdig.forenklet_4) %>% 
   mutate(Latitude = as.numeric(Ferdig.forenklet_1)/60) %>% 
   mutate(Longitude = as.numeric(Ferdig.forenklet_2)/60)
 
@@ -131,18 +138,18 @@ zz$Latitude.deg <- convert.dd.dddd(zz$Latitude, format = 'deg.min')
 zz$Longitude.deg <- convert.dd.dddd(zz$Longitude, format = 'deg.min')*-1
 
 zz.start <- zz %>% filter(Ferdig.forenklet_4 == "Garnstart") %>% 
-  rename(Start_lat = Latitude.deg) %>% 
-  rename(Start_long = Longitude.deg) %>% 
-  select(Start_lat, Start_long, Start_lat_dec = Latitude, Start_long_dec = Longitude)
+  dplyr::rename(Start_lat = Latitude.deg) %>% 
+  dplyr::rename(Start_long = Longitude.deg) %>% 
+  dplyr::select(Start_lat, Start_long, Start_lat_dec = Latitude, Start_long_dec = Longitude)
 
 #If required to have 3 decimal places - values copied down in fieldbook are not rounded so run to get 3 decimal places not rounded:
 zz.start$Start_lat <- trunc(zz.start$Start_lat*10^3)/10^3
 zz.start$Start_long <- trunc(zz.start$Start_long*10^3)/10^3
 
 zz.end <- zz %>% filter(Ferdig.forenklet_4 %in% c("Garnstopp")) %>% #"Grønnramme"
-  rename(End_lat = Latitude.deg) %>% 
-  rename(End_long = Longitude.deg) %>% 
-  select(End_lat, End_long, End_lat_dec = Latitude, End_long_dec = Longitude)
+  dplyr::rename(End_lat = Latitude.deg) %>% 
+  dplyr::rename(End_long = Longitude.deg) %>% 
+  dplyr::select(End_lat, End_long, End_lat_dec = Latitude, End_long_dec = Longitude)
 
 zz.end$End_lat <- trunc(zz.end$End_lat*10^3)/10^3
 zz.end$End_long <- trunc(zz.end$End_long*10^3)/10^3
@@ -153,6 +160,9 @@ coords <- cbind(zz.start, zz.end) %>%
 # Match Strata ID and SPA # to lat and long data (use start lat long)
 coords.sf <- st_as_sf(coords, coords = c("Start_long_dec", "Start_lat_dec"), crs = 4326)
 plot(coords.sf)
+
+coords.sf.end <- st_as_sf(coords, coords = c("End_long_dec", "End_lat_dec"), crs = 4326)
+#plot(coords.sf.end)
 
 strata.match <- st_intersection(strata, coords.sf)
 strata.match <- strata.match %>% dplyr::select(STRATA_ID, ID)
@@ -165,27 +175,51 @@ strata.match <- strata.match %>% dplyr::select(STRATA_ID, ID)
 spa.match <- st_intersection(SPA_BoF , coords.sf)
 spa.match <- spa.match %>% dplyr::select(ET_ID, ID)
 
-
-
 #All points should have strata, and spa matches. If there are discrepincies - check 
 
 coords.sf <- coords.sf %>% 
   st_join(spa.match, by = "ID", suffix = c("", ".y")) %>% 
   st_join(strata.match,by = "ID", suffix = c("", ".y")) %>% 
-  select(ID, Start_lat, Start_long, End_lat, End_long, ET_ID, STRATA_ID)
+  dplyr::select(ID, Start_lat, Start_long, End_lat, End_long, ET_ID, STRATA_ID)
 
 ##########################################################
 #plot to check
 
-mapview::mapview(coords.sf) +
+mapview::mapview(coords.sf) + #%>% filter(ID %in% c(96,98)) #option to filter out specific points
+  #mapview::mapview(coords.sf.end) +
   mapview::mapview(strata) +
-  mapview::mapview(SPA_all)
+  mapview::mapview(SPA_BoF)+
+  mapview::mapview(VMS_out, col.regions=list("red"))+
+  mapview::mapview(VMS_in, col.regions=list("red"))
+
+#Save for copying into tow.csv
 
 coords.sf <- coords.sf%>% 
   st_drop_geometry()
 
 write.csv(coords.sf, "Y:/INSHORE SCALLOP/Survey/OLEX tow tracks/Olex-latlong_conversion/GM2021_coords_check.csv")
 
+###########################################################################################################
+
+#check file
+tow <- read.csv("Y:/INSHORE SCALLOP/Survey/2021/data entry templates and examples/GM2021/GM2021tow_CONVERTED.csv")
+
+#Convert decimal degrees to decimal minutes seconds.
+tow$Start_Latitude <- convert.dd.dddd(tow$Start_lat, format = 'dec.deg')
+tow$Start_Longitude <- convert.dd.dddd(tow$Start_long, format = 'dec.deg')*-1
+
+tow$End_Latitude <- convert.dd.dddd(tow$End_lat, format = 'dec.deg')
+tow$End_Longitude <- convert.dd.dddd(tow$End_long, format = 'dec.deg')*-1
+
+tow.start.sf <- st_as_sf(tow, coords = c("Start_Longitude", "Start_Latitude"), crs = 4326)
+
+tow.end.sf <- st_as_sf(tow, coords = c("End_Longitude", "End_Latitude"), crs = 4326)
+
+mapview::mapview(tow.start.sf %>% filter(Oracle.tow..%in% c(2,15,24,32,37,53,61,71,73,78,82,90,93,107,110,112))) + 
+  mapview::mapview(VMS_in) +
+  mapview::mapview(VMS_out)
+
 ####################################################################################
 
 
+ 

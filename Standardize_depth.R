@@ -32,7 +32,7 @@ chan <- dbConnect(dbDriver("Oracle"),username=uid, password=pwd,'ptran')
 
 #set survey.year and cruise - *Note: requires single quotations within double quotations*
 survey.year <- "'2021'"
-cruise <- "'BI2021'"
+cruise <- "'GM2021'"
 #appendingfile_year <- "2021" # for importing the current spreadsheet to append to.
 #updatefile_year <- "2021" #For saving file
 
@@ -49,6 +49,7 @@ quer2 <- paste(
 
 #Pull data using ROracle: 
 ScallopSurv <- dbGetQuery(chan, quer2)
+
 
 #Convert lat/lon to DD:
 ScallopSurv$lat <- convert.dd.dddd(ScallopSurv$START_LAT)
@@ -70,14 +71,19 @@ olex.depth <- raster::extract(bathy, ScallopSurv.sf) #extract bathy data from Sc
 #Append depth to survey data
 ScallopSurv.dpth <-cbind(ScallopSurv.sf, olex.depth) %>% 
   mutate(FID = row_number()) %>%
-  dplyr::select(FID, CRUISE, TOW_NO, ID, START_LAT, START_LONG, DDSlat, DDSlon, RASTERVALU = olex.depth) %>% #sort to match towsdd_Std column formatting
+  dplyr::select(FID, CRUISE, TOW_NO, ID, START_LAT, START_LONG, DDSlat, DDSlon, RASTERVALU = olex.depth) %>%  #sort to match towsdd_Std column formatting
   st_set_geometry(NULL) #removes geometry
   
 #Load previous towsdd_stdDepth.csv file to append to.
 towsdd <- read.csv(paste0("Y:/INSHORE SCALLOP/StandardDepth/towsdd_StdDepth.csv"))
 
 #Appending to towsdd
-towsdd.updt <- rbind(towsdd, ScallopSurv.dpth)
+towsdd.updt <- rbind(towsdd, ScallopSurv.dpth )
+
+#Check values and plot if nessessary
+#summary(towsdd.updt)
+#mapview::mapview(ScallopSurv.sf %>% filter(CRUISE == "GM2021"))+ # %>% filter(TOW_NO %in% c(269,270,272)))
+#  mapview::mapview(bathy)
 
 #Save
 write.csv(towsdd.updt, "Y:/INSHORE SCALLOP/StandardDepth/towsdd_StdDepth.csv", row.names = FALSE)
