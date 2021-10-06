@@ -32,7 +32,7 @@ chan <- dbConnect(dbDriver("Oracle"),username=uid, password=pwd,'ptran')
 
 #set survey.year and cruise - *Note: requires single quotations within double quotations*
 survey.year <- "'2021'"
-cruise <- "'GM2021'"
+cruise <- "'SFA292021'"
 #appendingfile_year <- "2021" # for importing the current spreadsheet to append to.
 #updatefile_year <- "2021" #For saving file
 
@@ -82,8 +82,8 @@ towsdd.updt <- rbind(towsdd, ScallopSurv.dpth )
 
 #Check values and plot if nessessary
 #summary(towsdd.updt)
-#mapview::mapview(ScallopSurv.sf %>% filter(CRUISE == "GM2021"))+ # %>% filter(TOW_NO %in% c(269,270,272)))
-#  mapview::mapview(bathy)
+mapview::mapview(ScallopSurv.sf %>% filter(CRUISE == "SFA292021"))+ # %>% filter(TOW_NO %in% c(269,270,272)))
+  mapview::mapview(bathy)
 
 #Save
 write.csv(towsdd.updt, "Y:/INSHORE SCALLOP/StandardDepth/towsdd_StdDepth.csv", row.names = FALSE)
