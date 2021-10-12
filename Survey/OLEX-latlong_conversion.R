@@ -59,11 +59,11 @@ VMS_out <- st_read(paste0(temp2, "/SPA6_VMSstrata_OUT_2015.shp")) %>% mutate(ET_
 VMS_in <- st_read(paste0(temp2, "/SPA6_VMSstrata_IN_2015.shp")) %>% mutate(ET_ID = "IN")
 
 SFA29 <- st_read(paste0(temp2, "/SFA29_subareas_utm19N.shp")) %>% mutate(ID = seq(1,5,1)) %>%  #TO FIX IN COPY ON GITHUB (ET_ID missing so adding it here)
-  mutate(ET_ID = case_when(ID == 1 ~ "A", 
-                           ID == 2 ~ "B",
-                           ID == 3 ~ "C",
-                           ID == 4 ~ "D",
-                           ID == 5 ~ "E")) %>% 
+  mutate(ET_ID = case_when(ID == 1 ~ 41, 
+                           ID == 2 ~ 42,
+                           ID == 3 ~ 43,
+                           ID == 4 ~ 44,
+                           ID == 5 ~ 45)) %>% 
   dplyr::select(Id = ID, ET_ID) %>% st_transform(crs = 4326)
 
 #Because SPA6A, 6B, 6D overlap - need to cut out (#TO FIX IN COPY ON GITHUB)
@@ -93,7 +93,7 @@ temp2 <- tempfile()
 unzip(zipfile=temp, exdir=temp2)
 
 # Now read in the strata shapefile
-strata <- st_read(paste0(temp2, "/PolygonSCSTRATAINFO_rm46-26-57-31.shp"))
+strata <- st_read(paste0(temp2, "/PolygonSCSTRATAINFO_rm46-26-57.shp"))
 
 
 ###########################################################################################################
@@ -108,7 +108,7 @@ strata <- st_read(paste0(temp2, "/PolygonSCSTRATAINFO_rm46-26-57-31.shp"))
 #Garnstopp - stop
 #Brunsirkel - brown circle (points along trackline?)
 
-zz <- read.csv(gzfile('Y:/INSHORE SCALLOP/Survey/OLEX tow tracks/2021/aug172021.gz'))
+zz <- read.csv(gzfile('Y:/INSHORE SCALLOP/Survey/OLEX tow tracks/2021/sep212021.gz'))
 
 str(zz)
 zz$Ferdig.forenklet <- as.character(zz$Ferdig.forenklet)
@@ -131,7 +131,7 @@ zz <- zz %>% filter(Ferdig.forenklet_4 %in% c("Garnstart", "Garnstopp", "Grønnra
 View(zz)
 
 #Select the row where the track data starts (i.e. the first "Garnstart"). Check for "Grønnramme".
-zz <- zz[120:nrow(zz)] #[Row# where "Garnstart" first occurs: to end of data]
+zz <- zz[120:nrow(zz)] #[Row# where "Garnstart" first occurs: to end of data]  #Most likely its however many stations there are, but could be more if observations were added.
 
 #Convert decimal degrees to decimal minutes seconds.
 zz$Latitude.deg <- convert.dd.dddd(zz$Latitude, format = 'deg.min')
@@ -155,7 +155,7 @@ zz.end$End_lat <- trunc(zz.end$End_lat*10^3)/10^3
 zz.end$End_long <- trunc(zz.end$End_long*10^3)/10^3
 
 coords <- cbind(zz.start, zz.end) %>% 
-  mutate(ID = seq(1,nrow(zz.start),1))  #NOTE - ID IS NOT TOW NUMBER. it is only used to compare records when matching strata #s and SPAs.
+  mutate(ID = seq(1,nrow(zz.start),1))  #NOTE - ID IS NOT TOW NUMBER (although it could lineup). it is only used to compare records when matching strata #s and SPAs.
 
 # Match Strata ID and SPA # to lat and long data (use start lat long)
 coords.sf <- st_as_sf(coords, coords = c("Start_long_dec", "Start_lat_dec"), crs = 4326)
@@ -164,40 +164,46 @@ plot(coords.sf)
 coords.sf.end <- st_as_sf(coords, coords = c("End_long_dec", "End_lat_dec"), crs = 4326)
 #plot(coords.sf.end)
 
+#BOF - Dont run for SFA29W
 strata.match <- st_intersection(strata, coords.sf)
 strata.match <- strata.match %>% dplyr::select(STRATA_ID, ID)
-
-#SFA29W
-#strata.match <- st_intersection(SFA29W , coords.sf)
-#strata.match <- strata.match %>% dplyr::select(ET_ID, ID)
-
-#BOF SPA
+#BOF SPA - Dont run for SFA29W
 spa.match <- st_intersection(SPA_BoF , coords.sf)
 spa.match <- spa.match %>% dplyr::select(ET_ID, ID)
 
-#All points should have strata, and spa matches. If there are discrepincies - check 
-
+#BOF - All points should have strata, and spa matches. If there are discrepincies - check 
 coords.sf <- coords.sf %>% 
   st_join(spa.match, by = "ID", suffix = c("", ".y")) %>% 
   st_join(strata.match,by = "ID", suffix = c("", ".y")) %>% 
   dplyr::select(ID, Start_lat, Start_long, End_lat, End_long, ET_ID, STRATA_ID)
 
+#SFA29W
+strata.match <- st_intersection(SFA29 , coords.sf)
+strata.match <- strata.match %>% dplyr::select(ET_ID, ID)
+
+#SFA29W - All points should have strata, and spa matches. If there are discrepincies - check 
+coords.sf <- coords.sf %>% 
+  st_join(strata.match,by = "ID", suffix = c("", ".y")) %>% 
+  dplyr::select(ID, Start_lat, Start_long, End_lat, End_long, ET_ID)
+
+
 ##########################################################
 #plot to check
 
 mapview::mapview(coords.sf) + #%>% filter(ID %in% c(96,98)) #option to filter out specific points
+  mapview::mapview(SFA29)
   #mapview::mapview(coords.sf.end) +
-  mapview::mapview(strata) +
-  mapview::mapview(SPA_BoF)+
-  mapview::mapview(VMS_out, col.regions=list("red"))+
-  mapview::mapview(VMS_in, col.regions=list("red"))
+  #mapview::mapview(strata) +
+  #mapview::mapview(SPA_BoF)+
+  #mapview::mapview(VMS_out, col.regions=list("red"))+
+  #mapview::mapview(VMS_in, col.regions=list("red"))
 
 #Save for copying into tow.csv
 
 coords.sf <- coords.sf%>% 
   st_drop_geometry()
 
-write.csv(coords.sf, "Y:/INSHORE SCALLOP/Survey/OLEX tow tracks/Olex-latlong_conversion/GM2021_coords_check.csv")
+write.csv(coords.sf, "Y:/INSHORE SCALLOP/Survey/OLEX tow tracks/Olex-latlong_conversion/SFA292021_coords_check.csv")
 
 ###########################################################################################################
 
