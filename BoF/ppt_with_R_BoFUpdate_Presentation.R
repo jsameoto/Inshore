@@ -130,6 +130,6 @@ add_slide(layout="Single Figure", master="1_Office Theme") %>%
   ph_with(value = 8, ph_location_label(ph_label = "Slide Number Placeholder"), index=1) %>%   #Pg num placeholder
   ph_with(external_img(paste0(fig.dir,"ContPlot_SPA1A_PreDensity2021.png"), width = 6, height = 6), location = ph_location(ph_label = "Figure Placeholder", left = 1.75, top = 0.82), use_loc_size = FALSE)
 
-##Before running - enusre the powerpoint is not open - Rstudio crashes if you try to write over it when it is open.               
+##Before running - ensure the powerpoint is not open - Rstudio crashes if you try to write over it when it is open.               
 print(newpres, target = "Y:/INSHORE SCALLOP/BoF/2021/Assessment/Documents/Presentations/Example_Officerbuilt_InshoreUpdate_presentation.pptx")   
 
