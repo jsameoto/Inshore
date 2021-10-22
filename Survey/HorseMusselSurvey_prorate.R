@@ -50,6 +50,10 @@ tows.dat <- tows.dat %>%
 
 tows.dat$NUM_LINED_FREQ <- as.numeric(tows.dat$NUM_LINED_FREQ)
 
+
+# LIVE --------------------------------------------------------------------
+
+
 # Load live horse mussel data for all years and areas (2018-present) ------------------------------------------
 
 #SPA1A1B4and5
@@ -88,12 +92,6 @@ hm.live[, 4:43][is.na(hm.live[, 4:43])] <- 0
 #replace all NAs in PRORATE.FACTOR with 1
 hm.live$PRORATE.FACTOR[is.na(hm.live$PRORATE.FACTOR)] <- 1
 
-#Check sample methods
-nrow(hm.live %>% filter(SAMPLE.METHOD == 0))
-hm.live %>% filter(SAMPLE.METHOD == 1)
-hm.live %>% filter(SAMPLE.METHOD == 2)
-hm.live %>% filter(SAMPLE.METHOD == 3)
-
 
 # Prorating ---------------------------------------------------------------
 
@@ -104,7 +102,13 @@ hm.live %>% filter(SAMPLE.METHOD == 3)
 # 3 --- Subsampled by drag (1 lined drag)
 # NA --- Not counted or measured, but noted (occurs in GM2018 for clappers) -> IGNORE
 
-#Check tows with number of lined drags = 1 and subsampled by HMMD - none (would have to adjust prorate factor if this happend)
+#Check sample methods
+nrow(hm.live %>% filter(SAMPLE.METHOD == 0))
+nrow(hm.live %>% filter(SAMPLE.METHOD == 1))
+nrow(hm.live %>% filter(SAMPLE.METHOD == 2))
+nrow(hm.live %>% filter(SAMPLE.METHOD == 3))
+
+#Check tows with number of lined drags = 1 and subsampled by HMMD - none (would have to adjust prorate factor if this happened)
 nrow(hm.live %>% filter(NUM_LINED_FREQ == 1) %>% filter(SAMPLE.METHOD == 1))
 nrow(hm.live %>% filter(NUM_LINED_FREQ == 1))
 
@@ -112,7 +116,7 @@ nrow(hm.live %>% filter(NUM_LINED_FREQ == 1))
 hm.live <- hm.live %>% #filter(!is.na(SAMPLE.METHOD)) %>%  #remove samples with method NA (removed a 1 samples from 2018)
   mutate(PRORATE.FACTOR = if_else(NUM_LINED_FREQ == 1, 2, PRORATE.FACTOR)) #If the number of lined gear sampled is 1, set prorate factor to 2 (this replaces the prorate factor that is already entered during data entry as 2 because only one lined gear was sampled), otherwise, the prorate factor remains the same as it was entered during data entry.
 
-#How many tows with horse mussels were prorated beacause a lined drag came loose?
+#How many tows with horse mussels were prorated because a lined drag came loose?
 nrow(hm.live %>% filter(PRORATE.FACTOR == 2 & TOTAL > 0 & SAMPLE.METHOD == 0))
 
 #PRORATE to 800m tow length
@@ -125,19 +129,17 @@ for(i in 1:nrow(hm.live)) {
 hm.live <- hm.live %>%
   mutate(START_LAT = convert.dd.dddd(START_LAT)) %>% #Convert to DD
   mutate(START_LONG = convert.dd.dddd(START_LONG)) %>% #Convert to DD
+  mutate(END_LAT = convert.dd.dddd(END_LAT)) %>% #Convert to DD
+  mutate(END_LONG = convert.dd.dddd(END_LONG)) %>% #Convert to DD
   mutate(across(BIN_ID_0:BIN_ID_180, round, 2)) %>%
   mutate(PRORATED.TOTAL = dplyr::select(., BIN_ID_0:BIN_ID_190) %>% rowSums(na.rm = TRUE) %>% round(0)) %>%
-  mutate(PRESENT.ABSENT = if_else(TOTAL >= 1, 1, 0)) # Absent == 0, Present = 1
-
+  mutate(PRESENT.ABSENT = if_else(TOTAL >= 1, 1, 0)) %>% # Absent == 0, Present = 1
+  dplyr::select(!c(TOTAL, TOW_LEN, NUM_LINED_FREQ))
 #How many tows had presence of horse mussel?
 nrow(hm.live %>% filter(PRESENT.ABSENT == 1))
 
 #How many samples were prorated?
 nrow(hm.live %>% filter(PRORATE == "y"))
-#nrow(hm.live %>% filter(SAMPLE.METHOD == 0))
-#hm.live %>% filter(SAMPLE.METHOD == 1)
-#hm.live %>% filter(SAMPLE.METHOD == 2)
-#hm.live %>% filter(SAMPLE.METHOD == 3)
 
 #Saves files by cruise
 for(i in unique(hm.live$CRUISE)){
@@ -146,7 +148,7 @@ for(i in unique(hm.live$CRUISE)){
 
 # Spatial plot - live density --------------------------------------------------
 
-com.contours <- contour.gen(hm.live %>% dplyr::select(ID, lon, lat, PRORATED.TOTAL),
+com.contours <- contour.gen(hm.live %>% dplyr::select(ID, START_LONG, START_LAT, PRORATED.TOTAL),
                             ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
 
 lvls <- c(1,5,10,50,100,200,300,400,500) #levels to be color coded
@@ -174,7 +176,7 @@ p <- pecjector(area = "inshore",repo ='github',c_sys="ll", gis.repo = 'github', 
                add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>%
                                    mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 p + #Plot survey data and format figure.
-  geom_spatial_point(data = hm.live, aes(lon, lat), size = 0.5) +
+  geom_spatial_point(data = hm.live, aes(START_LONG, START_LAT), size = 0.5) +
   labs(title = paste(survey.year, "", "Live M.modiolus Density"), x = "Longitude", y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   coord_sf(xlim = c(-67.50,-64.30), ylim = c(43.10,45.80), expand = FALSE)+
@@ -187,6 +189,10 @@ p + #Plot survey data and format figure.
         legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.7)), #Legend bkg colour and transparency
         legend.box.margin = margin(6, 8, 6, 8)) #Legend bkg margin (top, right, bottom, left)
 
+
+
+
+# DEAD --------------------------------------------------------------------
 
 # Load dead horse mussel data for all years and areas (2018-present) ------------------------------------------
 
@@ -226,13 +232,6 @@ hm.dead[, 4:43][is.na(hm.dead[, 4:43])] <- 0
 #replace all NAs in PRORATE.FACTOR with 1
 hm.dead$PRORATE.FACTOR[is.na(hm.dead$PRORATE.FACTOR)] <- 1
 
-#Check sample methods
-nrow(hm.dead %>% filter(SAMPLE.METHOD == 0))
-hm.dead %>% filter(SAMPLE.METHOD == 1)
-hm.dead %>% filter(SAMPLE.METHOD == 2)
-hm.dead %>% filter(SAMPLE.METHOD == 3)
-
-
 # Prorating ---------------------------------------------------------------
 
 #SAMPLE.METHOD
@@ -242,7 +241,13 @@ hm.dead %>% filter(SAMPLE.METHOD == 3)
 # 3 --- Subsampled by drag (1 lined drag)
 # NA --- Not counted or measured, but noted (occurs in GM2018 for clappers) -> IGNORE
 
-#Check tows with number of lined drags = 1 and subsampled by HMMD - none (would have to adjust prorate factor if this happend)
+#Check sample methods
+nrow(hm.dead %>% filter(SAMPLE.METHOD == 0))
+nrow(hm.dead %>% filter(SAMPLE.METHOD == 1))
+nrow(hm.dead %>% filter(SAMPLE.METHOD == 2))
+nrow(hm.dead %>% filter(SAMPLE.METHOD == 3))
+
+#Check tows with number of lined drags = 1 and subsampled by HMMD - none (would have to adjust prorate factor if this happened)
 nrow(hm.dead %>% filter(NUM_LINED_FREQ == 1) %>% filter(SAMPLE.METHOD == 1))
 nrow(hm.dead %>% filter(NUM_LINED_FREQ == 1))
 
@@ -250,7 +255,7 @@ nrow(hm.dead %>% filter(NUM_LINED_FREQ == 1))
 hm.dead <- hm.dead %>% #filter(!is.na(SAMPLE.METHOD)) %>%  #remove samples with method NA (removed a 1 samples from 2018)
   mutate(PRORATE.FACTOR = if_else(NUM_LINED_FREQ == 1, 2, PRORATE.FACTOR)) #If the number of lined gear sampled is 1, set prorate factor to 2 (this replaces the prorate factor that is already entered during data entry as 2 because only one lined gear was sampled), otherwise, the prorate factor remains the same as it was entered during data entry.
 
-#How many tows with horse mussels were prorated beacause a lined drag came loose?
+#How many tows with horse mussels were prorated because a lined drag came loose?
 nrow(hm.dead %>% filter(PRORATE.FACTOR == 2 & TOTAL > 0 & SAMPLE.METHOD == 0))
 
 #PRORATE to 800m tow length
@@ -263,10 +268,12 @@ for(i in 1:nrow(hm.dead)) {
 hm.dead <- hm.dead %>%
   mutate(START_LAT = convert.dd.dddd(START_LAT)) %>% #Convert to DD
   mutate(START_LONG = convert.dd.dddd(START_LONG)) %>% #Convert to DD
+  mutate(END_LAT = convert.dd.dddd(END_LAT)) %>% #Convert to DD
+  mutate(END_LONG = convert.dd.dddd(END_LONG)) %>% #Convert to DD
   mutate(across(BIN_ID_0:BIN_ID_180, round, 2)) %>%
   mutate(PRORATED.TOTAL = dplyr::select(., BIN_ID_0:BIN_ID_190) %>% rowSums(na.rm = TRUE) %>% round(0)) %>%
-  mutate(PRESENT.ABSENT = if_else(TOTAL >= 1, 1, 0)) # Absent == 0, Present = 1
-
+  mutate(PRESENT.ABSENT = if_else(TOTAL >= 1, 1, 0)) %>% # Absent == 0, Present = 1
+  dplyr::select(!c(TOTAL, TOW_LEN, NUM_LINED_FREQ))
 #How many tows had presence of horse mussel?
 nrow(hm.dead %>% filter(PRESENT.ABSENT == 1))
 
@@ -285,7 +292,7 @@ for(i in unique(hm.dead$CRUISE)){
 
 # Spatial plot - dead density --------------------------------------------------
 
-com.contours <- contour.gen(hm.dead %>% dplyr::select(ID, lon, lat, PRORATED.TOTAL),
+com.contours <- contour.gen(hm.dead %>% dplyr::select(ID, START_LONG, START_LAT, PRORATED.TOTAL),
                             ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
 
 lvls <- c(1,5,10,50,100,200,300,400,500) #levels to be color coded
@@ -313,7 +320,7 @@ p <- pecjector(area = "inshore",repo ='github',c_sys="ll", gis.repo = 'github', 
                add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>%
                                    mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 p + #Plot survey data and format figure.
-  geom_spatial_point(data = hm.dead, aes(lon, lat), size = 0.5) +
+  geom_spatial_point(data = hm.dead, aes(START_LONG, START_LAT), size = 0.5) +
   labs(title = paste(survey.year, "", "Dead M.modiolus Density"), x = "Longitude", y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   coord_sf(xlim = c(-67.50,-64.30), ylim = c(43.10,45.80), expand = FALSE)+
