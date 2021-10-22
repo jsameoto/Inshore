@@ -145,12 +145,13 @@ nrow(hm.live %>% filter(SAMPLE.METHOD == 3))
 #Check tows where number of lined drags = 1 and subsampled by HMMD - should result in none (would have to adjust prorate factor if this happened)
 nrow(hm.live %>% filter(NUM_LINED_FREQ == 1) %>% filter(SAMPLE.METHOD == 1)) # 0
 nrow(hm.live %>% filter(NUM_LINED_FREQ == 1)) #21 tows have only one lined drag sampled.
+
      
 #HM are sampled from lined gear only (2 lined drags) - If lined drag detaches, treat sample as subsampled by drag.
 hm.live <- hm.live %>% #filter(!is.na(SAMPLE.METHOD)) %>%  #remove samples with method NA (removed a 1 samples from 2018)
   mutate(PRORATE.FACTOR = if_else(NUM_LINED_FREQ == 1, 2, PRORATE.FACTOR)) #If the number of lined gear sampled is 1, set prorate factor to 2 (this replaces the prorate factor that is already entered during data entry as 2 because only one lined gear was sampled), otherwise, the prorate factor remains the same as it was entered during data entry.
 
-#How many tows with horse mussels were prorated because a lined drag came loose?
+#How many tows with horse mussels were subsampled because a lined drag came loose?
 nrow(hm.live %>% filter(PRORATE.FACTOR == 2 & TOTAL > 0 & SAMPLE.METHOD == 0))
 
 #PRORATE to 800m tow length
@@ -173,8 +174,9 @@ hm.live <- hm.live %>%
 #How many tows had presence of horse mussel?
 nrow(hm.live %>% filter(PRESENT.ABSENT == 1))
 
-#How many samples were prorated?
+#How many samples were subsampled?
 nrow(hm.live %>% filter(PRORATE == "y"))
+nrow(hm.live %>% filter(PRORATE.FACTOR >= 2))
 
 #Saves files by cruise
 for(i in unique(hm.live$CRUISE)){
