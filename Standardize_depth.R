@@ -38,7 +38,7 @@ cruise <- "'SFA292021'"
 
 #Db Query:
 quer2 <- paste(
-  "SELECT CRUISE, TOW_NO, CRUISE||'.'||TOW_NO AS ID, start_lat, start_long 			                ",
+  "SELECT CRUISE, TOW_NO, CRUISE||'.'||TOW_NO AS ID, start_lat, start_long, end_lat, end_long 			                ",
   "FROM SCALLSUR.SCTOWS			",
   "WHERE to_char(TOW_DATE,'yyyy')=",
   survey.year,
@@ -57,6 +57,14 @@ ScallopSurv$lon <- convert.dd.dddd(ScallopSurv$START_LONG)
 #duplicate lat lon columns: (To keep consitent with previous records)
 ScallopSurv$DDSlat <- ScallopSurv$lat
 ScallopSurv$DDSlon <- ScallopSurv$lon 
+
+#added Jan 2020 
+#calculate mid point assuming staright line distance 
+# This makes sure that ALL the data have the lat/long calculated in the same way
+#ScallopSurv$mid.lon <- with(ScallopSurv,apply(cbind(DDElon,DDSlon),1,mean))
+#ScallopSurv$mid.lat <- with(ScallopSurv,apply(cbind(DDElat,DDSlat),1,mean))
+#ScallopSurv$mid.lat <- convert.dd.dddd(ScallopSurv$mid.lat)
+#ScallopSurv$mid.lon <- convert.dd.dddd(ScallopSurv$mid.lon)
 
 #Convert dataframe to sf:
 ScallopSurv.sf <- st_as_sf(ScallopSurv, coords = c("lon", "lat"), crs = 4326)
