@@ -7,7 +7,7 @@ require(lubridate)
 library(magrittr)
 #require(s2)
 
-#HM data entry files were copied over from Y:\INSHORE SCALLOP\Survey\YYYY\data entry templates and examples for 2018 2019, and 2021.
+#HM data entry files were copied over from Y:\INSHORE SCALLOP\Survey\YYYY\data entry templates and examples for 2018 2019, and 2021 and column modifications and data corrections were made to the copies (**These changes were not made on original files!!**).
 
 #NOTE: Subsampling and volume recording methods are different for 2018 and 2019/2021. No subsampling occured in 2019 and in 2021, subsamples were done by drag (lined).
 
@@ -16,7 +16,7 @@ library(magrittr)
 # 1 --- Counts and Horse Mussel Measuring Device (HMMD) volume (i.e. bucket vol.) recorded, but no SHF (2 lined drags)
 # 2 --- Subsampled by HMMD (2 lined drags)
 # 3 --- Subsampled by drag (1 lined drag)
-# NA --- Not counted or measured, but noted (occurs in GM2018 for clappers)
+# NA --- Not counted or measured, but noted (occurs once in GM2018 for clappers)
 
 
 #ROracle - credentials
@@ -115,68 +115,158 @@ colnames(hm.live) <- str_replace(colnames(hm.live), "X", "BIN_ID_") #Rename bin 
 #Check if number of sctows records = number of horse mussel records
 nrow(tows.dat) == nrow(hm.live)
 
+#Check for duplicate IDs
+n_occur <- data.frame(table(hm.live$ID))
+n_occur[n_occur$Freq > 1,] #no dups
+
+#Check IDs match
+dim(left_join(hm.live, tows.dat, by = "ID"))[1] == dim(inner_join(hm.live, tows.dat, by = "ID"))[1]
+
+
+#Now Join the tow data with horse mussel live data
 hm.live <- left_join(hm.live, tows.dat, by = "ID") %>% 
   dplyr::select(!c(CRUISE.y, COMMENTS, TOW.y, TOW_TYPE_ID)) %>% #remove columns
   rename(CRUISE = CRUISE.x) %>% 
   rename(TOW = TOW.x)
 
-#replace all NAs in bin and total columns with 0s
-hm.live[, 4:43][is.na(hm.live[, 4:43])] <- 0
+#replace all NAs in bin and total columns with 0s UNLESS SAMPLE.METHOD == 1, where SHF were not recorded - Keep NAs.
+hm.live <- hm.live %>%
+  mutate(across(BIN_ID_0:TOTAL, ~if_else(SAMPLE.METHOD != 1, replace_na(.,0), NULL)))
 
-#replace all NAs in PRORATE.FACTOR with 1
+#During data entry, PRORATE.FACTOR is only entered if catch was subsampled (i.e. from 2 (sampleable) lined drags, only one was sampled/or catch was subsampled using a Horse mussel measuring device (HMMD). *Note prorate factor is NOT entered if gear becomes detached and is not samplable.
+
+#replace all NAs in PRORATE.FACTOR with 1.
 hm.live$PRORATE.FACTOR[is.na(hm.live$PRORATE.FACTOR)] <- 1
 
+#Save as seperate object (raw) to compare to prorated copy.
+hm.raw <- hm.live
 
 # Prorating ---------------------------------------------------------------
 
 #SAMPLE.METHOD
 # 0 --- No subsample (2 lined drags)
-# 1 --- Counts and Horse Mussel Measuring Device (HMMD) volume (i.e. bucket vol.) recorded, but no SHF (2 lined drags)
+# 1 --- Counts recorded, but no SHF (2 lined drags) (i.e. presence and abundance). Sometimes Horse Mussel Measuring Device (HMMD) volume is recorded (i.e. bucket vol.)
 # 2 --- Subsampled by HMMD (2 lined drags)
 # 3 --- Subsampled by drag (1 lined drag)
 # NA --- Not counted or measured, but noted (occurs once in GM2018 for clappers - FEW clappers)
 
 #Check sample methods
-nrow(hm.live %>% filter(SAMPLE.METHOD == 0))
-nrow(hm.live %>% filter(SAMPLE.METHOD == 1))
-nrow(hm.live %>% filter(SAMPLE.METHOD == 2))
-nrow(hm.live %>% filter(SAMPLE.METHOD == 3))
+hm.live %>% filter(SAMPLE.METHOD == 0)
+hm.live %>% filter(SAMPLE.METHOD == 1)
+hm.live %>% filter(SAMPLE.METHOD == 2)
+hm.live %>% filter(SAMPLE.METHOD == 3)
+hm.live %>% filter(is.na(SAMPLE.METHOD))
 
 #Check tows where number of lined drags = 1 and subsampled by HMMD - should result in none (would have to adjust prorate factor if this happened)
 nrow(hm.live %>% filter(NUM_LINED_FREQ == 1) %>% filter(SAMPLE.METHOD == 1)) # 0
 nrow(hm.live %>% filter(NUM_LINED_FREQ == 1)) #21 tows have only one lined drag sampled.
 
-     
-#HM are sampled from lined gear only (2 lined drags) - If lined drag detaches, treat sample as subsampled by drag.
-hm.live <- hm.live %>% #filter(!is.na(SAMPLE.METHOD)) %>%  #remove samples with method NA (removed a 1 samples from 2018)
-  mutate(PRORATE.FACTOR = if_else(NUM_LINED_FREQ == 1, 2, PRORATE.FACTOR)) #If the number of lined gear sampled is 1, set prorate factor to 2 (this replaces the prorate factor that is already entered during data entry as 2 because only one lined gear was sampled), otherwise, the prorate factor remains the same as it was entered during data entry.
-
 #How many tows with horse mussels were subsampled because a lined drag came loose?
-nrow(hm.live %>% filter(PRORATE.FACTOR == 2 & TOTAL > 0 & SAMPLE.METHOD == 0))
+hm.live %>% filter(NUM_LINED_FREQ == 1 & TOTAL > 0)
 
-#PRORATE to 800m tow length
+
+#Standardized Total Abundance - Prorating for subsample of gear (2 lined drags), prorating for amount of gear sampled (NUM_LINED_FREQ - either 1 or 2), and standardizing to 800m tow length. This assumes that the individual drag width is equivelent for all drags (assumes gear width of 4ft). 
+hm.live$ABUND.STD <- (hm.live$TOTAL*hm.live$PRORATE.FACTOR)*(2/hm.live$NUM_LINED_FREQ)*(800/(hm.live$TOW_LEN))
+
+##SHF - Prorating for subsample of gear (2 lined drags), prorating for amount of gear sampled (NUM_LINED_FREQ - either 1 or 2), and standardizing to 800m tow length. This assumes that the individual drag width is equivelent for all drags (assumes gear width of 4ft). 
 for(i in 1:nrow(hm.live)) {
   for(j in 4:42){
-    hm.live[i,j] <- (hm.live[i,j]*hm.live$PRORATE.FACTOR[i])*(800/(hm.live$TOW_LEN[i]))
+    hm.live[i,j] <- (hm.live[i,j]*hm.live$PRORATE.FACTOR[i])*(2/hm.live$NUM_LINED_FREQ[i])*(800/(hm.live$TOW_LEN[i]))
   }
 }
 
+#Tidy up lat and long coords, add presence/absence etc.
 hm.live <- hm.live %>%
+  mutate(PRESENT.ABSENT = if_else(TOTAL >= 1, 1, 0)) %>% # Absent == 0, Present = 1
   mutate(START_LAT = convert.dd.dddd(START_LAT)) %>% #Convert to DD
   mutate(START_LONG = convert.dd.dddd(START_LONG)) %>% #Convert to DD
   mutate(END_LAT = convert.dd.dddd(END_LAT)) %>% #Convert to DD
   mutate(END_LONG = convert.dd.dddd(END_LONG)) %>% #Convert to DD
-  mutate(across(BIN_ID_0:BIN_ID_180, round, 2)) %>%
-  mutate(PRORATED.TOTAL = dplyr::select(., BIN_ID_0:BIN_ID_190) %>% rowSums(na.rm = TRUE) %>% round(0)) %>%
-  mutate(PRESENT.ABSENT = if_else(TOTAL >= 1, 1, 0)) %>% # Absent == 0, Present = 1
-  dplyr::select(!c(TOTAL, TOW_LEN, NUM_LINED_FREQ))
+  mutate(MID_LAT = apply(cbind(END_LAT, START_LAT),1,mean)) %>% #Find midpoint lat
+  mutate(MID_LONG = apply(cbind(END_LONG, START_LONG),1,mean)) %>% #Find midpoint long
+  mutate(PRORATED.TOTAL = dplyr::select(., BIN_ID_0:BIN_ID_190) %>% rowSums(na.rm = TRUE)) #Adding all prorated shell height frequencies to check against ABUND.STD
+  
+
+# check against PRORATE TOTAL (total prorated shell height frequencies) and ABUND.STD. 
+
+#Histogram plot of difference between PRORATE TOTAL and ABUND.STD. Exclude SAMPLE.METHOD == 1 (No SHF, only abundance)
+ggplot(hm.live %>% filter(!SAMPLE.METHOD == 1), aes(x = PRORATED.TOTAL - ABUND.STD)) +
+  geom_histogram()
+
+ggplot(hm.live, aes(x = PRORATED.TOTAL - ABUND.STD)) +
+  geom_histogram()
+
+head(hm.live[hm.live$ABUND.STD > 0,]) 
 
 #How many tows had presence of horse mussel?
 nrow(hm.live %>% filter(PRESENT.ABSENT == 1))
 
-#How many samples were subsampled?
+#was catch subsampled?
 nrow(hm.live %>% filter(PRORATE == "y"))
-nrow(hm.live %>% filter(PRORATE.FACTOR >= 2))
+
+hm.live %>% filter(PRORATE.FACTOR >= 2)
+
+
+# CHECK SPATIAL POINTS ----------------------------------------------------
+#Check by Cruise and year
+#NOTE - Only start and end points are recorded in sctows - some tows may appear shorter than others - this could be due to curved track lines during tows. Midpoints are caluclated assuming straight lines between start and end points.
+
+year <- 2019
+
+#CHECK BF
+Cruise <- paste0("BF", year) #BI, GM or SFA29
+
+hm.start.sf <-  st_as_sf(hm.live, coords = c("START_LONG", "START_LAT"), crs = 4326)
+hm.mid.sf <- st_as_sf(hm.live, coords = c("MID_LONG", "MID_LAT"), crs = 4326)
+hm.end.sf <- st_as_sf(hm.live, coords = c("END_LONG", "END_LAT"), crs = 4326)
+
+
+mapview::mapview(hm.start.sf %>% filter(CRUISE %in% Cruise), col.regions = "green") +
+  mapview::mapview(hm.mid.sf %>% filter(CRUISE %in% Cruise), col.regions = "orange") +
+  mapview::mapview(hm.end.sf %>% filter(CRUISE %in% Cruise), col.regions = "blue")
+
+#CHECK GM
+Cruise <- paste0("GM", year) #BI, GM or SFA29
+
+hm.start.sf <-  st_as_sf(hm.live, coords = c("START_LONG", "START_LAT"), crs = 4326)
+hm.mid.sf <- st_as_sf(hm.live, coords = c("MID_LONG", "MID_LAT"), crs = 4326)
+hm.end.sf <- st_as_sf(hm.live, coords = c("END_LONG", "END_LAT"), crs = 4326)
+
+
+mapview::mapview(hm.start.sf %>% filter(CRUISE %in% Cruise), col.regions = "green") +
+  mapview::mapview(hm.mid.sf %>% filter(CRUISE %in% Cruise), col.regions = "orange") +
+  mapview::mapview(hm.end.sf %>% filter(CRUISE %in% Cruise), col.regions = "blue")
+
+#CHECK BI
+Cruise <- paste0("BI", year) #BI, GM or SFA29
+
+hm.start.sf <-  st_as_sf(hm.live, coords = c("START_LONG", "START_LAT"), crs = 4326)
+hm.mid.sf <- st_as_sf(hm.live, coords = c("MID_LONG", "MID_LAT"), crs = 4326)
+hm.end.sf <- st_as_sf(hm.live, coords = c("END_LONG", "END_LAT"), crs = 4326)
+
+
+mapview::mapview(hm.start.sf %>% filter(CRUISE %in% Cruise), col.regions = "green") +
+  mapview::mapview(hm.mid.sf %>% filter(CRUISE %in% Cruise), col.regions = "orange") +
+  mapview::mapview(hm.end.sf %>% filter(CRUISE %in% Cruise), col.regions = "blue")
+
+#CHECK SFA29W
+Cruise <- paste0("SFA29", year) #BI, GM or SFA29
+
+hm.start.sf <-  st_as_sf(hm.live, coords = c("START_LONG", "START_LAT"), crs = 4326)
+hm.mid.sf <- st_as_sf(hm.live, coords = c("MID_LONG", "MID_LAT"), crs = 4326)
+hm.end.sf <- st_as_sf(hm.live, coords = c("END_LONG", "END_LAT"), crs = 4326)
+
+
+mapview::mapview(hm.start.sf %>% filter(CRUISE %in% Cruise), col.regions = "green") +
+  mapview::mapview(hm.mid.sf %>% filter(CRUISE %in% Cruise), col.regions = "orange") +
+  mapview::mapview(hm.end.sf %>% filter(CRUISE %in% Cruise), col.regions = "blue")
+
+hm.live <- hm.live %>%
+mutate(across(BIN_ID_0:BIN_ID_190, round, 6)) %>% #Round to 6 sigfigs
+dplyr::select(!c(TOTAL, TOW_LEN, NUM_LINED_FREQ)) #remove columns
+
+#Save out data for loading later:
+saveRDS(hm.live, file = paste0(dir,"Prorated/horsemussellive_prorated.rds"))
 
 #Saves files by cruise
 for(i in unique(hm.live$CRUISE)){
@@ -185,7 +275,7 @@ for(i in unique(hm.live$CRUISE)){
 
 # Spatial plot - live density --------------------------------------------------
 
-com.contours <- contour.gen(hm.live %>% dplyr::select(ID, START_LONG, START_LAT, PRORATED.TOTAL),
+com.contours <- contour.gen(hm.live %>% dplyr::select(ID, MID_LONG, MID_LAT, PRORATED.TOTAL),
                             ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
 
 lvls <- c(1,5,10,50,100,200,300,400,500) #levels to be color coded
@@ -401,7 +491,86 @@ p + #Plot survey data and format figure.
 
 ggsave(filename = paste0(dir,'ContPlot_DeadHM_Density 2018-',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
-# Horse mussel video data -------------------------------------------------
+
+
+# CHECKING PRORATE FUNCTION ON LINED SCALLOP DATA --------------------------------------------
+
+# Read in lined Tow data from database - use e.g. BF2021 ------------------------------------------
+
+#ROracle
+chan <- dbConnect(dbDriver("Oracle"),username=uid, password=pwd,'ptran')
+
+quer2 <- paste(
+  "SELECT * 			                ",
+  "FROM scallsur.sclinedlive_std s			",
+  "WHERE CRUISE = 'BF2021'",
+  sep=""
+)
+
+#Loading live lined scallop from database
+scall.lined <- dbGetQuery(chan, quer2)
+
+scall.lined <- scall.lined %>%
+  unite(ID, c("CRUISE", "TOW_NO"), sep = ".", remove = FALSE)
+
+scall.lined <- scall.lined %>% 
+  mutate(TOTAL = dplyr::select(., BIN_ID_0:BIN_ID_195) %>% rowSums(na.rm = TRUE)) %>% 
+  arrange(TOW_NO)
+
+#Read in raw data shf file for proration and comparison
+raw.scal.dat <- read.csv("Y:/INSHORE SCALLOP/Survey/2021/data entry templates and examples/BF2021/BF2021_dhf.csv")
+
+#format recruit sizes
+lined.dat.rec <- raw.scal.dat %>%
+  filter(GEAR == 1 & c == 0)
+colnames(lined.dat.rec) <- str_replace(colnames(lined.dat.rec), "X", "BIN_ID_")
+
+#format Commercial sizes
+lined.dat.com <- raw.scal.dat %>%
+  filter(GEAR == 1) %>% 
+  filter(c == 1)
+names(lined.dat.com)[5:24] <- as.character(paste0("BIN_ID_", seq(100, 195, by = 5))) #Rename bin headers
+
+#Combine both commercial and recruit
+lined.dat <- cbind(lined.dat.com %>% dplyr::select(CRUISE, TOW, GEAR, DEPTH), lined.dat.rec %>% dplyr::select(., BIN_ID_0:BIN_ID_95), lined.dat.com %>% dplyr::select(., BIN_ID_100:BIN_ID_195)) %>% 
+  unite(ID, c("CRUISE", "TOW"), sep = ".", remove = FALSE)
+
+lined.dat <- left_join(lined.dat, BF.2021.tows, by = "ID") %>% 
+  dplyr::select(!c(CRUISE.y, TOW.y, TOW_TYPE_ID)) %>% #remove columns
+  rename(CRUISE = CRUISE.x) %>% 
+  rename(TOW = TOW.x)
+
+#replace all NAs in bin and total columns with 0s.
+lined.dat <- lined.dat %>%
+  mutate(across(BIN_ID_0:BIN_ID_195, ~replace_na(.,0)))
+
+
+for(i in 1:nrow(lined.dat)) {
+  for(j in 6:45){
+    lined.dat[i,j] <- (lined.dat[i,j]*(2/lined.dat$NUM_LINED_FREQ[i])*(800/(lined.dat$TOW_LEN[i])))*4.5 #multiply to get 9 drags
+  }
+}
+
+lined.dat <- lined.dat %>%
+  mutate(PRORATED.TOTAL = dplyr::select(., BIN_ID_0:BIN_ID_195) %>% rowSums(na.rm = TRUE))
+
+#Look at total from database and total (now prorated) from raw data.
+compare <- data.frame(cbind(lined.dat$PRORATED.TOTAL, scall.lined$TOTAL))
+
+compare <- compare %>% 
+  mutate(Prop = X1/X2)
+
+#Now compare database shf to prorated raw shf.
+#Histogram plot of  database shf and prorated raw shf
+ggplot(lined.dat, aes(x = PRORATED.TOTAL)) +
+  geom_histogram()
+
+ggplot(scall.lined , aes(x = TOTAL)) +
+  geom_histogram()
+
+
+
+# LIVE- CAMERA DATA  -------------------------------------------------
 
 #Tow lengths
 log.2017 <- read.csv("Z:/Projects/BoF_Mapping_Project/Data/Survey_Data/Logs/Camera_GPS_Logs/2017_camera_logfiles/Comb_2017_logfiles.csv")
@@ -500,7 +669,7 @@ hm.tot <- hm.dat %>%
 
 hm.camera <- merge(hm.tot, log.dat, by = "Station", all = TRUE)
 hm.camera <- merge(hm.camera, image.area, by = "Station", all = TRUE) %>% 
-  mutate(totHM = totHM*(800*0.5926667*2/(len_m)))
+  mutate(totHM = totHM/(len_m))
 
 hm.camera$totHM[is.na(hm.camera$totHM)] <- 0 #convert NAs to 0
 
