@@ -11,7 +11,7 @@ options(stringsAsFactors = FALSE)
 #uid <- un.raperj
 #pwd <- un.raperj
 uid <- keyring::key_list("Oracle")[1,2]
-pwd <- keyring::key_get("Oracle", "WILSONBR")
+pwd <- keyring::key_get("Oracle", uid)
 
 #### Import Source functions####
 
