@@ -27,7 +27,7 @@ spa6.LRP <- 6.2
 spa6.removals <- 150 #tonnes of removals used in the Projection 
 
 # Load Functions
-funcs <- "https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Survey_and_OSAC/convert.dd.dddd.r"
+funcs <- "https://raw.githubusercontent.com/Mar-scal/Inshore/master/BoF/HarvestScenTabFunc.R"
 dir <- getwd()
 for(fun in funcs) 
 {
@@ -39,19 +39,19 @@ for(fun in funcs)
 
 # Load model results ------------------------------------------------------
 
-#direct <- paste0("Y:/INSHORE SCALLOP/BoF/", assessment.year,"/Assessment/")
+direct <- paste0("Y:/INSHORE SCALLOP/BoF/", assessment.year,"/Assessment/")
 
-#loadEnvironment <- function(RData, env = new.env()){
-#  load(RData, env)
-#  return(env)
-#}
-#SPA1A <- loadEnvironment(paste0(direct,"Data/Model/SPA1A/Model_results_and_diagnostics_", assessment.year, "_1A.RData")) #SPA1A
-#PA1B <- loadEnvironment(paste0(direct,"Data/Model/SPA1B/Model_results_and_diagnostics_", assessment.year, "_1B.RData")) #SPA1B
-#SPA3 <- loadEnvironment(paste0(direct,"Data/Model/SPA3/Model_results_and_diagnostics_", assessment.year, "_3.RData")) #SPA3
-#SPA4 <- loadEnvironment(paste0(direct,"Data/Model/SPA4/Model_results_and_diagnostics_", assessment.year, "_4.RData")) #SPA4
-#PA5 <-  read.csv(paste0(direct,"Data/SurveyIndices/SPA1A1B4and5/SPA5.Index.Weight2021.csv")) #SPA5
-#SPA6 <- loadEnvironment(paste0(direct,"Data/Model/SPA6/Model_results_and_diagnostics_", assessment.year, "_6.RData")) #SPA6
-#PA6.catch <- read.csv(paste0(direct,"Data/CommercialData/CPUE_spa6_combined_",assessment.year+1,".csv")) %>% mutate(year = as.numeric(assessment.year))#SPA6
+loadEnvironment <- function(RData, env = new.env()){
+  load(RData, env)
+  return(env)
+}
+SPA1A <- loadEnvironment(paste0(direct,"Data/Model/SPA1A/Model_results_and_diagnostics_", assessment.year, "_1A.RData")) #SPA1A
+PA1B <- loadEnvironment(paste0(direct,"Data/Model/SPA1B/Model_results_and_diagnostics_", assessment.year, "_1B.RData")) #SPA1B
+SPA3 <- loadEnvironment(paste0(direct,"Data/Model/SPA3/Model_results_and_diagnostics_", assessment.year, "_3.RData")) #SPA3
+SPA4 <- loadEnvironment(paste0(direct,"Data/Model/SPA4/Model_results_and_diagnostics_", assessment.year, "_4.RData")) #SPA4
+PA5 <-  read.csv(paste0(direct,"Data/SurveyIndices/SPA1A1B4and5/SPA5.Index.Weight2021.csv")) #SPA5
+SPA6 <- loadEnvironment(paste0(direct,"Data/Model/SPA6/Model_results_and_diagnostics_", assessment.year, "_6.RData")) #SPA6
+PA6.catch <- read.csv(paste0(direct,"Data/CommercialData/CPUE_spa6_combined_",assessment.year+1,".csv")) %>% mutate(year = as.numeric(assessment.year))#SPA6
 
 
 # build a new ppt from the template
