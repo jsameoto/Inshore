@@ -19,7 +19,7 @@ require(data.table)
 #uid <- un.sameotoj
 #pwd <- pw.sameotoj
 uid <- keyring::key_list("Oracle")[1,2]
-pwd <- keyring::key_get("Oracle", "WILSONBR")
+pwd <- keyring::key_get("Oracle", uid)
 
 surveyyear <- 2021  #This is the last survey year for which you want to include  - not should match year of cruise below 
 cruise <- "BI2021"  #note should match year for surveyyear set above 

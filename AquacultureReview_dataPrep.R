@@ -21,7 +21,7 @@ library(data.table)
 library(raster)
 
 uid <- keyring::key_list("Oracle")[1,2]
-pwd <- keyring::key_get("Oracle", "WILSONBR")
+pwd <- keyring::key_get("Oracle", uid)
 
 #### Import Source functions####
 
@@ -75,7 +75,7 @@ SPA6_all <- rbind(SPA6A, SPA6B, SPA6C, SPA6D)
 
 
 
-#READ IN SITE INFO (Zone of Influence) - PROVIDED BY Coastal Oceanography & Ecosystem Research Section (COERS) (Lindsay Brager)
+#READ IN SITE INFO (Zone of Influence) - PROVIDED BY Coastal Oceanography & Ecosystem Research Section (COERS) (Lindsay)
 site.name <- "BeaverHarbour"
 data <- read.table(paste0(dir,"rams_head_pez_pelagic_speed26.6_cms_ttrack_3h.ll"))
 

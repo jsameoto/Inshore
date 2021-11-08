@@ -9,7 +9,7 @@ library(magrittr)
 
 #ROracle - credentials
 uid <- keyring::key_list("Oracle")[1,2]
-pwd <- keyring::key_get("Oracle", "WILSONBR")
+pwd <- keyring::key_get("Oracle", uid)
 
 path.directory <- "Y:/INSHORE SCALLOP/Survey/"
 survey.year <- 2021

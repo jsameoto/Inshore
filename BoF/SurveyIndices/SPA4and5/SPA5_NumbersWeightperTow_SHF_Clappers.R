@@ -23,7 +23,7 @@ library(cowplot)
 uid <- un.sameotoj
 pwd <- pw.sameotoj
 uid <- keyring::key_list("Oracle")[1,2]
-pwd <- keyring::key_get("Oracle", "WILSONBR")
+pwd <- keyring::key_get("Oracle", uid)
 
 surveyyear <- 2021  #This is the last survey year 
 assessmentyear <- 2021 #year in which you are conducting the survey 
