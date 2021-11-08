@@ -22,31 +22,31 @@ harvest.scen.tab = function(area = area, catch.range = catch.range)
   require(dplyr) || stop("Install dplyr")
   
   if(area == "SPA1A") {
-    catch.range <- c(290, 315, 340, 365, 390, 415)
+    catch.range <- c(280, 300, 320, 340, 360, 400, 420)
     decision.table <- SPA1A$decision.table
     table.caption <- paste0("Table 1. Harvest scenario table for SPA 1A to evaluate ", year,"/", year+1, " catch levels in terms of resulting exploitation (e), expected changes in commercial biomass (%), probability (Pr) of commercial biomass increase, probability that after removal the stock will be above the Upper Stock Reference (USR; ", SPA1A$USR, " t), and above the Lower Reference Point (LRP; ", SPA1A$LRP, " t). Potential catches (t) in ", year,"/", year+1," are evaluated in terms of the posterior probability of exceeding exploitation rate of 0.15.")
   }
   
   if(area == "SPA1B") {
-    catch.range <- c(405, 435, 465, 495, 525, 555, 585, 615)
+    catch.range <- c(275, 300, 350, 375, 400, 425, 475, 500)
     decision.table <- SPA1B$decision.table
     table.caption <- paste0("Table 2. Harvest scenario table for SPA 1B to evaluate ", year,"/", year+1, " catch levels in terms of resulting exploitation (e), expected changes in commercial biomass (%), probability (Pr) of commercial biomass increase, probability that after removal the stock will be above the Upper Stock Reference (USR; ", SPA1B$USR, " t), and above the Lower Reference Point (LRP; ", SPA1B$LRP, " t). Potential catches (t) in ", year,"/", year+1," are evaluated in terms of the posterior probability of exceeding exploitation rate of 0.15.")
   }
   
   if(area == "SPA3") {
-    catch.range <- c(100, 125, 150, 175, 200, 225, 250, 275, 300)
+    catch.range <- c(120, 140, 160, 180, 200, 220, 240, 260, 300)
     decision.table <- SPA3$decision.table
     table.caption <- paste0("Table 3. Harvest scenario table for SPA 3 to evaluate ", year,"/", year+1, " catch levels in terms of resulting exploitation (e), expected changes in commercial biomass (%), probability (Pr) of commercial biomass increase, probability that after removal the stock will be above the Upper Stock Reference (USR; ", SPA3$USR, " t), and above the Lower Reference Point (LRP; ", SPA3$LRP, " t). Potential catches (t) in ", year,"/", year+1," are evaluated in terms of the posterior probability of exceeding exploitation rate of 0.15.")
   }
   
   if(area == "SPA4") {
-    catch.range <- c(95, 115, 135, 155, 175, 195)
+    catch.range <- c(125, 140, 155, 160, 175, 195)
     decision.table <- SPA4$decision.table
     table.caption <- paste0("Table 4. Harvest scenario table for SPA 4 to evaluate ", year,"/", year+1, " catch levels in terms of resulting exploitation (e), expected changes in commercial biomass (%), probability (Pr) of commercial biomass increase, probability that after removal the stock will be above the Upper Stock Reference (USR; ", SPA4$USR, " t), and above the Lower Reference Point (LRP; ", SPA4$LRP, " t). Potential catches (t) in ", year,"/", year+1," are evaluated in terms of the posterior probability of exceeding exploitation rate of 0.15.")
   }
   
   if(area == "SPA6") {
-    catch.range <- c(100, 120, 140, 160, 180, 200)
+    catch.range <- c(100, 120, 140, 170, 190, 210)
     decision.table <- SPA6$decision.table
     table.caption <- paste0("Table 5. Harvest scenario table for the SPA 6 modelled area to evaluate ", year-1,"/", year, " fishing season catch levels in terms of resulting exploitation (e), expected changes in commercial biomass (%), and probability (Pr) of commercial biomass increase.")
   }
