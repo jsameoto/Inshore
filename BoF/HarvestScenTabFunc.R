@@ -40,7 +40,7 @@ harvest.scen.tab = function(area = area, catch.range = catch.range)
   }
   
   if(area == "SPA4") {
-    catch.range <- c(125, 140, 155, 160, 175, 195)
+    catch.range <- c(130, 140, 160, 180, 190, 210)
     decision.table <- SPA4$decision.table
     table.caption <- paste0("Table 4. Harvest scenario table for SPA 4 to evaluate ", year,"/", year+1, " catch levels in terms of resulting exploitation (e), expected changes in commercial biomass (%), probability (Pr) of commercial biomass increase, probability that after removal the stock will be above the Upper Stock Reference (USR; ", SPA4$USR, " t), and above the Lower Reference Point (LRP; ", SPA4$LRP, " t). Potential catches (t) in ", year,"/", year+1," are evaluated in terms of the posterior probability of exceeding exploitation rate of 0.15.")
   }
@@ -132,10 +132,10 @@ harvest.scen.tab = function(area = area, catch.range = catch.range)
     
     #hextable format - function(row#s, column#s):
     ex.hux <<- ex.hux %>%
-      #set_bold(1, 7:12) %>% #Bold probability exploitation headers (0.1, 0.2, 0.3 etc.)
       #insert_row("Catch \n(t)", "\U1D486", "%\n Change", "Pr\n Increase", after = 0) %>% #new row at top
       insert_row(paste0(year,"/", year+1, " Fishing Season"),"" ,"", "", after = 0) %>% #Table header
       set_number_format(1, c(1,4), 0) %>% #defaults to scientific notation - so specify no decimal places for year.
+      set_bold(2, 1:4, FALSE) %>% #Bold Catch (t), e, % Change, Pr Increase
       merge_cells(1, 1:4) %>% #Merging top row left section (YYYY/YYYY Fishing Season header)
       set_top_border(1:2, everywhere) %>%
       set_bottom_border(final(1), everywhere) %>%
