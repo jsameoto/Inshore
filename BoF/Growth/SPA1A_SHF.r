@@ -412,7 +412,7 @@ spa1a.56.data.for.plot <- spa1a.56.data.for.plot %>% filter(year > surveyyear-7)
 #shorten SH data for plot or else get warning when run ggplot 
 spa1a.56.data.for.plot$SH <- round(spa1a.56.data.for.plot$SH,3)
 
-ylimits <- c(0,30)
+ylimits <- c(0,150)
 xlimits <- c(0,200)
 recruitlimits <- c(65,80)
 
