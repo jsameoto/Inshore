@@ -95,6 +95,7 @@ harvest.scen.tab = function(area = area, catch.range = catch.range)
       merge_cells(2:4, 4) %>%
       merge_cells(2:4, 5) %>%
       merge_cells(2:4, 6) %>%  #Merging left cell data headers (i.e. Catch, e, % Change etc.)
+      set_number_format(everywhere, c(2,4,6), 2) %>%
       set_bottom_border(final(1), everywhere) %>% #bottom border on last row (final), all columns
       set_right_border(everywhere, 6) %>%
       set_font_size(14) %>%
@@ -135,6 +136,7 @@ harvest.scen.tab = function(area = area, catch.range = catch.range)
       #insert_row("Catch \n(t)", "\U1D486", "%\n Change", "Pr\n Increase", after = 0) %>% #new row at top
       insert_row(paste0(year,"/", year+1, " Fishing Season"),"" ,"", "", after = 0) %>% #Table header
       set_number_format(1, c(1,4), 0) %>% #defaults to scientific notation - so specify no decimal places for year.
+      set_number_format(everywhere, c(2,4), 2) %>%
       set_bold(2, 1:4, FALSE) %>% #Bold Catch (t), e, % Change, Pr Increase
       merge_cells(1, 1:4) %>% #Merging top row left section (YYYY/YYYY Fishing Season header)
       set_top_border(1:2, everywhere) %>%
