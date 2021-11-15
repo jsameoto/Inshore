@@ -22,53 +22,51 @@ harvest.scen.tab = function(area = area, catch.range = catch.range)
   require(dplyr) || stop("Install dplyr")
   
   if(area == "SPA1A") {
-    catch.range <- c(280, 300, 320, 340, 360, 380, 400)
-    decision.table <- SPA1A$decision.table
+    catch.range <- c(200, 220, 240, 260, 280, 300, 320, 340, 360)
+    decision.table <- SPA1A.decision.table
     table.caption <- paste0("Table 1. Harvest scenario table for SPA 1A to evaluate ", year,"/", year+1, " catch levels in terms of resulting exploitation (e), expected changes in commercial biomass (%), probability (Pr) of commercial biomass increase, probability that after removal the stock will be above the Upper Stock Reference (USR; ", SPA1A$USR, " t), and above the Lower Reference Point (LRP; ", SPA1A$LRP, " t). Potential catches (t) in ", year,"/", year+1," are evaluated in terms of the posterior probability of exceeding exploitation rate of 0.15.")
   }
   
   if(area == "SPA1B") {
-    catch.range <- c(300, 325, 350, 375, 400, 425, 450, 475)
-    decision.table <- SPA1B$decision.table
+    catch.range <- c(150, 190, 230, 270, 310, 350, 390, 430, 470)
+    decision.table <- SPA1B.decision.table
     table.caption <- paste0("Table 2. Harvest scenario table for SPA 1B to evaluate ", year,"/", year+1, " catch levels in terms of resulting exploitation (e), expected changes in commercial biomass (%), probability (Pr) of commercial biomass increase, probability that after removal the stock will be above the Upper Stock Reference (USR; ", SPA1B$USR, " t), and above the Lower Reference Point (LRP; ", SPA1B$LRP, " t). Potential catches (t) in ", year,"/", year+1," are evaluated in terms of the posterior probability of exceeding exploitation rate of 0.15.")
   }
   
   if(area == "SPA3") {
-    catch.range <- c(100, 120, 140, 160, 180, 200, 220, 240, 260)
-    decision.table <- SPA3$decision.table
+    catch.range <- c(100, 120, 140, 160, 180, 200, 220, 240, 260, 280, 300)
+    decision.table <- SPA3.decision.table
     table.caption <- paste0("Table 3. Harvest scenario table for SPA 3 to evaluate ", year,"/", year+1, " catch levels in terms of resulting exploitation (e), expected changes in commercial biomass (%), probability (Pr) of commercial biomass increase, probability that after removal the stock will be above the Upper Stock Reference (USR; ", SPA3$USR, " t), and above the Lower Reference Point (LRP; ", SPA3$LRP, " t). Potential catches (t) in ", year,"/", year+1," are evaluated in terms of the posterior probability of exceeding exploitation rate of 0.15.")
   }
   
   if(area == "SPA4") {
     catch.range <- c(100, 120, 140, 160, 180, 200, 220)
-    decision.table <- SPA4$decision.table
+    decision.table <- SPA4.decision.table
     table.caption <- paste0("Table 4. Harvest scenario table for SPA 4 to evaluate ", year,"/", year+1, " catch levels in terms of resulting exploitation (e), expected changes in commercial biomass (%), probability (Pr) of commercial biomass increase, probability that after removal the stock will be above the Upper Stock Reference (USR; ", SPA4$USR, " t), and above the Lower Reference Point (LRP; ", SPA4$LRP, " t). Potential catches (t) in ", year,"/", year+1," are evaluated in terms of the posterior probability of exceeding exploitation rate of 0.15.")
   }
   
   if(area == "SPA6") {
     catch.range <- c(100, 120, 140, 160, 180, 200, 220)
-    decision.table <- SPA6$decision.table
+    decision.table <- SPA6.decision.table
     table.caption <- paste0("Table 5. Harvest scenario table for the SPA 6 modelled area to evaluate ", year-1,"/", year, " fishing season catch levels in terms of resulting exploitation (e), expected changes in commercial biomass (%), and probability (Pr) of commercial biomass increase.")
   }
   
   #FOR SPA1A, 1B, 3, 4 create table this way:
   if(area %in% c("SPA1A", "SPA1B", "SPA3", "SPA4")) {
     
-    ex.table <<- decision.table[["Next.year"]][,c("Catch", "Exploit", "B.change", "pB0", "p.LRP", "p.USR")] #Catch scenarios
-    interim.table <- decision.table[["Interim.RRP"]][,c("Catch", "0.1", "0.2", "0.3", "0.4", "0.5", "0.6")] #potential catch
-    ex.table <<- merge(ex.table, interim.table, by = "Catch") #merge data together for formating into table
-    
     #Set range of catch for Harvest scenario table
-    ex.table <<- dplyr::filter(ex.table, Catch %in% catch.range)
+    ex.table <<- decision.table
+    ex.table <<- dplyr::filter(ex.table, Next.year.Catch %in% catch.range)
     ex.table <<- ex.table %>% mutate(across(where(is.numeric), ~ round(., 2))) %>%  #All columns 2 decimal places (Catch should be whole number)
-      mutate(B.change = round(B.change, 0)) %>% #% change no decimal places
-      mutate(p.LRP = as.character(p.LRP)) %>% 
-      mutate(p.USR = as.character(p.USR)) %>% 
-      mutate(p.LRP = replace(p.LRP, p.LRP == "1", ">0.99")) %>%  #if Prob > LRP is 1.00 change to >0.99.
-      mutate(p.USR = replace(p.USR, p.USR == "1", ">0.99")) #if Prob > USR is 1.00 change to >0.99.
-    str(ex.table)
-    row.names(ex.table) <<- NULL
-    #names(ex.table) <- c("Catch (t)", "\U1D486", "%\n Change", "Pr\n Increase", "Pr\n >\n LRP", "Pr\n >\n USR")
+      mutate(Next.year.B.change = round(Next.year.B.change, 0)) %>% #% change no decimal places
+      mutate(Next.year.p.LRP = as.character(Next.year.p.LRP)) %>% 
+      mutate(Next.year.p.USR = as.character(Next.year.p.USR)) %>% 
+      mutate(Next.year.p.LRP = replace(Next.year.p.LRP, Next.year.p.LRP == "1", ">0.99")) %>%  #if Prob > LRP is 1.00 change to >0.99.
+      mutate(Next.year.p.USR = replace(Next.year.p.USR, Next.year.p.USR == "1", ">0.99")) #if Prob > USR is 1.00 change to >0.99. %>% 
+    
+    ex.table <<- ex.table %>% dplyr::select(-Interim.RRP.Catch) #remove duplicated catch column
+    #rownames(ex.table) <- NULL
+    names(ex.table) <<- c("Catch (t)", "\U1D486", "%\n Change", "Pr\n Increase", "Pr\n >\n LRP", "Pr\n >\n USR", "0.1", "0.2","0.3", "0.4", "0.5", "0.6")
     
     #exploitation table - as huxtable
     ex.hux <<- ex.table %>% 
@@ -116,11 +114,15 @@ harvest.scen.tab = function(area = area, catch.range = catch.range)
   }
   
   if(area == "SPA6") { #If area is SPA6 - make the table this way:
-    ex.table <<- decision.table[["Next.year"]][,c("Catch", "Exploit", "B.change", "pB0")]
+    
     #Set range of catch for Harvest scenario table
-    ex.table <<- dplyr::filter(ex.table, Catch %in% catch.range)
+    ex.table <<- decision.table
+    ex.table <<- dplyr::filter(ex.table, Next.year.Catch %in% catch.range)
+    
     ex.table <<- ex.table %>% mutate(across(where(is.numeric), ~ round(., 2))) %>%  #All columns 2 decimal places (Catch should be whole number)
-      mutate(B.change = round(B.change, 0))#% change no decimal places
+      mutate(Next.year.B.change = round(Next.year.B.change, 0))#% change no decimal places
+    
+    ex.table <<- ex.table[,c(1:4)]
     
     str(ex.table)
     row.names(ex.table) <<- NULL
