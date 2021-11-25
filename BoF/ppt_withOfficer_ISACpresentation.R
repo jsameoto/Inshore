@@ -16,42 +16,53 @@ require(huxtable)
 
 # Define ------------------------------------------------------------------
 
-assessment.year <- 2021
-fig.dir <- paste0("Y:/INSHORE SCALLOP/BoF/",assessment.year,"/Assessment/Figures/") #figure directory
+year <- 2021
+fig.dir <- paste0("Y:/INSHORE SCALLOP/BoF/",year,"/Assessment/Figures/") #figure directory
 areas <- c("SPA1A", "SPA1B", "SPA3", "SPA4and5") #"SPA6")
 areas2 <- c("SPA1A", "SPA1B", "SPA3", "SPA4") #Model results Figure directory (SPA4 - The name does not inlcude 5, so need to make seperate object.)
 
 #CHECK!! Hard coded values: 
 spa6.USR <- 9.1
 spa6.LRP <- 6.2
-spa6.removals <- 150 #tonnes of removals used in the Projection 
 
 # Load Functions
 funcs <- "https://raw.githubusercontent.com/Mar-scal/Inshore/master/BoF/HarvestScenTabFunc.R"
 dir <- getwd()
 for(fun in funcs) 
 {
-  temp <- dir
+ # temp <- dir
   download.file(fun,destfile = basename(fun))
   source(paste0(dir,"/",basename(fun)))
   file.remove(paste0(dir,"/",basename(fun)))
 }
 
+
 # Load model results ------------------------------------------------------
 
-direct <- paste0("Y:/INSHORE SCALLOP/BoF/", assessment.year,"/Assessment/")
+direct <- paste0("Y:/INSHORE SCALLOP/BoF/", year,"/Assessment/")
 
+#Read in .RData for each SPA and save within Area object
 loadEnvironment <- function(RData, env = new.env()){
   load(RData, env)
   return(env)
 }
-SPA1A <- loadEnvironment(paste0(direct,"Data/Model/SPA1A/Model_results_and_diagnostics_", assessment.year, "_1A.RData")) #SPA1A
-PA1B <- loadEnvironment(paste0(direct,"Data/Model/SPA1B/Model_results_and_diagnostics_", assessment.year, "_1B.RData")) #SPA1B
-SPA3 <- loadEnvironment(paste0(direct,"Data/Model/SPA3/Model_results_and_diagnostics_", assessment.year, "_3.RData")) #SPA3
-SPA4 <- loadEnvironment(paste0(direct,"Data/Model/SPA4/Model_results_and_diagnostics_", assessment.year, "_4.RData")) #SPA4
-PA5 <-  read.csv(paste0(direct,"Data/SurveyIndices/SPA1A1B4and5/SPA5.Index.Weight2021.csv")) #SPA5
-SPA6 <- loadEnvironment(paste0(direct,"Data/Model/SPA6/Model_results_and_diagnostics_", assessment.year, "_6.RData")) #SPA6
-PA6.catch <- read.csv(paste0(direct,"Data/CommercialData/CPUE_spa6_combined_",assessment.year+1,".csv")) %>% mutate(year = as.numeric(assessment.year))#SPA6
+SPA1A <- loadEnvironment(paste0(direct,"Data/Model/SPA1A/Model_results_and_diagnostics_", year, "_1A.RData")) #SPA1A
+SPA1A.decision.table <- read.csv(paste0(direct,"Data/Model/SPA1A/decisiontable", year, "_1A.csv"))
+
+SPA1B <- loadEnvironment(paste0(direct,"Data/Model/SPA1B/Model_results_and_diagnostics_", year, "_1B.RData")) #SPA1B
+SPA1B.decision.table <- read.csv(paste0(direct,"Data/Model/SPA1B/decisiontable", year, "_1B.csv"))
+
+SPA3 <- loadEnvironment(paste0(direct,"Data/Model/SPA3/Model_results_and_diagnostics_", year, "_3.RData")) #SPA3
+SPA3.decision.table <- read.csv(paste0(direct,"Data/Model/SPA3/decisiontable", year, "_3.csv"))
+
+SPA4 <- loadEnvironment(paste0(direct,"Data/Model/SPA4/Model_results_and_diagnostics_", year, "_4.RData")) #SPA4
+SPA4.decision.table <- read.csv(paste0(direct,"Data/Model/SPA4/decisiontable", year, "_4.csv"))
+
+SPA5 <-  read.csv(paste0(direct,"Data/SurveyIndices/SPA1A1B4and5/SPA5.Index.Weight2021.csv")) #SPA5
+
+SPA6 <- loadEnvironment(paste0(direct,"Data/Model/SPA6/Model_results_and_diagnostics_", year, "_6.RData")) #SPA6
+SPA6.catch <- read.csv(paste0(direct,"Data/CommercialData/CPUE_spa6_combined_",year,".csv")) %>% mutate(year = as.numeric(year))#SPA6
+SPA6.decision.table <- read.csv(paste0(direct,"Data/Model/SPA6/decisiontable", year, "_6.csv"))
 
 
 # build a new ppt from the template
@@ -69,6 +80,7 @@ single.fig.pg <- layout_properties(x = newpres, layout = "Single Figure", master
 single.fig.wtext.pg <- layout_properties(x = newpres, layout = "Single Figure wtext", master = "1_Office Theme") %>% dplyr::select(ph_label) #Single Figure wtext 2
 single.fig.wtext.2.pg <- layout_properties(x = newpres, layout = "Single Figure wtext 2", master = "1_Office Theme") %>% dplyr::select(ph_label)
 dual.fig.pg <- layout_properties(x = newpres, layout = "Dual Figure", master = "1_Office Theme") %>% dplyr::select(ph_label)
+dual.2.fig.pg <- layout_properties(x = newpres, layout = "Dual Figure 2", master = "1_Office Theme") %>% dplyr::select(ph_label)
 table.layout.pg <- layout_properties(x = newpres, layout = "Table", master = "1_Office Theme") %>% dplyr::select(ph_label)
 table.2.layout.pg <- layout_properties(x = newpres, layout = "Table_2", master = "1_Office Theme") %>% dplyr::select(ph_label)
 
@@ -82,6 +94,7 @@ single.fig.pg #Full slide figure, no text
 single.fig.wtext.pg #Full slide figure, with text
 single.fig.wtext.2.pg #half slide figure, half text
 dual.fig.pg #side by side figures, no text
+dual.2.fig.pg #side by side figures, with text (SHF plots in extra slides)
 table.layout.pg #full slide table
 
 
@@ -93,12 +106,12 @@ newpres <- newpres %>%
 # title slide -------------------------------------------------------------
 
 add_slide(layout="Main Title Page", master="1_Office Theme") %>%
-  ph_with(value = paste0("Scallop Production Areas in the Bay of Fundy: Stock Status for ",assessment.year," and Forecast for ",
-                         assessment.year +1), location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
-  ph_with(value= paste0("X December ",assessment.year,"\n \n Scallop Unit\n \n Population Ecology Division\n Fisheries and Oceans Canada\n Bedford Institute of Oceanography\n Dartmouth, Nova Scotia, B2Y 4A2"),
+  ph_with(value = paste0("Scallop Production Areas in the Bay of Fundy: Stock Status for ",year," and Forecast for ",
+                         year +1), location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
+  ph_with(value= paste0("X December ",year,"\n \n Scallop Unit\n \n Population Ecology Division\n Fisheries and Oceans Canada\n Bedford Institute of Oceanography\n Dartmouth, Nova Scotia, B2Y 4A2"),
           location = ph_location_label(ph_label = "Subtitle"), index=1) %>%  #This is the subtite
   ph_with(value = "Placopecten magellanicus", ph_location_label(ph_label = "Slide Number Placeholder"), index=1) %>% #Pg num placeholder
-  ph_with(external_img("Y:/INSHORE SCALLOP/BoF/2021/Assessment/Documents/Presentations/scallop.png"), location = ph_location_label(ph_label = "Scallop image"), use_loc_size = TRUE) %>%  #This is supposed to be the scallop image.
+  ph_with(external_img(paste0("Y:/INSHORE SCALLOP/BoF/",year,"/Assessment/Documents/Presentations/scallop.png")), location = ph_location_label(ph_label = "Scallop image"), use_loc_size = TRUE) %>%  #This is the scallop image.
 
   
 # slide 1 - Outline -------------------------------------------------------------
@@ -110,7 +123,7 @@ add_slide(layout="Title and Content", master="1_Office Theme") %>%
     level_list = c(1, 2, 2, 2, 2, 2),
     str_list = c("Review by area", "SPA 1A", "SPA 1B", "3", "4 & 5", "6")),
     location = ph_location_label(ph_label = "Text Placeholder 1"), level=2, index=2) %>% 
-  ph_with(value = paste0("*Note that all landing values and logbook data for ",assessment.year," are preliminary as of October X, ", assessment.year), location = ph_location_label(ph_label = "Text Placeholder 2"), index = 1) %>% 
+  ph_with(value = paste0("*Note that all landing values and logbook data for ",year," are preliminary as of November X, ", year), location = ph_location_label(ph_label = "Text Placeholder 2"), index = 1) %>% 
   ph_with(external_img("Y:/INSHORE SCALLOP/Inshore Scallop Fishing Area Map/InshoreScallopFishingAreas_English_updated2021.png"), location = ph_location_label(ph_label = "Figure Placeholder"), use_loc_size = TRUE) #Adding an external image - can change height/width, but currently set to match the size of the placeholder in powerpoint.
 
 # Generate slides for SPA1A, 1B, 3, 4and5 with a loop.
@@ -137,6 +150,12 @@ add_slide(layout="Title and Content", master="1_Office Theme") %>%
     if(areas[i] == "SPA3") catch.next.year <- SPA3$catch.next.year
     if(areas[i] == "SPA4and5") catch.next.year <- SPA4$catch.next.year
     
+    #SPA4 has "zoomed in" TAC and Landings -file name is slightly different so set figure name for each area
+    if(areas[i] == "SPA1A") fig.name <- paste0("_TACandLandings",year,".png")
+    if(areas[i] == "SPA1B") fig.name <- paste0("_TACandLandings",year,".png")
+    if(areas[i] == "SPA3") fig.name <- paste0("_TACandLandings",year,".png")
+    if(areas[i] == "SPA4and5") fig.name <- paste0("_TACandLandings_pres",year,".png")
+    
     #Model Figure directory (SPA4 - The name does not inlcude 5, so need to make seperate object.) 
     if(areas2[i] == "SPA1A") areas2.title <- "SPA 1A"
     if(areas2[i] == "SPA1B") areas2.title <- "SPA 1B"
@@ -154,20 +173,16 @@ add_slide(layout="Title and Content", master="1_Office Theme") %>%
     
     add_slide(layout="Single Figure", master="1_Office Theme") %>%
       ph_with(value = paste0(area.title,": Landings"), location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
-      ph_with(external_img(paste0("Y:/INSHORE SCALLOP/BoF/2020/Assessment/Figures/CommercialData/", areas[i],"_TACandLandings",assessment.year-1,".png"), width = 7.50 , height = 5.73), location = ph_location_label(ph_label = "Figure Placeholder"), use_loc_size = TRUE) %>% #REMOVE THE -1 to make work for 2021
-
-      #paste0(fig.dir,"CommercialData/", areas[i],"_TACandLandings",assessment.year,".png")
+      ph_with(external_img(paste0(fig.dir,"CommercialData/", areas[i],fig.name), width = 6.50 , height = 5.73), location = ph_location_label(ph_label = "Figure Placeholder"), use_loc_size = TRUE) %>% 
       
       
 # slide - Modeled Biomass Figure (SPA1A, 1B, 3, 4&5) -------------------------------------------------------------
     
     add_slide(layout="Single Figure wtext", master="1_Office Theme") %>%
       ph_with(value = paste0(areas2.title,": Modeled Biomass"), location = ph_location_label(ph_label = "Title"), index=1) %>% 
-      ph_with(external_img(dir(paste0("Y:/INSHORE SCALLOP/BoF/2020/Assessment/Figures/Model/",areas2[i],"/"),full.names = TRUE, pattern = "^Model_biomass_figure"), width = 5.21, height = 5.80), location = ph_location(ph_label = "Figure Placeholder"), use_loc_size = FALSE) %>%
+      ph_with(external_img(dir(paste0(fig.dir,"Model/",areas2[i],"/"),full.names = TRUE, pattern = "^Model_biomass_figure")[1], width = 5.10, height = 6.20), location = ph_location(ph_label = "Figure Placeholder"), use_loc_size = FALSE) %>% #index [1] for english version
       ph_with(value = paste0("USR: ",USR, " t\n LRP: ", LRP," t"), location = ph_location_label(ph_label = "Text Placeholder top right"), index=1) %>%
       ph_with(value = paste0("Projection uses ", catch.next.year," t\n removals (interim TAC)"), location = ph_location_label(ph_label = "Text Placeholder btm right"), index=1)
-      
-  #ph_with(external_img(dir(paste0(fig.dir,"Model/",areas2[i],"/"),full.names = TRUE, pattern = "^Model_biomass_figure")
       
     
 # slide - Harvest Scenerio Table (SPA1A, 1B, 3, 4)-------------------------------------------------------------
@@ -191,9 +206,8 @@ col.prop.norm <- fp_text(color = "black", font.size = 18, font.family = "Century
 col.prop1 <- fp_text(color = "red3", font.size = 18, font.family = "Century Gothic")
 col.prop2<- fp_text(color = "royalblue3", font.size = 18, font.family = "Century Gothic")
 
-par <- block_list(
-  fpar(ftext("Inside VMS stratum ", col.prop1), ftext("(red): The survey and analysis for SPA 6 is based on areas defined by VMS fishing patterns from 2002-2014.\n", col.prop.norm)), 
-  fpar(ftext("Outside VMS stratum ", col.prop2), ftext("(blue): a combination of the historical survey extent and historical survey index", col.prop.norm)))
+col.text <- block_list(fpar(ftext("Inside VMS stratum (red)", col.prop1)),
+                    fpar(ftext("Outside VMS stratum (blue)", col.prop2)))
 
 #now continue to add slides
 newpres <- newpres %>% 
@@ -202,38 +216,41 @@ newpres <- newpres %>%
 
 add_slide(layout="Single Figure wtext 2", master="1_Office Theme") %>%
   ph_with(value = paste0("SPA 6: Survey Design"), location = ph_location_label(ph_label = "Title"), index=1) %>%
-  ph_with(external_img("Y:/INSHORE SCALLOP/BoF/2021/Assessment/Documents/Presentations/SPA6_VMS_INOUT.png", width = 5.00, height = 5.25), location = ph_location(ph_label = "Figure Placeholder", left = 1.00, top = 1.00), use_loc_size = FALSE) %>% 
-  ph_with(value = par, location = ph_location_label(ph_label = "Text Placeholder right")) %>%
+  ph_with(external_img(paste0("Y:/INSHORE SCALLOP/BoF/",year,"/Assessment/Documents/Presentations/SPA6_VMS_INOUT.png"), width = 5.00, height = 5.25), location = ph_location(ph_label = "Figure Placeholder", left = 0.90, top = 1.00), use_loc_size = FALSE) %>%
+  ph_with(value = "The survey and analysis for SPA 6 is based on areas defined by VMS fishing patterns from 2002-2014.", location = ph_location_label(ph_label = "Text Placeholder top"), index=1) %>%
+  ph_with(col.text, location = ph_location_label(ph_label = "Text Placeholder middle"), level_list = c(1L, 1L)) %>% 
+  ph_with(value = "* Model is based on Inside VMS only", location = ph_location_label(ph_label = "Text Placeholder bottom")) %>%
+
   
 # slide - SPA6 Landings Figure -------------------------------------------------------------
-  
+
   add_slide(layout="Single Figure", master="1_Office Theme") %>%
   ph_with(value = paste0("SPA 6: Landings"), location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
-  ph_with(external_img(paste0("Y:/INSHORE SCALLOP/BoF/2020/Assessment/Figures/CommercialData/SPA6_TACandLandings",assessment.year-1,".png"), width = 8.00 , height = 5.73), location = ph_location_label(ph_label = "Figure Placeholder"), use_loc_size = TRUE) %>%  #REMOVE THE -1 to make work for 2021 #paste0(fig.dir,"CommercialData/", areas[i],"_TACandLandings",assessment.year,".png")
+  ph_with(external_img(paste0(fig.dir,"CommercialData/SPA6_TACandLandings",year,".png"), width = 6.50 , height = 5.73), location = ph_location_label(ph_label = "Figure Placeholder"), use_loc_size = TRUE) %>%
 
 
 # slide - SPA6 Stock Status -------------------------------------------------------------  
   
 add_slide(layout="Single Figure wtext", master="1_Office Theme") %>%
   ph_with(value = paste0("SPA 6: Stock Status"), location = ph_location_label(ph_label = "Title"), index=1) %>%
-  ph_with(external_img(paste0("Y:/INSHORE SCALLOP/BoF/2020/Assessment/Figures/CommercialData/SPA6_RefPts2020.png"), width = 5.25, height = 5.25), location = ph_location(ph_label = "Figure Placeholder"), use_loc_size = FALSE) %>% 
-  ph_with(value = paste0("USR: ",spa6.USR," kg/h\n LRP: ", spa6.LRP," kg/h"), location = ph_location_label(ph_label = "Text Placeholder btm right"), index=1) %>%
+  ph_with(external_img(paste0(fig.dir, "CommercialData/SPA6_RefPts",year,".png"), width = 5.25, height = 5.25), location = ph_location(ph_label = "Figure Placeholder"), use_loc_size = FALSE) %>% 
+  ph_with(value = paste0("USR: ",spa6.USR," kg/h\n LRP: ", spa6.LRP," kg/h"), location = ph_location_label(ph_label = "Text Placeholder btm right"), index=1) %>% #spa6.USR and spa6.LSR are defined at start of script
   
   # slide - SPA6 Modeled Biomass Figure -------------------------------------------------------------
 
 add_slide(layout="Single Figure wtext", master="1_Office Theme") %>%
   ph_with(value = "SPA 6: Modeled Biomass", location = ph_location_label(ph_label = "Title"), index=1) %>%
-  ph_with(external_img(paste0("Y:/INSHORE SCALLOP/BoF/2020/Assessment/Figures/Model/SPA6/Model_biomass_figure_6.png"), width = 5.21, height = 5.83), location = ph_location(ph_label = "Figure Placeholder"), use_loc_size = FALSE) %>% 
-  ph_with(value = paste0("Projection uses ", spa6.removals," t\n removals"), location = ph_location_label(ph_label = "Text Placeholder btm right"), index=1)
+  ph_with(external_img(paste0(fig.dir,"Model/SPA6/Model_biomass_figure_6.png"), width = 5.10, height = 6.20), location = ph_location(ph_label = "Figure Placeholder"), use_loc_size = FALSE) %>% 
+  ph_with(value = paste0("Projection uses ",SPA6$catch.next.year," t\n removals"), location = ph_location_label(ph_label = "Text Placeholder btm right"), index=1)
 
-    #ph_with(external_img(dir(paste0("Y:/INSHORE SCALLOP/BoF/2020/Assessment/Figures/Model/",areas2[i],"/"),full.names = TRUE, pattern = "^Model_biomass_figure")
+#Break
 
 # slide - SPA6 Harvest Scenerio Table -------------------------------------------------------------
 
 #First run the table function
 harvest.scen.tab(area = "SPA6", catch.range = catch.range)
 
-#Now add continue to add slides to presentation:
+#Now continue to add slides to presentation:
 newpres <- newpres %>%  
   
   add_slide(layout="Table_2", master="1_Office Theme") %>%
@@ -243,10 +260,10 @@ newpres <- newpres %>%
 # slide - END OF PRESENTATION -------------------------------------------------------------
 
 add_slide(layout="Main Title Page", master="1_Office Theme") %>%
-  ph_with(value = paste0("Scallop Production Areas in the Bay of Fundy: Stock Status for ",assessment.year," and Forecast for ",
-                         assessment.year +1), location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
-  ph_with(value= paste0("X December ",assessment.year,"\n \n Scallop Unit\n \n Population Ecology Division\n Fisheries and Oceans Canada\n Bedford Institute of Oceanography\n Dartmouth, Nova Scotia, B2Y 4A2"), location = ph_location_label(ph_label = "Subtitle"), index=1) %>%  #This is the subtite
-  ph_with(external_img("Y:/INSHORE SCALLOP/BoF/2021/Assessment/Documents/Presentations/scallop.png"), location = ph_location_label(ph_label = "Scallop image"), use_loc_size = TRUE) %>% # Scallop figure
+  ph_with(value = paste0("Scallop Production Areas in the Bay of Fundy: Stock Status for ",year," and Forecast for ",
+                         year +1), location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
+  ph_with(value= paste0("X December ",year,"\n \n Scallop Unit\n \n Population Ecology Division\n Fisheries and Oceans Canada\n Bedford Institute of Oceanography\n Dartmouth, Nova Scotia, B2Y 4A2"), location = ph_location_label(ph_label = "Subtitle"), index=1) %>%  #This is the subtite
+  ph_with(external_img(paste0("Y:/INSHORE SCALLOP/BoF/",year,"/Assessment/Documents/Presentations/scallop.png")), location = ph_location_label(ph_label = "Scallop image"), use_loc_size = TRUE) %>% # Scallop figure
   
 
 # SUPPLEMENTAL SLIDES  -------------------------------------------------------------
@@ -255,28 +272,30 @@ add_slide(layout="Main Title Page", master="1_Office Theme") %>%
 
 add_slide(layout="Main Title Page", master="1_Office Theme") %>%
   ph_with(value = "Industry Supplemental", location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
-  ph_with(value= paste0("X December ",assessment.year,"\n \n Scallop Unit\n \n Population Ecology Division\n Fisheries and Oceans Canada\n Bedford Institute of Oceanography\n Dartmouth, Nova Scotia, B2Y 4A2"), location = ph_location_label(ph_label = "Subtitle"), index=1) %>%  #This is the subtite
-  ph_with(external_img("Y:/INSHORE SCALLOP/BoF/2021/Assessment/Documents/Presentations/scallop.png"), location = ph_location_label(ph_label = "Scallop image"), use_loc_size = TRUE) %>% # Scallop figure
+  ph_with(value= paste0("X December ",year,"\n \n Scallop Unit\n \n Population Ecology Division\n Fisheries and Oceans Canada\n Bedford Institute of Oceanography\n Dartmouth, Nova Scotia, B2Y 4A2"), location = ph_location_label(ph_label = "Subtitle"), index=1) %>%  #This is the subtite
+  ph_with(external_img(paste0("Y:/INSHORE SCALLOP/BoF/",year,"/Assessment/Documents/Presentations/scallop.png")), location = ph_location_label(ph_label = "Scallop image"), use_loc_size = TRUE) %>% # Scallop figure
   
   
 # slide - Commercial Biomass Figure -------------------------------------------------------------
 
 add_slide(layout="Single Figure", master="1_Office Theme") %>%
   ph_with(value = "Commercial (>= 80mm) Biomass", location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
-  ph_with(external_img(paste0(fig.dir,"ContPlot_BoFAll_ComBiomass",assessment.year,".png"), width = 6, height = 6), location = ph_location(ph_label = "Figure Placeholder", left = 1.75, top = 0.82), use_loc_size = FALSE) %>% 
+  ph_with(external_img(paste0(fig.dir,"ContPlot_BoFAll_ComBiomass",year,".png"), width = 6, height = 6), location = ph_location(ph_label = "Figure Placeholder", left = 1.75, top = 0.82), use_loc_size = FALSE) %>% 
   
 # slide - Recruit Biomass Figure -------------------------------------------------------------
 
 add_slide(layout="Single Figure", master="1_Office Theme") %>%
   ph_with(value = "Recruit (65-79 mm) Biomass", location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
-  ph_with(external_img(paste0(fig.dir,"ContPlot_BoFAll_RecBiomass",assessment.year,".png"), width = 6, height = 6), location = ph_location(ph_label = "Figure Placeholder", left = 1.75, top = 0.82), use_loc_size = FALSE) %>% 
+  ph_with(external_img(paste0(fig.dir,"ContPlot_BoFAll_RecBiomass",year,".png"), width = 6, height = 6), location = ph_location(ph_label = "Figure Placeholder", left = 1.75, top = 0.82), use_loc_size = FALSE) %>% 
   
   
 # slide - Pre-recruit Abundance Figure -------------------------------------------------------------
 
 add_slide(layout="Single Figure", master="1_Office Theme") %>%
   ph_with(value = "Pre-recruit (<65mm) Abundance", location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
-  ph_with(external_img(paste0(fig.dir,"ContPlot_BoFAll_PrerecDensity",assessment.year,".png"), width = 6, height = 6),location = ph_location(ph_label = "Figure Placeholder", left = 1.75, top = 0.82), use_loc_size = FALSE) 
+  ph_with(external_img(paste0(fig.dir,"ContPlot_BoFAll_PrerecDensity",year,".png"), width = 6, height = 6),location = ph_location(ph_label = "Figure Placeholder", left = 1.75, top = 0.82), use_loc_size = FALSE) 
+
+#Break
 
 #Add SPA6 into loop for supplemental slides - Condition plots
 areas <- append(areas, "SPA6")
@@ -303,20 +322,20 @@ for (i in 1:length(areas)) {
   
   #add_slide(layout="Single Figure", master="1_Office Theme") %>%
   #  ph_with(value = paste0(areas2.title, ": Commercial (>= 80mm) Biomass"), location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
-  #  ph_with(external_img(paste0(fig.dir,"ContPlot_", areas2[i],"_ComBiomass", assessment.year,".png"), width = 6, height = 6), location = ph_location(ph_label = "Figure Placeholder", left = 1.75, top = 0.82), use_loc_size = FALSE) %>% 
+  #  ph_with(external_img(paste0(fig.dir,"ContPlot_", areas2[i],"_ComBiomass", year,".png"), width = 6, height = 6), location = ph_location(ph_label = "Figure Placeholder", left = 1.75, top = 0.82), use_loc_size = FALSE) %>% 
   
 # For each SPA - Recruit Biomass Figure -------------------------------------------------------------
   
   #add_slide(layout="Single Figure", master="1_Office Theme") %>%
   #  ph_with(value = paste0(areas2.title, ": Pre-recruit (<65mm) Abundance"), location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
-  #  ph_with(external_img(paste0(fig.dir,"ContPlot_", areas2[i],"_RecBiomass", assessment.year,".png"), width = 6, height = 6), location = ph_location(ph_label = "Figure Placeholder", left = 1.75, top = 0.82), use_loc_size = FALSE) %>% 
+  #  ph_with(external_img(paste0(fig.dir,"ContPlot_", areas2[i],"_RecBiomass", year,".png"), width = 6, height = 6), location = ph_location(ph_label = "Figure Placeholder", left = 1.75, top = 0.82), use_loc_size = FALSE) %>% 
   
   
 # For each SPA - Pre-recruit Abundance Figure -------------------------------------------------------------
   
   #add_slide(layout="Single Figure", master="1_Office Theme") %>%
   #  ph_with(value = paste0(areas2.title, ": Pre-recruit (<65mm) Abundance"), location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
-  #  ph_with(external_img(paste0(fig.dir,"ContPlot_", areas2[i],"_PreDensity", assessment.year,".png"), width = 6, height = 6), location = ph_location(ph_label = "Figure Placeholder", left = 1.75, top = 0.82), use_loc_size = FALSE) %>% 
+  #  ph_with(external_img(paste0(fig.dir,"ContPlot_", areas2[i],"_PreDensity", year,".png"), width = 6, height = 6), location = ph_location(ph_label = "Figure Placeholder", left = 1.75, top = 0.82), use_loc_size = FALSE) %>% 
 
 # slide - Condition Figure -------------------------------------------------------------
   
@@ -332,9 +351,9 @@ newpres <- newpres %>%
 
 add_slide(layout="Main Title Page", master="1_Office Theme") %>%
   ph_with(value = "Extra Slides", location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
-  ph_with(value= paste0("X December ",assessment.year,"\n \n Scallop Unit\n \n Population Ecology Division\n Fisheries and Oceans Canada\n Bedford Institute of Oceanography\n Dartmouth, Nova Scotia, B2Y 4A2"),
+  ph_with(value= paste0("X December ",year,"\n \n Scallop Unit\n \n Population Ecology Division\n Fisheries and Oceans Canada\n Bedford Institute of Oceanography\n Dartmouth, Nova Scotia, B2Y 4A2"),
           location = ph_location_label(ph_label = "Subtitle"), index=1) %>%
-  ph_with(external_img("Y:/INSHORE SCALLOP/BoF/2021/Assessment/Documents/Presentations/scallop.png"), location = ph_location_label(ph_label = "Scallop image"), use_loc_size = TRUE)# Scallop figure
+  ph_with(external_img(paste0("Y:/INSHORE SCALLOP/BoF/",year,"/Assessment/Documents/Presentations/scallop.png")), location = ph_location_label(ph_label = "Scallop image"), use_loc_size = TRUE)# Scallop figure
 
 
 for (i in 1:length(areas)) {
@@ -359,29 +378,115 @@ for (i in 1:length(areas)) {
 
 add_slide(layout="Single Figure", master="1_Office Theme") %>%
   ph_with(value = paste0(areas2.title,": Commercial Catch Rate"), location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
-  ph_with(external_img(paste0("Y:/INSHORE SCALLOP/BoF/2020/Assessment/Figures/CommercialData/", areas2[i],"_CPUE",assessment.year-1,".png"), width = 6.7, height = 8), location = ph_location_label(ph_label = "Figure Placeholder"), use_loc_size = TRUE) %>% #REMOVE -1 from assessment year
+  ph_with(external_img(paste0(fig.dir, "CommercialData/", areas2[i],"_CPUE",year,".png"), width = 6.7, height = 8), location = ph_location_label(ph_label = "Figure Placeholder"), use_loc_size = TRUE) %>% #REMOVE -1 from assessment year
   
 # slide - Commercial Fishery Figure -------------------------------------------------------------
 
 add_slide(layout="Dual Figure", master="1_Office Theme") %>%
   ph_with(value = paste0(area.title,": Commercial Fishery"), location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
-  ph_with(external_img(paste0("Y:/INSHORE SCALLOP/BoF/",assessment.year-1,"/Assessment/Figures/CommercialData/", areas[i],"_CPUEgridplot",assessment.year-1,".png"), width = 9, height = 9), location = ph_location_label(ph_label = "Figure Placeholder 1"), use_loc_size = TRUE) %>%
-  ph_with(external_img(paste0("Y:/INSHORE SCALLOP/BoF/",assessment.year-2,"/Assessment/Figures/CommercialData/", areas[i],"_CPUEgridplot",assessment.year-2,".png"), width = 9, height = 9), location = ph_location_label(ph_label = "Figure Placeholder 2"), use_loc_size = TRUE)
+  ph_with(external_img(paste0("Y:/INSHORE SCALLOP/BoF/",year-1,"/Assessment/Figures/CommercialData/", areas[i],"_CPUEgridplot",year-1,".png"), width = 9, height = 9), location = ph_location_label(ph_label = "Figure Placeholder 1"), use_loc_size = TRUE) %>% #Previous years commercial cpue
+    ph_with(external_img(paste0(fig.dir,"CommercialData/", areas[i],"_CPUEgridplot",year,".png"), width = 9, height = 9), location = ph_location_label(ph_label = "Figure Placeholder 2"), use_loc_size = TRUE)  #current year commercial cpue
   
+}#Stop loop
+
+#Continue to add SHF slides
+newpres <- newpres %>%
+
+# slides - SPA1A Shell Height Frequency x 2  -------------------------------------------------------------
+add_slide(layout="Dual Figure 2", master="1_Office Theme") %>%
+  ph_with(value = paste0("SPA1A: Shell Height Frequency"), location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
+  ph_with(value = paste0("2 to 8 Mile"), location = ph_location_label(ph_label = "Text Placeholder 1"), index=1) %>%
+  ph_with(value = paste0("8 to 16 Mile"), location = ph_location_label(ph_label = "Text Placeholder 2"), index=1) %>%
+  ph_with(external_img(paste0(fig.dir,"SPA1A_SHF_2to8.png")), location = ph_location_label(ph_label = "Figure Placeholder 1"), use_loc_size = TRUE) %>%
+  ph_with(external_img(paste0(fig.dir,"SPA1A_SHF_8to16.png")), location = ph_location_label(ph_label = "Figure Placeholder 2"), use_loc_size = TRUE) %>% 
+
+  add_slide(layout="Dual Figure 2", master="1_Office Theme") %>%
+  ph_with(value = paste0("SPA1A: Shell Height Frequency"), location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
+  ph_with(value = paste0("Mid Bay South"), location = ph_location_label(ph_label = "Text Placeholder 1"), index=1) %>%
+  ph_with(external_img(paste0(fig.dir,"SPA1A_SHF_MBS.png")), location = ph_location_label(ph_label = "Figure Placeholder 1"), use_loc_size = TRUE) %>%
+
+# slides - SPA1B Shell Height Frequency x 4  -------------------------------------------------------------
+add_slide(layout="Dual Figure 2", master="1_Office Theme") %>%
+  ph_with(value = paste0("SPA1B: Shell Height Frequency"), location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
+  ph_with(value = paste0("Cape Spencer"), location = ph_location_label(ph_label = "Text Placeholder 1"), index=1) %>%
+  ph_with(value = paste0("Mid Bay North"), location = ph_location_label(ph_label = "Text Placeholder 2"), index=1) %>%
+  ph_with(external_img(paste0(fig.dir,"SPA1B_SHF_CS.png")), location = ph_location_label(ph_label = "Figure Placeholder 1"), use_loc_size = TRUE) %>%
+  ph_with(external_img(paste0(fig.dir,"SPA1B_SHF_MBN.png")), location = ph_location_label(ph_label = "Figure Placeholder 2"), use_loc_size = TRUE) %>% 
+  
+  add_slide(layout="Dual Figure 2", master="1_Office Theme") %>%
+  ph_with(value = paste0("SPA1B: Shell Height Frequency"), location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
+  ph_with(value = paste0("Upper Bay (28C)"), location = ph_location_label(ph_label = "Text Placeholder 1"), index=1) %>%
+  ph_with(value = paste0("Advocate Harbour"), location = ph_location_label(ph_label = "Text Placeholder 2"), index=1) %>%
+  ph_with(external_img(paste0(fig.dir,"SPA1B_SHF_28C.png")), location = ph_location_label(ph_label = "Figure Placeholder 1"), use_loc_size = TRUE) %>%
+  ph_with(external_img(paste0(fig.dir,"SPA1B_SHF_AH.png")), location = ph_location_label(ph_label = "Figure Placeholder 2"), use_loc_size = TRUE) %>%
+  
+  add_slide(layout="Dual Figure 2", master="1_Office Theme") %>%
+  ph_with(value = paste0("SPA1B: Shell Height Frequency"), location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
+  ph_with(value = paste0("Outer (28D)"), location = ph_location_label(ph_label = "Text Placeholder 1"), index=1) %>%
+  ph_with(value = paste0("Spencer's Island"), location = ph_location_label(ph_label = "Text Placeholder 2"), index=1) %>%
+  ph_with(external_img(paste0(fig.dir,"SPA1B_SHF_Out.png")), location = ph_location_label(ph_label = "Figure Placeholder 1"), use_loc_size = TRUE) %>%
+  ph_with(external_img(paste0(fig.dir,"SPA1B_SHF_SI.png")), location = ph_location_label(ph_label = "Figure Placeholder 2"), use_loc_size = TRUE) %>%
+  
+  add_slide(layout="Dual Figure 2", master="1_Office Theme") %>%
+  ph_with(value = paste0("SPA1B: Shell Height Frequency"), location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
+  ph_with(value = paste0("Scots Bay"), location = ph_location_label(ph_label = "Text Placeholder 1"), index=1) %>%
+  ph_with(external_img(paste0(fig.dir,"SPA1B_SHF_SB.png")), location = ph_location_label(ph_label = "Figure Placeholder 1"), use_loc_size = TRUE) %>% 
+  
+# slides - SPA3 Shell Height Frequency x 2  -------------------------------------------------------------
+
+add_slide(layout="Dual Figure 2", master="1_Office Theme") %>%
+  ph_with(value = paste0("SPA3: Shell Height Frequency"), location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
+  ph_with(value = paste0("St. Mary's Bay"), location = ph_location_label(ph_label = "Text Placeholder 1"), index=1) %>%
+  ph_with(value = paste0("Inside VMS (Brier/Lurcher)"), location = ph_location_label(ph_label = "Text Placeholder 2"), index=1) %>%
+  ph_with(external_img(paste0(fig.dir,"SPA3_SHF_SMB.png")), location = ph_location_label(ph_label = "Figure Placeholder 1"), use_loc_size = TRUE) %>%
+  ph_with(external_img(paste0(fig.dir,"SPA3_SHF_InVMS.png")), location = ph_location_label(ph_label = "Figure Placeholder 2"), use_loc_size = TRUE) %>% 
+  
+  add_slide(layout="Dual Figure 2", master="1_Office Theme") %>%
+  ph_with(value = paste0("SPA3: Shell Height Frequency"), location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
+  ph_with(value = paste0("Outside VMS (Brier/Lurcher)"), location = ph_location_label(ph_label = "Text Placeholder 1"), index=1) %>%
+  ph_with(external_img(paste0(fig.dir,"SPA3_SHF_OutVMS.png")), location = ph_location_label(ph_label = "Figure Placeholder 1"), use_loc_size = TRUE) %>%
+  
+# slides - SPA4 Shell Height Frequency  -------------------------------------------------------------
+
+add_slide(layout="Dual Figure 2", master="1_Office Theme") %>%
+  ph_with(value = paste0("SPA4: Shell Height Frequency"), location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
+  #ph_with(value = paste0("Outside VMS (Brier/Lurcher)"), location = ph_location_label(ph_label = "Text Placeholder 1"), index=1) %>%
+  ph_with(external_img(paste0(fig.dir,"SPA4_SHF.png")), location = ph_location_label(ph_label = "Figure Placeholder 1"), use_loc_size = TRUE) %>%
+
+# slides - SPA6 Shell Height Frequency  -------------------------------------------------------------
+
+add_slide(layout="Dual Figure 2", master="1_Office Theme") %>%
+  ph_with(value = paste0("SPA6: Shell Height Frequency"), location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
+  ph_with(value = paste0("Inside VMS"), location = ph_location_label(ph_label = "Text Placeholder 1"), index=1) %>%
+  ph_with(value = paste0("Outside VMS"), location = ph_location_label(ph_label = "Text Placeholder 2"), index=1) %>%
+  ph_with(external_img(paste0(fig.dir,"SPA6_SHF_InVMS.png")), location = ph_location_label(ph_label = "Figure Placeholder 1"), use_loc_size = TRUE) %>%
+  ph_with(external_img(paste0(fig.dir,"SPA6_SHF_OutVMS.png")), location = ph_location_label(ph_label = "Figure Placeholder 2"), use_loc_size = TRUE) 
+  
+#END
+
+# Add page numbers -------------------------------------------------------------
+
+n_slides <- length(newpres)
+for (i_slide in 2:n_slides) {
+  newpres <- newpres %>%
+    on_slide(index = i_slide) %>%
+    ph_with(value = i_slide, location = ph_location_type('sldNum'))
 }
+
+print(newpres, target = paste0("Y:/INSHORE SCALLOP/BoF/2021/Assessment/Documents/Presentations/ISAC_presentation_Officerbuilt_",year,".pptx"))
+
+
   
-print(newpres, target = paste0("Y:/INSHORE SCALLOP/BoF/2021/Assessment/Documents/Presentations/ISAC_presentation_Officerbuilt_",assessment.year,".pptx"))  
-  
-# slide 3 - SPA 1A Summary -------------------------------------------------------------
+# slide SPA 1A Summary -------------------------------------------------------------
   
   #add_slide(layout="Summary", master="1_Office Theme") %>%
   #  ph_with(value = "SPA 1A Summary", location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
   #  ph_with(value = unordered_list(
   #    level_list = c(1, 1, 1, 1), #Bullet point levels
-  #    str_list = c(paste0("Total landings in the ",assessment.year," fishing year were X t against a TAC of X t (X t before post-quota reconciliation)"), #each bullet pnt
-   #                paste0("Commercial catch rate in the ",assessment.year," fishing year was X kg/h, a decrease from ",assessment.year-2," (X kg/h)"), 
-   #                paste0("The biomass estimate of recruit scallops in ",assessment.year," was X t, similar to ",assessment.year-2," (X t), and below the long-term (1997-",assessment.year,") median of X t"), 
-    #               paste0("Commercial population biomass for ",assessment.year," estimated by the model was X t (meats) which is in the healthy zone"))),
+  #    str_list = c(paste0("Total landings in the ",year," fishing year were X t against a TAC of X t (X t before post-quota reconciliation)"), #each bullet pnt
+   #                paste0("Commercial catch rate in the ",year," fishing year was X kg/h, a decrease from ",year-2," (X kg/h)"), 
+   #                paste0("The biomass estimate of recruit scallops in ",year," was X t, similar to ",year-2," (X t), and below the long-term (1997-",year,") median of X t"), 
+    #               paste0("Commercial population biomass for ",year," estimated by the model was X t (meats) which is in the healthy zone"))),
      # location = ph_location_label(ph_label = "Text Placeholder"), index=1) %>% 
   #  ph_with(value = 3, ph_location_label(ph_label = "Slide Number Placeholder"), index=1) %>%  #Pg num placeholder
 
