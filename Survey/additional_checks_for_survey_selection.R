@@ -1,4 +1,6 @@
 
+# This script functions as a method to narrow down selection of repeat tows for survey. This will help to avoid problems when running Sampling with Partial Replacement (SPR). Code breaks when repeat tows have 0 scallops. (unclear if this occurs when both years have 0 or just 1).
+
 require (lubridate)
 require (tidyverse)
 require (sf)
@@ -45,7 +47,6 @@ quer2 <- paste(
 #### Import Mar-scal functions 
 funcs <- "https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Survey_and_OSAC/convert.dd.dddd.r"
             
-# Note: uses older contour.gen.r version (working on alternative to contour.gen altogether).
 dir <- getwd()
 for(fun in funcs) 
 {
