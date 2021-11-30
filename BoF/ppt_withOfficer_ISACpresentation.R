@@ -3,6 +3,7 @@ require(officer)
 require(tidyverse)
 require(flextable)
 require(huxtable)
+require(openxlsx)
 
 #Set year and ensure you have access to ESS. Run full script.
 
@@ -63,7 +64,7 @@ SPA5 <-  read.csv(paste0(direct,"Data/SurveyIndices/SPA1A1B4and5/SPA5.Index.Weig
 SPA6 <- loadEnvironment(paste0(direct,"Data/Model/SPA6/Model_results_and_diagnostics_", year, "_6.RData")) #SPA6
 SPA6.catch <- read.csv(paste0(direct,"Data/CommercialData/CPUE_spa6_combined_",year,".csv")) %>% mutate(year = as.numeric(year))#SPA6
 SPA6.decision.table <- read.csv(paste0(direct,"Data/Model/SPA6/decisiontable", year, "_6.csv"))
-
+SPA6.landings <- read.xlsx(paste0(direct,"Data/CommercialData/SPA6_TACandLandings_",year,".xlsx"))
 
 # build a new ppt from the template
 newpres <- read_pptx("Y:/INSHORE SCALLOP/BoF/2021/Assessment/Documents/Presentations/DO_NOT_EDIT_Template_ISAC_R_ppt.pptx")
@@ -121,7 +122,7 @@ add_slide(layout="Title and Content", master="1_Office Theme") %>%
   ph_with(value = "Review by area", location = ph_location_label(ph_label = "Text Placeholder 1"), index=1) %>%
   ph_with(value = unordered_list(
     level_list = c(1, 2, 2, 2, 2, 2),
-    str_list = c("Review by area", "SPA 1A", "SPA 1B", "3", "4 & 5", "6")),
+    str_list = c("Review by area", "SPA 1A", "SPA 1B", "SPA 3", "SPAs 4 & 5", "SPA 6")),
     location = ph_location_label(ph_label = "Text Placeholder 1"), level=2, index=2) %>% 
   ph_with(value = paste0("*Note that all landing values and logbook data for ",year," are preliminary as of November X, ", year), location = ph_location_label(ph_label = "Text Placeholder 2"), index = 1) %>% 
   ph_with(external_img("Y:/INSHORE SCALLOP/Inshore Scallop Fishing Area Map/InshoreScallopFishingAreas_English_updated2021.png"), location = ph_location_label(ph_label = "Figure Placeholder"), use_loc_size = TRUE) #Adding an external image - can change height/width, but currently set to match the size of the placeholder in powerpoint.
@@ -212,6 +213,21 @@ col.text <- block_list(fpar(ftext("Inside VMS stratum (red)", col.prop1)),
 #now continue to add slides
 newpres <- newpres %>% 
   
+# slide - SPA6 Landings Figure -------------------------------------------------------------
+
+add_slide(layout="Single Figure", master="1_Office Theme") %>%
+  ph_with(value = paste0("SPA 6: Landings"), location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
+  ph_with(external_img(paste0(fig.dir,"CommercialData/SPA6_TACandLandings",year,".png"), width = 6.50 , height = 5.73), location = ph_location_label(ph_label = "Figure Placeholder"), use_loc_size = TRUE) %>%
+
+
+# slide - SPA6 Stock Status -------------------------------------------------------------  
+
+add_slide(layout="Single Figure wtext", master="1_Office Theme") %>%
+  ph_with(value = paste0("SPA 6: Stock Status"), location = ph_location_label(ph_label = "Title"), index=1) %>%
+  ph_with(external_img(paste0(fig.dir, "CommercialData/SPA6_RefPts",year,".png"), width = 5.25, height = 5.25), location = ph_location(ph_label = "Figure Placeholder"), use_loc_size = FALSE) %>% 
+  ph_with(value = paste0("USR: ",spa6.USR," kg/h\n LRP: ", spa6.LRP," kg/h"), location = ph_location_label(ph_label = "Text Placeholder btm right"), index=1) %>% #spa6.USR and spa6.LSR are defined at start of script
+  
+  
 # slide -  SPA6 VMS Survey Design  -------------------------------------------------------------
 
 add_slide(layout="Single Figure wtext 2", master="1_Office Theme") %>%
@@ -219,28 +235,15 @@ add_slide(layout="Single Figure wtext 2", master="1_Office Theme") %>%
   ph_with(external_img(paste0("Y:/INSHORE SCALLOP/BoF/",year,"/Assessment/Documents/Presentations/SPA6_VMS_INOUT.png"), width = 5.00, height = 5.25), location = ph_location(ph_label = "Figure Placeholder", left = 0.90, top = 1.00), use_loc_size = FALSE) %>%
   ph_with(value = "The survey and analysis for SPA 6 is based on areas defined by VMS fishing patterns from 2002-2014.", location = ph_location_label(ph_label = "Text Placeholder top"), index=1) %>%
   ph_with(col.text, location = ph_location_label(ph_label = "Text Placeholder middle"), level_list = c(1L, 1L)) %>% 
-  ph_with(value = "* Model is based on Inside VMS only", location = ph_location_label(ph_label = "Text Placeholder bottom")) %>%
+  ph_with(value = "* Model is based on Inside VMS stratum only", location = ph_location_label(ph_label = "Text Placeholder bottom")) %>%
 
-  
-# slide - SPA6 Landings Figure -------------------------------------------------------------
-
-  add_slide(layout="Single Figure", master="1_Office Theme") %>%
-  ph_with(value = paste0("SPA 6: Landings"), location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
-  ph_with(external_img(paste0(fig.dir,"CommercialData/SPA6_TACandLandings",year,".png"), width = 6.50 , height = 5.73), location = ph_location_label(ph_label = "Figure Placeholder"), use_loc_size = TRUE) %>%
-
-
-# slide - SPA6 Stock Status -------------------------------------------------------------  
-  
-add_slide(layout="Single Figure wtext", master="1_Office Theme") %>%
-  ph_with(value = paste0("SPA 6: Stock Status"), location = ph_location_label(ph_label = "Title"), index=1) %>%
-  ph_with(external_img(paste0(fig.dir, "CommercialData/SPA6_RefPts",year,".png"), width = 5.25, height = 5.25), location = ph_location(ph_label = "Figure Placeholder"), use_loc_size = FALSE) %>% 
-  ph_with(value = paste0("USR: ",spa6.USR," kg/h\n LRP: ", spa6.LRP," kg/h"), location = ph_location_label(ph_label = "Text Placeholder btm right"), index=1) %>% #spa6.USR and spa6.LSR are defined at start of script
   
   # slide - SPA6 Modeled Biomass Figure -------------------------------------------------------------
 
 add_slide(layout="Single Figure wtext", master="1_Office Theme") %>%
   ph_with(value = "SPA 6: Modeled Biomass", location = ph_location_label(ph_label = "Title"), index=1) %>%
-  ph_with(external_img(paste0(fig.dir,"Model/SPA6/Model_biomass_figure_6.png"), width = 5.10, height = 6.20), location = ph_location(ph_label = "Figure Placeholder"), use_loc_size = FALSE) %>% 
+  ph_with(external_img(paste0(fig.dir,"Model/SPA6/Model_biomass_figure_6.png"), width = 5.10, height = 6.20), location = ph_location(ph_label = "Figure Placeholder"), use_loc_size = FALSE) %>%
+  ph_with(value = "* Model is based on Inside VMS stratum only", location = ph_location_label(ph_label = "Text Placeholder top right"), index=1) %>%
   ph_with(value = paste0("Projection uses ",SPA6$catch.next.year," t\n removals"), location = ph_location_label(ph_label = "Text Placeholder btm right"), index=1)
 
 #Break
@@ -255,6 +258,8 @@ newpres <- newpres %>%
   
   add_slide(layout="Table_2", master="1_Office Theme") %>%
   ph_with(value = "SPA 6: Harvest Scenario table", location = ph_location_label(ph_label = "Title")) %>% #This is the title
+  ph_with(value = "* Model is based on Inside VMS stratum only", location = ph_location_label(ph_label = "Text Placeholder top")) %>%
+  ph_with(value = paste0("In ",year, ", the proportion of landings that came from the modelled area in SPA6 was ", SPA6.landings  %>% dplyr::select(Year, paste0(year)) %>% filter(Year == "Prop_IN") %>% pull()*100,"%"), location = ph_location_label(ph_label = "Text Placeholder bottom")) %>%
   ph_with(value = ex.hux, location = ph_location_label(ph_label = "Table Placeholder")) %>% 
 
 # slide - END OF PRESENTATION -------------------------------------------------------------
@@ -349,6 +354,10 @@ for (i in 1:length(areas)) {
 
 newpres <- newpres %>%
 
+#Blank slide
+add_slide(layout="Single Figure", master="1_Office Theme") %>%
+
+#Extra slides title
 add_slide(layout="Main Title Page", master="1_Office Theme") %>%
   ph_with(value = "Extra Slides", location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
   ph_with(value= paste0("X December ",year,"\n \n Scallop Unit\n \n Population Ecology Division\n Fisheries and Oceans Canada\n Bedford Institute of Oceanography\n Dartmouth, Nova Scotia, B2Y 4A2"),
