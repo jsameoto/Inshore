@@ -194,7 +194,7 @@ harvest.scen.tab(area = areas2[i], catch.range = catch.range)
     newpres <- newpres %>%  
     
     add_slide(layout="Table", master="1_Office Theme") %>%
-      ph_with(value = paste0(areas2.title, ": Harvest Scenario table"), location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
+      ph_with(value = paste0(areas2.title, ": Harvest Scenario Table"), location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
       ph_with(value = paste0("USR is ", USR, " t, LRP is ", LRP, " t"),location = ph_location_label(ph_label = "Text Placeholder"), index = 1) %>%
       ph_with(value = ex.hux, location = ph_location_label(ph_label = "Table Placeholder"), use_loc_size = TRUE, index = 1)
     
@@ -257,9 +257,10 @@ harvest.scen.tab(area = "SPA6", catch.range = catch.range)
 newpres <- newpres %>%  
   
   add_slide(layout="Table_2", master="1_Office Theme") %>%
-  ph_with(value = "SPA 6: Harvest Scenario table", location = ph_location_label(ph_label = "Title")) %>% #This is the title
+  ph_with(value = "SPA 6: Harvest Scenario Table", location = ph_location_label(ph_label = "Title")) %>% #This is the title
   ph_with(value = "* Model is based on Inside VMS stratum only", location = ph_location_label(ph_label = "Text Placeholder top")) %>%
-  ph_with(value = paste0("In ",year, ", the proportion of landings that came from the modelled area in SPA6 was ", SPA6.landings  %>% dplyr::select(Year, paste0(year)) %>% filter(Year == "Prop_IN") %>% pull()*100,"%"), location = ph_location_label(ph_label = "Text Placeholder bottom")) %>%
+  ph_with(value = paste0("In ",year, ", the proportion of landings that came from the modelled area in SPA6 was ", SPA6.landings  %>% dplyr::select(Year, paste0(year)) %>% filter(Year == "Prop_IN") %>% pull()*100,"%.\n Between
+2006 and ",year-1,", the proportion of landings associated with the modelled area ranged from ",round(min(100*(SPA6.landings[10,32:ncol(SPA6.landings)]), na.rm = T),0),"-",round(max(100*(SPA6.landings[10,32:ncol(SPA6.landings)]), na.rm = T),0)," %"), location = ph_location_label(ph_label = "Text Placeholder bottom")) %>%
   ph_with(value = ex.hux, location = ph_location_label(ph_label = "Table Placeholder")) %>% 
 
 # slide - END OF PRESENTATION -------------------------------------------------------------
