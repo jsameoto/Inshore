@@ -1,4 +1,5 @@
 
+
 #This script is used for intersecting survey data with scallop species distribution model (SDM) layer (ESRI grid - sdm_utm_50) by:
 # 1 - creating polyline between start and end points (assumes straight line tow)
 # 2 - segments the geometry of the line by 50m and then forms points at 50 m intervals for each tow (matching the resolution of the raster).
@@ -24,7 +25,9 @@ options(stringsAsFactors = FALSE)
 uid <- keyring::key_list("Oracle")[1,2]
 pwd <- keyring::key_get("Oracle", uid)
 
-#### Import Source functions####
+
+# ---Import Source functions ----------------------------------------------------------------------
+
 
 funcs <- "https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Survey_and_OSAC/convert.dd.dddd.r"
 dir <- getwd()
@@ -38,9 +41,10 @@ for(fun in funcs)
 #source("Y:/INSHORE SCALLOP/BoF/Assessment_fns/convert.dd.dddd.r")
 
 
-#Read in SDM
+# ---Read in SDM and data query ----------------------------------------------------------------------
+
 sdm <- raster("Y:/INSHORE SCALLOP/Databases/Scallsur/SFA29BottomTypes/SDM/sdm_sfa29/w001001.adf") #UTM zone 19
-  #projectRaster(crs = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
+#projectRaster(crs = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
 
 #Pull survey data from database - ROracle
 chan <- dbConnect(dbDriver("Oracle"),username=uid, password=pwd,'ptran')
@@ -48,8 +52,6 @@ chan <- dbConnect(dbDriver("Oracle"),username=uid, password=pwd,'ptran')
 #set survey.year and cruise - *Note: requires single quotations within double quotations*
 survey.year <- "'2021'"
 cruise <- "'SFA292021'"
-#appendingfile_year <- "2021" # for importing the current spreadsheet to append to.
-#updatefile_year <- "2021" #For saving file
 
 #Db Query:
 quer2 <- paste(
@@ -64,6 +66,7 @@ quer2 <- paste(
 #Pull data 
 ScallopSurv.dat <- dbGetQuery(chan, quer2)
 
+# ---Foramtting data  ----------------------------------------------------------------------
 
 #Convert lat/lon to DD:
 ScallopSurv.dat  <- ScallopSurv.dat  %>% 
@@ -71,8 +74,8 @@ ScallopSurv.dat  <- ScallopSurv.dat  %>%
   mutate(DDSlon = convert.dd.dddd(ScallopSurv.dat $START_LONG)) %>% 
   mutate(DDElat = convert.dd.dddd(ScallopSurv.dat $END_LAT)) %>% 
   mutate(DDElon = convert.dd.dddd(ScallopSurv.dat $END_LONG))
-  #mutate(mid_lon = with(ScallopSurv.dat ,apply(cbind(DDElon,DDSlon),1,mean))) %>% 
-  #mutate(mid_lat = with(ScallopSurv.dat ,apply(cbind(DDElat,DDSlat),1,mean)))
+#mutate(mid_lon = with(ScallopSurv.dat ,apply(cbind(DDElon,DDSlon),1,mean))) %>% 
+#mutate(mid_lat = with(ScallopSurv.dat ,apply(cbind(DDElat,DDSlat),1,mean)))
 
 
 #Move start and end coords into same column
@@ -107,15 +110,47 @@ ScallopSurv.sf <- st_as_sf(ScallopSurv, coords = c("longitude", "latitude"), crs
 mapview::mapview(ScallopSurv.sf)+
   mapview::mapview(sdm)
 
-#extract sdm value for each point
+#####################################################################################################################
+#Alternative methods:
+#Leave as line and extract with weight = TRUE argument to produce mean value for the line (presumably weighting it by length over each cell).
+#ScallopSurv.sf <- st_as_sf(ScallopSurv, coords = c("longitude", "latitude"), crs = 4326) %>% 
+#  st_transform(crs = 32619) %>% #Convert to utm zone 19
+#  group_by(TOW_NO) %>%
+#  summarize(do_union=FALSE) %>% 
+#  st_cast("LINESTRING")
+
+#sdm.val <- raster::extract(sdm, ScallopSurv.sf, weight = TRUE, normalizeWeights = TRUE, fun = "mean") #remove fun="mean" to see segemented values for each tow. This method does not give a weighted value.
+
+#OR 
+
+#Convert to polygon by adding small buffer to line (1m) which produces 
+#ScallopSurv.sf <- st_as_sf(ScallopSurv, coords = c("longitude", "latitude"), crs = 4326) %>% 
+#  st_transform(crs = 32619) %>% #Convert to utm zone 19
+#  group_by(TOW_NO) %>%
+#  summarize(do_union=FALSE) %>% 
+#  st_cast("LINESTRING") %>% 
+#  st_buffer(0.5, endCapStyle = "FLAT") #Now a polygon with width of 
+
+#sdm.val <- raster::extract(sdm, ScallopSurv.sf, weight = TRUE, normalizeWeights = TRUE)
+#sdm.val[[1]]
+
+#End of alternative methods for extracting (with weighted values). If used, script below will need to be adjusted
+#####################################################################################################################
+
+# ---Extract raster data at point locations  ----------------------------------------------------------------------
+
 sdm.val <- raster::extract(sdm, ScallopSurv.sf, sp = TRUE)
 
+
+# --- Boxplot to check sdm ranges  ----------------------------------------------------------------------
 
 #Plot to check ranges for each tow
 p <- ggplot(sdm.val@data, aes(as.factor(TOW_NO), w001001))
 p + geom_boxplot()+
   xlab("Tow number")+
   ylab("SDM probability")+
+  geom_hline(yintercept=0.3, linetype="dashed", color = "red")+
+  geom_hline(yintercept=0.6, linetype="dashed", color = "blue")+
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
 #Plot to check any tows if needed
@@ -123,12 +158,15 @@ mapview::mapview(ScallopSurv.sf %>% filter(TOW_NO == 97))+ #Change TOW_NO
   mapview::mapview(sdm)
 
 
+# ---Mean of sdm values for each tow  ----------------------------------------------------------------------
+
 #Take the average of the sdm values for each tow
 sdm.mean <- sdm.val@data %>% 
   group_by(TOW_NO) %>%
   summarize(sdmval_LWM = mean(w001001))
 
-#format data to match previous years.
+# ---formatting data to match previous years ----------------------------------------------------------------------
+
 sdmtows <- merge(sdm.mean, ScallopSurv.dat, by = "TOW_NO")
 
 #Calculate tow length (assumes straight line tow)
@@ -148,7 +186,8 @@ sdmtows <- sdmtows %>%
   dplyr::select(CRUISE, TOW_NO, ET_ID = ID, length, sdmval_LWM, sdmval_CNT)
 
 
-# Bring in the previous survey tow details and stitch them all together
+# ---Bring in the previous survey tow details and stitch them all together ----------------------------------------------------------------------
+
 sdmtows.old <- read.csv("Y:/INSHORE SCALLOP/SFA29/ScalSurv_SDM/SFA29Tows_SDM.csv")
 sdmtows.updt <- rbind(sdmtows.old,sdmtows)
 sdmtows.updt <-sdmtows.updt %>% arrange(CRUISE, TOW_NO)
@@ -160,9 +199,12 @@ sdmtows.updt$SDM[sdmtows.updt$sdmval_LWM >= 0.3 & sdmtows.updt$sdmval_LWM < 0.6]
 sdmtows.updt$SDM[sdmtows.updt$sdmval_LWM >= 0.6] <- "high"
 
 
-#Save updated dataframe:
-#write.csv(sdmtows, paste0("Y:/INSHORE SCALLOP/SFA29/ScalSurv_SDM/Archived/SFA29",survey.year+1,"Tows_SDM.csv")) #save out file with year
+# ---Save updated dataframe ----------------------------------------------------------------------
+
 write.csv(sdmtows.updt, "Y:/INSHORE SCALLOP/SFA29/ScalSurv_SDM/SFA29Tows_SDM.csv", row.names = F)
+
+#save single year to archive folder for records
+write.csv(sdmtows, paste0("Y:/INSHORE SCALLOP/SFA29/ScalSurv_SDM/Archived/SFA29",survey.year,"Tows_SDM.csv")) #save out file with year
 
 
 #########################################################################################################
@@ -179,7 +221,6 @@ write.csv(sdmtows.updt, "Y:/INSHORE SCALLOP/SFA29/ScalSurv_SDM/SFA29Tows_SDM.csv
 #sdmtows <- sdmtows %>% arrange(CRUISE, TOW_NO)
 
 #########################################################################################################
-
 
   
 
