@@ -47,7 +47,7 @@ pwd <- keyring::key_get("Oracle", uid)
 #set year 
 survey.year <- 2021  #removed maxyear in script and changed to survey year
 assessmentyear <- 2021 #year in which you are providing advice for- determines where to save files to
-path.directory <- "Y:/INSHORE SCALLOP/BoF/"
+path.directory <- "Y:/Inshore/BoF/"
 
 #set up directory to save plot
 saveplot.dir <- paste0(path.directory,assessmentyear,"/Assessment/Figures/")
@@ -164,10 +164,10 @@ myco.datw <- merge(myco.datw, tow.dat, by = "ID", all.x = TRUE) %>%
 
 #Saves files by cruise
 for(i in unique(myco.datw$CRUISE)){
-  write.csv(myco.datw %>% filter(year == survey.year & CRUISE == i), paste0("Y:/INSHORE SCALLOP/BoF/",survey.year,"/Assessment/Data/SurveyIndices/",i,"towsdd_MYCOprop.csv"))
+  write.csv(myco.datw %>% filter(year == survey.year & CRUISE == i), paste0("Y:/Inshore/BoF/",survey.year,"/Assessment/Data/SurveyIndices/",i,"towsdd_MYCOprop.csv"))
 }
 
-#write.csv(myco.datw, "Y:/INSHORE SCALLOP/BoF/",survey.year,"/Assessment/Data/SurveyIndices/BF2021towsdd_MYCOprop.csv")
+#write.csv(myco.datw, "Y:/Inshore/BoF/",survey.year,"/Assessment/Data/SurveyIndices/BF2021towsdd_MYCOprop.csv")
 
 # -------------------------------Format for Grey meats plots-----------------------------------------
 
@@ -183,7 +183,7 @@ greymeat.datw <- pivot_wider(greymeat.dat,
 
 greymeat.datw <- greymeat.datw %>%
   mutate(prop = (Moderate + Severe)/(Normal + Moderate + Severe)) %>% 
-  mutate(Y = Moderate + Severe) %>% 
+  mutate(NUM_GREYMEAT = Moderate + Severe) %>% 
   unite(ID, c("CRUISE", "tow"), sep = ".", remove = FALSE)
 
 greymeat.datw <- merge(greymeat.datw, tow.dat, by = "ID", all.x = TRUE) %>% 
@@ -191,11 +191,11 @@ greymeat.datw <- merge(greymeat.datw, tow.dat, by = "ID", all.x = TRUE) %>%
   rename(tow = tow.x)
 
 #Saves files by cruise
-for(i in unique(myco.datw$CRUISE)){
-  write.csv(myco.datw %>% filter(year == survey.year & CRUISE == i), paste0("Y:/INSHORE SCALLOP/BoF/",survey.year,"/Assessment/Data/SurveyIndices/",i,"towsdd_QUALITYprop.csv"))
+for(i in unique(greymeat.datw$CRUISE)){
+  write.csv(greymeat.datw %>% filter(year == survey.year & CRUISE == i), paste0("Y:/Inshore/BoF/",survey.year,"/Assessment/Data/SurveyIndices/",i,"towsdd_QUALITYprop.csv"))
 }
 
-#write.csv(greymeat.datw, "Y:/INSHORE SCALLOP/BoF/",survey.year,"/Assessment/Data/SurveyIndices/BI2021towsdd_QUALITY.csv")
+#write.csv(greymeat.datw, "Y:/Inshore/BoF/",survey.year,"/Assessment/Data/SurveyIndices/BI2021towsdd_QUALITY.csv")
 
 # --------------Set plot themes (legend orientation/aesthetics)------------------------------
 
