@@ -22,6 +22,7 @@ require (splancs)
 require (RColorBrewer)
 require (spatstat)
 require (RPMG)
+library(scales)
 #require (RODBC)
 require (lubridate)
 require (tidyverse)
@@ -232,8 +233,40 @@ prop.clappers <- merge(live,dead,by="ID") %>%
 
 #write.csv(prop.clappers,"dataoutput/SFA29_PropClappersbyTow.csv")
 
-	
-#Set plot themes (legend orientation/aesthetics)
+
+
+# Lobster Bycatch formatting  ----------------------------------------------------
+
+quer4 <- paste(
+  "SELECT t.cruise, t.tow_no, tow_date, strata_id, start_lat, start_long, end_lat, end_long, tow_len, drag_width, geophys_id, lobsterpertow
+FROM (
+SELECT * 
+FROM scallsur.SCTOWS 
+WHERE cruise in (",cruise,")
+) t
+LEFT JOIN (
+SELECT cruise, tow_no, count(*) AS LobsterPerTow
+from scallsur.scbycatch_by_tow_raw
+WHERE cruise in (",cruise,")
+and speccd_id = 2550 
+GROUP BY cruise, tow_no
+) b
+ON t.cruise = b.cruise
+AND t.tow_no = b.tow_no",
+  sep=""
+)
+
+bycatch.dat <- dbGetQuery(chan, quer4)
+
+bycatch.dat <- bycatch.dat %>% 
+  mutate(lat = convert.dd.dddd(START_LAT)) %>% #Convert to DD
+  mutate(lon = convert.dd.dddd(START_LONG)) #Convert to DD
+
+bycatch.dat[is.na(bycatch.dat)] <- 0 #Assumes all NAs are 0
+
+# Set plot themes (legend orientation/aesthetics) ------------------------
+
+
 #Set legend format for plots
 plot.theme <-   theme(legend.key.size = unit(6,"mm"),
                       plot.title = element_text(size = 14, hjust = 0.5), #plot title size and position
@@ -877,6 +910,38 @@ p + #Plot survey data and format figure.
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_PreClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
+
+
+# LOBSTER BYCATCH ----------------------------------------------------
+         
+p <- pecjector(area = "sfa29",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
+               add_layer = list(land = "grey", survey = c("inshore", "outline"), scale.bar = c('bl',0.5,-1,-1)))
+
+
+#define for plotting ****MAY NEED TO ADJUST INTERVALS****
+labels <- c("0", "1-5", "6-15", "16-20", paste0("21-",max(bycatch.dat$LOBSTERPERTOW)))
+lvls <- c(0,1,5,15,20,max(bycatch.dat$LOBSTERPERTOW))
+
+bycatch.dat <- bycatch.dat %>% 
+  mutate(brk = cut(LOBSTERPERTOW, breaks = lvls, labels = labels, include.lowest = TRUE))
+
+
+p + #Plot survey data and format figure.
+  geom_spatial_point(data = bycatch.dat, aes(lon, lat, size = brk, shape = brk)) +
+  scale_shape_manual("Number of Lobster\n per Tow",values = c(4, 19, 19, 19,19), labels = labels)+ #Formatting the shape
+  scale_size_manual("Number of Lobster\n per Tow", values = c(2, 2, 4, 6, 8), labels = labels)+# Formatting the size for each break
+  coord_sf(xlim = c(-66.50,-65.45), ylim = c(43.10,43.80), expand = FALSE) +
+  theme(legend.key.size = unit(6,"mm"),
+        plot.title = element_text(size = 14, hjust = 0.5), #plot title size and position
+        axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        legend.title = element_text(size = 10, face = "bold"), 
+        legend.text = element_text(size = 10),
+        legend.position = c(.86,.82), #legend position
+        legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.8)),
+        legend.box.margin = margin(2, 3, 2, 3))
+
+ggsave(filename = paste0(saveplot.dir,'LobsterSpatialPlot_SFA29',survey.year,'.png'), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ------------------------------END OF CONTOUR PLOTS  -------------------------------------------
 
