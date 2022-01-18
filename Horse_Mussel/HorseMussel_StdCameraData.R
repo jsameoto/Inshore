@@ -6,6 +6,19 @@ require(sf)
 require(lubridate)
 library(magrittr)
 
+#### Import Source functions####
+funcs <- c("https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Survey_and_OSAC/convert.dd.dddd.r",
+           "https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Maps/pectinid_projector_sf.R",
+           "https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/archive/2016/contour.gen.r") 
+direct <- getwd()
+for(fun in funcs) 
+{
+  temp <- direct
+  download.file(fun,destfile = basename(fun))
+  source(paste0(direct,"/",basename(fun)))
+  file.remove(paste0(direct,"/",basename(fun)))
+}
+
 
 # LIVE- CAMERA DATA  -------------------------------------------------
 
@@ -18,7 +31,8 @@ hm.dat <- hm.dat %>%
   mutate(Lat = Latitude) %>% 
   mutate(Long = Longitude) %>% 
   st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326) %>% 
-  st_transform(32620)
+  st_transform(32620) %>% 
+  mutate(ID = Station)
 
 hm.dat %>% filter(Image.Quality=="Poor" & TOTAL.STD > 0)
 nrow(hm.dat %>% filter(TOTAL.STD > 0))
@@ -57,7 +71,7 @@ strata.hm <- st_intersection(strata, hm.dat)
 
 
 #Join raster data with horse mussel data
-hm.enviro.dat <- cbind(benthoscape %>% dplyr::select(TOTAL.STD, ImageID, Image.Quality, CLASS, Long, Lat), enviro.dat)
+hm.enviro.dat <- cbind(benthoscape %>% dplyr::select(Station, TOTAL.STD, ImageID, Image.Quality, CLASS, Long, Lat), enviro.dat)
 hm.enviro.dat <- inner_join(hm.enviro.dat, strata.hm %>% dplyr::select(STRATA_ID, ImageID) %>% st_set_geometry(NULL), by = "ImageID")
 
 # Tidy Data --------------------------------------------------------
@@ -101,14 +115,103 @@ hm.enviro.dat <- hm.enviro.dat %>%
 summary(hm.enviro.dat)
 
 
-hm.enviro.sf <- hm.enviro.dat %>% 
+hm.enviro.sf <- hm.enviro.dat %>%
+  mutate(PRESENT.ABSENT = if_else(TOTAL.STD >= 1, 1, 0)) %>%
   filter(!is.na(Bathy)) %>% 
   filter(!is.na(MaxSal)) %>% 
   filter(Benthoscape != "Not_Classified") %>% 
   mutate(STRATA_ID = as.factor(STRATA_ID)) %>% 
-  mutate(Benthoscape = as.factor(Benthoscape))
+  mutate(Benthoscape = as.factor(Benthoscape)) 
+
+#hm.enviro.sf <- merge(hm.enviro.sf,hm.enviro.dat, by = "ImageID")
 
 hm.enviro.dat <- hm.enviro.sf %>% st_set_geometry(NULL)
+
+#write.csv(hm.enviro.dat, "Z:/Projects/Horse_Mussel/HM_InshoreSurvey/Documents/DataExploration_report/HM_camdata_andEnviro.csv", row.names = F)
+
+
+vars.perstation <- hm.enviro.dat %>% 
+  group_by(Station, Benthoscape, SPATIAL_AREA) %>%
+  summarise(across("Long":"WSV", ~ mean(.x, na.rm = TRUE)))
+
+tot.perstation <- hm.enviro.dat %>% 
+  group_by(Station, Benthoscape, SPATIAL_AREA) %>%
+  summarise(TOTAL.STD = sum(TOTAL.STD))
+
+per.station <- merge(tot.perstation, vars.perstation, by = "Station")
+
+per.station <- per.station %>% 
+  dplyr::select(!c(SPATIAL_AREA.y, Benthoscape.y)) %>%
+  rename(SPATIAL_AREA = SPATIAL_AREA.x) %>% 
+  rename(Benthoscape = Benthoscape.x)
+  
+
+write.csv(per.station, "Z:/Projects/Horse_Mussel/HM_InshoreSurvey/Documents/DataExploration_report/HM_camdata_andEnviro.csv", row.names = F)
+
+# Contour plots -----------------------------------------------------------
+
+plot.hm.enviro.dat <- hm.enviro.dat %>%
+  group_by(Station) %>% 
+  summarise(TOTAL.STD = sum(TOTAL.STD), Lat = mean(Lat), Long = mean(Long))%>%
+  mutate(PRESENT.ABSENT = if_else(TOTAL.STD >= 1, 1, 0)) # Absent == 0, Present = 1 
+
+plot.hm.enviro.dat$PRESENT.ABSENT <- as.factor(plot.hm.enviro.dat$PRESENT.ABSENT)
+  
+plot.hm.enviro.dat <- plot.hm.enviro.dat %>% st_set_geometry(NULL)
+
+
+com.contours <- contour.gen(plot.hm.enviro.dat %>% dplyr::select(Station, Long, Lat, TOTAL.STD),
+                            ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
+
+lvls <- c(1,5,10,50,100,200,300,400,500) #levels to be color coded
+CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
+CP <- convCP(CL)
+totCont.poly <- CP$PolySet
+
+##Convert pbsmapping object to sf
+totCont.poly <- as.PolySet(totCont.poly,projection = "LL") #assuming you provide Lat/Lon data and WGS84
+totCont.poly <- PolySet2SpatialLines(totCont.poly) # Spatial lines is a bit more general (don't need to have boxes closed)
+totCont.poly.sf <- st_as_sf(totCont.poly) %>%
+  st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
+  st_cast("POLYGON") %>% #Convert multilines to polygons
+  st_make_valid() %>% 
+  mutate(level = unique(CP$PolyData$level))
+
+#Colour aesthetics and breaks for contours
+labels <- c("1-5", "5-10", "10-50", "50-100", "100-200", "200-300", "300-400", "400-500", "500+")
+col <- brewer.pal(length(lvls),"YlGnBu") #set colours
+cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = expression(frac(N,tow)), limits = labels) #set custom fill arguments for pecjector
+
+#Plot with Pecjector for each area:
+p <- pecjector(area = "inshore",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
+               add_layer = list(land = "grey", scale.bar = c('tl',0.5,-1,-1)), # bathy = "ScallopMap"
+               add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>%
+                                   mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+
+#Plot without contours
+p <- pecjector(area = "inshore",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
+               add_layer = list(land = "grey", scale.bar = c('tl',0.5,-1,-1))) # bathy = "ScallopMap"
+
+
+#PLOT
+
+p + #Plot survey data and format figure.
+  geom_spatial_point(data = plot.hm.enviro.dat, aes(Long, Lat, colour = PRESENT.ABSENT, shape = PRESENT.ABSENT), size = 3) + #
+  labs(x = "Longitude", y = "Latitude") + #title = paste(survey.year, "", "Live M.modiolus Density"),
+  #guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-67.50,-64.30), ylim = c(43.10,45.80), expand = FALSE)+
+  theme(plot.title = element_text(size = 14, hjust = 0.5), #plot title size and position
+        axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        legend.title = element_text(size = 10, face = "bold"), 
+        legend.text = element_text(size = 8),
+        legend.position = c(.80,.52), #legend position
+        legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.7)), #Legend bkg colour and transparency
+        legend.box.margin = margin(6, 8, 6, 8)) + #Legend bkg margin (top, right, bottom, left)
+  guides(shape = guide_legend(override.aes = list(size = 3)))
+
+ggsave(filename = paste0('Z:/Projects/Horse_Mussel/HM_InshoreSurvey/Documents/DataExploration_report/Figures/PresenceAbsence_CameraHM.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+
 
 
 # Data Exploration --------------------------------------------------------
@@ -171,7 +274,7 @@ dotchart(hm.enviro.dat$TOTAL.STD,
 
 
 # A Outliers in X -------------------------------------------------
-par(mfrow = c(2, 3), mar = c(4, 3, 3, 2))
+par(mfrow = c(4, 5))
 dotchart(hm.enviro.dat$Bathy, main = "Depth")
 dotchart(hm.enviro.dat$MLD, main = "Mixed Layer Depth")
 dotchart(hm.enviro.dat$BBPI, main = "Broad BPI")
@@ -216,12 +319,7 @@ identify(x = hm.enviro.dat$SMF, y = 1:nrow(hm.enviro.dat))
 
 #Apply transformations
 
-# B Collinearity X -------------------------------------------------
-
-MyVar <- c("Bathy", "MLD","BBPI" ,"FBPI","BS_Bulkshift","Easterness","LogSlope","MaxVel","MaxSal",       
-           "MaxTemp","MeanGrainsize", "MeanVel","MeanSal","MeanTemp","MinSal","MinTemp", "Northerness","rdmv",         
-           "SMF","WSV")
-pairs(hm.enviro.dat[, MyVar])
+# B Collinearity X ------------------------------------------------
 
 
 pairs(hm.enviro.dat[,c("Bathy", "MLD","BBPI" ,"FBPI","BS_Bulkshift","Easterness","LogSlope","MaxVel","MaxSal",       
@@ -263,6 +361,7 @@ corvif(hm.enviro.dat[,c("Bathy", "MLD","BBPI" ,"FBPI","BS_Bulkshift","Easterness
 
 #Boxplots Loop through all variables
 #Benthoscape - Derived from Bathy, Backscatter, Slope, Wave shear stress, Broad Batymetric Position Index
+par(mfrow = c(4, 5))
 for(i in 10:29){
   factor.cor <- boxplot(hm.enviro.dat[,i] ~ factor(Benthoscape), 
                         data = hm.enviro.dat,
@@ -275,6 +374,7 @@ for(i in 10:29){
 
 #Boxplots Loop through all variables
 #SPATIAL AREA
+par(mfrow = c(4, 5))
 for(i in 10:29){
   factor.cor <- boxplot(hm.enviro.dat[,i] ~ factor(SPATIAL_AREA), 
                         data = hm.enviro.dat,

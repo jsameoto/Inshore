@@ -41,6 +41,39 @@ for(fun in funcs)
   file.remove(paste0(direct,"/",basename(fun)))
 }
 
+
+#Read in the inshore strata for plotting
+temp <- tempfile()
+# Download this to the temp directory
+download.file("https://raw.githubusercontent.com/Mar-scal/GIS_layers/master/inshore_boundaries/inshore_survey_strata/inshore_survey_strata.zip", temp)
+# Figure out what this file was saved as
+temp2 <- tempfile()
+# Unzip it
+unzip(zipfile=temp, exdir=temp2)
+strata <- st_read(paste0(temp2, "/PolygonSCSTRATAINFO_rm46-26-57.shp"))
+#mapview::mapview(strata)
+
+#Read in inshore boundaries
+temp <- tempfile()
+# Download this to the temp directory
+download.file("https://raw.githubusercontent.com/Mar-scal/GIS_layers/master/inshore_boundaries/inshore_boundaries.zip", temp)
+# Figure out what this file was saved as
+temp2 <- tempfile()
+# Unzip it
+unzip(zipfile=temp, exdir=temp2)
+SFA29 <- st_read(paste0(temp2, "/SFA29_subareas_utm19N.shp")) %>% mutate(ID = seq(1,5,1)) %>%  #TO FIX IN COPY ON GITHUB (ET_ID missing so adding it here)
+  mutate(ET_ID = case_when(ID == 1 ~ 41, 
+                           ID == 2 ~ 42,
+                           ID == 3 ~ 43,
+                           ID == 4 ~ 44,
+                           ID == 5 ~ 45)) %>% 
+  dplyr::select(Id = ID, ET_ID) %>% st_transform(crs = 4326)
+
+
+ebsa <- st_read("Z:/Projects/BoF_Mapping_Project/Data/GIS_Layers/Shapefiles/HorseMussel_shapefiles/Modiolus_EBSA/modiolus_EBSA.shp") %>% 
+  st_transform(4326)
+
+
 # Read in Tow data from database ------------------------------------------
 
 #ROracle
@@ -283,7 +316,7 @@ write.csv(hm.live, paste0(dir,"Prorated/horsemussellive_prorated_2018-2021.csv")
 
 # Spatial plot - live density --------------------------------------------------
 
-com.contours <- contour.gen(hm.live %>% dplyr::select(ID, MID_LONG, MID_LAT, ABUND.STD),
+com.contours <- contour.gen(hm.live %>% filter(SAMPLE.METHOD != 1) %>% dplyr::select(ID, MID_LONG, MID_LAT, ABUND.STD),
                             ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
 
 lvls <- c(1,5,10,50,100,200,300,400,500) #levels to be color coded
@@ -307,24 +340,87 @@ cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = expre
 
 #Plot with Pecjector for each area:
 p <- pecjector(area = "inshore",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5,-1,-1)), 
+               add_layer = list(land = "grey", scale.bar = c('tl',0.5,-1,-1)), # bathy = "ScallopMap"
                add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>%
                                    mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+
+#Plot without contours
+p <- pecjector(area = "inshore",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
+               add_layer = list(land = "grey", scale.bar = c('tl',0.5,-1,-1))) # bathy = "ScallopMap"
+               
+
+#Creating strata shapefiles:
+smb.strata <- strata %>% filter(STRATA_ID==22)
+
+brier.strata <-strata %>% filter(STRATA_ID %in% c(23, 56)) %>% 
+  st_union() %>% 
+  st_make_valid()
+
+lurcher.strata <- strata %>% filter(STRATA_ID==24) 
+sfa29.strata <- strata %>% filter(STRATA_ID %in% c(41:45)) %>% 
+  st_union() %>% 
+  st_make_valid()
+
+spa6.strata <- strata %>% filter(STRATA_ID %in% c(30:32)) %>% 
+  st_union() %>% 
+  st_make_valid()
+
+spa4and5.strata <- strata %>% filter(STRATA_ID %in% c(1:21, 47, 48)) %>%
+  st_set_precision(100) %>% 
+  st_union() %>% 
+  st_make_valid()
+  
+
+upperbay.strata <- strata %>% filter(STRATA_ID %in% c(35, 49, 50, 51, 52)) %>% 
+  st_union() %>% 
+  st_make_valid()
+
+innerbay.strata <- strata %>% filter(STRATA_ID %in% c(37:38, 53:55)) %>%
+  st_set_precision(100000) %>% 
+  st_union() %>% 
+  st_make_valid()
+
+midbaysouth.strata <- strata %>% filter(STRATA_ID == 39)
+
+sfa29.strata <- SFA29 %>%
+  st_union()
+
+
+#PLOT
+
+hm.live$PRESENT.ABSENT <- as.factor(hm.live$PRESENT.ABSENT)
+hm.live <- hm.live %>% filter(!is.na(PRESENT.ABSENT))
+  
 p + #Plot survey data and format figure.
-  geom_spatial_point(data = hm.live, aes(START_LONG, START_LAT), size = 0.5) +
-  labs(title = paste(survey.year, "", "Live M.modiolus Density"), x = "Longitude", y = "Latitude") +
-  guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  #geom_spatial_point(data = hm.live, aes(START_LONG, START_LAT, colour = PRESENT.ABSENT, shape = PRESENT.ABSENT), size = 1) +
+  #scale_color_manual(values=c("#69b3a2", "purple", "black"))+
+  #geom_sf(data = ebsa, size = 0.9, colour = "firebrick", fill = NA) +
+  geom_sf(data = smb.strata, size = 0.6, colour = "black", fill = NA) +
+  geom_sf(data =brier.strata, size = 0.6, colour = "black", fill = NA) +
+  geom_sf(data =lurcher.strata, size = 0.6, colour = "black", fill = NA) +
+  geom_sf(data =spa6.strata, size = 0.6, colour = "black", fill = NA) +
+  geom_sf(data =spa4and5.strata, size = 0.6, colour = "black", fill = NA) +
+  geom_sf(data =upperbay.strata, size = 0.6, colour = "black", fill = NA) +
+  geom_sf(data =midbaysouth.strata, size = 0.6, colour = "black", fill = NA) +
+  geom_sf(data =innerbay.strata, size = 0.6, colour = "black", fill = NA) +
+  geom_sf(data =sfa29.strata, size = 0.6, colour = "black", fill = NA) +
+  labs(x = "Longitude", y = "Latitude") + #title = paste(survey.year, "", "Live M.modiolus Density"),
+  #guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   coord_sf(xlim = c(-67.50,-64.30), ylim = c(43.10,45.80), expand = FALSE)+
   theme(plot.title = element_text(size = 14, hjust = 0.5), #plot title size and position
         axis.title = element_text(size = 12),
         axis.text = element_text(size = 10),
         legend.title = element_text(size = 10, face = "bold"), 
         legend.text = element_text(size = 8),
-        legend.position = c(.87,.32), #legend position
+        legend.position = c(.80,.52), #legend position
         legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.7)), #Legend bkg colour and transparency
-        legend.box.margin = margin(6, 8, 6, 8)) #Legend bkg margin (top, right, bottom, left)
+        legend.box.margin = margin(6, 8, 6, 8)) + #Legend bkg margin (top, right, bottom, left)
+        guides(shape = guide_legend(override.aes = list(size = 3)))
 
 ggsave(filename = paste0(dir,'ContPlot_LiveHM_Density 2018-',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+
+
+#ggsave(filename ="Z:/Projects/Horse_Mussel/HM_InshoreSurvey/Documents/DataExploration_report/Figures/temp_HorseMussel_blank.png", plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 
 # DEAD --------------------------------------------------------------------

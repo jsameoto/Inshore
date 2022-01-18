@@ -22,6 +22,7 @@ require (splancs)
 require (RColorBrewer)
 require (spatstat)
 require (RPMG)
+library(scales)
 #require (RODBC)
 require (lubridate)
 require (tidyverse)
@@ -39,9 +40,9 @@ library(ROracle)
 uid <- keyring::key_list("Oracle")[1,2]
 pwd <- keyring::key_get("Oracle", uid)
 
-survey.year <- 2018  #This is the last survey year 
-assessmentyear <- 2019 #year in which you are providing advice for - (e.g. 2017 survey is 2018 assessment) - Save to folder year
-cruise <- "'SFA292018'"
+survey.year <- 2021  #This is the last survey year 
+assessmentyear <- 2022 #year in which you are providing advice for - (e.g. 2017 survey is 2018 assessment) - Save to folder year
+cruise <- "'SFA292021'"
 
 #for multiple cruises:
 #cruise <- c('SFA292018','SFA292019') 
@@ -52,10 +53,10 @@ cruise <- "'SFA292018'"
 #yr.crnt <- yr-1
 #years <- c(2001:(yr-1))
 
-path.directory <- "Y:/INSHORE SCALLOP/SFA29/"
+path.directory <- "Y:/Inshore/SFA29/"
 
 #set up directory to save plot
-saveplot.dir <- paste0("Y:/INSHORE SCALLOP/SFA29/",assessmentyear,"/Figures/")
+saveplot.dir <- paste0("Y:/Inshore/SFA29/",assessmentyear,"/Assessment/Figures/")
 
 
 #ROracle
@@ -184,7 +185,7 @@ sampled.dat <- dbGetQuery(chan, quer3)
 #ScallopSurv.kg <- read.csv(paste0("Y:/INSHORE SCALLOP/SFA29/",assessmentyear,"/dataoutput/SFA29liveweight",survey.year,".csv"))
 
 #Multiple years - DEFINE
-ScallopSurv.kg <- read.csv(paste0("Y:/INSHORE SCALLOP/SFA29/",assessmentyear,"/dataoutput/SFA29liveweight2014to2018.csv"))  
+ScallopSurv.kg <- read.csv(paste0("Y:/Inshore/SFA29/",assessmentyear,"/Assessment/Data/SurveyIndices/SFA29liveweight2014to",survey.year,".csv"))  
 
 # 2014 to current year
 ScallopSurv.kg <- ScallopSurv.kg %>% dplyr::select(-X) %>%  #removes index column X
@@ -200,7 +201,7 @@ ScallopSurv.kg <- ScallopSurv.kg %>% dplyr::select(-X) %>%  #removes index colum
 
 #Condition data is read in from the previously generated "ConditionforMapYYYY.csv" files in Y:\INSHORE SCALLOP\SFA29\YYYY\dataoutput directories.
 
-con.dat <- read.csv(paste0("Y:/INSHORE SCALLOP/SFA29/2019/dataoutput/ConditionforMap",survey.year,".csv")) #NOTE: 2014 file made by Jessica (..._JS.csv), will be slightly different than for 2015 assessment since Stephen calculated this using smaller dataset for mtwt sh model 
+con.dat <- read.csv(paste0("Y:/Inshore/SFA29/",assessmentyear,"/Assessment/Data/SurveyIndices/SFA29ConditionforMap",survey.year,".csv")) #NOTE: 2014 file made by Jessica (..._JS.csv), will be slightly different than for 2015 assessment since Stephen calculated this using smaller dataset for mtwt sh model 
 con.dat <- con.dat %>% dplyr::select(-X) %>%  #removes index column X
 	 dplyr::rename(year = YEAR) %>%
 	 mutate(CRUISE = paste0("SFA29", year)) %>% 
@@ -232,8 +233,40 @@ prop.clappers <- merge(live,dead,by="ID") %>%
 
 #write.csv(prop.clappers,"dataoutput/SFA29_PropClappersbyTow.csv")
 
-	
-#Set plot themes (legend orientation/aesthetics)
+
+
+# Lobster Bycatch formatting  ----------------------------------------------------
+
+quer4 <- paste(
+  "SELECT t.cruise, t.tow_no, tow_date, strata_id, start_lat, start_long, end_lat, end_long, tow_len, drag_width, geophys_id, lobsterpertow
+FROM (
+SELECT * 
+FROM scallsur.SCTOWS 
+WHERE cruise in (",cruise,")
+) t
+LEFT JOIN (
+SELECT cruise, tow_no, count(*) AS LobsterPerTow
+from scallsur.scbycatch_by_tow_raw
+WHERE cruise in (",cruise,")
+and speccd_id = 2550 
+GROUP BY cruise, tow_no
+) b
+ON t.cruise = b.cruise
+AND t.tow_no = b.tow_no",
+  sep=""
+)
+
+bycatch.dat <- dbGetQuery(chan, quer4)
+
+bycatch.dat <- bycatch.dat %>% 
+  mutate(lat = convert.dd.dddd(START_LAT)) %>% #Convert to DD
+  mutate(lon = convert.dd.dddd(START_LONG)) #Convert to DD
+
+bycatch.dat[is.na(bycatch.dat)] <- 0 #Assumes all NAs are 0
+
+# Set plot themes (legend orientation/aesthetics) ------------------------
+
+
 #Set legend format for plots
 plot.theme <-   theme(legend.key.size = unit(6,"mm"),
                       plot.title = element_text(size = 14, hjust = 0.5), #plot title size and position
@@ -241,7 +274,7 @@ plot.theme <-   theme(legend.key.size = unit(6,"mm"),
                       axis.text = element_text(size = 10),
                       legend.title = element_text(size = 10, face = "bold"), 
                       legend.text = element_text(size = 10),
-                      legend.position = c(.90,.80), #legend position
+                      legend.position = c(.90,.77), #legend position
                       legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.8)), #Legend bkg colour and transparency
                       legend.box.margin = margin(2, 3, 2, 3))
 
@@ -359,9 +392,9 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_ComBiomass',survey.year,'.
 
 com.contours <- contour.gen(con.dat %>% filter(year==survey.year) %>% dplyr::select(ID, lon, lat, Condition),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
 
-lvls=c(5,6,7,8,9,10,11,12) #levels to be color coded
+#lvls=c(5,6,7,8,9,10,11,12) #levels to be color coded
 #lvls=c(4,6,8,10,12,14,16) # large scale
-#lvls=c(6,7,8,9,10,11,12,13) # good condition scale # update based on values observed
+lvls=c(4,5,6,7,8,9,10,11,12) # good condition scale # update based on values observed
 
 
 CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
@@ -379,7 +412,7 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   mutate(level = unique(CP$PolyData$level))
 
 #Colour aesthetics and breaks for contours
-labels <- c("5-6", "6-7", "7-8", "8-9", "9-10", "10-11", "11-12", "12+")
+labels <- c("4-5", "5-6", "6-7", "7-8", "8-9", "9-10", "10-11", "11-12", "12+")
 col <- brewer.pal(length(lvls),"YlOrBr") #set colours
 cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = "Condition (g)", limits = labels) #set custom fill arguments for pecjector.
 
@@ -877,6 +910,38 @@ p + #Plot survey data and format figure.
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_PreClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
+
+
+# LOBSTER BYCATCH ----------------------------------------------------
+         
+p <- pecjector(area = "sfa29",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
+               add_layer = list(land = "grey", survey = c("inshore", "outline"), scale.bar = c('bl',0.5,-1,-1)))
+
+
+#define for plotting ****MAY NEED TO ADJUST INTERVALS****
+labels <- c("0", "1-5", "6-15", "16-20", paste0("21-",max(bycatch.dat$LOBSTERPERTOW)))
+lvls <- c(0,1,5,15,20,max(bycatch.dat$LOBSTERPERTOW))
+
+bycatch.dat <- bycatch.dat %>% 
+  mutate(brk = cut(LOBSTERPERTOW, breaks = lvls, labels = labels, include.lowest = TRUE))
+
+
+p + #Plot survey data and format figure.
+  geom_spatial_point(data = bycatch.dat, aes(lon, lat, size = brk, shape = brk)) +
+  scale_shape_manual("Number of Lobster\n per Tow",values = c(4, 19, 19, 19,19), labels = labels)+ #Formatting the shape
+  scale_size_manual("Number of Lobster\n per Tow", values = c(2, 2, 4, 6, 8), labels = labels)+# Formatting the size for each break
+  coord_sf(xlim = c(-66.50,-65.45), ylim = c(43.10,43.80), expand = FALSE) +
+  theme(legend.key.size = unit(6,"mm"),
+        plot.title = element_text(size = 14, hjust = 0.5), #plot title size and position
+        axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        legend.title = element_text(size = 10, face = "bold"), 
+        legend.text = element_text(size = 10),
+        legend.position = c(.86,.82), #legend position
+        legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.8)),
+        legend.box.margin = margin(2, 3, 2, 3))
+
+ggsave(filename = paste0(saveplot.dir,'LobsterSpatialPlot_SFA29',survey.year,'.png'), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ------------------------------END OF CONTOUR PLOTS  -------------------------------------------
 
