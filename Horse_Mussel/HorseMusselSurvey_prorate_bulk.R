@@ -199,15 +199,37 @@ nrow(hm.live %>% filter(NUM_LINED_FREQ == 1)) #21 tows have only one lined drag 
 hm.live %>% filter(NUM_LINED_FREQ == 1 & TOTAL > 0)
 
 
-#Standardized Total Abundance - Prorating for subsample of gear (2 lined drags), prorating for amount of gear sampled (NUM_LINED_FREQ - either 1 or 2), and standardizing to 800m tow length. This assumes that the individual drag width is equivelent for all drags (assumes gear width of 4ft). 
+#Standardized Total Abundance - Prorating for subsample of gear (2 lined drags), prorating for amount of gear sampled (NUM_LINED_FREQ - either 1 or 2), and standardizing to 800m tow length. This assumes that the individual drag width is equivelent for all drags (assumes gear width of 4ft).
+hm.GM2021.raw <- hm.live.raw %>% filter(CRUISE == "GM2021") #Test with GM2021 data
+hm.live <- hm.GM2021.raw
+head(hm.live)
+
 hm.live$ABUND.STD <- (hm.live$TOTAL*hm.live$PRORATE.FACTOR)*(2/hm.live$NUM_LINED_FREQ)*(800/(hm.live$TOW_LEN))
+
+hm.live$ABUND.STD <- hm.live$ABUND.STD*(17.5/4)
+
 
 ##SHF - Prorating for subsample of gear (2 lined drags), prorating for amount of gear sampled (NUM_LINED_FREQ - either 1 or 2), and standardizing to 800m tow length. This assumes that the individual drag width is equivelent for all drags (assumes gear width of 4ft). 
 for(i in 1:nrow(hm.live)) {
   for(j in 4:42){
     hm.live[i,j] <- (hm.live[i,j]*hm.live$PRORATE.FACTOR[i])*(2/hm.live$NUM_LINED_FREQ[i])*(800/(hm.live$TOW_LEN[i]))
+    hm.live[i,j] <- hm.live[i,j] *(17.5/4)
   }
 }
+
+hm.test <- hm.live %>% filter(ABUND.STD > 0)
+write.csv(hm.live, "Y:/Inshore/Databases/Scallsur/ScallsurUpdates/2022/Db_Update_HorseMusselAddition/testing/Feb082022/hm_standardize_R_version.csv")
+
+#Tidy up lat and long coords, add presence/absence etc.
+#hm.GM2021 <- hm.GM2021 %>%
+#  mutate(PRESENT.ABSENT = if_else(TOTAL >= 1, 1, 0)) %>% # Absent == 0, Present = 1
+#  mutate(START_LAT = convert.dd.dddd(START_LAT)) %>% #Convert to DD
+#  mutate(START_LONG = convert.dd.dddd(START_LONG)) %>% #Convert to DD
+#  mutate(END_LAT = convert.dd.dddd(END_LAT)) %>% #Convert to DD
+#  mutate(END_LONG = convert.dd.dddd(END_LONG)) %>% #Convert to DD
+#  mutate(MID_LAT = apply(cbind(END_LAT, START_LAT),1,mean)) %>% #Find midpoint lat
+#  mutate(MID_LONG = apply(cbind(END_LONG, START_LONG),1,mean)) %>% #Find midpoint long
+#  mutate(PRORATED.TOTAL = dplyr::select(., BIN_ID_0:BIN_ID_190) %>% rowSums(na.rm = TRUE)) #Adding all prorated shell height frequencies to check against ABUND.STD
 
 #Tidy up lat and long coords, add presence/absence etc.
 hm.live <- hm.live %>%
@@ -219,7 +241,6 @@ hm.live <- hm.live %>%
   mutate(MID_LAT = apply(cbind(END_LAT, START_LAT),1,mean)) %>% #Find midpoint lat
   mutate(MID_LONG = apply(cbind(END_LONG, START_LONG),1,mean)) %>% #Find midpoint long
   mutate(PRORATED.TOTAL = dplyr::select(., BIN_ID_0:BIN_ID_190) %>% rowSums(na.rm = TRUE)) #Adding all prorated shell height frequencies to check against ABUND.STD
-  
 
 # check against PRORATE TOTAL (total prorated shell height frequencies) and ABUND.STD. 
 
@@ -245,7 +266,7 @@ hm.live %>% filter(PRORATE.FACTOR >= 2)
 #Check by Cruise and year
 #NOTE - Only start and end points are recorded in sctows - some tows may appear shorter than others - this could be due to curved track lines during tows. Midpoints are caluclated assuming straight lines between start and end points.
 
-year <- 2018
+year <- 2021
 
 #CHECK BF
 Cruise <- paste0("BF", year) #BI, GM or SFA29
@@ -262,9 +283,9 @@ mapview::mapview(hm.start.sf %>% filter(CRUISE %in% Cruise), col.regions = "gree
 #CHECK GM
 Cruise <- paste0("GM", year) #BI, GM or SFA29
 
-hm.start.sf <-  st_as_sf(hm.live, coords = c("START_LONG", "START_LAT"), crs = 4326)
-hm.mid.sf <- st_as_sf(hm.live, coords = c("MID_LONG", "MID_LAT"), crs = 4326)
-hm.end.sf <- st_as_sf(hm.live, coords = c("END_LONG", "END_LAT"), crs = 4326)
+hm.start.sf <-  st_as_sf(hm.GM2021, coords = c("START_LONG", "START_LAT"), crs = 4326)
+hm.mid.sf <- st_as_sf(hm.GM2021, coords = c("MID_LONG", "MID_LAT"), crs = 4326)
+hm.end.sf <- st_as_sf(hm.GM2021, coords = c("END_LONG", "END_LAT"), crs = 4326)
 
 
 mapview::mapview(hm.start.sf %>% filter(CRUISE %in% Cruise), col.regions = "green") +
@@ -316,7 +337,7 @@ write.csv(hm.live, paste0(dir,"Prorated/horsemussellive_prorated_2018-2021.csv")
 
 # Spatial plot - live density --------------------------------------------------
 
-com.contours <- contour.gen(hm.live %>% filter(SAMPLE.METHOD != 1) %>% dplyr::select(ID, MID_LONG, MID_LAT, ABUND.STD),
+com.contours <- contour.gen(hm.GM2021 %>% filter(SAMPLE.METHOD != 1) %>% dplyr::select(ID, MID_LONG, MID_LAT, ABUND.STD),
                             ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
 
 lvls <- c(1,5,10,50,100,200,300,400,500) #levels to be color coded
@@ -523,16 +544,25 @@ nrow(hm.dead %>% filter(NUM_LINED_FREQ == 1)) #21 tows have only one lined drag 
 #How many tows with horse mussels were subsampled because a lined drag came loose?
 hm.dead %>% filter(NUM_LINED_FREQ == 1 & TOTAL > 0)
 
+hm.dead.GM2021.raw <- hm.dead.raw %>% filter(CRUISE == "GM2021") #Test with GM2021 data
+hm.dead <- hm.dead.GM2021.raw
+head(hm.dead )
+
 
 #Standardized Total Abundance - Prorating for subsample of gear (2 lined drags), prorating for amount of gear sampled (NUM_LINED_FREQ - either 1 or 2), and standardizing to 800m tow length. This assumes that the individual drag width is equivelent for all drags (assumes gear width of 4ft). 
 hm.dead$ABUND.STD <- (hm.dead$TOTAL*hm.dead$PRORATE.FACTOR)*(2/hm.dead$NUM_LINED_FREQ)*(800/(hm.dead$TOW_LEN))
-
+hm.dead$ABUND.STD <- hm.dead$ABUND.STD*(17.5/4)
 ##SHF - Prorating for subsample of gear (2 lined drags), prorating for amount of gear sampled (NUM_LINED_FREQ - either 1 or 2), and standardizing to 800m tow length. This assumes that the individual drag width is equivelent for all drags (assumes gear width of 4ft). 
 for(i in 1:nrow(hm.dead)) {
   for(j in 4:42){
     hm.dead[i,j] <- (hm.dead[i,j]*hm.dead$PRORATE.FACTOR[i])*(2/hm.dead$NUM_LINED_FREQ[i])*(800/(hm.dead$TOW_LEN[i]))
+    hm.dead[i,j] <- hm.dead[i,j]*(17.5/4)
   }
 }
+
+#hm.test.dead <- hm.dead %>% filter(ABUND.STD > 0)
+write.csv(hm.dead, "Y:/Inshore/Databases/Scallsur/ScallsurUpdates/2022/Db_Update_HorseMusselAddition/testing/Feb082022/hm_dead_standardize_R_version.csv")
+
 
 #Tidy up lat and long coords, add presence/absence etc.
 hm.dead <- hm.dead %>%
