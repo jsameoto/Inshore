@@ -43,7 +43,7 @@ for(fun in funcs)
 
 # ---Read in SDM and data query ----------------------------------------------------------------------
 
-sdm <- raster("Y:/INSHORE SCALLOP/Databases/Scallsur/SFA29BottomTypes/SDM/sdm_sfa29/w001001.adf") #UTM zone 19
+sdm <- raster("Y:/Inshore/Databases/Scallsur/SFA29BottomTypes/SDM/sdm_sfa29/w001001.adf") #UTM zone 19
 #projectRaster(crs = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
 
 #Pull survey data from database - ROracle
