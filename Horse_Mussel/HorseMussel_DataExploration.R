@@ -1,4 +1,117 @@
-#Load libraries
+library(raster)
+library(sf)
+library(tidyverse)
+library(mapview)
+
+
+# DATA SET UP - Already done - Skip to next section -----------------------
+
+# 50 meter resolution
+# --------------------
+# 1 - Bathy
+# 2 - BPI Broad - 1000m
+# 3 - BPI Fine - 50m
+# 4 - Backscatter - bulkshift method by Ben Misiuk
+# 5 - Easterness - TASSE toolbox - Lecours et al., 2016
+# 6 - Slope - Log slope
+# 7 - Mean grain size - Ben Misiuk
+# 8 - Northerness - TASSE toolbox - Lecours et al., 2016
+# 9 - Relative deviation from mean value (pits and peaks)- TASSE toolbox - Lecours et al., 2016
+# 10 - Benthoscape (Shapefile) - Wilson et al., 2020
+
+# 800 meter resolution
+# --------------------
+# 11 - Mixed Layer Depth - BNAM Wang et al., 2018
+# 12 - Bottom Stress - BNAM Wang et al., 2018
+# 13 - Bottom Temperature - BNAM Wang et al., 2018
+# 14 - Bottom Salinity - BNAM Wang et al., 2018
+
+# 100 meter resolution
+# --------------------
+# 15 - Sediment mobility frequency - Li et al., 2017
+# 16 - Wave Shear Stress -  Li et al., 2017
+
+#direct <- "E:/BOF_envirodataset/Snapped"
+
+#pred_list <- list.files(direct, pattern =".gri$",full.names = TRUE)
+#predictors <- lapply(pred_list, raster) 
+#predictors <- stack(predictors) #MUST BE SAME EXTENT/RESOLUTION
+
+#benthoscape <- st_read("Z:/Projects/BoF_Mapping_Project/Analysis/Benthoscape_mapping/Unsupervised_Classification/UnsupervisedClassification_shapefiles/BoF_Benthoscape_Unsupervised_objDissolve/BoF_Benthoscape_objDissolve.shp")
+#benthoscape <- st_transform(benthoscape, crs = st_crs(4326)) %>%
+#  st_transform(st_crs(32620))
+
+#hm.dat <- readRDS("Z:/Projects/Horse_Mussel/HM_InshoreSurvey/data/Prorated/horsemussellive_prorated.rds") %>%
+#  mutate(mid_lon = MID_LONG) %>% #duplicate lat, longs to use after converting to sf
+#  mutate(mid_lat = MID_LAT) %>% 
+#  st_as_sf(coords = c("MID_LONG", "MID_LAT"), crs = 4326) %>% 
+#  st_transform(32620)
+
+#enviro.dat <- raster::extract(predictors, hm.dat, na.rm = FALSE) #from Rasters
+#benthoscape <- st_intersection(benthoscape, hm.dat)  #from shapefile
+
+#Join raster data with horse mussel data
+#hm.enviro.dat <- cbind(hm.dat %>% dplyr::select(ID, CRUISE, TOW, ABUND.STD, PRESENT.ABSENT, STRATA_ID, START_LONG, START_LAT, mid_lon, mid_lat), enviro.dat)
+#join benthoscape classes
+#hm.enviro.dat <- st_join(hm.enviro.dat,benthoscape  %>% dplyr::select(c(CLASS, ID)), by = "ID")
+
+#mapview::mapview(hm.enviro.dat)
+
+#names(predictors) 
+#c("Bathy","BtmSalinity","BtmStress","BtmTemp","MLD","Backscatter","Easterness","Curvature", "Slope", "BBPI","FBPI","MeanGrainSize", "Northerness", "RDMV", "Sed_Mobilization_Freq","StandardDev_Bathy", "Wave_Shear_Vel") 
+
+#hm.enviro.dat <- hm.enviro.dat %>% 
+#  mutate(PRESENT.ABSENT = as.factor(PRESENT.ABSENT)) %>% 
+#  rename(ID = ID.x) %>%
+#  rename(Bathy = BOF_ALLBath_2010_50m_adj_dodd_gsc_finalc_z20) %>% 
+#  rename(BtmSalinity = layer.1) %>% 
+#  rename(BtmStress = layer.2) %>%
+#  rename(BtmTemp = layer.3) %>% 
+#  rename(MLD = layer.4) %>% 
+#  rename(Backscatter = Band_1.1) %>%
+#  rename(Easterness = w001001.1) %>%
+#  rename(Curvature = Fundy50m_Curv) %>%
+#  rename(Slope = Fundy50m_Slope) %>%
+#  rename(BBPI = FundyBroadBPI_5_100SnapStan) %>%
+#  rename(FBPI = FundyFineBPI_1_10SnapStan) %>%
+#  rename(MeanGrainSize = Band_1.2) %>%
+#  rename(Northerness = w001001.3) %>%
+#  rename(RDMV = w001001.4) %>%
+#  rename(Sed_Mobilization_Freq = Sediment.Mobilization.Freq.Interp) %>%
+#  rename(StandardDev_Bathy = w001001.5) %>% 
+#  rename(Wave_Shear_Vel = Wave.Shear.Velocity.Interp) %>% 
+#  rename(Benthoscape = CLASS) %>% 
+#  dplyr::select(!ID.y)
+
+# Separate by Strata ------------------------------------------------------
+
+#hm.enviro.dat <- hm.enviro.dat %>% 
+#  mutate(SPATIAL_AREA = case_when(STRATA_ID == 22 ~ "SMB", 
+#                                  STRATA_ID %in% c(23,56) ~ "BI",
+#                                  STRATA_ID %in% c(41:45) ~ "LURCHER",
+#                                  STRATA_ID %in% c(30:32) ~ "SPA6",
+#                                  STRATA_ID %in% c(1:21, 47, 48) ~ "SPA4",
+#                                  (STRATA_ID %in% c(35, 49, 50, 51, 52) & START_LONG >= -64.9254) ~ "UPPERBAY", 
+#                                  STRATA_ID %in% c(37:38, 53:55) ~ "INNERBAY",
+#                                  (STRATA_ID == 49 & START_LONG <= -64.9254) ~ "INNERBAY",
+#                                  STRATA_ID == 39 ~ "MIDBAYSOUTH")) %>% 
+#  mutate(SPATIAL_AREA = as.factor(SPATIAL_AREA))
+
+#summary(hm.enviro.dat)
+
+
+#hm.enviro.sf <- hm.enviro.dat %>% 
+  #filter(!is.na(Bathy)) %>% 
+  #filter(!is.na(MaxSal)) %>% 
+  #filter(Benthoscape != "Not_Classified") %>% 
+#  mutate(STRATA_ID = as.factor(STRATA_ID))
+
+#hm.enviro.dat <- hm.enviro.sf %>% st_set_geometry(NULL)
+
+#write.csv(hm.enviro.dat, "Z:/Projects/Horse_Mussel/HM_InshoreSurvey/data/HorseM_EnviroData.csv", row.names = F)
+
+# ENVIRONMENTAL DATA ---------------------------------------------------------------
+
 
 library(tidyverse)
 library(raster)
@@ -10,617 +123,281 @@ library(gridExtra)
 library(gratia)
 library(ggspatial)
 library(lattice)
+library(viridis)
+library(ggcorrplot)
+library(flextable)
+library(GGally)
 
-#Predictors:
+#ZUUR functions
+source("Z:/Projects/GB_time_area_closure_SPERA/scripts/HighstatLibV11.R")
 
-# Predictors --------------------------------------------------------------
+#Load the environmental data
+enviro.dat <- read.csv("Z:/Projects/Horse_Mussel/HM_InshoreSurvey/data/HorseM_EnviroData.csv")
 
-#-----------------------------------------#
-# BAY OF FUNDY COVERAGE (50m resolution)
-#-----------------------------------------#
+#Table with predictor variable metadata
+pred.tab <- read.csv("Z:/Projects/Horse_Mussel/HM_InshoreSurvey/data/PredictorVariableTable.csv")
 
-# 1 - Bathy
-# 2 - Mixed Layer Depth - BNAM Wang et al., 2018
-# 3 -  BPI Broad - 1000m
-# 4 - BPI Fine - 50m
-# 5 - Backscatter - bulkshift method by Ben Misiuk
-# 6 - Easterness - TASSE toolbox - Lecours et al., 2016
-# 7 - Slope - Log slope
-# 8 - Max velocity - Alleosfour et al., Max bottom velocity for period of July - Sept, 2017
-# 9 - Max Salinity - Alleosfour et al., Maximumn bottom salintiy for period of July - Sept, 2017
-# 10 - Max Temp - Alleosfour et al., Maximumn bottom Temperature for period of July - Sept, 2017
-# 11 - Mean grain size - Ben Misiuk
-# 12 - Mean velocity - Alleosfour et al. Mean bottom velocity for period of July - Sept, 2017
-# 13 - Mean Salinity - Alleosfour et al.Mean bottom Salinity for period of July - Sept, 2017
-# 14 - Mean Temperature - Alleosfour et al. Mean bottom Temperatuer for period of July - Sept, 2017
-# 15 - Min Salinity - Alleosfour et al. Minimum bottom Salinity for period of July - Sept, 2017
-# 16 - Min Temperature -Alleosfour et al. Minimum bottom Temperature for period of July - Sept, 2017
-# 17 - northerness - TASSE toolbox - Lecours et al., 2016
-# 18 - Relative deviation from mean value (pits and peaks)- TASSE toolbox - Lecours et al., 2016
-# 19 - Sediment mobility frequency - Li et al., 2017
-# 20 - Wave Shear Stress -  Li et al., 2017
-# - Benthoscape (Shapefile) - Wilson et al., 2020
+enviro.dat.long <- pivot_longer(enviro.dat, cols = Bathy:Wave_Shear_Vel,  names_to = "Pred_Variable", values_to = "Value")
 
-direct <- "C:/Users/WILSONB/Documents/1_Projects/Publications_working/BOF_SDMs/Projects/Scallop/Data/EnvData"
-BoF_pred_list <- list.files(direct, pattern =".gri$",full.names = TRUE)  #Change path for data resolution
-# Put the rasters into a RasterStack:
-BoF_predictors <- raster::stack(BoF_pred_list)
-#mapview::mapview(BoF_predictors[[20]])
+# Outliers in Terrain variables
+ggplot(enviro.dat.long , aes(Value, TOW)) +
+  geom_point(size = 0.01)+
+  scale_y_reverse() +
+  theme(axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank())+
+  facet_wrap(vars(Pred_Variable), scales = "free")
 
-#----------------------------------#
-# SFA29 COVERAGE - (50m resolution)
-#----------------------------------#
+ggplot(enviro.dat.long , aes(TOW, Value)) +
+  geom_boxplot()+
+  scale_y_reverse() +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())+
+  facet_wrap(vars(Pred_Variable), scales = "free")
 
-# 1 - BNAM Btm Salinity yearly average
-# 2 - BNAM Btm Temperature yearly average
-# 3 - Aspect
-# 4 - Bathymetry
-# 5 - Broad BPI
-# 6 - Backscatter
-# 7 - Curvature
-# 8 - Fine BPI
-# 9 - Slope
+# Collinearity Terrain Vars
+cor <- round(cor(enviro.dat %>% drop_na() %>% dplyr::select(Bathy,Backscatter, Easterness, Curvature,Slope, BBPI, FBPI, MeanGrainSize, Northerness, RDMV,StandardDev_Bathy)), 1)
+ggcorrplot(cor, hc.order = TRUE, type = "lower",
+           outline.col = "white", lab = TRUE, lab_size = 2, tl.cex = 8)
 
+#GGPAIRS
+lowerFn <- function(data, mapping, ...) {
+  p <- ggplot(data = data, mapping = mapping) +
+    geom_point(color = 'blue', alpha=0.3, size=1) +
+    geom_smooth(color = 'black', method='lm', size=1,...)
+  p
+}
 
-#direct <- "C:/Users/WILSONB/Documents/1_Projects/GermanBank/Maxent_models/Data/MBES/50m_rasters/rasters_cropped/LL_reproj"
-#SFA29_pred_list <- list.files(direct, pattern =".asc$",full.names = TRUE)  #Change path for data resolution
-# Put the rasters into a RasterStack:
-#SFA29_predictors <- raster::stack(SFA29_pred_list)
-#mapview::mapview(SFA29_predictors[[1]])
+g <- ggpairs( 
+  data = enviro.dat %>% drop_na() %>% dplyr::select(Bathy,Backscatter, Easterness, Curvature,Slope, BBPI, FBPI, MeanGrainSize, Northerness, RDMV,StandardDev_Bathy),
+  lower = list(
+    continuous =  wrap(lowerFn) #wrap("smooth", alpha = 0.3, color = "blue", lwd=1) 
+  ),
+  upper = list(continuous = wrap("cor", size = 2)), progress = F
+)
+g <- g + theme(
+  axis.text = element_text(size = 6),
+  axis.title = element_text(size = 6),
+  legend.background = element_rect(fill = "white"),
+  panel.grid.major = element_line(colour = NA),
+  panel.grid.minor = element_blank(),
+  panel.background = element_rect(fill = "grey95")
+)
+print(g, bottomHeightProportion = 0.5, leftWidthProportion = .5)
 
+#GVIFS
+corvif(enviro.dat[,c("Bathy","Backscatter", "Easterness", "Curvature","Slope", "BBPI", "FBPI", "MeanGrainSize", "Northerness", "RDMV","StandardDev_Bathy")])#,"Benthoscape","SPATIAL_AREA")])
 
-#-------------------------------#
-# BNAM coverage - all areas
-#-------------------------------#
+corvif(enviro.dat[,c("Bathy","Backscatter", "Easterness", "Curvature","BBPI", "FBPI", "MeanGrainSize", "Northerness", "RDMV","StandardDev_Bathy")])#,"Benthoscape","SPATIAL_AREA")])
 
-# 1 - Btm Salinity
-# 2 - Btm Temperature
-# 3 - Btm Stress
-# 4 - Mixed Layer Depth
-# 5 - Surface Salinity
-# 6 - Surface Temperature
+# Collinearity Oceanographic Vars
+cor <- round(cor(enviro.dat %>% drop_na() %>% dplyr::select(BtmSalinity:MLD,Sed_Mobilization_Freq,Wave_Shear_Vel)), 1)
+ggcorrplot(cor, hc.order = TRUE, type = "lower",
+           outline.col = "white", lab = TRUE, lab_size = 2, tl.cex = 8)
 
-# Load environmental data - raster stack  ---------------------------------
+#GGPAIRS
+#ggpairs(enviro.dat %>% drop_na() %>% dplyr::select(BtmSalinity:MLD,Sed_Mobilization_Freq,Wave_Shear_Vel),progress = F)
+lowerFn <- function(data, mapping, ...) {
+  p <- ggplot(data = data, mapping = mapping) +
+    geom_point(color = 'blue', alpha=0.3, size=1) +
+    geom_smooth(color = 'black', method='lm', size=1,...)
+  p
+}
 
-#Read in Benthoscape shapefile
-benthoscape <- st_read("Z:/Projects/BoF_Mapping_Project/Analysis/Benthoscape_mapping/Unsupervised_Classification/UnsupervisedClassification_shapefiles/BoF_Benthoscape_Unsupervised_objDissolve/BoF_Benthoscape_objDissolve.shp")
-benthoscape <- st_transform(benthoscape, crs = st_crs(4326)) %>%
-  st_transform(st_crs(32620))
-
-# Load abundance data  ---------------------------------
-hm.dat <- readRDS("Z:/Projects/Horse_Mussel/HM_InshoreSurvey/data/Prorated/horsemussellive_prorated.rds") %>%
-  mutate(mid_lon = MID_LONG) %>% #duplicate lat, longs to use after converting to sf
-  mutate(mid_lat = MID_LAT) %>% 
-  st_as_sf(coords = c("MID_LONG", "MID_LAT"), crs = 4326) %>% 
-  st_transform(32620)
-
-hm.dat <- hm.dat %>% 
-  filter(!grepl("SFA29", CRUISE)) #Remove SFA29W - no enviro data
-#check
-table(hm.dat$CRUISE)
-
-# Extract environmental data at tow midpoints: ---------------------------------
-
-enviro.dat <- raster::extract(BoF_predictors, hm.dat, na.rm = FALSE) #from Rasters
-benthoscape <- st_intersection(benthoscape, hm.dat)  #from shapefile
-
-#Join raster data with horse mussel data
-hm.enviro.dat <- cbind(hm.dat %>% dplyr::select(ID, CRUISE, TOW, ABUND.STD, PRESENT.ABSENT, STRATA_ID, START_LONG, START_LAT, mid_lon, mid_lat), enviro.dat)
-#join benthoscape classes
-hm.enviro.dat <- st_join(hm.enviro.dat,benthoscape  %>% dplyr::select(c(CLASS, ID)), by = "ID")
-
-
-mapview::mapview(hm.enviro.dat)
-
-# Tidy Data --------------------------------------------------------
-
-hm.enviro.dat <- hm.enviro.dat %>% 
-  mutate(PRESENT.ABSENT = as.factor(PRESENT.ABSENT)) %>% 
-  rename(ID = ID.x) %>% 
-  rename(MLD = BNAM_MLD_50m_UTMZ20) %>% 
-  rename(BBPI = BPI.Broad.1000m_UTMZ20) %>% 
-  rename(FBPI = BPI.Fine.50m_UTMZ20) %>% 
-  rename(BS_Bulkshift = bulkshift_bs_50m_UTMZ20) %>% 
-  rename(Easterness = easterness_50m_UTMZ20) %>% 
-  rename(LogSlope = logslope_50m_UTMZ20) %>% 
-  rename(MaxVel = max_vel_50m_UTMZ20) %>% 
-  rename(MaxSal = maxSal_7.9_50m_UTMZ20) %>%
-  rename(MaxTemp = maxTemp_7.9_50m_UTMZ20) %>%
-  rename(MeanGrainsize = mean_gsize_50m_UTMZ20) %>% 
-  rename(MeanVel = mean_vel_50m_UTMZ20) %>% 
-  rename(MeanSal = meanSal_7.9_50m_UTMZ20) %>% 
-  rename(MeanTemp = meanTemp_7.9_50m_UTMZ20) %>%
-  rename(MinSal = minSal_7.9_50m_UTMZ20) %>%
-  rename(MinTemp = minTemp_7.9_50m_UTMZ20) %>%
-  rename(Northerness = northerness_50m_UTMZ20) %>% 
-  rename(rdmv = rdmv_50m_UTMZ20) %>% 
-  rename(SMF = SMF_krige50m_UTMZ20) %>%
-  rename(WSV = WaveShear.Res50m_UTMZ20) %>%
-  rename(Benthoscape = CLASS) %>% 
-  dplyr::select(!ID.y)
-
-# Separate by Strata ------------------------------------------------------
-
-hm.enviro.dat <- hm.enviro.dat %>% 
-  mutate(SPATIAL_AREA = case_when(STRATA_ID == 22 ~ "SMB", 
-                                   STRATA_ID %in% c(23,56) ~ "BI",
-                                   STRATA_ID %in% c(41:45) ~ "LURCHER",
-                                   STRATA_ID %in% c(30:32) ~ "SPA6",
-                                   STRATA_ID %in% c(1:21, 47, 48) ~ "SPA4",
-                                   (STRATA_ID %in% c(35, 49, 50, 51, 52) & START_LONG >= -64.9254) ~ "UPPERBAY", 
-                                   STRATA_ID %in% c(37:38, 53:55) ~ "INNERBAY",
-                                   (STRATA_ID == 49 & START_LONG <= -64.9254) ~ "INNERBAY",
-                                   STRATA_ID == 39 ~ "MIDBAYSOUTH")) %>% 
-  mutate(SPATIAL_AREA = as.factor(SPATIAL_AREA))
-
-summary(hm.enviro.dat)
+g <- ggpairs( 
+  data = enviro.dat %>% drop_na() %>% dplyr::select(BtmSalinity:MLD,Sed_Mobilization_Freq,Wave_Shear_Vel),
+  lower = list(
+    continuous =  wrap(lowerFn) #wrap("smooth", alpha = 0.3, color = "blue", lwd=1) 
+  ),
+  upper = list(continuous = wrap("cor", size = 4)), progress = F
+)
+g <- g + theme(
+  axis.text = element_text(size = 6),
+  axis.title = element_text(size = 6),
+  legend.background = element_rect(fill = "white"),
+  panel.grid.major = element_line(colour = NA),
+  panel.grid.minor = element_blank(),
+  panel.background = element_rect(fill = "grey95")
+)
+print(g, bottomHeightProportion = 0.5, leftWidthProportion = .5)
 
 
-hm.enviro.sf <- hm.enviro.dat %>% 
-  filter(!is.na(Bathy)) %>% 
-  filter(!is.na(MaxSal)) %>% 
-  filter(Benthoscape != "Not_Classified") %>% 
-  mutate(STRATA_ID = as.factor(STRATA_ID))
+#GVIFS
+corvif(enviro.dat[,c("BtmSalinity", "BtmStress", "BtmTemp", "MLD","Sed_Mobilization_Freq","Wave_Shear_Vel")])#,"Benthoscape","SPATIAL_AREA")])
 
-hm.enviro.dat <- hm.enviro.sf %>% st_set_geometry(NULL)
+corvif(enviro.dat[,c("BtmStress", "BtmTemp", "MLD","Sed_Mobilization_Freq","Wave_Shear_Vel")])#,"Benthoscape","SPATIAL_AREA")])
 
-write.csv(hm.enviro.dat, "Z:/Projects/Horse_Mussel/HM_InshoreSurvey/Documents/DataExploration_report/HM_towdata_andEnviro.csv", row.names = F)
+corvif(enviro.dat[,c("BtmStress", "BtmTemp","Sed_Mobilization_Freq","Wave_Shear_Vel")])#,"Benthoscape","SPATIAL_AREA")])
 
-# Data Exploration --------------------------------------------------------
+#CORPLOTS ALL VARS
+cor <- round(cor(enviro.dat %>% drop_na() %>% dplyr::select(Bathy:Wave_Shear_Vel) %>% dplyr::select(!c(MLD,BtmSalinity, Slope))), 1)
+ggcorrplot(cor, hc.order = TRUE, type = "lower",
+           outline.col = "white", lab = TRUE, lab_size = 2, tl.cex = 8)
 
+#GGPAIRS
+lowerFn <- function(data, mapping, ...) {
+  p <- ggplot(data = data, mapping = mapping) +
+    geom_point(color = 'blue', alpha=0.3, size=1) +
+    geom_smooth(color = 'black', method='lm', size=1,...)
+  p
+}
 
-source("Z:/Projects/Horse_Mussel/HM_InshoreSurvey/HighstatLibV7.R")
+g <- ggpairs( 
+  data = enviro.dat %>% drop_na() %>% dplyr::select(Bathy:Wave_Shear_Vel) %>% dplyr::select(!c(MLD,BtmSalinity, Slope)),
+  lower = list(
+    continuous =  wrap(lowerFn) #wrap("smooth", alpha = 0.3, color = "blue", lwd=1) 
+  ),
+  upper = list(continuous = wrap("cor", size = 2)), progress = F
+)
+g <- g + theme(
+  axis.text = element_text(size = 6),
+  axis.title = element_text(size = 6),
+  legend.background = element_rect(fill = "white"),
+  panel.grid.major = element_line(colour = NA),
+  panel.grid.minor = element_blank(),
+  panel.background = element_rect(fill = "grey95")
+)
+print(g, bottomHeightProportion = 0.5, leftWidthProportion = .5)
 
-#Inspect the file
-#What do we have?
-names(hm.enviro.dat)
-
-#[1] "ID"             "CRUISE"         "TOW"           
-#[4] "ABUND.STD"      "PRESENT.ABSENT" "STRATA_ID"     
-#[7] "START_LONG"     "START_LAT"      "mid_lon"       
-#[10] "mid_lat"        "Bathy"          "MLD"           
-#[13] "BBPI"           "FBPI"           "BS_Bulkshift"  
-#[16] "Easterness"     "LogSlope"       "MaxVel"        
-#[19] "MaxSal"         "MaxTemp"        "MeanGrainsize" 
-#[22] "MeanVel"        "MeanSal"        "MeanTemp"      
-#[25] "MinSal"         "MinTemp"        "Northerness"   
-#[28] "rdmv"           "SMF"            "WSV"           
-#[31] "Benthoscape"    "SPATIAL_AREA"  
-
-#Are factor factors? - Yes (Benthoscape, SPATIAL_AREA)
-str(hm.enviro.dat)
-
-#Classes 'sf' and 'data.frame':	1177 obs. of  32 variables:
-#  $ ID           : chr  "BF2018.1" "BF2018.2" "BF2018.3" "BF2018.4" ...
-#$ CRUISE       : Factor w/ 12 levels "BF2018","BF2019",..: 1 1 1 1 1 1 1 1 1 1 ...
-#$ TOW          : int  1 2 3 4 5 6 7 8 9 10 ...
-#$ ABUND.STD    : num  0 0 0 0 0 0 0 0 0 0 ...
-#$ PRESENT.ABSENT: num  0 0 0 0 0 0 0 0 0 0 ...
-#$ STRATA_ID    : Factor w/ 36 levels "1","2","3","4",..: 8 2 2 2 9 9 9 2 2 2 ...
-#$ START_LONG   : num  -66 -66 -66 -66 -65.9 ...
-#$ START_LAT    : num  44.6 44.6 44.7 44.7 44.7 ...
-#$ mid_lon      : num  -66 -66 -66 -66 -65.9 ...
-#$ mid_lat      : num  44.6 44.6 44.7 44.7 44.7 ...
-#$ Bathy        : num  -99.6 -81 -89.2 -81.6 -93.4 ...
-#$ MLD          : num  11.2 11.4 11.8 11.5 11.8 ...
-#$ BBPI         : num  -3.41 4.61 2.71 7.69 -2.6 ...
-#$ FBPI         : num  -0.281 1.085 -0.126 0.889 -0.178 ...
-#$ BS_Bulkshift : num  -12.5 -13.3 -12.7 -11.7 -11.6 ...
-#$ Easterness   : num  -0.108 -0.035 0.558 0.446 0.414 ...
-#$ LogSlope     : num  -1.0321 0.4214 0.581 0.0111 1.0642 ...
-#$ MaxVel       : num  0.688 0.69 0.661 0.668 0.661 ...
-#$ MaxSal       : num  32.6 32.5 32.4 32.4 32.4 ...
-#$ MaxTemp      : num  8.38 8.58 8.68 8.83 8.96 ...
-#$ MeanGrainsize: num  -1.289 0.388 -1.059 -0.511 -0.805 ...
-#$ MeanVel      : num  0.365 0.368 0.361 0.36 0.362 ...
-#$ MeanSal      : num  32 32 32 32 32 ...
-#$ MeanTemp     : num  7.41 7.58 7.64 7.75 7.85 ...
-#$ MinSal       : num  32 32 32 31.9 32 ...
-#$ MinTemp      : num  5.66 5.76 5.82 5.98 6.08 ...
-#$ Northerness  : num  -0.907 0.981 -0.829 0.495 -0.91 ...
-#$ rdmv         : num  -0.1488 0.1315 -0.0575 0.2351 -0.0922 ...
-#$ SMF          : num  56.9 55.1 48.9 53.3 45.7 ...
-#$ WSV          : num  0.033 0.033 0.033 0.033 0.032 ...
-#$ Benthoscape  : Factor w/ 8 levels "Bedrock_and_Boulders",..: 3 3 3 3 3 3 3 3 3 3 ...
-#$ geometry     :sfc_POINT of length 1177; first list element:  'XY' num  260340 4946429
-#$ SPATIAL_AREA : Factor w/ 7 levels "BI","INNERBAY",..: 5 5 5 5 5 5 5 5 5 5 ...
-
-##########################################################################################
+#GVIFS ALL
+corvif(enviro.dat[,c("Bathy","Backscatter", "Easterness", "Curvature","BBPI", "FBPI", "MeanGrainSize", "Northerness", "RDMV","StandardDev_Bathy","BtmStress", "BtmTemp","Sed_Mobilization_Freq","Wave_Shear_Vel")])#,"Benthoscape","SPATIAL_AREA")])
 
 
-# A Outliers in Y -------------------------------------------------
+# Trends between the covariate domain and the observed locations
 
-#Abundance
-par(mfrow = c(1, 2))
-boxplot(hm.enviro.dat$ABUND.STD, 
-        main = "Abundance")
-dotchart(hm.enviro.dat$ABUND.STD, 
+direct <- "E:/BOF_envirodataset/Snapped"
+
+pred_list <- list.files(direct, pattern =".gri$",full.names = TRUE)
+predictors <- lapply(pred_list, raster) 
+predictors <- stack(predictors) #MUST BE SAME EXTENT/RESOLUTION
+
+pred.sp <- as(predictors, 'SpatialPixelsDataFrame')
+
+names(pred.sp) <- c("Bathy","BtmSalinity","BtmStress","BtmTemp","MLD","Backscatter","Easterness","Curvature", "Slope", "BBPI","FBPI","MeanGrainSize", "Northerness", "RDMV", "Sed_Mobilization_Freq","StandardDev_Bathy", "Wave_Shear_Vel")
+
+pred.domain <- pred.sp@data %>% dplyr::select(!c(MLD,BtmSalinity, Slope))
+
+pred.obs <- enviro.dat %>% 
+  dplyr::select(Bathy:Wave_Shear_Vel) %>% dplyr::select(!c(MLD,BtmSalinity, Slope))
+
+#values at Obervations vs. values across domain.
+
+for(i in 1:14){
+  print(ggplot(data=data.frame(pred.obs = pred.obs[,i]),
+               aes(x=pred.obs, colour="Observations")) +
+          geom_density() +
+          geom_density(data=data.frame(pred.domain = pred.domain[,i]),
+                       aes(x=pred.domain, colour='Domain')) + xlab(paste0(names(pred.obs[i]))) +
+          scale_color_manual(name = "Density", values = c('Observations' = 'black', 'Domain' = 'red')))
+}
+
+
+# ABUNDANCE AND PRESENCE ---------------------------------------------------------------
+
+
+#Cleavland dot plot
+dotchart(enviro.dat$ABUND.STD, 
          xlab = "Range of data", 
          ylab = "Values")
 
-
-# A Outliers in X -------------------------------------------------
-par(mfrow = c(4, 5)) #mar = c(4, 3, 3, 2)
-dotchart(hm.enviro.dat$Bathy, main = "Depth")
-dotchart(hm.enviro.dat$MLD, main = "Mixed Layer Depth")
-dotchart(hm.enviro.dat$BBPI, main = "Broad BPI")
-dotchart(hm.enviro.dat$FBPI, main = "Fine BPI")
-dotchart(hm.enviro.dat$BS_Bulkshift, main = "Backscatter")
-dotchart(hm.enviro.dat$Easterness, main = "Easterness")
-dotchart(hm.enviro.dat$LogSlope, main = "Log Slope")
-dotchart(hm.enviro.dat$MaxVel, main = "Maximum Velocity")
-dotchart(hm.enviro.dat$MaxSal, main = "Maximum Salinity")
-dotchart(hm.enviro.dat$MaxTemp, main = "Maximum Temp")
-dotchart(hm.enviro.dat$MeanGrainsize, main = "Mean Grain size")
-dotchart(hm.enviro.dat$MeanVel, main = "Mean Velocity")
-dotchart(hm.enviro.dat$MeanSal, main = "Mean Salinity")
-dotchart(hm.enviro.dat$MeanTemp, main = "Mean Temp")
-dotchart(hm.enviro.dat$MinSal, main = "Minimum Salinity")
-dotchart(hm.enviro.dat$MinTemp, main = "Minimum Temp")
-dotchart(hm.enviro.dat$Northerness, main = "Norhterness")
-dotchart(hm.enviro.dat$rdmv, main = "Relative deviation from Mean")
-dotchart(hm.enviro.dat$SMF, main = "Sediment Mobility Frequency")
-dotchart(hm.enviro.dat$WSV, main = "Wave Shear Stress")
-#dotchart(hm.enviro.dat$Benthoscape, main = "Benthoscape class")
-#dotchart(hm.enviro.dat$SPATIAL_AREA, main = "Spatial area")
-
-
-
-#OR#
-#multi-panel dotplot
-MyVar <- c("Bathy", "MLD","BBPI" ,"FBPI","BS_Bulkshift","Easterness","LogSlope","MaxVel","MaxSal",       
-  "MaxTemp","MeanGrainsize", "MeanVel","MeanSal","MeanTemp","MinSal","MinTemp", "Northerness","rdmv",         
-  "SMF","WSV","Benthoscape","SPATIAL_AREA")
-
-Mydotplot(as.matrix(hm.enviro.dat[,MyVar])) 
-
-
-#Identify the outlier in area.
-plot(x = hm.enviro.dat$MinSal, 
-     y = 1:nrow(hm.enviro.dat),
-     xlab = "Value of variable",
-     ylab = "Order of the data from text file")
-
-identify(x = hm.enviro.dat$MinSal, y = 1:nrow(hm.enviro.dat))
-
-
-#Apply transformations
-
-# B Collinearity X -------------------------------------------------
-
-pairs(hm.enviro.dat[,c("Bathy", "MLD","BBPI" ,"FBPI","BS_Bulkshift","Easterness","LogSlope","MaxVel","MaxSal",       
-               "MaxTemp","MeanGrainsize", "MeanVel","MeanSal","MeanTemp","MinSal","MinTemp", "Northerness","rdmv",
-               "SMF","WSV")],
-      lower.panel = panel.cor, cex.labels=10, cex = 1.5)
-
-
-corvif(hm.enviro.dat[,c("Bathy", "MLD","BBPI" ,"FBPI","BS_Bulkshift","Easterness","LogSlope","MaxVel","MaxSal",       
-                "MaxTemp","MeanGrainsize", "MeanVel","MeanSal","MeanTemp","MinSal","MinTemp", "Northerness","rdmv",
-                "SMF","WSV")])#,"Benthoscape","SPATIAL_AREA")])
-
-#Variance inflation factors
-
-#GVIF
-
-#Bathy          7.816504  *
-#MLD            4.287007  *
-#MaxVel        17.379305  *
-#MaxSal         6.289689  *
-#MaxTemp       44.445146  *
-#MeanGrainsize  3.285619  *
-#MeanVel       23.460109  *
-#MeanSal        3.305556  *
-#MeanTemp      71.331070  *
-#MinSal         4.008834  *
-#MinTemp       35.930368  *
-#SMF            3.207777  *
-#WSV            5.286918  *
-
-#BBPI           1.423243
-#FBPI           1.563191
-#BS_Bulkshift   1.738174
-#Easterness     1.158229
-#LogSlope       1.235219
-#Northerness    1.136065
-#rdmv           1.305054
-
-#Dropped Mean Temp:
-corvif(hm.enviro.dat[,c("Bathy", "MLD","BBPI" ,"FBPI","BS_Bulkshift","Easterness","LogSlope","MaxVel","MaxSal",       
-                        "MaxTemp","MeanGrainsize", "MeanVel","MeanSal","MinSal","MinTemp", "Northerness","rdmv",
-                        "SMF","WSV")])#,"Benthoscape","SPATIAL_AREA")])
-
-#Variance inflation factors
-
-#GVIF
-#Bathy          7.775726
-#MLD            4.177569
-#BBPI           1.422389
-#FBPI           1.561441
-#BS_Bulkshift   1.706342
-#Easterness     1.151832
-#LogSlope       1.177675
-#MaxVel        17.371623
-#MaxSal         6.289567
-#MaxTemp       21.873391
-#MeanGrainsize  3.083146
-#MeanVel       23.459199
-#MeanSal        3.152507
-#MinSal         3.948641
-#MinTemp       22.943689
-#Northerness    1.135260
-#rdmv           1.304052
-#SMF            3.205743
-#WSV            5.271789
-
-#Dropped Mean Velocity:
-corvif(hm.enviro.dat[,c("Bathy", "MLD","BBPI" ,"FBPI","BS_Bulkshift","Easterness","LogSlope","MaxVel","MaxSal",       
-                        "MaxTemp","MeanGrainsize","MeanSal","MinSal","MinTemp", "Northerness","rdmv",
-                        "SMF","WSV")])#,"Benthoscape","SPATIAL_AREA")])
-
-#Variance inflation factors
-
-#GVIF
-#Bathy          7.061927
-#MLD            4.113753
-#BBPI           1.404609
-#FBPI           1.559333
-#BS_Bulkshift   1.667590
-#Easterness     1.151345
-#LogSlope       1.177472
-#MaxVel         4.116436
-#MaxSal         5.785618
-#MaxTemp       20.662170
-#MeanGrainsize  2.820941
-#MeanSal        3.040434
-#MinSal         3.947147
-#MinTemp       20.692288
-#Northerness    1.132066
-#rdmv           1.303686
-#SMF            3.086851
-#WSV            4.836986
-
-
-#Dropped Min Temp:
-corvif(hm.enviro.dat[,c("Bathy", "MLD","BBPI" ,"FBPI","BS_Bulkshift","Easterness","LogSlope","MaxVel","MaxSal",       
-                        "MaxTemp","MeanGrainsize","MeanSal","MinSal", "Northerness","rdmv",
-                        "SMF","WSV")])#,"Benthoscape","SPATIAL_AREA")])
-
-#Variance inflation factors
-
-#GVIF
-#Bathy         6.168068
-#MLD           3.599341
-#BBPI          1.383513
-#FBPI          1.554943
-#BS_Bulkshift  1.655467
-#Easterness    1.150999
-#LogSlope      1.176818
-#MaxVel        4.028042
-#MaxSal        5.690528
-#MaxTemp       7.176135
-#MeanGrainsize 2.746027
-#MeanSal       2.881632
-#MinSal        3.944946
-#Northerness   1.132039
-#rdmv          1.303681
-#SMF           3.023423
-#WSV           4.718324
-
-
-
-#Dropped Max Temp:
-corvif(hm.enviro.dat[,c("Bathy", "MLD","BBPI" ,"FBPI","BS_Bulkshift","Easterness","LogSlope","MaxVel","MaxSal",       
-                        "MeanGrainsize","MeanSal","MinSal", "Northerness","rdmv",
-                        "SMF","WSV")])#,"Benthoscape","SPATIAL_AREA")])
-
-#Variance inflation factors
-
-#GVIF
-#Bathy         4.386880
-#MLD           2.574807
-#BBPI          1.342102
-#FBPI          1.554665
-#BS_Bulkshift  1.654973
-#Easterness    1.142495
-#LogSlope      1.137624
-#MaxVel        3.758761
-#MaxSal        5.648454
-#MeanGrainsize 2.740014
-#MeanSal       2.874004
-#MinSal        3.607780
-#Northerness   1.110671
-#rdmv          1.300991
-#SMF           2.951497
-#WSV           4.395889
-
-#Dropped Max Sal:
-corvif(hm.enviro.dat[,c("Bathy", "MLD","BBPI" ,"FBPI","BS_Bulkshift","Easterness","LogSlope","MaxVel",       
-                        "MeanGrainsize","MeanSal","MinSal", "Northerness","rdmv",
-                        "SMF","WSV")])#,"Benthoscape","SPATIAL_AREA")])
-
-#Variance inflation factors
-
-#GVIF
-#Bathy         3.262581
-#MLD           2.463334
-#BBPI          1.337859
-#FBPI          1.551884
-#BS_Bulkshift  1.645788
-#Easterness    1.134850
-#LogSlope      1.131678
-#MaxVel        3.758656
-#MeanGrainsize 2.688886
-#MeanSal       2.324449
-#MinSal        3.607399
-#Northerness   1.110601
-#rdmv          1.298360
-#SMF           2.845488
-#WSV           4.351547
-
-#Dropped WSV:
-corvif(hm.enviro.dat[,c("Bathy", "MLD","BBPI" ,"FBPI","BS_Bulkshift","Easterness","LogSlope","MaxVel",       
-                        "MeanGrainsize","MeanSal","MinSal", "Northerness","rdmv",
-                        "SMF")])#,"Benthoscape","SPATIAL_AREA")])
-
-#Variance inflation factors
-
-#GVIF
-#Bathy         2.502460
-#MLD           2.220823
-#BBPI          1.323301
-#FBPI          1.548671
-#BS_Bulkshift  1.644866
-#Easterness    1.134830
-#LogSlope      1.120077
-#MaxVel        2.064552
-#MeanGrainsize 2.291501
-#MeanSal       2.239290
-#MinSal        3.381950
-#Northerness   1.110108
-#rdmv          1.298349
-#SMF           2.369118
-
-#Correlation with Factors:
-
-#Boxplots Loop through all variables
-#Benthoscape - Derived from Bathy, Backscatter, Slope, Wave shear stress, Broad Batymetric Position Index
-par(mfrow = c(4, 5))
-for(i in 10:29){
-  factor.cor <- boxplot(hm.enviro.dat[,i]  ~ factor(Benthoscape), 
-                data = hm.enviro.dat,
-                varwidth = TRUE,
-                ylab = colnames(hm.enviro.dat[i]),
-                xlab = "Benthoscape",
-                main = "")
-  factor.cor
-  }
-
-#Boxplots Loop through all variables
-#SPATIAL AREA
-par(mfrow = c(4, 5))
-for(i in 10:29){
-  factor.cor <- boxplot(hm.enviro.dat[,i] ~ factor(SPATIAL_AREA), 
-                        data = hm.enviro.dat,
-                        varwidth = TRUE,
-                        ylab = colnames(hm.enviro.dat[i]),
-                        xlab = "Spatial Area",
-                        main = "")
-  factor.cor
-}
-
-# C Relationships Y vs X --------------------------------------------------
-
 #Abundance
-MyVar <- c("ABUND.STD", "Bathy", "MLD","BBPI" ,"FBPI","BS_Bulkshift","Easterness","LogSlope","MaxVel","MaxSal",       
-           "MaxTemp","MeanGrainsize", "MeanVel","MeanSal","MeanTemp","MinSal","MinTemp", "Northerness","rdmv",         
-           "SMF","WSV","Benthoscape","SPATIAL_AREA")
-pairs(hm.enviro.dat[, MyVar],
-      lower.panel = panel.cor)
+hist(enviro.dat$ABUND.STD , main = paste("Histogram of Abundance"), xlab="Abundance" , col=rgb(0.8,0.8,0.3,0.5) , las=2)
 
 
-boxplot(ABUND.STD ~ factor(Benthoscape), 
-        data = hm.enviro.dat,
-        varwidth = TRUE,
-        ylab = "Horse mussel abundance",
-        xlab = "Benthoscape",
-        main = "")
+#Presence Absence
+enviro.dat <- enviro.dat %>% drop_na() %>%  mutate(PRESENT.ABSENT = as.factor(PRESENT.ABSENT))
 
-boxplot(ABUND.STD ~ factor(SPATIAL_AREA), 
-        data = hm.enviro.dat,
-        varwidth = TRUE,
-        ylab = "Horse mussel abundance",
-        xlab = "Spatial Area",
-        main = "")
+pa.count <- enviro.dat %>% group_by(PRESENT.ABSENT) %>% 
+  summarise(count = n()) %>% ungroup
 
 #Presence/Absence
+ggplot(enviro.dat, aes(x=PRESENT.ABSENT, fill = PRESENT.ABSENT)) +
+  geom_histogram(position="dodge", stat = "count")+
+  geom_text(aes(y=count, label = count), data = pa.count, vjust = -1)+
+  scale_fill_viridis(discrete = TRUE, alpha=0.6)+
+  ylim(0,1000)+
+  theme(legend.position="top")
 
-#Boxplots Loop through all variables
-par(mfrow = c(4, 5))
-for(i in 10:29){
-  factor.cor <- boxplot(hm.enviro.dat[,i] ~ factor(PRESENT.ABSENT), 
-                        data = hm.enviro.dat,
-                        varwidth = TRUE,
-                        ylab = colnames(hm.enviro.dat[i]),
-                        xlab = "Present/Absent",
-                        main = "")
-  factor.cor
+pa.count.2 <- enviro.dat %>% group_by(PRESENT.ABSENT, SPATIAL_AREA) %>% 
+  summarise(count = n()) %>% ungroup
+
+ggplot(enviro.dat, aes(x=SPATIAL_AREA, fill= PRESENT.ABSENT)) +
+  geom_histogram(position="dodge", stat = "count")+
+  ylim(0,500)+
+  geom_text(aes(y=count, label = count), data = pa.count.2, vjust = -1, position = position_dodge(.9))+
+  #geom_text(aes(y=count, label = count), data = pa.count.2)+
+  scale_fill_viridis(discrete = TRUE, alpha=0.6)+
+  theme(legend.position="top")
+
+
+
+#Abundance By Spatial Area
+enviro.dat %>%
+  ggplot( aes(x=SPATIAL_AREA, y=ABUND.STD, fill=SPATIAL_AREA)) +
+  geom_boxplot() +
+  scale_fill_viridis(discrete = TRUE, alpha=0.6) +
+  geom_jitter(color="black", size=0.4, alpha=0.9) +
+  #theme_ipsum() +
+  theme(
+    legend.position="none",
+    plot.title = element_text(size=11)
+  ) +
+  ggtitle("Abundance by Spatial Area") +
+  xlab("")
+
+#Abundance By Benthoscape
+
+enviro.dat %>% filter(Benthoscape != "Not_Classified") %>% 
+  ggplot( aes(x=Benthoscape, y=ABUND.STD, fill=Benthoscape)) +
+  geom_boxplot() +
+  scale_fill_viridis(discrete = TRUE, alpha=0.6) +
+  geom_jitter(color="black", size=0.5, alpha=0.9) +
+  #theme_ipsum() +
+  theme(axis.text.x = element_text(size = 4.5),
+        legend.position="none",
+        plot.title = element_text(size=11)
+  ) +
+  ggtitle("Abundance and Benthoscape") +
+  xlab("")
+
+# Abundance and Continuous Variables
+ggplot(enviro.dat.long %>% filter(!Pred_Variable %in% c("BtmSalinity","MLD", "Slope")), aes(Value, ABUND.STD)) +
+  geom_point(size = 0.01)+
+  geom_smooth()+
+  facet_wrap(vars(Pred_Variable), scales = "free")
+
+var.name <- c("Bathy","BtmStress","BtmTemp","Backscatter","Easterness","Curvature", "BBPI","FBPI","MeanGrainSize", "Northerness", "RDMV", "Sed_Mobilization_Freq","StandardDev_Bathy", "Wave_Shear_Vel")
+
+
+# Abundance and Continuous Variables by Spatial Area
+for(i in 1:length(var.name)){
+  print(enviro.dat.long %>% drop_na() %>% filter(Pred_Variable == var.name[i]) %>% 
+          ggplot(aes(Value, ABUND.STD)) +
+          geom_smooth()+
+          geom_point(size = 2)+
+          xlab(paste0(var.name[i])) +
+          facet_wrap(vars(SPATIAL_AREA), scales = "free"))
 }
 
-#Plot every covariate versus Y
-MyX  <- c("Bathy", "MLD","BBPI" ,"FBPI","BS_Bulkshift","Easterness","LogSlope","MaxVel","MaxSal",       
-          "MaxTemp","MeanGrainsize", "MeanVel","MeanSal","MeanTemp","MinSal","MinTemp", "Northerness","rdmv",         
-          "SMF","WSV")
-Myxyplot(hm.enviro.dat, MyX, "ABUND.STD", MyYlab = "Abundance")
+# Presence and Absence with Continuous Variables
 
-# D Spatial/temporal aspects of sampling design -------
+enviro.dat.long <- enviro.dat.long %>% mutate(PRESENT.ABSENT = as.factor(PRESENT.ABSENT))
 
-
-# E Interactions (is the quality of the data good enough to include  --------
-
-#Loops to plot all variables for Spatial area
-for(i in 10:29){
-
-  p1 <- xyplot(ABUND.STD ~ hm.enviro.dat[i] | factor(SPATIAL_AREA),
-       data = hm.enviro.dat, 
-       xlab = colnames(hm.enviro.dat[i]),
-       ylab = "Abundance",
-       strip = function(bg = 'white', ...) 
-         strip.default(bg = 'white', ...),
-       scales = list(alternating = TRUE, 
-                     x = list(relation = "free"),
-                     y = list(relation = "same")),
-       panel=function(x,y){
-         panel.grid(h=-1, v= 2)
-         panel.points(x, y, col = 1)
-         #panel.loess(x,y,col=1,lwd=2) #Add smoother
-         panel.abline(lm(y~x))        #Add regression line
-       })
-  print(p1)
-}
-
-#Loops to plot all variables for Benthoscape
-for(i in 10:29){
-  
-  p2 <- xyplot(ABUND.STD ~ hm.enviro.dat[i] | factor(Benthoscape),
-               data = hm.enviro.dat, 
-               xlab = colnames(hm.enviro.dat[i]),
-               ylab = "Abundance",
-               strip = function(bg = 'white', ...) 
-                 strip.default(bg = 'white', ...),
-               scales = list(alternating = TRUE, 
-                             x = list(relation = "free"),
-                             y = list(relation = "same")),
-               panel=function(x,y){
-                 panel.grid(h=-1, v= 2)
-                 panel.points(x, y, col = 1)
-                 #panel.loess(x,y,col=1,lwd=2) #Add smoother
-                 panel.abline(lm(y~x))        #Add regression line
-               })
-  print(p2)
-}
+ggplot(enviro.dat.long %>% drop_na() %>%  filter(!Pred_Variable %in% c("BtmSalinity","MLD", "Slope")),
+       aes(PRESENT.ABSENT, Value)) +
+  geom_boxplot()+
+  facet_wrap(vars(Pred_Variable), scales = "free")
 
 
-# F Zero inflation Y ------------------------------------------------------
+# Read in layer(s) to plot ------------------------------------------------
+RastList <- list.files("E:/BOF_envirodataset/Snapped", pattern =".grd$",full.names = TRUE) #Change path
+rasterList1 <- lapply(RastList, raster)
+rast.stack <- stack(rasterList1)
 
-#Frequency plots - # of observations
-par(mar = c(4, 4, 3, 2))
-plot(table(round(hm.enviro.dat$ABUND.STD)),
-     type = "h",
-     xlim = c(0, 100),
-     xlab = "Observed values", ylab = "Frequency")
+names(rast.stack) <- c("Bathy","BtmSalinity","BtmStress","BtmTemp","MLD","Backscatter","Easterness","Curvature", "Slope", "BBPI","FBPI","MeanGrainSize", "Northerness", "RDMV", "Sed_Mobilization_Freq","StandardDev_Bathy", "Wave_Shear_Vel")                   
 
 
-
-# G Are categorical covariates balanced? ----------------------------------
-
-
-
-
-
-
-
-
-
-
-
-
+image(rast.stack[[1:6]], col = viridis(500,option = "A"), useRaster=TRUE,maxnl=6)
+image(rast.stack[[7:12]], col = viridis(500,option = "A"), useRaster=TRUE,maxnl=6)
+image(rast.stack[[13:17]], col = viridis(500,option = "A"), useRaster=TRUE,maxnl=6)
