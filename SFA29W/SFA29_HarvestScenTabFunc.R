@@ -172,6 +172,6 @@ sfa29.harvest.scen.tab = function(area = area, catch.range = catch.range, type =
   }
 }
 
-test <- sfa29.harvest.scen.tab(area = "SFA29A", catch.range = catch.range, type = "presentation")
-ex.hux
+#test <- sfa29.harvest.scen.tab(area = "SFA29A", catch.range = catch.range, type = "presentation")
+#ex.hux
 #ex.table
