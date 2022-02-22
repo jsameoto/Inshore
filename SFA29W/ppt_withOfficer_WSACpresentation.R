@@ -38,26 +38,53 @@ require(openxlsx)
 
 # Define ------------------------------------------------------------------
 
-year <- 2022
-fig.dir <- paste0("Y:/Inshore/SFA29/",year,"/Assessment/Figures/") #figure directory
-subareas <- c("A", "B", "C", "D", "E")
+survey.year <- 2021
+assessment.year <- 2022
+fig.dir <- paste0("Y:/Inshore/SFA29/",assessment.year,"/Assessment/Figures/") #figure directory
+direct <- paste0("Y:/Inshore/SFA29/", assessment.year,"/Assessment/")
+subareas <- c("SFA29A", "SFA29B", "SFA29C", "SFA29D")
+
 # Load Functions
-
-
+funcs <- "https://raw.githubusercontent.com/Mar-scal/Inshore/master/SFA29W/sfa.HarvestScenTabFunc.R"
+dir <- getwd()
+for(fun in funcs) 
+{
+  # temp <- dir
+  download.file(fun,destfile = basename(fun))
+  source(paste0(dir,"/",basename(fun)))
+  file.remove(paste0(dir,"/",basename(fun)))
+}
 
 # Load model results ------------------------------------------------------
 
-direct <- paste0("Y:/Inshore/SFA29/",year,"/Assessment/")
+#Model results
+SFA29A <- read.csv(paste0(direct,"Data/Model/SFA29A/SFA29.A.model.results.summary.", survey.year, ".csv"))
+SFA29A.decision.table <- read.csv(paste0(direct,"Data/Model/SFA29A/SFA29.A.mod.Decision.table.", survey.year, ".csv"))
 
-#Read in .RData for each SPA and save within Area object
-loadEnvironment <- function(RData, env = new.env()){
-  load(RData, env)
-  return(env)
-}
+SFA29B <- read.csv(paste0(direct,"Data/Model/SFA29B/SFA29.B.model.results.summary.", survey.year, ".csv"))
+SFA29B.decision.table <- read.csv(paste0(direct,"Data/Model/SFA29B/SFA29.B.mod.Decision.table.", survey.year, ".csv"))
 
-#SPA1A <- loadEnvironment(paste0(direct,"Data/Model/SPA1A/Model_results_and_diagnostics_", year, "_1A.RData")) #SPA1A
-#SPA1A.decision.table <- read.csv(paste0(direct,"Data/Model/SPA1A/decisiontable", year, "_1A.csv"))
+SFA29C <- read.csv(paste0(direct,"Data/Model/SFA29C/SFA29.C.model.results.summary.", survey.year, ".csv"))
+SFA29C.decision.table <- read.csv(paste0(direct,"Data/Model/SFA29C/SFA29.C.mod.Decision.table.", survey.year, ".csv"))
 
+SFA29D <- read.csv(paste0(direct,"Data/Model/SFA29D/SFA29.D.model.results.summary.", survey.year, ".csv"))
+SFA29D.decision.table <- read.csv(paste0(direct,"Data/Model/SFA29D/SFA29.D.mod.Decision.table.", survey.year, ".csv"))
+
+#Fishery data
+tac <- read.csv(paste0(direct,"Data/CommercialData/SFA29_TACbyYr.csv"))
+landings <- read.csv(paste0(direct,"Data/CommercialData/SFA29_totalLandings_YearFleetFSC.csv"))
+#For Appendix
+tacland <- read.csv(paste0(direct,"Data/CommercialData/SFA29W_TACandLandingsCompiled_",survey.year,".csv"), fileEncoding = 'UTF-8-BOM') # fileEncoding arg included because Year had a funky hidden character in the front...  ¯\_(???)_/¯
+cpue <- read.csv(paste0(direct,"Data/CommercialData/SFA29_CPUE_byYrAreaFleet_",survey.year,".csv"))
+
+#Survey data
+survey.ind <- read.csv(paste0(direct,"Data/SurveyIndices/SDM.HighMedLow.2001to",survey.year,".Numbers.csv"))
+survey.ind.E <- read.csv(paste0(direct, "Data/SurveyIndices/SubareaE.ExploratoryMeanbyTow.Numbers.",survey.year,".csv"))
+condition <- read.csv(paste0(direct, "Data/SurveyIndices/SFA29W_ConditionTimeSeries2001to",survey.year,".csv"))
+
+
+
+# Start Presentation ------------------------------------------------------
 
 # build a new ppt from the template
 newpres <- read_pptx("Y:/Inshore/SFA29/2022/Assessment/Documents/Presentations/WSAC/DO_NOT_EDIT_Template_WSAC_R_ppt.pptx")
@@ -108,11 +135,11 @@ add_slide(layout="Main Title Page", master="1_Office Theme") %>%
 
 # slide 1 - Outline -------------------------------------------------------------
 
-add_slide(layout="Summary", master="1_Office Theme") %>%
+add_slide(layout="Summary 2", master="1_Office Theme") %>%
   ph_with(value = "Outline", location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
   ph_with(value = unordered_list(
     level_list = c(1, 1, 1, 1,1),
-    str_list = c("Background", "Fishery data", "Survey data", "Habitat-based population model", paste0("Stock status and advice for",year))),
+    str_list = c("Background", "Fishery data", "Survey data", "Habitat-based population model", paste0("Stock status and advice for ",year))),
     location = ph_location_label(ph_label = "Text Placeholder"), level=2, index=2) %>% 
 
 # slide 2 - Multi-Year Science Advice -------------------------------------------------------------
@@ -136,241 +163,161 @@ add_slide(layout="Summary", master="1_Office Theme") %>%
 
 add_slide(layout="Single Figure", master="1_Office Theme") %>%
   ph_with(value = "Landings Time Series", location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
-  ph_with(external_img(paste0(fig.dir,"CommercialData/SFA29WTACandLandings",year-1,".png"), width = 6.50 , height = 5.73), location = ph_location_label(ph_label = "Figure Placeholder"), use_loc_size = TRUE) %>% 
+  ph_with(external_img(paste0(fig.dir,"CommercialData/SFA29WTACandLandings",survey.year,".png"), width = 6.50 , height = 5.73), location = ph_location_label(ph_label = "Figure Placeholder"), use_loc_size = TRUE) 
 
+  #stop for table generation
   
 # slide 4 - YYYY Landings  -------------------------------------------------------------
 
-#ADD TABLE
+#Make Landings Table
 
-add_slide(layout="Table", master="1_Office Theme") %>%
-  ph_with(value = paste0(year-1, "Landings"), location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
-  #ph_with(value = ex.hux, location = ph_location_label(ph_label = "Table Placeholder"), use_loc_size = TRUE, index = 1)
-  
+#WILL HAVE TO ADJUST IF SUBAREA A AND E ARE COMBINED!!!!
+tacland <- tacland %>% 
+  mutate(TAC = replace_na(TAC, "-")) %>% 
+  mutate(Landings = replace_na(Landings, "-")) %>% 
+  mutate(FSC = replace_na(FSC, "-"))
 
-# slide 5 - Catch Rate -------------------------------------------------------------
+colnames(tacland) <- c("Year", "Subarea", "TAC (t)", "Landings (t)", "FSC (t)", "Total Landings (t)")
+tacland <- tacland %>% filter(Year %in% c(survey.year)) %>% dplyr::select(!Year)
 
-add_slide(layout="Single Figure", master="1_Office Theme") %>%
-  ph_with(value = "Catch Rate", location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
-  ph_with(external_img(paste0(fig.dir,"CommercialData/SFA29_CPUEbyfleet_",year-1,".png"), width = 6.50 , height = 5.73), location = ph_location_label(ph_label = "Figure Placeholder"), use_loc_size = TRUE) %>% 
-  
-# slide 6- Fishing Positions -------------------------------------------------------------
+#str(tacland)
+tacland.hux <- tacland %>% 
+  as_hux() %>% 
+  theme_basic() %>% 
+  set_tb_padding(0)
+row.names(tacland.hux) <- NULL
 
-add_slide(layout="Dual Figure", master="1_Office Theme") %>%
-  ph_with(value = "Fishing Positions: Logbook", location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
-  ph_with(external_img(paste0("Y:/Inshore/SFA29/",year-1,"/Assessment/Figures/CommercialData/SFA29_CPUEgridplot",year-2,".png"), width = 9, height = 9), location = ph_location_label(ph_label = "Figure Placeholder 1"), use_loc_size = TRUE) %>% #Previous years commercial cpue
-  ph_with(external_img(paste0(fig.dir,"CommercialData/SFA29_CPUEgridplot",year-1,".png"), width = 9, height = 9), location = ph_location_label(ph_label = "Figure Placeholder 2"), use_loc_size = TRUE) %>% 
+#huxtable format - function(row#, column#):
+tacland.hux <- tacland.hux %>%
+  set_bold(1, everywhere) %>% #Bold headers
+  set_number_format(everywhere, c(3,5), 1) %>% #defaults to scientific notation - so specify 1 decimal places for Landings.
+  set_align(everywhere, 1:2, "left") %>% # year and SPA columns align left
+  #set_valign(everywhere, 1, "top") %>% #set vertical alignment for year and SPA columns
+  set_align(everywhere, 2:5 , "right") %>% #right align TAC, Landings, FSC and Total Landings columns
+  #set_valign(everywhere, 1, "top") %>% #vertical align top for TAC column
+  set_valign(everywhere, everywhere, "bottom") %>% #vertical align top for Landings, FSC and Total Landings columns
+  #set_align(1,2:5, "centre") %>% #centre TAC, Landings, FSC and Total Landings headers
+  set_valign(1,1:5, "top") %>% #centre TAC, Landings, FSC and Total Landings headers
+  set_font_size(21) %>% #set font of table
+  set_bold(7, everywhere) %>%
+  set_number_format(7, 2, 0) %>% #Total rows
+  set_col_width(0.05) %>%
+  set_col_width(1, 0.04) %>% 
+  set_col_width(2, 0.05) %>%
+  set_col_width(3, 0.06) %>%
+  set_col_width(4, 0.05) %>%
+  set_col_width(5, 0.08) %>%
+  set_width(6.0) %>% #Set table width
+  set_bottom_border(final(1), everywhere) %>%
+  set_all_padding(7) %>%
+  set_top_border(1:2, everywhere) %>%
+  as_flextable() %>% autofit()
 
-#Check if any privacy considerations
-
-
-# slide 7 - Fishery Bycatch -------------------------------------------------------------
-
-#MIGHT NOT INCLUDE - data not available
-
-#add_slide(layout="Summary", master="1_Office Theme") %>%
-#  ph_with(value = "Fishery Bycatch", location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
-#  ph_with(value = unordered_list(
-#    level_list = c(1, 1, 2, 2, 2, 1),
-#    str_list = c("Observer coverage of one day per active vessel, monitor fish and invertebrate species. Discard rates reported for all bycatch species",
-#                 "In 20XX",
-#                 "X active vessels",
-#                 "X trips observed corresponding to X days observed",
-#                 "No observed trips in Subarea X",
-#                 "Discard rates cannot be reported due to Privacy Act considerations")),
-#    location = ph_location_label(ph_label = "Text Placeholder 1"), level=2, index=2) %>%
-  
-  
-# slide 8 - Survey: Habitat Suitability -------------------------------------------------------------
-
-#WHERE DO I FIND THIS FIGURE AND TABLE?
-
-add_slide(layout="Single Figure", master="1_Office Theme") %>%
-  ph_with(value = "Survey: Habitat Suitability", location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
-  #ph_with(external_img(), width = 6.50 , height = 5.73), location = ph_location_label(ph_label = "Figure Placeholder"), use_loc_size = TRUE) %>% 
-  #Table at bottom - modify/create new layout template
-  
-  
-# slide 9- Pre-recruit Abundance  -------------------------------------------------------------
-
-#Will need to adjust Figure placeholder 1 file path.
-
-add_slide(layout="Dual Figure", master="1_Office Theme") %>%
-  ph_with(value = "Pre-recruit Abundance (<90mm)", location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
-  ph_with(external_img(paste0("Y:/Inshore/SFA29/2020/figures/ContPlot_SFA29_PreDensity",year-3,".png"), width = 9, height = 9), location = ph_location_label(ph_label = "Figure Placeholder 1"), use_loc_size = TRUE) %>% #Previous years commercial cpue
-  ph_with(external_img(paste0(fig.dir,"ContPlot_SFA29_PreDensity",year-1,".png"), width = 9, height = 9), location = ph_location_label(ph_label = "Figure Placeholder 2"), use_loc_size = TRUE) %>% 
-
-
-# slide 10- Recruit Abundance  -------------------------------------------------------------
-
-#Will need to adjust Figure placeholder 1 file path.
-
-add_slide(layout="Dual Figure", master="1_Office Theme") %>%
-  ph_with(value = "Recruit Abundance (90-99mm)", location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
-  ph_with(external_img(paste0("Y:/Inshore/SFA29/2020/figures/ContPlot_SFA29_RecDensity",year-3,".png"), width = 9, height = 9), location = ph_location_label(ph_label = "Figure Placeholder 1"), use_loc_size = TRUE) %>% #Previous years commercial cpue
-  ph_with(external_img(paste0(fig.dir,"ContPlot_SFA29_RecDensity",year-1,".png"), width = 9, height = 9), location = ph_location_label(ph_label = "Figure Placeholder 2"), use_loc_size = TRUE) %>% 
-
-
-# slide 11 - Commercial Abundance  -------------------------------------------------------------
-
-#Will need to adjust Figure placeholder 1 file path.
-
-add_slide(layout="Dual Figure", master="1_Office Theme") %>%
-  ph_with(value = "Commercial Abundance (>100mm)", location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
-  ph_with(external_img(paste0("Y:/Inshore/SFA29/2020/figures/ContPlot_SFA29_ComDensity",year-3,".png"), width = 9, height = 9), location = ph_location_label(ph_label = "Figure Placeholder 1"), use_loc_size = TRUE) %>% #Previous years commercial cpue
-  ph_with(external_img(paste0(fig.dir,"ContPlot_SFA29_ComDensity",year-1,".png"), width = 9, height = 9), location = ph_location_label(ph_label = "Figure Placeholder 2"), use_loc_size = TRUE) 
-
-#Break for loop
-
-## Loop for each subarea A-E
-
-for (i in 1:length(subareas)) {
-  
-  if(subareas[i] == "A") area.title <- "SFA29A"
-  if(subareas[i] == "B") area.title <- "SFA29B"
-  if(subareas[i] == "C") area.title <- "SFA29C"
-  if(subareas[i] == "D") area.title <- "SFA29D"
-  if(subareas[i] == "E") area.title <- "SFA29E"
-  
-  newpres <- newpres %>%
-    
-# slide 12-16 - Shell Height Frequency A-D -------------------------------------------------------------
-  
-  #SHELL HEIGHT FREQUENCY PNGs DONT HAVE YEAR IN THE FILE NAME - FIX?
-  
-  add_slide(layout="Single Figure", master="1_Office Theme") %>%
-    ph_with(value = paste0(area.title,": Shell Height Frequency"), location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
-    ph_with(external_img(paste0(fig.dir, "Growth/SHF_SFA29", subareas[i],".png"), width = 6.7, height = 8), location = ph_location_label(ph_label = "Figure Placeholder"), use_loc_size = TRUE)
-  
-}
-
-#End loop
+#Continue making slides again:
 
 newpres <- newpres %>%
   
-# slide 17 - Recruit Survey Abundance -------------------------------------------------------------
-
-add_slide(layout="Single Figure", master="1_Office Theme") %>%
-  ph_with(value = "Recruit Survey Abundance (90-99mm)", location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
-  ph_with(external_img(paste0(fig.dir, "SFA29AtoD.Numberspertow.Recruit.",year-1,".png"), width = 6.50 , height = 5.73), location = ph_location_label(ph_label = "Figure Placeholder"), use_loc_size = TRUE) %>%
+  add_slide(layout="Table", master="1_Office Theme") %>%
+  ph_with(value = paste0(survey.year, "Landings"), location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
+  ph_with(value = tacland.hux, location = ph_location_label(ph_label = "Table Placeholder"), use_loc_size = TRUE, index = 1) %>% 
   
+# slide 8 - Survey: Habitat Suitability -------------------------------------------------------------
+
+add_slide(layout="Dual Figure 3", master="1_Office Theme") %>%
+  ph_with(value = "Survey: Habitat Suitability", location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
+  ph_with(external_img(paste0("Y:/Inshore/SFA29/",year,"/Assessment/Documents/Presentations/WSAC/ScalsurvSDM_GreyscaleforCSAS.png"), width = 6.67 , height = 4.83), location = ph_location_label(ph_label = "Figure Placeholder 1")) %>% 
+  ph_with(external_img(paste0("Y:/Inshore/SFA29/",year,"/Assessment/Documents/Presentations/WSAC/SDMpercent_per_area_figure.png"), width = 8.11 , height = 1.43), location = ph_location_label(ph_label = "Figure Placeholder 2"), use_loc_size = TRUE) %>% 
   
-# slide 18 - Commercial Survey Abundance -------------------------------------------------------------
+# slide 11 - Commercial Abundance  -------------------------------------------------------------
 
-add_slide(layout="Single Figure", master="1_Office Theme") %>%
-  ph_with(value = "Commercial Survey Abundance (>100mm)", location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
-  ph_with(external_img(paste0(fig.dir, "SFA29AtoD.Numberspertow.Commercial.",year-1,".png"), width = 6.50 , height = 5.73), location = ph_location_label(ph_label = "Figure Placeholder"), use_loc_size = TRUE) %>% 
+add_slide(layout="Dual Figure 2", master="1_Office Theme") %>%
+  ph_with(value = "Commercial Abundance (>100mm)", location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
+  ph_with(external_img(paste0(fig.dir,"ContPlot_SFA29_ComDensity",survey.year,".png"), width = 9, height = 9), location = ph_location_label(ph_label = "Figure Placeholder 1"), use_loc_size = TRUE) %>% #Previous years commercial cpue
+  ph_with(external_img(paste0(fig.dir,"SFA29AtoD.Numberspertow.Commercial.",survey.year,".png"), width = 9, height = 9), location = ph_location_label(ph_label = "Figure Placeholder 2"), use_loc_size = TRUE) %>% 
+
+# slide 10- Recruit Abundance  -------------------------------------------------------------
+
+add_slide(layout="Dual Figure 2", master="1_Office Theme") %>%
+  ph_with(value = "Recruit Abundance (90-99mm)", location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
+  ph_with(external_img(paste0(fig.dir,"ContPlot_SFA29_RecDensity",survey.year,".png"), width = 9, height = 9), location = ph_location_label(ph_label = "Figure Placeholder 1"), use_loc_size = TRUE) %>% #Previous years figure
+  ph_with(external_img(paste0(fig.dir,"SFA29AtoD.Numberspertow.Recruit.",survey.year,".png"), width = 9, height = 9), location = ph_location_label(ph_label = "Figure Placeholder 2"), use_loc_size = TRUE) %>% 
   
-  
-# slide 19 - Subarea E -------------------------------------------------------------
+# slide 9- Pre-recruit Abundance  -------------------------------------------------------------
 
-#ALL SUBAREAS? JUST E, or NONE?
-
-add_slide(layout="Single Figure", master="1_Office Theme") %>%
-  ph_with(value = "Subarea E", location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
-  ph_with(external_img(paste0(fig.dir, "SFA29E.Numberspertow.Live.",year-1,".png"), width = 6.50 , height = 5.73), location = ph_location_label(ph_label = "Figure Placeholder"), use_loc_size = TRUE) %>% 
-
-# slide 20 - Condition Time series -------------------------------------------------------------
-
-#No YEAR IN FILE NAME - CHANGE?
-
-add_slide(layout="Single Figure", master="1_Office Theme") %>%
-  ph_with(value = "Condition Time Series", location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
-  ph_with(external_img(paste0(fig.dir, "SFA29W.ConditionTimeSeries.png"), width = 6.50 , height = 5.73), location = ph_location_label(ph_label = "Figure Placeholder"), use_loc_size = TRUE) %>% 
-
-
-# slide 21 - Commercial Survey Biomass -------------------------------------------------------------
-
-add_slide(layout="Single Figure", master="1_Office Theme") %>%
-  ph_with(value = "Commercial Survey Biomass (>100mm)", location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
-  ph_with(external_img(paste0(fig.dir, "SFA29AtoD.Weightpertow.Commercial.",year-1,".png"), width = 6.50 , height = 5.73), location = ph_location_label(ph_label = "Figure Placeholder"), use_loc_size = TRUE) %>% 
-
+add_slide(layout="Dual Figure 2", master="1_Office Theme") %>%
+  ph_with(value = "Pre-recruit Abundance (<90mm)", location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
+  ph_with(external_img(paste0(fig.dir,"ContPlot_SFA29_PreDensity",survey.year,".png"), width = 9, height = 9), location = ph_location_label(ph_label = "Figure Placeholder 1"), use_loc_size = TRUE) %>% #Previous years figure
+  ph_with(external_img(paste0(fig.dir,"SFA29AtoD.Numberspertow.Prerecruit.",survey.year,".png"), width = 9, height = 9), location = ph_location_label(ph_label = "Figure Placeholder 2"), use_loc_size = TRUE) %>% 
   
 
-# slide 22 - Commercial Clapper Proportion -------------------------------------------------------------
+# slide 14 - Subarea E -------------------------------------------------------------
 
-#CLAPPER PROPORTION FILE NOT SAVED
-
-add_slide(layout="Single Figure", master="1_Office Theme") %>%
-  ph_with(value = "Commercial Clapper Proportion (>100mm)", location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
-  #ph_with(external_img(paste0(fig.dir, "SFA29AtoD.Weightpertow.Commercial.",year-1,".png"), width = 6.50 , height = 5.73), location = ph_location_label(ph_label = "Figure Placeholder"), use_loc_size = TRUE) %>% 
+#add_slide(layout="Single Figure 3", master="1_Office Theme") %>%
+#  ph_with(value = "Subarea E Survey Abundance", location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
+#  ph_with(external_img(paste0(fig.dir, "SFA29E.Numberspertow.",survey.year,".png"), width = 6.50 , height = 7.2), location = ph_location_label(ph_label = "Figure Placeholder"), use_loc_size = TRUE) %>% 
   
   
-# slide 23 - Assessment Model: Habitat Suitability -------------------------------------------------------------
+  # slide 15 - Stock Status -------------------------------------------------------------
 
-#Need to edit layout for bullet points and figure
-
-add_slide(layout="Summary", master="1_Office Theme") %>%
-  ph_with(value = "Assessment Model: Habitat Suitability", location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
-  ph_with(value = unordered_list(
-    level_list = c(1, 1),
-    str_list = c("Builds in spatial information on distribution",
-                 "Scallop habitat suitability binned into Low [0,0.3), Medium [0.3,0.6), and High [0.6,1.0)")),
-    location = ph_location_label(ph_label = "Text Placeholder"), level=2, index=2) %>%  
-  
-# slide 24 - Stock Status -------------------------------------------------------------
-
-#MISSING FIGURE - Biomass density (meats t/km2) by year faceted by area
-
-add_slide(layout="Single Figure", master="1_Office Theme") %>%
+add_slide(layout="Single Figure 2", master="1_Office Theme") %>%
   ph_with(value = "Stock Status", location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
-  #ph_with(external_img(paste0(fig.dir, "SFA29AtoD.Weightpertow.Commercial.",year-1,".png"), width = 6.50 , height = 5.73), location = ph_location_label(ph_label = "Figure Placeholder"), use_loc_size = TRUE) %>% 
+  ph_with(external_img(paste0(fig.dir, "/Model/Commercial_Biomass_Density",survey.year,".png"), width = 6.50 , height = 5.73), location = ph_location_label(ph_label = "Figure Placeholder"), use_loc_size = TRUE) %>% 
   
-# slide 25 - Exploitation -------------------------------------------------------------
+  # slide 16 - Exploitation -------------------------------------------------------------
 
-#MISSING FIGURE - Exploitation by year faceted by area
-
-add_slide(layout="Single Figure", master="1_Office Theme") %>%
+add_slide(layout="Single Figure 2", master="1_Office Theme") %>%
   ph_with(value = "Exploitation", location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
-  #ph_with(external_img(paste0(fig.dir, "SFA29AtoD.Weightpertow.Commercial.",year-1,".png"), width = 6.50 , height = 5.73), location = ph_location_label(ph_label = "Figure Placeholder"), use_loc_size = TRUE) %>% 
+  ph_with(external_img(paste0(fig.dir, "/Model/Model_Exploitation",survey.year,".png"), width = 6.50 , height = 5.73), location = ph_location_label(ph_label = "Figure Placeholder"), use_loc_size = TRUE) %>% 
   
-# slide 26 - Natural Mortality (Instantaneous) -------------------------------------------------------------
+  # slide 17 - Natural Mortality (Instantaneous) -------------------------------------------------------------
 
-#MISSING FIGURE - Natural Mortality by year faceted by area
-
-add_slide(layout="Single Figure", master="1_Office Theme") %>%
+add_slide(layout="Single Figure 2", master="1_Office Theme") %>%
   ph_with(value = "Natural Mortality (Instantaneous)", location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
-  #ph_with(external_img(paste0(fig.dir, "SFA29AtoD.Weightpertow.Commercial.",year-1,".png"), width = 6.50 , height = 5.73), location = ph_location_label(ph_label = "Figure Placeholder"), use_loc_size = TRUE) %>% 
+  ph_with(external_img(paste0(fig.dir, "Model/NatMort_Instantaneous",survey.year,".png"), width = 6.50 , height = 5.73), location = ph_location_label(ph_label = "Figure Placeholder"), use_loc_size = TRUE) %>% 
   
   
-# slide 27 - Catch Scenerios -------------------------------------------------------------
-
-#Need to edit layout for bullet points and figure
+  # slide 18 - Catch Scenerios -------------------------------------------------------------
 
 add_slide(layout="Summary", master="1_Office Theme") %>%
   ph_with(value = "Catch Scenerios", location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
   ph_with(value = unordered_list(
     level_list = c(1, 1),
     str_list = c("Catch, exploitation, percent change in commercial biomass, and the probability of biomass decline were determined from the model and are presented as catch scenario tables for subareas A-D ",
-                 paste0("Catch scenarios for " ,year+1," assume current year (",year,") estimates of condition and use the mean of natural mortality estimates from the last five years (2015 to ",year-1,") within subarea"))),
+                 paste0("Catch scenarios for " ,year+1," assume current year (",year,") estimates of condition and use the mean of natural mortality estimates from the last five years (2015 to ",survey.year,") within subarea"))),
     location = ph_location_label(ph_label = "Text Placeholder"), level=2, index=2)  
-  
-  
-# slide Loop for Scenerio Tables A-D  -------------------------------------------------------------
-
-#ADD TABLES (Remove E from loop)
 
 #Break for loop
 
-## Loop for each subarea A-E
+# slide Loop for Scenerio Tables A-D  -------------------------------------------------------------
 
 for (i in 1:length(subareas)) {
   
-  if(subareas[i] == "A") area.title <- "SFA29A"
-  if(subareas[i] == "B") area.title <- "SFA29B"
-  if(subareas[i] == "C") area.title <- "SFA29C"
-  if(subareas[i] == "D") area.title <- "SFA29D"
-  if(subareas[i] == "E") area.title <- "SFA29E"
+  if(subareas[i] == "SFA29A") area.title <- "Subarea A"
+  if(subareas[i] == "SFA29B") area.title <- "Subarea B"
+  if(subareas[i] == "SFA29C") area.title <- "Subarea C"
+  if(subareas[i] == "SFA29D") area.title <- "Subarea D"
   
-  newpres <- newpres %>%
+  if(subareas[i] == "SFA29A") area.caption <- paste0("Catch scenario table for SFA 29W Subarea A to evaluate ",assessment.year, 
+                                                " catch levels in terms of expected changes in biomass (%) and probability (Pr.) of increase.") 
+  if(subareas[i] == "SFA29B") area.caption <- paste0("Catch scenario table for SFA 29W Subarea B to evaluate ",assessment.year," catch levels in terms of expected changes in biomass (%), probability (Pr.) of increase, and probability of being above the lower reference point (LRP: 1.12 t/km2) and upper stock reference (USR: 2.24 t/km2).") 
+  if(subareas[i] == "SFA29C") area.caption <- paste0("Catch scenario table for SFA 29W Subarea C to evaluate ",assessment.year, " catch levels in terms of expected changes in biomass (%), probability (Pr.) of increase, and probability of being above the lower reference point (LRP: 1.41 t/km2) and upper stock reference (USR: 2.82 t/km2).") 
+  if(subareas[i] == "SFA29D") area.caption <- paste0("Catch scenario table for SFA 29W Subarea D to evaluate ",assessment.year," catch levels in terms of expected changes in biomass (%), probability (Pr.) of increase, and probability of being above the lower reference point (LRP: 1.3 t/km2) and upper stock reference (USR: 2.6 t/km2).") 
+  
+#First run the table function
+sfa29.harvest.scen.tab(area = subareas[i], catch.range = catch.range, type = "presentation")
 
-add_slide(layout="Table", master="1_Office Theme") %>%
-  ph_with(value = paste0("Subarea",subareas[i], "Catch Scenarios"), location = ph_location_label(ph_label = "Title"), index=1) #This is the title
-  #ph_with(value = ex.hux, location = ph_location_label(ph_label = "Table Placeholder"), use_loc_size = TRUE, index = 1)
+#Add slides
+
+newpres <- newpres %>%  
+    
+    add_slide(layout="Table 2", master="1_Office Theme") %>%
+    ph_with(value = paste0(area.title, " Catch Scenarios"), location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
+    ph_with(value = area.caption,location = ph_location_label(ph_label = "Text Placeholder"), index = 1) %>%
+    ph_with(value = ex.hux, location = ph_location_label(ph_label = "Table Placeholder"), use_loc_size = TRUE, index = 1)
   
-  
-}
-  
+} #Break loop
+
+
 newpres <- newpres %>%
   
 # slide 32 - Subarea E -------------------------------------------------------------
@@ -378,13 +325,13 @@ newpres <- newpres %>%
 add_slide(layout="Summary", master="1_Office Theme") %>%
   ph_with(value = "Subarea E", location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
   ph_with(value = unordered_list(
-    level_list = c(1, 1, 1, 1, 1, 1),
-    str_list = c("Not covered by the habitat suitability model",
+    level_list = c(1,1, 1, 1, 1, 1),
+    str_list = c("EDIT MANUALLY",
+                 "Not covered by the habitat suitability model",
                  "Only available data to assess this area includes survey data, commercial catch rate, and landings",
-                 paste0("Abundance of commercial and recruit sized scallop increased/decreased in ",year-1),
-                 "Catch rate cannot be reported (Privacy Act)",
-                 paste0("In ",year-1,", commercial fleet landed X.X t against a catch limit of XX t "),
-                 "Indications that the commercial abundance is relatively stable at the current level of removals")),
+                 paste0("In ",survey.year,", no fishing occured "),
+                 paste0("Commercial size abundances were ", format(round((survey.ind.E %>% filter(YEAR == survey.year & SUBAREA == "SFA29E" & size == "comm") %>% dplyr::select("yst"))[1,1],1),nsmall = 1), " per tow, recruit size abundances were ", format(round((survey.ind.E %>% filter(YEAR == survey.year & SUBAREA == "SFA29E" & size == "rec") %>% dplyr::select("yst"))[1,1],1),nsmall = 1), " per tow"),
+                 paste0("In ",survey.year,", no fishing occured "))),
     location = ph_location_label(ph_label = "Text Placeholder"), level=2, index=2) %>% 
   
   
@@ -394,10 +341,13 @@ add_slide(layout="Main Title Page", master="1_Office Theme") %>%
   ph_with(value = paste0("SFA 29 West Advisory Committee Meeting: Science Advice for ",year), location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
   ph_with(value= paste0("XX April ",year,"\n \n Scallop Unit\n \n Population Ecology Division\n Fisheries and Oceans Canada\n Bedford Institute of Oceanography\n Dartmouth, Nova Scotia, B2Y 4A2"),
           location = ph_location_label(ph_label = "Subtitle"), index=1) %>%  #This is the subtite
-  ph_with(value = "Placopecten magellanicus", ph_location_label(ph_label = "Slide Number Placeholder"), index=1) #Pg num placeholder
-  
-# End of slides  -------------------------------------------------------------
+  ph_with(value = "Placopecten magellanicus", ph_location_label(ph_label = "Slide Number Placeholder"), index=1) %>%  #Pg num placeholder
 
+ # Blank slide -------------------------------------------------------------
+
+  add_slide(layout="Single Figure", master="1_Office Theme")
+
+# Number slides -----------------------------------------------------------
 
 n_slides <- length(newpres)
 for (i_slide in 2:n_slides) {
@@ -406,5 +356,9 @@ for (i_slide in 2:n_slides) {
     ph_with(value = i_slide, location = ph_location_type('sldNum'))
 }
 
+# Save out ----------------------------------------------------------------
+
 print(newpres, target = paste0("Y:/Inshore/SFA29/2022/Assessment/Documents/Presentations/WSAC/DRAFTWSAC_presentation_Officerbuilt_",year,".pptx"))
+
+# EXTRA Slides  -------------------------------------------------------------
 
