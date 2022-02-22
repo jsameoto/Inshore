@@ -8,9 +8,13 @@
 # catch range - define range of values shown within the table - varies for each area
 
 #Function to produce harvest scenario tables for each area (uses packages huxtable and flextable)
-sfa29.harvest.scen.tab = function(area = area, catch.range = catch.range)
+sfa29.harvest.scen.tab = function(area = area, catch.range = catch.range, type = "document")
   
 {
+
+  require(huxtable) || stop("Install huxtable")
+  require(flextable) || stop("Install flextable")
+  require(dplyr) || stop("Install dplyr")
   
   if(area == "SFA29A") {
     catch.range <- SFA29A.decision.table$Catch.All
@@ -21,19 +25,19 @@ sfa29.harvest.scen.tab = function(area = area, catch.range = catch.range)
   if(area == "SFA29B") {
     catch.range <- SFA29B.decision.table$Catch.All
     decision.table <- SFA29B.decision.table
-    table.caption <- paste0("Table 2. Catch scenario table for SFA 29 West Subarea B to evaluate ",assessment.year," total subarea catch levels in terms of exploitation (\U1D452), expected changes in biomass (%), probability (Pr.) of biomass increase, and probability of being above the Lower Reference Point (LRP: 1.12 t/km2) and Upper Stock Reference (USR: 2.24 t/km2). ")
+    table.caption <- paste0("Table 2. Catch scenario table for SFA 29 West Subarea B to evaluate ",assessment.year," total subarea catch levels in terms of exploitation (\U1D452), expected changes in biomass (%), probability (Pr.) of biomass increase, and probability of being above the Lower Reference Point (LRP: 1.12 t/km^2^) and Upper Stock Reference (USR: 2.24 t/km^2^). ")
   }
   
   if(area == "SFA29C") {
     catch.range <- SFA29C.decision.table$Catch.All
     decision.table <- SFA29C.decision.table
-    table.caption <- paste0("Table 3. Catch scenario table for SFA 29 West Subarea C to evaluate ",assessment.year," total subarea catch levels in terms of exploitation (\U1D452), expected changes in biomass (%), probability (Pr.) of biomass increase, and probability of being above the lower reference point (LRP: 1.41 t/km2) and upper stock reference (USR: 2.82 t/km2).  ")
+    table.caption <- paste0("Table 3. Catch scenario table for SFA 29 West Subarea C to evaluate ",assessment.year," total subarea catch levels in terms of exploitation (\U1D452), expected changes in biomass (%), probability (Pr.) of biomass increase, and probability of being above the lower reference point (LRP: 1.41 t/km^2^) and upper stock reference (USR: 2.82 t/km^2^).  ")
   }
   
   if(area == "SFA29D") {
     catch.range <- SFA29D.decision.table$Catch.All
     decision.table <- SFA29D.decision.table
-    table.caption <- paste0("Table 4. Catch scenario table for SFA 29 West Subarea D to evaluate ",assessment.year," total subarea catch levels in terms of exploitation (\U1D452), expected changes in biomass (%), probability (Pr.) of biomass increase, and probability of being above the lower reference point (LRP: 1.3 t/km2) and upper stock reference (USR: 2.6 t/km2). ")
+    table.caption <- paste0("Table 4. Catch scenario table for SFA 29 West Subarea D to evaluate ",assessment.year," total subarea catch levels in terms of exploitation (\U1D452), expected changes in biomass (%), probability (Pr.) of biomass increase, and probability of being above the lower reference point (LRP: 1.3 t/km^2^) and upper stock reference (USR: 2.6 t/km^2^). ")
   }
   
   #FOR SFA29B, C, D create table this way:
@@ -42,9 +46,9 @@ sfa29.harvest.scen.tab = function(area = area, catch.range = catch.range)
     #Set range of catch for Harvest scenario table
     ex.table <<- decision.table
     if(area %in% c("SFA29B", "SFA29C")) {
-    ex.table <<- dplyr::filter(ex.table, Catch.All %in% catch.range)
+      ex.table <<- dplyr::filter(ex.table, Catch.All %in% catch.range)
     }else{
-    ex.table <<- filter(ex.table,row_number() %% 2 == 1) #filters every second row
+      ex.table <<- dplyr::filter(ex.table, Exploit.High < 0.25) #filter(ex.table,row_number() %% 2 == 1) #filters every second row
     }
     ex.table <<- ex.table %>% mutate(across(where(is.numeric), ~ round(., 2))) %>%  #All columns 2 decimal places (Catch should be whole number)
       dplyr::select(Catch.All, Exploit.High, B.change.High, Prob.B.High, Prob_above_LRP, Prob_above_USR, B.change.All, Prob.B.All) #Re-order columns
@@ -68,16 +72,41 @@ sfa29.harvest.scen.tab = function(area = area, catch.range = catch.range)
       set_top_border(2, everywhere) %>% #eg. top border across rows 1 and 2 and all (everywhere) columns.
       set_bottom_border(final(1), everywhere) %>% #bottom border on last row (final), all columns
       set_top_border(1, everywhere) %>% 
-      set_right_border(everywhere, everywhere) %>%
+      set_right_border(everywhere, c(1,6,8)) %>%
+      set_all_borders(1,final(1)) %>% #Whole subarea right border not working so this fixes that.
       set_left_border(everywhere, 1) %>%
-      set_font_size(10) %>%
+      set_number_format(everywhere, c(2,4:6,8), 2) %>%
+      set_number_format(everywhere, c(3,7), 1) %>%
+      set_number_format(3, 2, 0)
+    
+    if(type == "presentation"){
+      ex.hux <<- ex.hux %>% set_font_size(16) %>% 
+        set_width(3.5)
+    }else{
+      ex.hux <<- ex.hux %>% set_font_size(11) %>% 
+        set_width(1.9)
+    }
+    
+    ex.hux <<- ex.hux %>%
       set_align("center") %>% #Horizontal alignment of text
       set_valign("bottom") %>% #Vertical alignment of text
-      as_flextable() %>% 
-      flextable::set_caption(table.caption, autonum = FALSE) %>% 
+      set_row_height(0.1) %>%
+      set_col_width(0.07) %>%
+      set_all_padding(0.09) %>%
+      as_flextable()
+    
+    if(type == "presentation"){
+      ex.hux <<- ex.hux %>%
+        flextable::width(j=1, width = 1) %>% #adjusting width of catch column
+        flextable::width(j=2, width = 0.75) %>%
+        autofit()
+    }else{
+      ex.hux <<- ex.hux %>% 
+      flextable::set_caption(table.caption, autonum = FALSE) %>%
       flextable::width(j=1, width = 1) %>% #adjusting width of catch column
       flextable::width(j=2, width = 0.75)
-    
+    }
+
   }
   
   if(area == "SFA29A") { #If area is SFA29A - make the table this way:
@@ -106,20 +135,43 @@ sfa29.harvest.scen.tab = function(area = area, catch.range = catch.range)
       set_top_border(2, everywhere) %>% #eg. top border across rows 1 and 2 and all (everywhere) columns.
       set_bottom_border(final(1), everywhere) %>% #bottom border on last row (final), all columns
       set_top_border(1, everywhere) %>% 
-      set_right_border(everywhere, everywhere) %>%
-      set_left_border(everywhere, 1) %>%
-      set_font_size(10) %>%
+      set_right_border(everywhere, c(1,4,6)) %>%
+      set_all_borders(1,final(1)) %>% #Whole subarea right border not working so this fixes that.
+      set_left_border(everywhere, 1)
+    
+    if(type == "presentation"){
+      ex.hux <<- ex.hux %>% set_font_size(16) %>% 
+      set_width(3.5)
+    }else{
+      ex.hux <<- ex.hux %>% set_font_size(11) %>% 
+        set_width(2.8)
+    }
+    ex.hux <<- ex.hux %>%
+      set_number_format(everywhere, c(2,4:6), 2) %>%
+      set_number_format(everywhere, c(3,5), 1) %>%
+      set_number_format(3, 2, 0) %>%
       set_align("center") %>% #Horizontal alignment of text
       set_valign("bottom") %>% #Vertical alignment of text
-      as_flextable() %>% 
-      flextable::set_caption(table.caption, autonum = FALSE) %>% 
-      flextable::width(j=1, width = 1) %>% #adjusting width of catch column
-      flextable::width(j=2, width = 0.75)
+      set_row_height(0.1) %>%
+      set_col_width(0.07) %>%
+      
+      as_flextable()    
+      
+      if(type == "presentation"){
+        ex.hux <<- ex.hux %>%
+          flextable::width(j=1, width = 1) %>% #adjusting width of catch column
+          flextable::width(j=2, width = 0.75) %>%
+          autofit()
+      }else{
+        ex.hux <<- ex.hux %>% 
+          flextable::set_caption(table.caption, autonum = FALSE) %>%
+          flextable::width(j=1, width = 1) %>% #adjusting width of catch column
+          flextable::width(j=2, width = 0.75)
+      }
     
   }
 }
 
-
-#test <- sfa29.harvest.scen.tab(area = "SFA29C", catch.range = catch.range)
-#ex.hux
+test <- sfa29.harvest.scen.tab(area = "SFA29A", catch.range = catch.range, type = "presentation")
+ex.hux
 #ex.table
