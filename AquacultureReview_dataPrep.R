@@ -87,6 +87,11 @@ SPA6_all <- rbind(SPA6A, SPA6B, SPA6C, SPA6D)
 #SPA1A <- st_read("Y:/INSHORE SCALLOP/BoFBoundaries/SPABoundaries_Redrawn2014/SPA New Polys/shp polygons/SPA1A_polygon_NAD83.shp") %>% mutate(ET_ID = "6A")
 
 
+#mapview::mapview(SPA6A)+
+#mapview::mapview(SPA6B)+
+#mapview::mapview(SPA6C)+
+#mapview::mapview(SPA6D)
+
 #Read in land shapefile - used for filtering out points on land.
 temp <- tempfile()
 # Download this to the temp directory

@@ -242,7 +242,7 @@ cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = expre
 
 
 p <- pecjector(area = "sfa29",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", survey = c("inshore", "outline"), scale.bar = c('tl',0.5, -1, -1)), 
+               add_layer = list(land = "grey", bathy = "ScallopMap", scale.bar = c('bl',0.5,-1,-1)), 
                add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>%
                                    mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
@@ -250,7 +250,8 @@ p + #Plot survey data and format figure.
   geom_spatial_point(data = myco.datw %>% 
                        filter(year == survey.year),
                      aes(lon, lat), size = 0.5) +
-  labs(title = paste(survey.year, "", "SFA29 Proportion of Myco Infections"), x = "Longitude", y = "Latitude") +
+  geom_sf(data = sfa29.poly, size = 0.5, colour = "black", fill = NA) +
+  labs(x = "Longitude", y = "Latitude") + #title = paste(survey.year, "", "SFA29 Proportion of Myco Infections"), 
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   coord_sf(xlim = c(-66.50,-65.45), ylim = c(43.10,43.80), expand = FALSE)+
   plot.theme
@@ -289,7 +290,7 @@ col <- brewer.pal(length(lvls),"RdPu") #set colours
 cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = expression(frac("N Infected",tow)), limits = labels) #set custom fill arguments for pecjector
 
 p <- pecjector(area = "sfa29",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", survey = c("inshore", "outline"), scale.bar = c('tl',0.5, -1, -1)), 
+               add_layer = list(land = "grey",bathy = "ScallopMap", scale.bar = c('bl',0.5,-1,-1)), 
                add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>%
                                    mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
@@ -297,7 +298,8 @@ p + #Plot survey data and format figure.
   geom_spatial_point(data = myco.datw %>% 
                        filter(year == survey.year), #excludes SPA3 and SFA29 data
                      aes(lon, lat), size = 0.5) +
-  labs(title = paste(survey.year, "", "SFA29 Myco Infections per Tow"), x = "Longitude", y = "Latitude") +
+  geom_sf(data = sfa29.poly, size = 0.5, colour = "black", fill = NA) +
+  labs(x = "Longitude", y = "Latitude") + #title = paste(survey.year, "", "SFA29 Myco Infections per Tow")
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   coord_sf(xlim = c(-66.50,-65.45), ylim = c(43.10,43.80), expand = FALSE)+
   plot.theme
@@ -317,7 +319,8 @@ com.contours <- contour.gen(greymeat.datw %>%
                               dplyr::select(ID, lon, lat, prop),
                             ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
 
-lvls <- c(0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3) #levels to be color coded
+lvls <- c(0, 0.01, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3) #levels to be color coded
+#lvls <- c(0, 0.01, 0.02, 0.03, 0.04)
 CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
 CP <- convCP(CL)
 totCont.poly <- CP$PolySet
@@ -334,12 +337,13 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
 
 #Colour aesthetics and breaks for contours
 labels <- c("0-0.01", "0.05-0.1", "0.1-0.15", "0.15-0.2", "0.2-0.25", "0.25-0.3", "0.3+")
+#labels <- c("0-0.01", "0.01-0.02", "0.02-0.03", "0.03-0.04", "0.04+")
 col <- brewer.pal(length(lvls),"Greys") #set colours
-cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = expression(frac(N,tow)), limits = labels) #set custom fill arguments for pecjector
+cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = "Proportion", limits = labels) #set custom fill arguments for pecjector
 
 
 p <- pecjector(area = "sfa29",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", survey = c("inshore", "outline"), scale.bar = c('tl',0.5, -1, -1)), 
+               add_layer = list(land = "grey",bathy = "ScallopMap", scale.bar = c('bl',0.5,-1,-1)), 
                add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>%
                                    mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
@@ -347,10 +351,19 @@ p + #Plot survey data and format figure.
   geom_spatial_point(data = greymeat.datw %>% 
                        filter(year == survey.year),
                      aes(lon, lat), size = 0.5) +
-  labs(title = paste(survey.year, "", "BoF Proportion of Grey Meats"), x = "Longitude", y = "Latitude") +
+  geom_sf(data = sfa29.poly, size = 0.5, colour = "black", fill = NA) +
+  labs( x = "Longitude", y = "Latitude") +#title = paste(survey.year, "", "BoF Proportion of Grey Meats"),
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   coord_sf(xlim = c(-66.50,-65.45), ylim = c(43.10,43.80), expand = FALSE)+
-  plot.theme
+  theme(legend.key.size = unit(6,"mm"),
+        plot.title = element_text(size = 14, hjust = 0.5), #plot title size and position
+        axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        legend.title = element_text(size = 10, face = "bold"), 
+        legend.text = element_text(size = 10),
+        legend.position = c(.90,.82), #legend position
+        legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.8)), #Legend bkg colour and transparency
+        legend.box.margin = margin(2, 3, 2, 3))
 
 #save
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_GreyMeatProportion',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -358,7 +371,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_GreyMeatProportion',survey
 
 # Number of Grey meats (moderate + severe) per Tow  ------------------------------------------------------
 
-greymeat.datw$Y <- as.numeric(greymeat.datw$Y)
+greymeat.datw$NUM_GREYMEAT <- as.numeric(greymeat.datw$NUM_GREYMEAT)
 
 #Create contour and specify plot aesthetics
 com.contours <- contour.gen(greymeat.datw %>% filter(year == survey.year) %>% dplyr::select(tow, lon, lat, NUM_GREYMEAT),ticks='define',nstrata=7, str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
@@ -366,6 +379,7 @@ com.contours <- contour.gen(greymeat.datw %>% filter(year == survey.year) %>% dp
 range(greymeat.datw %>% filter(year == survey.year) %>% dplyr::select(NUM_GREYMEAT)) #check range to determine levels
 
 lvls=c(0, 1, 2, 3, 4, 5, 6, 7) 
+#lvls=c(0, 1, 2) 
 CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
 CP <- convCP(CL)
 totCont.poly <- CP$PolySet
@@ -381,12 +395,13 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   mutate(level = unique(CP$PolyData$level))
 
 #Colour aesthetics and breaks for contours
-labels <- c("0-1", "1-2", "3-3", "3-4", "4-5","5-6", "6+")
+labels <- c("0-1", "1-2", "2-3", "3-4", "4-5", "5-6","6+")
+#labels <- c("0-1", "1-2","2+")
 col <- brewer.pal(length(lvls),"Greys") #set colours
-cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = expression(frac("N Infected",tow)), limits = labels) #set custom fill arguments for pecjector
+cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = expression(frac(N,tow)), limits = labels) #set custom fill arguments for pecjector
 
 p <- pecjector(area = "sfa29",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", survey = c("inshore", "outline"), scale.bar = c('tl',0.5, -1, -1)), 
+               add_layer = list(land = "grey", bathy = "ScallopMap", scale.bar = c('bl',0.5,-1,-1)), 
                add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>%
                                    mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
@@ -394,7 +409,8 @@ p + #Plot survey data and format figure.
   geom_spatial_point(data = greymeat.datw %>% 
                        filter(year == survey.year), #excludes SPA3 and SFA29 data
                      aes(lon, lat), size = 0.5) +
-  labs(title = paste(survey.year, "", "SFA29 Grey Meats per Tow"), x = "Longitude", y = "Latitude") +
+  geom_sf(data = sfa29.poly, size = 0.5, colour = "black", fill = NA) +
+  labs(x = "Longitude", y = "Latitude") + #title = paste(survey.year, "", "SFA29 Grey Meats per Tow"), 
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   coord_sf(xlim = c(-66.50,-65.45), ylim = c(43.10,43.80), expand = FALSE)+
   plot.theme
