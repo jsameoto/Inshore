@@ -40,7 +40,7 @@ nrow(hm.dat %>% filter(TOTAL.STD > 0))
 
 # Load environmental data -------------------------------------------------
 
-direct <- "C:/Users/WILSONB/Documents/1_Projects/Publications_working/BOF_SDMs/Projects/Scallop/Data/EnvData"
+direct <- "E:/BOF_envirodataset/Snapped"
 BoF_pred_list <- list.files(direct, pattern =".gri$",full.names = TRUE)  #Change path for data resolution
 # Put the rasters into a RasterStack:
 BoF_predictors <- raster::stack(BoF_pred_list)
@@ -76,27 +76,28 @@ hm.enviro.dat <- inner_join(hm.enviro.dat, strata.hm %>% dplyr::select(STRATA_ID
 
 # Tidy Data --------------------------------------------------------
 
+
 hm.enviro.dat <- hm.enviro.dat %>% 
-  rename(MLD = BNAM_MLD_50m_UTMZ20) %>% 
-  rename(BBPI = BPI.Broad.1000m_UTMZ20) %>% 
-  rename(FBPI = BPI.Fine.50m_UTMZ20) %>% 
-  rename(BS_Bulkshift = bulkshift_bs_50m_UTMZ20) %>% 
-  rename(Easterness = easterness_50m_UTMZ20) %>% 
-  rename(LogSlope = logslope_50m_UTMZ20) %>% 
-  rename(MaxVel = max_vel_50m_UTMZ20) %>% 
-  rename(MaxSal = maxSal_7.9_50m_UTMZ20) %>%
-  rename(MaxTemp = maxTemp_7.9_50m_UTMZ20) %>%
-  rename(MeanGrainsize = mean_gsize_50m_UTMZ20) %>% 
-  rename(MeanVel = mean_vel_50m_UTMZ20) %>% 
-  rename(MeanSal = meanSal_7.9_50m_UTMZ20) %>% 
-  rename(MeanTemp = meanTemp_7.9_50m_UTMZ20) %>%
-  rename(MinSal = minSal_7.9_50m_UTMZ20) %>%
-  rename(MinTemp = minTemp_7.9_50m_UTMZ20) %>%
-  rename(Northerness = northerness_50m_UTMZ20) %>% 
-  rename(rdmv = rdmv_50m_UTMZ20) %>% 
-  rename(SMF = SMF_krige50m_UTMZ20) %>%
-  rename(WSV = WaveShear.Res50m_UTMZ20) %>% 
+  #mutate(PRESENT.ABSENT = as.factor(PRESENT.ABSENT)) %>%
+  rename(Bathy = BOF_ALLBath_2010_50m_adj_dodd_gsc_finalc_z20) %>% 
+  rename(BtmSalinity = layer.1) %>% 
+  rename(BtmStress = layer.2) %>%
+  rename(BtmTemp = layer.3) %>% 
+  rename(MLD = layer.4) %>% 
+  rename(Backscatter = Band_1.1) %>%
+  rename(Easterness = w001001.1) %>%
+  rename(Curvature = Fundy50m_Curv) %>%
+  rename(Slope = Fundy50m_Slope) %>%
+  rename(BBPI = FundyBroadBPI_5_100SnapStan) %>%
+  rename(FBPI = FundyFineBPI_1_10SnapStan) %>%
+  rename(MeanGrainSize = Band_1.2) %>%
+  rename(Northerness = w001001.3) %>%
+  rename(RDMV = w001001.4) %>%
+  rename(Sed_Mobilization_Freq = Sediment.Mobilization.Freq.Interp) %>%
+  rename(StandardDev_Bathy = w001001.5) %>% 
+  rename(Wave_Shear_Vel = Wave.Shear.Velocity.Interp) %>% 
   rename(Benthoscape = CLASS)
+
 
 # Separate by Strata ------------------------------------------------------
 
@@ -117,8 +118,6 @@ summary(hm.enviro.dat)
 
 hm.enviro.sf <- hm.enviro.dat %>%
   mutate(PRESENT.ABSENT = if_else(TOTAL.STD >= 1, 1, 0)) %>%
-  filter(!is.na(Bathy)) %>% 
-  filter(!is.na(MaxSal)) %>% 
   filter(Benthoscape != "Not_Classified") %>% 
   mutate(STRATA_ID = as.factor(STRATA_ID)) %>% 
   mutate(Benthoscape = as.factor(Benthoscape)) 
@@ -130,23 +129,24 @@ hm.enviro.dat <- hm.enviro.sf %>% st_set_geometry(NULL)
 #write.csv(hm.enviro.dat, "Z:/Projects/Horse_Mussel/HM_InshoreSurvey/Documents/DataExploration_report/HM_camdata_andEnviro.csv", row.names = F)
 
 
-vars.perstation <- hm.enviro.dat %>% 
-  group_by(Station, Benthoscape, SPATIAL_AREA) %>%
-  summarise(across("Long":"WSV", ~ mean(.x, na.rm = TRUE)))
+vars.perstation <- hm.enviro.dat %>%
+  mutate(PRESENT.ABSENT = as.factor(PRESENT.ABSENT)) %>% 
+  group_by(Station, Benthoscape, SPATIAL_AREA,PRESENT.ABSENT) %>%
+  summarise(across("Long":"Wave_Shear_Vel", ~ mean(.x, na.rm = TRUE)))
 
 tot.perstation <- hm.enviro.dat %>% 
-  group_by(Station, Benthoscape, SPATIAL_AREA) %>%
+  group_by(Station, Benthoscape, SPATIAL_AREA,PRESENT.ABSENT) %>%
   summarise(TOTAL.STD = sum(TOTAL.STD))
 
 per.station <- merge(tot.perstation, vars.perstation, by = "Station")
 
 per.station <- per.station %>% 
-  dplyr::select(!c(SPATIAL_AREA.y, Benthoscape.y)) %>%
+  dplyr::select(!c(SPATIAL_AREA.y, Benthoscape.y,PRESENT.ABSENT.y)) %>%
   rename(SPATIAL_AREA = SPATIAL_AREA.x) %>% 
-  rename(Benthoscape = Benthoscape.x)
-  
+  rename(Benthoscape = Benthoscape.x) %>% 
+  rename(PRESENT.ABSENT = PRESENT.ABSENT.x)
 
-write.csv(per.station, "Z:/Projects/Horse_Mussel/HM_InshoreSurvey/Documents/DataExploration_report/HM_camdata_andEnviro.csv", row.names = F)
+write.csv(per.station, "Z:/Projects/Horse_Mussel/HM_InshoreSurvey/data/HorseM_Cam_EnviroData.csv", row.names = F)
 
 # Contour plots -----------------------------------------------------------
 
