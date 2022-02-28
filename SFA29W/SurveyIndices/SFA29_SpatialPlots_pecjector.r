@@ -530,7 +530,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_ComClappers',survey.year,'
 com.contours<-contour.gen(prop.clappers %>% filter(year==survey.year) %>% 
                             dplyr::select(ID,lon,lat,prop.dead.com),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata', blank=T,plot=F,res=0.01)
 
-lvls=c(0.01,0.10,0.20,0.30,0.5,0.6,0.8,1) #levels to be color coded
+lvls=c(0.01,0.1,0.2,0.3,0.4,0.5,0.6,0.7) #levels to be color coded
 
 CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
 CP <- convCP(CL)
@@ -548,7 +548,7 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
 
 
 #Colour aesthetics and breaks for contours
-labels <- c("0.01-0.10", "0.10-0.20", "0.20-0.30", "0.30-0.40", "0.40-0.50","0.50-0.60","0.60-0.80", "0.8+")
+labels <- c("0.01-0.1", "0.1-0.2", "0.2-0.3", "0.3-0.4", "0.4-0.5","0.5-0.6","0.6-0.7", "0.7+")
 col <- brewer.pal(length(lvls),"YlGn") #set colours
 cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = "Proportion", limits = labels) #set custom fill arguments for pecjector.
 
@@ -565,6 +565,8 @@ p + #Plot survey data and format figure.
   guides(fill = guide_legend(override.aes= list(alpha = .8))) + #Legend transparency
   coord_sf(xlim = c(-66.50,-65.45), ylim = c(43.10,43.80), expand = FALSE)+
   plot.theme
+
+#ggsave(filename = paste0("Y:/Inshore/SFA29/2020/figures/ContPlot_SFA29_PropComClappers2019.png"), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_PropComClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
@@ -726,7 +728,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_RecClappers',survey.year,'
 rec.contours<-contour.gen(prop.clappers %>% filter(year==survey.year) %>% 
                             dplyr::select(ID,lon,lat,prop.dead.rec),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata', blank=T,plot=F,res=0.01)
 
-lvls=c(0.01,0.10,0.20,0.30,0.5,0.6,0.8, 1) #levels to be color coded
+lvls=c(0.01,0.1,0.2,0.3,0.4,0.5,0.6,0.7) #levels to be color coded
 
 CL <- contourLines(rec.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
 CP <- convCP(CL)
@@ -744,7 +746,7 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
 
 
 #Colour aesthetics and breaks for contours
-labels <- c("0.01-0.10", "0.10-0.20", "0.20-0.30", "0.30-0.40", "0.40-0.50","0.50-0.60","0.60-0.80", "0.8+")
+labels <- c("0.01-0.1", "0.1-0.2", "0.2-0.3", "0.3-0.4", "0.4-0.5","0.5-0.6","0.6-0.7", "0.7+")
 col <- brewer.pal(length(lvls),"YlGn") #set colours
 cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = "Proportion", limits = labels) #set custom fill arguments for pecjector.
 

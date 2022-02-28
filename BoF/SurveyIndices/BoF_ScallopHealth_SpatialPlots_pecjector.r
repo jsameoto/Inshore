@@ -163,9 +163,9 @@ myco.datw <- merge(myco.datw, tow.dat, by = "ID", all.x = TRUE) %>%
   rename(tow = tow.x)
 
 #Saves files by cruise
-for(i in unique(myco.datw$CRUISE)){
-  write.csv(myco.datw %>% filter(year == survey.year & CRUISE == i), paste0("Y:/Inshore/BoF/",survey.year,"/Assessment/Data/SurveyIndices/",i,"towsdd_MYCOprop.csv"))
-}
+#for(i in unique(myco.datw$CRUISE)){
+#  write.csv(myco.datw %>% filter(year == survey.year & CRUISE == i), paste0("Y:/Inshore/BoF/",survey.year,"/Assessment/Data/SurveyIndices/",i,"towsdd_MYCOprop.csv"))
+#}
 
 #write.csv(myco.datw, "Y:/Inshore/BoF/",survey.year,"/Assessment/Data/SurveyIndices/BF2021towsdd_MYCOprop.csv")
 
@@ -184,6 +184,7 @@ greymeat.datw <- pivot_wider(greymeat.dat,
 greymeat.datw <- greymeat.datw %>%
   mutate(prop = (Moderate + Severe)/(Normal + Moderate + Severe)) %>% 
   mutate(NUM_GREYMEAT = Moderate + Severe) %>% 
+  mutate(NUM_GREYMEAT = as.numeric(NUM_GREYMEAT)) %>% 
   unite(ID, c("CRUISE", "tow"), sep = ".", remove = FALSE)
 
 greymeat.datw <- merge(greymeat.datw, tow.dat, by = "ID", all.x = TRUE) %>% 
@@ -191,9 +192,9 @@ greymeat.datw <- merge(greymeat.datw, tow.dat, by = "ID", all.x = TRUE) %>%
   rename(tow = tow.x)
 
 #Saves files by cruise
-for(i in unique(greymeat.datw$CRUISE)){
-  write.csv(greymeat.datw %>% filter(year == survey.year & CRUISE == i), paste0("Y:/Inshore/BoF/",survey.year,"/Assessment/Data/SurveyIndices/",i,"towsdd_QUALITYprop.csv"))
-}
+#for(i in unique(greymeat.datw$CRUISE)){
+#  write.csv(greymeat.datw %>% filter(year == survey.year & CRUISE == i), paste0("Y:/Inshore/BoF/",survey.year,"/Assessment/Data/SurveyIndices/",i,"towsdd_QUALITYprop.csv"))
+#}
 
 #write.csv(greymeat.datw, "Y:/Inshore/BoF/",survey.year,"/Assessment/Data/SurveyIndices/BI2021towsdd_QUALITY.csv")
 
@@ -780,7 +781,8 @@ com.contours <- contour.gen(greymeat.datw %>%
                               dplyr::select(ID, lon, lat, prop),
                             ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
 
-lvls <- c(0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3) #levels to be color coded
+#lvls <- c(0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3) #levels to be color coded
+lvls <- c(0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06)
 CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
 CP <- convCP(CL)
 totCont.poly <- CP$PolySet
@@ -795,7 +797,8 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   mutate(level = unique(CP$PolyData$level))
 
 #Colour aesthetics and breaks for contours
-labels <- c("0-0.01", "0.05-0.1", "0.1-0.15", "0.15-0.2", "0.2-0.25", "0.25-0.3", "0.3+")
+#labels <- c("0-0.01", "0.01-0.05","0.05-0.1", "0.1-0.15", "0.15-0.2", "0.2-0.25", "0.25-0.3", "0.3+")
+labels <- c("0-0.01", "0.01-0.02","0.02-0.03", "0.03-0.04", "0.04-0.05", "0.05-0.06", "0.06+")
 col <- brewer.pal(length(lvls),"Greys") #set colours
 cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = expression(frac(N,tow)), limits = labels) #set custom fill arguments for pecjector
 
@@ -1028,14 +1031,14 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_BFAll_GreyMeatProportion',survey
 
 #For FULL BAY, SPA1A, SPA1B, SPA4&5
 
-greymeat.datw$Y <- as.numeric(greymeat.datw$Y)
-
 #Create contour and specify plot aesthetics
-com.contours <- contour.gen(greymeat.datw %>% filter(year == survey.year, !STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)) %>% dplyr::select(tow, lon, lat, Y),ticks='define',nstrata=7, str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
+com.contours <- contour.gen(greymeat.datw %>% filter(year == survey.year, !STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)) %>% dplyr::select(tow, lon, lat, NUM_GREYMEAT),ticks='define',nstrata=7, str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01) 
 
-range(greymeat.datw %>% filter(year == survey.year, !STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)) %>% dplyr::select(Y)) #check range to determine levels
+range(greymeat.datw %>% filter(year == survey.year, !STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)) %>% dplyr::select(NUM_GREYMEAT)) #check range to determine levels
 
 lvls=c(0, 1, 2, 3, 4, 5) 
+#lvls=c(0.1, 0.3, 0.5, 0.7, 0.9, 1)  #for really low numbers
+#lvls=c(0, 1, 2) 
 CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
 CP <- convCP(CL)
 totCont.poly <- CP$PolySet
@@ -1050,7 +1053,10 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   mutate(level = unique(CP$PolyData$level))
 
 #Colour aesthetics and breaks for contours
-labels <- c("0-1", "1-2", "3-3", "3-4", "4-5","5+")
+
+labels <- c("0-1", "1-2", "2-3", "3-4", "4-5", "5+")
+#labels <- c("0-0.1", "0.1-0.3","0.3-0.5", "0.5-0.7", "0.7-0.9", "0.9-1.0", "1+")
+#col.nu <- c("grey90", "grey80", "grey70", "grey60", "grey50", "grey40","grey30", "grey20")
 col <- brewer.pal(length(lvls),"Greys") #set colours
 cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = expression(frac("N Infected",tow)), limits = labels) #set custom fill arguments for pecjector
 
@@ -1072,6 +1078,9 @@ p + #Plot survey data and format figure.
 
 #save
 ggsave(filename = paste0(saveplot.dir,'ContPlot_BF_GreyMeats_per_Tow',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+
+#save
+ggsave(filename = paste0("Y:/Inshore/BoF/2018/Figures/ContPlot_BF_GreyMeats_per_Tow2018.png"), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA1A -----
 
@@ -1138,7 +1147,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA4_GreyMeats_per_Tow',survey.y
 
 #Create contour and specify plot aesthetics
 com.contours <- contour.gen(greymeat.datw %>% filter(year == survey.year, STRATA_ID %in% c(22, 23, 24)) %>% #only SPA3
-                              dplyr::select(ID, lon, lat, Y), ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
+                              dplyr::select(ID, lon, lat, NUM_GREYMEAT), ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
 
 
 lvls=c(0, 1, 2, 3, 4, 5) 
@@ -1156,7 +1165,7 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   mutate(level = unique(CP$PolyData$level))
 
 #Colour aesthetics and breaks for contours
-labels <- c("0-1", "1-2", "3-3", "3-4", "4-5", "5+")
+labels <- c("0-1", "1-2", "2-3", "3-4", "4-5", "5+")
 col <- brewer.pal(length(lvls),"Greys") #set colours
 cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = expression(frac(N,tow)), limits = labels) #set custom fill arguments for pecjector
 
@@ -1181,7 +1190,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA3_GreyMeats_per_Tow',survey.y
 #Create contour and specify plot aesthetics
 com.contours <- contour.gen(greymeat.datw %>% 
                               filter(year == survey.year, STRATA_ID %in% c(30,31,32,54)) %>% #Only SPA6
-                              dplyr::select(ID, lon, lat, Y), 
+                              dplyr::select(ID, lon, lat, NUM_GREYMEAT), 
                             ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
 
 
@@ -1200,7 +1209,7 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   mutate(level = unique(CP$PolyData$level))
 
 #Colour aesthetics and breaks for contours
-labels <- c("0-1", "1-2", "3-3", "3-4", "4-5", "5+")
+labels <- c("0-1", "1-2", "2-3", "3-4", "4-5", "5+")
 col <- brewer.pal(length(lvls),"Greys") #set colours
 cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = expression(frac(N,tow)), limits = labels) #set custom fill arguments for pecjector
 
@@ -1226,7 +1235,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA6_GreyMeats_per_Tow',survey.y
 # ----ALL SPAs -----
 
 #Create contour and specify plot aesthetics
-com.contours <- contour.gen(greymeat.datw %>% filter(year == survey.year) %>% dplyr::select(tow, lon, lat, Y),ticks='define',nstrata=7, str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
+com.contours <- contour.gen(greymeat.datw %>% filter(year == survey.year) %>% dplyr::select(tow, lon, lat, NUM_GREYMEAT),ticks='define',nstrata=7, str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
 
 range(greymeat.datw$Y) #check range to determine levels
 lvls=c(0,1, 2, 3, 4, 5) 
@@ -1245,7 +1254,7 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   mutate(level = unique(CP$PolyData$level))
 
 #Colour aesthetics and breaks for contours
-labels <- c("0-1", "1-2", "3-3", "3-4", "4-5", "5+")
+labels <- c("0-1", "1-2", "2-3", "3-4", "4-5", "5+")
 col <- brewer.pal(length(lvls),"Greys") #set colours
 cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = expression(frac("N Infected",tow)), limits = labels) #set custom fill arguments for pecjector
 

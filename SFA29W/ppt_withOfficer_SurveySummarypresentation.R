@@ -102,7 +102,7 @@ table.layout.pg #full slide table
 newpres <- newpres %>%
   
   
-  # title slide -------------------------------------------------------------
+# title slide -------------------------------------------------------------
 
 add_slide(layout="Main Title Page", master="1_Office Theme") %>%
   ph_with(value = paste0("SFA 29 West ",year," Scallop Survey Summary"), location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
@@ -127,7 +127,7 @@ add_slide(layout="Summary", master="1_Office Theme") %>%
   
 add_slide(layout="Single Figure", master="1_Office Theme") %>%
   ph_with(value = "Scallop Fishing Area (SFA) 29 West", location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
-  ph_with(external_img("Y:/Inshore/Inshore Scallop Fishing Area Map/InshoreScallopFishingAreas_English_updated2021.png"), width = 5.47, height = 5.64, location = ph_location_label(ph_label = "Figure Placeholder")) %>%
+  ph_with(external_img("Y:/Inshore/Inshore Scallop Fishing Area Map/InshoreScallopFishingAreas_English_updated2021.png"), width = 5.67, height = 5.29, location = ph_location_label(ph_label = "Figure Placeholder")) %>%
 
 # slide 3 - Fishery Background -------------------------------------------------------------
 
@@ -186,7 +186,7 @@ tacland.hux <- tacland.hux %>%
   set_col_width(5, 0.08) %>%
   set_width(6.0) %>% #Set table width
   set_bottom_border(final(1), everywhere) %>%
-  set_all_padding(7) %>%
+  set_all_padding(4) %>%
   set_top_border(1:2, everywhere) %>%
   as_flextable() %>% autofit()
 
@@ -203,14 +203,14 @@ newpres <- newpres %>%
 
 add_slide(layout="Single Figure 4", master="1_Office Theme") %>%
   ph_with(value = "Landings Time Series", location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
-  ph_with(external_img(paste0(fig.dir,"CommercialData/SFA29WTACandLandings",year-1,".png"), width = 6.50 , height = 5.73), location = ph_location_label(ph_label = "Figure Placeholder"), use_loc_size = TRUE) %>% 
+  ph_with(external_img(paste0(fig.dir,"CommercialData/SFA29WTACandLandings",year-1,".png"), width = 7.07 , height = 5.26), location = ph_location_label(ph_label = "Figure Placeholder"), use_loc_size = FALSE) %>% 
 
 
 # slide 5 - Catch Rate -------------------------------------------------------------
 
 add_slide(layout="Single Figure 4", master="1_Office Theme") %>%
   ph_with(value = "Catch Rate", location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
-  ph_with(external_img(paste0(fig.dir,"CommercialData/SFA29_CPUEbyfleet_",year-1,".png"), width = 6.50 , height = 5.73), location = ph_location_label(ph_label = "Figure Placeholder"), use_loc_size = TRUE) %>% 
+  ph_with(external_img(paste0(fig.dir,"CommercialData/SFA29_CPUEbyfleet_",year-1,".png"), width = 8.26 , height = 5.59), location = ph_location_label(ph_label = "Figure Placeholder"), use_loc_size = FALSE) %>% 
   
 # slide 6- Fishing Positions -------------------------------------------------------------
 
@@ -274,20 +274,19 @@ add_slide(layout="Summary 2", master="1_Office Theme") %>%
 
 add_slide(layout="Dual Figure 3", master="1_Office Theme") %>%
   ph_with(value = "Survey: Habitat Suitability", location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
-  ph_with(external_img(paste0("Y:/Inshore/SFA29/",year,"/Assessment/Documents/Presentations/Survey_Summary/ScalsurvSDM_GreyscaleforCSAS.png"), width = 6.67 , height = 4.83), location = ph_location_label(ph_label = "Figure Placeholder 1")) %>% 
+  ph_with(external_img(paste0(fig.dir,"ScallopSDM_binned_coloured.png"), width = 6.67 , height = 4.83), location = ph_location_label(ph_label = "Figure Placeholder 1")) %>% 
   ph_with(external_img(paste0("Y:/Inshore/SFA29/",year,"/Assessment/Documents/Presentations/Survey_Summary/SDMpercent_per_area_figure.png"), width = 8.11 , height = 1.43), location = ph_location_label(ph_label = "Figure Placeholder 2"), use_loc_size = TRUE) %>% 
 
-  
-# slide 11- Pre-recruit Abundance  -------------------------------------------------------------
+  # slide 11 - Commercial Abundance  -------------------------------------------------------------
 
 #Will need to adjust Figure placeholder 1 file path.
 
 add_slide(layout="Dual Figure 2", master="1_Office Theme") %>%
-  ph_with(value = "Pre-recruit Abundance (<90mm)", location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
+  ph_with(value = "Commercial Abundance (>100mm)", location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
   ph_with(value = paste0(survey.year-2), location = ph_location_label(ph_label = "Text Placeholder 1"), index=1) %>% #Change to year-1 next year
   ph_with(value = paste0(survey.year), location = ph_location_label(ph_label = "Text Placeholder 2"), index=1) %>%
-  ph_with(external_img(paste0("Y:/Inshore/SFA29/2020/figures/ContPlot_SFA29_PreDensity",year-3,".png"), width = 9, height = 9), location = ph_location_label(ph_label = "Figure Placeholder 1"), use_loc_size = TRUE) %>% #Previous years figure
-  ph_with(external_img(paste0(fig.dir,"ContPlot_SFA29_PreDensity",year-1,".png"), width = 9, height = 9), location = ph_location_label(ph_label = "Figure Placeholder 2"), use_loc_size = TRUE) %>% 
+  ph_with(external_img(paste0("Y:/Inshore/SFA29/2020/figures/ContPlot_SFA29_ComDensity",year-3,".png"), width = 9, height = 9), location = ph_location_label(ph_label = "Figure Placeholder 1"), use_loc_size = TRUE) %>% #Previous years commercial cpue
+  ph_with(external_img(paste0(fig.dir,"ContPlot_SFA29_ComDensity",year-1,".png"), width = 9, height = 9), location = ph_location_label(ph_label = "Figure Placeholder 2"), use_loc_size = TRUE) %>% 
 
 
 # slide 12- Recruit Abundance  -------------------------------------------------------------
@@ -300,18 +299,18 @@ add_slide(layout="Dual Figure 2", master="1_Office Theme") %>%
   ph_with(value = paste0(survey.year), location = ph_location_label(ph_label = "Text Placeholder 2"), index=1) %>%
   ph_with(external_img(paste0("Y:/Inshore/SFA29/2020/figures/ContPlot_SFA29_RecDensity",year-3,".png"), width = 9, height = 9), location = ph_location_label(ph_label = "Figure Placeholder 1"), use_loc_size = TRUE) %>% #Previous years figure
   ph_with(external_img(paste0(fig.dir,"ContPlot_SFA29_RecDensity",year-1,".png"), width = 9, height = 9), location = ph_location_label(ph_label = "Figure Placeholder 2"), use_loc_size = TRUE) %>% 
-
-
-# slide 13 - Commercial Abundance  -------------------------------------------------------------
+  
+# slide 13- Pre-recruit Abundance  -------------------------------------------------------------
 
 #Will need to adjust Figure placeholder 1 file path.
 
 add_slide(layout="Dual Figure 2", master="1_Office Theme") %>%
-  ph_with(value = "Commercial Abundance (>100mm)", location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
+  ph_with(value = "Pre-recruit Abundance (<90mm)", location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
   ph_with(value = paste0(survey.year-2), location = ph_location_label(ph_label = "Text Placeholder 1"), index=1) %>% #Change to year-1 next year
   ph_with(value = paste0(survey.year), location = ph_location_label(ph_label = "Text Placeholder 2"), index=1) %>%
-  ph_with(external_img(paste0("Y:/Inshore/SFA29/2020/figures/ContPlot_SFA29_ComDensity",year-3,".png"), width = 9, height = 9), location = ph_location_label(ph_label = "Figure Placeholder 1"), use_loc_size = TRUE) %>% #Previous years commercial cpue
-  ph_with(external_img(paste0(fig.dir,"ContPlot_SFA29_ComDensity",year-1,".png"), width = 9, height = 9), location = ph_location_label(ph_label = "Figure Placeholder 2"), use_loc_size = TRUE) 
+  ph_with(external_img(paste0("Y:/Inshore/SFA29/2020/figures/ContPlot_SFA29_PreDensity",year-3,".png"), width = 9, height = 9), location = ph_location_label(ph_label = "Figure Placeholder 1"), use_loc_size = TRUE) %>% #Previous years figure
+  ph_with(external_img(paste0(fig.dir,"ContPlot_SFA29_PreDensity",year-1,".png"), width = 9, height = 9), location = ph_location_label(ph_label = "Figure Placeholder 2"), use_loc_size = TRUE) 
+
 
 #Break for loop
 
@@ -332,7 +331,7 @@ for (i in 1:length(subareas)) {
   #SHELL HEIGHT FREQUENCY PNGs DONT HAVE YEAR IN THE FILE NAME - FIX?
   
   add_slide(layout="Single Figure 2", master="1_Office Theme") %>%
-    ph_with(external_img(paste0(fig.dir, "Growth/SHF_SFA29", subareas[i],".png"), width = 6.34, height = 7.2), location = ph_location_label(ph_label = "Figure Placeholder"), use_loc_size = FALSE)
+    ph_with(external_img(paste0(fig.dir, "Growth/SHF_SFA29", subareas[i],".png"), width = 5.69, height = 7.2), location = ph_location_label(ph_label = "Figure Placeholder"), use_loc_size = FALSE)
   
 }
 
@@ -347,24 +346,23 @@ add_slide(layout="Single Figure", master="1_Office Theme") %>%
   ph_with(external_img(paste0(fig.dir, "Growth/SFA29.lbar.comm.",year-1,".png"), width = 6.50 , height = 5.73), location = ph_location_label(ph_label = "Figure Placeholder"), use_loc_size = TRUE) %>%
   
   
+  # slide 21 - Commercial Survey Abundance -------------------------------------------------------------
+
+add_slide(layout="Single Figure", master="1_Office Theme") %>%
+  ph_with(value = "Commercial Survey Abundance (>100mm)", location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
+  ph_with(external_img(paste0(fig.dir, "SFA29AtoD.Numberspertow.Commercial.",year-1,".png"), width = 6.50 , height = 5.73), location = ph_location_label(ph_label = "Figure Placeholder"), use_loc_size = TRUE) %>% 
+  
 # slide 20 - Recruit Survey Abundance -------------------------------------------------------------
 
 add_slide(layout="Single Figure", master="1_Office Theme") %>%
   ph_with(value = "Recruit Survey Abundance (90-99mm)", location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
   ph_with(external_img(paste0(fig.dir, "SFA29AtoD.Numberspertow.Recruit.",year-1,".png"), width = 6.50 , height = 5.73), location = ph_location_label(ph_label = "Figure Placeholder"), use_loc_size = TRUE) %>%
   
-  
-# slide 21 - Commercial Survey Abundance -------------------------------------------------------------
 
-add_slide(layout="Single Figure", master="1_Office Theme") %>%
-  ph_with(value = "Commercial Survey Abundance (>100mm)", location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
-  ph_with(external_img(paste0(fig.dir, "SFA29AtoD.Numberspertow.Commercial.",year-1,".png"), width = 6.50 , height = 5.73), location = ph_location_label(ph_label = "Figure Placeholder"), use_loc_size = TRUE) %>% 
-  
-  
 # slide 22 - Subarea E -------------------------------------------------------------
 
 add_slide(layout="Single Figure 3", master="1_Office Theme") %>%
-  ph_with(value = "Subarea E", location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
+  ph_with(value = "Subarea E Survey Abundance", location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
   ph_with(external_img(paste0(fig.dir, "SFA29E.Numberspertow.",year-1,".png"), width = 6.50 , height = 7.2), location = ph_location_label(ph_label = "Figure Placeholder"), use_loc_size = TRUE) %>% 
 
 # slide 23 - Condition Time series -------------------------------------------------------------
@@ -451,29 +449,38 @@ add_slide(layout="Main Title Page", master="1_Office Theme") %>%
   ph_with(value = paste0("SFA 29 West ",year," Scallop Survey Summary"), location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
   ph_with(value= paste0("April ",year,"\n \n Scallop Unit\n \n Population Ecology Division\n Fisheries and Oceans Canada\n Bedford Institute of Oceanography\n Dartmouth, Nova Scotia, B2Y 4A2"),
           location = ph_location_label(ph_label = "Subtitle"), index=1) %>%  #This is the subtite
-  ph_with(value = "Placopecten magellanicus", ph_location_label(ph_label = "Slide Number Placeholder"), index=1) #Pg num placeholder
+  ph_with(value = "Placopecten magellanicus", ph_location_label(ph_label = "Slide Number Placeholder"), index=1) %>%  #Pg num placeholder
   
 # End of slides  -------------------------------------------------------------
 
+#Blank slide
+add_slide(layout="Summary", master="1_Office Theme") %>%
+  
 # Extra slides  -------------------------------------------------------------
+
+add_slide(layout="Main Title Page", master="1_Office Theme") %>%
+  ph_with(value = paste0("Extra Slides"), location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
+  ph_with(value= paste0("April ",year,"\n \n Scallop Unit\n \n Population Ecology Division\n Fisheries and Oceans Canada\n Bedford Institute of Oceanography\n Dartmouth, Nova Scotia, B2Y 4A2"),
+          location = ph_location_label(ph_label = "Subtitle"), index=1) %>%  #This is the subtite
+  ph_with(value = "Placopecten magellanicus", ph_location_label(ph_label = "Slide Number Placeholder"), index=1) %>%  #Pg num placeholder
 
 # slide 32 - Recruit Clapper Density -------------------------------------------------------------  
 
-#add_slide(layout="Dual Figure 2", master="1_Office Theme") %>%
-#  ph_with(value = "Recruit Clapper Density (90-99mm)", location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
-#  ph_with(value = paste0(survey.year-2), location = ph_location_label(ph_label = "Text Placeholder 1"), index=1) %>% #Change to year-1 next year
-#  ph_with(value = paste0(survey.year), location = ph_location_label(ph_label = "Text Placeholder 2"), index=1) %>%
-#  ph_with(external_img(paste0("Y:/Inshore/SFA29/2020/figures/ContPlot_SFA29_RecClappers",year-3,".png"), width = 9, height = 9), location = ph_location_label(ph_label = "Figure Placeholder 1"), use_loc_size = TRUE) %>% #Previous years commercial cpue
-#  ph_with(external_img(paste0(fig.dir,"ContPlot_SFA29_RecClappers",year-1,".png"), width = 9, height = 9), location = ph_location_label(ph_label = "Figure Placeholder 2"), use_loc_size = TRUE) %>%  
+add_slide(layout="Dual Figure 2", master="1_Office Theme") %>%
+  ph_with(value = "Recruit Clapper Density (90-99mm)", location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
+  ph_with(value = paste0(survey.year-2), location = ph_location_label(ph_label = "Text Placeholder 1"), index=1) %>% #Change to year-1 next year
+  ph_with(value = paste0(survey.year), location = ph_location_label(ph_label = "Text Placeholder 2"), index=1) %>%
+  ph_with(external_img(paste0("Y:/Inshore/SFA29/2020/figures/ContPlot_SFA29_RecClappers",year-3,".png"), width = 9, height = 9), location = ph_location_label(ph_label = "Figure Placeholder 1"), use_loc_size = TRUE) %>% #Previous years commercial cpue
+  ph_with(external_img(paste0(fig.dir,"ContPlot_SFA29_RecClappers",year-1,".png"), width = 9, height = 9), location = ph_location_label(ph_label = "Figure Placeholder 2"), use_loc_size = TRUE) %>%  
 
 # slide 32 - Commercial Clapper Density -------------------------------------------------------------  
 
-#add_slide(layout="Dual Figure 2", master="1_Office Theme") %>%
-#  ph_with(value = "Commercial Clapper Density (>=100mm)", location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
-#  ph_with(value = paste0(survey.year-2), location = ph_location_label(ph_label = "Text Placeholder 1"), index=1) %>% #Change to year-1 next year
-#  ph_with(value = paste0(survey.year), location = ph_location_label(ph_label = "Text Placeholder 2"), index=1) %>%
-#  ph_with(external_img(paste0("Y:/Inshore/SFA29/2020/figures/ContPlot_SFA29_ComClappers",year-3,".png"), width = 9, height = 9), location = ph_location_label(ph_label = "Figure Placeholder 1"), use_loc_size = TRUE) %>% #Previous years commercial cpue
-#  ph_with(external_img(paste0(fig.dir,"ContPlot_SFA29_ComClappers",year-1,".png"), width = 9, height = 9), location = ph_location_label(ph_label = "Figure Placeholder 2"), use_loc_size = TRUE) %>%  
+add_slide(layout="Dual Figure 2", master="1_Office Theme") %>%
+  ph_with(value = "Commercial Clapper Density (>=100mm)", location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
+  ph_with(value = paste0(survey.year-2), location = ph_location_label(ph_label = "Text Placeholder 1"), index=1) %>% #Change to year-1 next year
+  ph_with(value = paste0(survey.year), location = ph_location_label(ph_label = "Text Placeholder 2"), index=1) %>%
+  ph_with(external_img(paste0("Y:/Inshore/SFA29/2020/figures/ContPlot_SFA29_ComClappers",year-3,".png"), width = 9, height = 9), location = ph_location_label(ph_label = "Figure Placeholder 1"), use_loc_size = TRUE) %>% #Previous years commercial cpue
+  ph_with(external_img(paste0(fig.dir,"ContPlot_SFA29_ComClappers",year-1,".png"), width = 9, height = 9), location = ph_location_label(ph_label = "Figure Placeholder 2"), use_loc_size = TRUE) 
 
 
 n_slides <- length(newpres)
@@ -483,5 +490,5 @@ for (i_slide in 2:n_slides) {
     ph_with(value = i_slide, location = ph_location_type('sldNum'))
 }
 
-print(newpres, target = paste0("Y:/Inshore/SFA29/2022/Assessment/Documents/Presentations/Survey_Summary/DRAFTSurveySummary_presentation_Officerbuilt_",year,".pptx"))
+print(newpres, target = paste0("Y:/Inshore/SFA29/2022/Assessment/Documents/Presentations/Survey_Summary/DRAFTSurveySummary_presentation_Officerbuilt_V2",year,".pptx"))
 

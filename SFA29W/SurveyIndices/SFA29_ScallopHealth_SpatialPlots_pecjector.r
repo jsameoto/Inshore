@@ -319,6 +319,8 @@ com.contours <- contour.gen(greymeat.datw %>%
                               dplyr::select(ID, lon, lat, prop),
                             ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
 
+range(greymeat.datw %>% filter(year == survey.year) %>%  dplyr::select(prop))
+
 lvls <- c(0, 0.01, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3) #levels to be color coded
 #lvls <- c(0, 0.01, 0.02, 0.03, 0.04)
 CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
@@ -336,10 +338,11 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   mutate(level = unique(CP$PolyData$level))
 
 #Colour aesthetics and breaks for contours
-labels <- c("0-0.01", "0.05-0.1", "0.1-0.15", "0.15-0.2", "0.2-0.25", "0.25-0.3", "0.3+")
+labels <- c("0-0.01","0.01-0.05" ,"0.05-0.1", "0.1-0.15", "0.15-0.2", "0.2-0.25", "0.25-0.3", "0.3+")
 #labels <- c("0-0.01", "0.01-0.02", "0.02-0.03", "0.03-0.04", "0.04+")
-col <- brewer.pal(length(lvls),"Greys") #set colours
-cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = "Proportion", limits = labels) #set custom fill arguments for pecjector
+col <- brewer.pal(length(lvls),"Greys") #set colours #Cant see the lower numbers
+col.nu <- c("grey90", "grey80", "grey70", "grey60", "grey50", "grey40","grey30", "grey20")
+cfd <- scale_fill_manual(values = alpha(col.nu, 0.4), breaks = labels, name = "Proportion", limits = labels) #set custom fill arguments for pecjector
 
 
 p <- pecjector(area = "sfa29",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
@@ -361,9 +364,11 @@ p + #Plot survey data and format figure.
         axis.text = element_text(size = 10),
         legend.title = element_text(size = 10, face = "bold"), 
         legend.text = element_text(size = 10),
-        legend.position = c(.90,.82), #legend position
+        legend.position = c(.90,.80), #legend position
         legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.8)), #Legend bkg colour and transparency
         legend.box.margin = margin(2, 3, 2, 3))
+
+#ggsave(filename = paste0("Y:/Inshore/SFA29/2020/figures/ContPlot_SFA29_GreyMeatProportion2019.png"), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 #save
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_GreyMeatProportion',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
