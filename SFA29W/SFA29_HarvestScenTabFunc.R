@@ -81,7 +81,7 @@ sfa29.harvest.scen.tab = function(area = area, catch.range = catch.range, type =
     
     if(type == "presentation"){
       ex.hux <<- ex.hux %>% set_font_size(16) %>% 
-        set_width(3.5)
+        set_width(2.8)
     }else{
       ex.hux <<- ex.hux %>% set_font_size(11) %>% 
         set_width(1.9)
@@ -98,8 +98,8 @@ sfa29.harvest.scen.tab = function(area = area, catch.range = catch.range, type =
     if(type == "presentation"){
       ex.hux <<- ex.hux %>%
         flextable::width(j=1, width = 1) %>% #adjusting width of catch column
-        flextable::width(j=2, width = 0.75) %>%
-        autofit()
+        flextable::width(j=2, width = 0.75)%>% 
+        bg(bg = "white", part = "all")
     }else{
       ex.hux <<- ex.hux %>% 
       flextable::set_caption(table.caption, autonum = FALSE) %>%
@@ -141,7 +141,7 @@ sfa29.harvest.scen.tab = function(area = area, catch.range = catch.range, type =
     
     if(type == "presentation"){
       ex.hux <<- ex.hux %>% set_font_size(16) %>% 
-      set_width(3.5)
+      set_width(2.8)
     }else{
       ex.hux <<- ex.hux %>% set_font_size(11) %>% 
         set_width(2.8)
@@ -160,8 +160,8 @@ sfa29.harvest.scen.tab = function(area = area, catch.range = catch.range, type =
       if(type == "presentation"){
         ex.hux <<- ex.hux %>%
           flextable::width(j=1, width = 1) %>% #adjusting width of catch column
-          flextable::width(j=2, width = 0.75) %>%
-          autofit()
+          flextable::width(j=2, width = 0.75) %>% 
+          bg(bg = "white", part = "all")
       }else{
         ex.hux <<- ex.hux %>% 
           flextable::set_caption(table.caption, autonum = FALSE) %>%
