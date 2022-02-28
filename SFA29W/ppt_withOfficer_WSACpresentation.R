@@ -45,7 +45,7 @@ direct <- paste0("Y:/Inshore/SFA29/", assessment.year,"/Assessment/")
 subareas <- c("SFA29A", "SFA29B", "SFA29C", "SFA29D")
 
 # Load Functions
-funcs <- "https://raw.githubusercontent.com/Mar-scal/Inshore/master/SFA29W/sfa.HarvestScenTabFunc.R"
+funcs <- "https://raw.githubusercontent.com/Mar-scal/Inshore/master/SFA29W/SFA29_HarvestScenTabFunc.R"
 dir <- getwd()
 for(fun in funcs) 
 {
@@ -127,8 +127,8 @@ newpres <- newpres %>%
   # title slide -------------------------------------------------------------
 
 add_slide(layout="Main Title Page", master="1_Office Theme") %>%
-  ph_with(value = paste0("SFA 29 West Advisory Committee Meeting: Science Advice for ",year), location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
-  ph_with(value= paste0("XX April ",year,"\n \n Scallop Unit\n \n Population Ecology Division\n Fisheries and Oceans Canada\n Bedford Institute of Oceanography\n Dartmouth, Nova Scotia, B2Y 4A2"),
+  ph_with(value = paste0("SFA 29 West Advisory Committee Meeting: Science Advice for ",assessment.year), location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
+  ph_with(value= paste0("XX April ",assessment.year,"\n \n Scallop Unit\n \n Population Ecology Division\n Fisheries and Oceans Canada\n Bedford Institute of Oceanography\n Dartmouth, Nova Scotia, B2Y 4A2"),
           location = ph_location_label(ph_label = "Subtitle"), index=1) %>%  #This is the subtite
   ph_with(value = "Placopecten magellanicus", ph_location_label(ph_label = "Slide Number Placeholder"), index=1) %>% #Pg num placeholder
   
@@ -139,7 +139,7 @@ add_slide(layout="Summary 2", master="1_Office Theme") %>%
   ph_with(value = "Outline", location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
   ph_with(value = unordered_list(
     level_list = c(1, 1, 1, 1,1),
-    str_list = c("Background", "Fishery data", "Survey data", "Habitat-based population model", paste0("Stock status and advice for ",year))),
+    str_list = c("Background", "Fishery data", "Survey data", "Habitat-based population model", paste0("Stock status and advice for ",assessment.year))),
     location = ph_location_label(ph_label = "Text Placeholder"), level=2, index=2) %>% 
 
 # slide 2 - Multi-Year Science Advice -------------------------------------------------------------
@@ -225,8 +225,8 @@ newpres <- newpres %>%
 
 add_slide(layout="Dual Figure 3", master="1_Office Theme") %>%
   ph_with(value = "Survey: Habitat Suitability", location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
-  ph_with(external_img(paste0("Y:/Inshore/SFA29/",year,"/Assessment/Documents/Presentations/WSAC/ScalsurvSDM_GreyscaleforCSAS.png"), width = 6.67 , height = 4.83), location = ph_location_label(ph_label = "Figure Placeholder 1")) %>% 
-  ph_with(external_img(paste0("Y:/Inshore/SFA29/",year,"/Assessment/Documents/Presentations/WSAC/SDMpercent_per_area_figure.png"), width = 8.11 , height = 1.43), location = ph_location_label(ph_label = "Figure Placeholder 2"), use_loc_size = TRUE) %>% 
+  ph_with(external_img(paste0(fig.dir,"ScallopSDM_binned_coloured.png"), width = 6.67 , height = 4.83), location = ph_location_label(ph_label = "Figure Placeholder 1")) %>% 
+  ph_with(external_img(paste0("Y:/Inshore/SFA29/",assessment.year,"/Assessment/Documents/Presentations/WSAC/SDMpercent_per_area_figure.png"), width = 8.11 , height = 1.43), location = ph_location_label(ph_label = "Figure Placeholder 2"), use_loc_size = TRUE) %>% 
   
 # slide 11 - Commercial Abundance  -------------------------------------------------------------
 
@@ -283,7 +283,7 @@ add_slide(layout="Summary", master="1_Office Theme") %>%
   ph_with(value = unordered_list(
     level_list = c(1, 1),
     str_list = c("Catch, exploitation, percent change in commercial biomass, and the probability of biomass decline were determined from the model and are presented as catch scenario tables for subareas A-D ",
-                 paste0("Catch scenarios for " ,year+1," assume current year (",year,") estimates of condition and use the mean of natural mortality estimates from the last five years (2015 to ",survey.year,") within subarea"))),
+                 paste0("Catch scenarios for " ,assessment.year+1," assume current year (",assessment.year,") estimates of condition and use the mean of natural mortality estimates from the last five years (2015 to ",survey.year,") within subarea"))),
     location = ph_location_label(ph_label = "Text Placeholder"), level=2, index=2)  
 
 #Break for loop
@@ -338,14 +338,11 @@ add_slide(layout="Summary", master="1_Office Theme") %>%
   # End title slide -------------------------------------------------------------
 
 add_slide(layout="Main Title Page", master="1_Office Theme") %>%
-  ph_with(value = paste0("SFA 29 West Advisory Committee Meeting: Science Advice for ",year), location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
-  ph_with(value= paste0("XX April ",year,"\n \n Scallop Unit\n \n Population Ecology Division\n Fisheries and Oceans Canada\n Bedford Institute of Oceanography\n Dartmouth, Nova Scotia, B2Y 4A2"),
+  ph_with(value = paste0("SFA 29 West Advisory Committee Meeting: Science Advice for ",assessment.year), location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
+  ph_with(value= paste0("XX April ",assessment.year,"\n \n Scallop Unit\n \n Population Ecology Division\n Fisheries and Oceans Canada\n Bedford Institute of Oceanography\n Dartmouth, Nova Scotia, B2Y 4A2"),
           location = ph_location_label(ph_label = "Subtitle"), index=1) %>%  #This is the subtite
-  ph_with(value = "Placopecten magellanicus", ph_location_label(ph_label = "Slide Number Placeholder"), index=1) %>%  #Pg num placeholder
+  ph_with(value = "Placopecten magellanicus", ph_location_label(ph_label = "Slide Number Placeholder"), index=1)  #Pg num placeholder
 
- # Blank slide -------------------------------------------------------------
-
-  add_slide(layout="Single Figure", master="1_Office Theme")
 
 # Number slides -----------------------------------------------------------
 
@@ -358,7 +355,7 @@ for (i_slide in 2:n_slides) {
 
 # Save out ----------------------------------------------------------------
 
-print(newpres, target = paste0("Y:/Inshore/SFA29/2022/Assessment/Documents/Presentations/WSAC/DRAFTWSAC_presentation_Officerbuilt_",year,".pptx"))
+print(newpres, target = paste0("Y:/Inshore/SFA29/2022/Assessment/Documents/Presentations/WSAC/DRAFTWSAC_presentation_Officerbuilt_",assessment.year,".pptx"))
 
 # EXTRA Slides  -------------------------------------------------------------
 
