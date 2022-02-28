@@ -15,7 +15,8 @@ library(magrittr)
 uid <- keyring::key_list("Oracle")[1,2]
 pwd <- keyring::key_get("Oracle", uid)
 
-dir <- "Z:/Projects/Horse_Mussel/HM_InshoreSurvey/data/"
+dir <- "Y:/Inshore/Databases/Scallsur/ScallsurUpdates/2022/Db_Update_HorseMusselAddition/ptran_load/"
+cruise <- "SFA292021"
 survey.year <- 2021
 Year <- c(2018:survey.year)
 Year <- Year[! Year %in% 2020]
@@ -57,7 +58,7 @@ tows.dat$NUM_LINED_FREQ <- as.numeric(tows.dat$NUM_LINED_FREQ)
 
 # Live Horse Mussel Raw --------------------------------------------------
 
-hm.live <- read.csv("Y:/Inshore/Databases/Scallsur/ScallsurUpdates/2022/Db_Update_HorseMusselAddition/testing/Feb172022/BI2021_horsemussellive.csv") %>% 
+hm.live <- read.csv(paste0(dir,cruise,"_horsemussellive.csv")) %>% 
   unite(ID, c("CRUISE", "TOW"), sep = ".", remove = FALSE)  #Creates ID column with cruise and tow number
 
 colnames(hm.live) <- str_replace(colnames(hm.live), "X", "BIN_ID_") #Rename bin headers
@@ -77,7 +78,7 @@ hm.live[, 6:45][is.na(hm.live[, 6:45])] <- 0
 
 for(i in 1:nrow(hm.live)) {
   for(j in 6:45){
-    hm.live[i,j] <- (hm.live[i,j]*hm.live$PRORATE.FACTOR[i])*(2/hm.live$NUM_LINED_FREQ[i])*(800/(hm.live$TOW_LEN[i]))
+    hm.live[i,j] <- (hm.live[i,j]*hm.live$PRORATE.FACTOR[i])*(800/(hm.live$TOW_LEN[i])) #already accounted for in updated datafile(2/hm.live$NUM_LINED_FREQ[i])*
     hm.live[i,j] <- hm.live[i,j] *(17.5/4)
   }
 }
@@ -85,26 +86,26 @@ for(i in 1:nrow(hm.live)) {
 hm.live <- hm.live %>% dplyr::select(CRUISE, TOW_NO, TOW_TYPE_ID, MGT_AREA_ID, START_LAT, START_LONG, STRATA_ID, DEPTH, BIN_ID_0:BIN_ID_195)%>%
   mutate(dplyr::select(., BIN_ID_0:BIN_ID_195) %>% round(1)) 
 
-write.csv(hm.live,"Y:/Inshore/Databases/Scallsur/ScallsurUpdates/2022/Db_Update_HorseMusselAddition/testing/Feb172022/comparisons/BI2021_live_standardize_R_version.csv", row.names = FALSE)
+write.csv(hm.live, paste0(dir,cruise,"_live_standardize_R_version.csv"), row.names = FALSE)
 
 
 # COMPARISONS -------------------------------------------------------------
 
 #LIVE
-hm.live <- read.csv("Y:/Inshore/Databases/Scallsur/ScallsurUpdates/2022/Db_Update_HorseMusselAddition/testing/Feb172022/comparisons/BI2021_live_standardize_R_version.csv")
+hm.live <- read.csv(paste0(dir,cruise,"_live_standardize_R_version.csv"))
 #hm.live <- hm.live %>% mutate(dplyr::select(., BIN_ID_0:BIN_ID_195) %>% round(1))
 
 #File loaded to TTRAN
-old <- read.csv("Y:/Inshore/Databases/Scallsur/ScallsurUpdates/2022/Db_Update_HorseMusselAddition/testing/Feb172022/comparisons/sclivehorsemussel_std_vw_bi2021.csv")
+old <- read.csv(paste0(dir,"sclivehorsemussel_std_vw_",cruise,".csv"))
 
 # # do the comparisons and save out the table
-output <- compare_df(df_new = hm.live, df_old=old, group_col = c("CRUISE","TOW_NO"))
-create_output_table(output, output_type = "xlsx", file_name=paste0("Y:/Inshore/Databases/Scallsur/ScallsurUpdates/2022/Db_Update_HorseMusselAddition/testing/Feb172022/comparisons/BI2021_live_comparison.xlsx"))
+output <- compare_df(df_new = hm.live, df_old=old, group_col = c("CRUISE","TOW_NO"), stop_on_error = FALSE)
+create_output_table(output, output_type = "xlsx", file_name=paste0(dir,cruise,"_live_comparison.xlsx"))
 
 
 # Dead Horse Mussel Raw --------------------------------------------------
 
-hm.dead <- read.csv("Y:/Inshore/Databases/Scallsur/ScallsurUpdates/2022/Db_Update_HorseMusselAddition/testing/Feb172022/BI2021_horsemusseldead.csv") %>% 
+hm.dead <- read.csv(paste0(dir,cruise,"_horsemusseldead.csv")) %>% 
   unite(ID, c("CRUISE", "TOW"), sep = ".", remove = FALSE)  #Creates ID column with cruise and tow number
 
 colnames(hm.dead) <- str_replace(colnames(hm.dead), "X", "BIN_ID_") #Rename bin headers
@@ -124,7 +125,7 @@ hm.dead[, 6:45][is.na(hm.dead[, 6:45])] <- 0
 
 for(i in 1:nrow(hm.dead)) {
   for(j in 6:45){
-    hm.dead[i,j] <- (hm.dead[i,j]*hm.dead$PRORATE.FACTOR[i])*(2/hm.dead$NUM_LINED_FREQ[i])*(800/(hm.dead$TOW_LEN[i]))
+    hm.dead[i,j] <- (hm.dead[i,j]*hm.dead$PRORATE.FACTOR[i])*(800/(hm.dead$TOW_LEN[i])) #*(2/hm.dead$NUM_LINED_FREQ[i])
     hm.dead[i,j] <- hm.dead[i,j] *(17.5/4)
   }
 }
@@ -132,27 +133,28 @@ for(i in 1:nrow(hm.dead)) {
 hm.dead <- hm.dead %>% dplyr::select(CRUISE, TOW_NO, TOW_TYPE_ID, MGT_AREA_ID, START_LAT, START_LONG, STRATA_ID, DEPTH, BIN_ID_0:BIN_ID_195)%>%
   mutate(dplyr::select(., BIN_ID_0:BIN_ID_195) %>% round(1)) 
 
-write.csv(hm.dead,"Y:/Inshore/Databases/Scallsur/ScallsurUpdates/2022/Db_Update_HorseMusselAddition/testing/Feb172022/comparisons/BI2021_dead_standardize_R_version.csv", row.names = FALSE)
+write.csv(hm.dead, paste0(dir,cruise,"_dead_standardize_R_version.csv"), row.names = FALSE)
 
 
 # COMPARISONS -------------------------------------------------------------
 
 #DEAD
-hm.dead <- read.csv("Y:/Inshore/Databases/Scallsur/ScallsurUpdates/2022/Db_Update_HorseMusselAddition/testing/Feb172022/comparisons/BI2021_dead_standardize_R_version.csv")
+hm.dead <- read.csv(paste0(dir,cruise,"_dead_standardize_R_version.csv"))
 
 #hm.dead <- hm.dead %>% mutate(dplyr::select(., BIN_ID_0:BIN_ID_195) %>% round(1))
 
 
-old <- read.csv("Y:/Inshore/Databases/Scallsur/ScallsurUpdates/2022/Db_Update_HorseMusselAddition/testing/Feb172022/comparisons/scdeadhorsemussel_std_vw_bi2021.csv")
+old <- read.csv(paste0(dir,"scdeadhorsemussel_std_vw_",cruise,".csv"))
 
 # # do the comparisons and save out the table
-output <- compare_df(df_new = hm.dead, df_old=old, group_col = c("CRUISE","TOW_NO"))
-create_output_table(output, output_type = "xlsx", file_name=paste0("Y:/Inshore/Databases/Scallsur/ScallsurUpdates/2022/Db_Update_HorseMusselAddition/testing/Feb172022/comparisons/BI2021_dead_comparison.xlsx"))
+# *Won't generate file if the same*
+output <- compare_df(df_new = hm.dead, df_old=old, group_col = c("CRUISE","TOW_NO"), stop_on_error = FALSE)
+create_output_table(output, output_type = "xlsx",  file_name=paste0(dir,cruise,"_dead_comparison.xlsx"))
 
 
 # CHECKS ------------------------------------------------------------------
 
-hm.live <- read.csv("Y:/Inshore/Databases/Scallsur/ScallsurUpdates/2022/Db_Update_HorseMusselAddition/testing/Feb172022/BI2021_horsemussellive.csv")
+hm.live <- read.csv("Y:/Inshore/Databases/Scallsur/ScallsurUpdates/2022/Db_Update_HorseMusselAddition/ptran_load/Feb2322_GM2021/comparisons/GM2021_horsemussellive.csv")
 
 #SPECIES.CODE can only be 4332
 table(hm.live$SPECIES.CODE)
