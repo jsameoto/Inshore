@@ -54,7 +54,7 @@ sfa29.harvest.scen.tab = function(area = area, catch.range = catch.range, type =
       dplyr::select(Catch.All, Exploit.High, B.change.High, Prob.B.High, Prob_above_LRP, Prob_above_USR, B.change.All, Prob.B.All) #Re-order columns
     
     #rownames(ex.table) <- NULL
-    names(ex.table) <<- c("Catch (t)", "\U1D452", "Expected\n % Change", "Pr.\n Increase", "Pr. > LRP", "Pr. > USR", "Expected\n % Change\r", "Pr.\n Increase\r") # the \r was added to create a unique column name - flextable doesn't work with duplicate column headers (Expected % Change and Pr. Increase).
+    names(ex.table) <<- c("Catch (t)", "\U1D452", "Expected\n % Change", "Pr.\n Increase", "Pr. > LRP", "Pr. > USR", "Expected\n % Change ", "Pr.\n Increase ") # the \r was added to create a unique column name - flextable doesn't work with duplicate column headers (Expected % Change and Pr. Increase).
     
     #exploitation table - as huxtable
     ex.hux <<- ex.table %>% 
@@ -117,7 +117,7 @@ sfa29.harvest.scen.tab = function(area = area, catch.range = catch.range, type =
       dplyr::select(Catch.All, Exploit.Medium, B.change.Medium, Prob.B.Medium, B.change.All, Prob.B.All) #Re-order columns
     
     #rownames(ex.table) <- NULL
-    names(ex.table) <<- c("Catch (t)", "\U1D452", "Expected\n % Change", "Pr.\n Increase", "Expected\n % Change\r", "Pr.\n Increase\r") # the \r was added to create a unique column name - flextable doesn't work with duplicate column headers (Expected % Change and Pr. Increase).
+    names(ex.table) <<- c("Catch (t)", "\U1D452", "Expected\n % Change", "Pr.\n Increase", "Expected\n % Change ", "Pr.\n Increase ") # the \r was added to create a unique column name - flextable doesn't work with duplicate column headers (Expected % Change and Pr. Increase).
     
     #exploitation table - as huxtable
     ex.hux <<- ex.table %>% 
@@ -141,7 +141,7 @@ sfa29.harvest.scen.tab = function(area = area, catch.range = catch.range, type =
     
     if(type == "presentation"){
       ex.hux <<- ex.hux %>% set_font_size(16) %>% 
-      set_width(2.8)
+      set_width(4.4)
     }else{
       ex.hux <<- ex.hux %>% set_font_size(11) %>% 
         set_width(2.8)
@@ -172,6 +172,6 @@ sfa29.harvest.scen.tab = function(area = area, catch.range = catch.range, type =
   }
 }
 
-#test <- sfa29.harvest.scen.tab(area = "SFA29A", catch.range = catch.range, type = "presentation")
+#test <- sfa29.harvest.scen.tab(area = "SFA29B", catch.range = catch.range, type = "document")
 #ex.hux
 #ex.table
