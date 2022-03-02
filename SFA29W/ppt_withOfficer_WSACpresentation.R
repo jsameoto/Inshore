@@ -198,18 +198,18 @@ tacland.hux <- tacland.hux %>%
   set_valign(everywhere, everywhere, "bottom") %>% #vertical align top for Landings, FSC and Total Landings columns
   #set_align(1,2:5, "centre") %>% #centre TAC, Landings, FSC and Total Landings headers
   set_valign(1,1:5, "top") %>% #centre TAC, Landings, FSC and Total Landings headers
-  set_font_size(21) %>% #set font of table
+  set_font_size(18) %>% #set font of table
   set_bold(7, everywhere) %>%
   set_number_format(7, 2, 0) %>% #Total rows
   set_col_width(0.05) %>%
-  set_col_width(1, 0.04) %>% 
-  set_col_width(2, 0.05) %>%
-  set_col_width(3, 0.06) %>%
-  set_col_width(4, 0.05) %>%
-  set_col_width(5, 0.08) %>%
-  set_width(6.0) %>% #Set table width
+  set_col_width(1, 0.03) %>% 
+  set_col_width(2, 0.04) %>%
+  set_col_width(3, 0.05) %>%
+  set_col_width(4, 0.04) %>%
+  set_col_width(5, 0.07) %>%
+  set_width(2.8) %>% #Set table width
   set_bottom_border(final(1), everywhere) %>%
-  set_all_padding(7) %>%
+  set_all_padding(4) %>%
   set_top_border(1:2, everywhere) %>%
   as_flextable() %>% autofit()
 
@@ -299,9 +299,9 @@ for (i in 1:length(subareas)) {
   
   if(subareas[i] == "SFA29A") area.caption <- paste0("Catch scenario table for SFA 29W Subarea A to evaluate ",assessment.year, 
                                                 " catch levels in terms of expected changes in biomass (%) and probability (Pr.) of increase.") 
-  if(subareas[i] == "SFA29B") area.caption <- paste0("Catch scenario table for SFA 29W Subarea B to evaluate ",assessment.year," catch levels in terms of expected changes in biomass (%), probability (Pr.) of increase, and probability of being above the lower reference point (LRP: 1.12 t/km2) and upper stock reference (USR: 2.24 t/km2).") 
-  if(subareas[i] == "SFA29C") area.caption <- paste0("Catch scenario table for SFA 29W Subarea C to evaluate ",assessment.year, " catch levels in terms of expected changes in biomass (%), probability (Pr.) of increase, and probability of being above the lower reference point (LRP: 1.41 t/km2) and upper stock reference (USR: 2.82 t/km2).") 
-  if(subareas[i] == "SFA29D") area.caption <- paste0("Catch scenario table for SFA 29W Subarea D to evaluate ",assessment.year," catch levels in terms of expected changes in biomass (%), probability (Pr.) of increase, and probability of being above the lower reference point (LRP: 1.3 t/km2) and upper stock reference (USR: 2.6 t/km2).") 
+  if(subareas[i] == "SFA29B") area.caption <- paste0("Catch scenario table for SFA 29W Subarea B to evaluate ",assessment.year," catch levels in terms of expected changes in biomass (%), probability (Pr.) of increase, and probability of being above the Lower Reference Point (LRP: 1.12 t/km²) and Upper Stock Reference (USR: 2.24 t/km²).") 
+  if(subareas[i] == "SFA29C") area.caption <- paste0("Catch scenario table for SFA 29W Subarea C to evaluate ",assessment.year, " catch levels in terms of expected changes in biomass (%), probability (Pr.) of increase, and probability of being above the Lower Reference Point (LRP: 1.41 t/km²) and Upper Stock Reference (USR: 2.82 t/km²).") 
+  if(subareas[i] == "SFA29D") area.caption <- paste0("Catch scenario table for SFA 29W Subarea D to evaluate ",assessment.year," catch levels in terms of expected changes in biomass (%), probability (Pr.) of increase, and probability of being above the Lower Reference Point (LRP: 1.3 t/km²) and Upper Stock Reference (USR: 2.6 t/km²).") 
   
 #First run the table function
 sfa29.harvest.scen.tab(area = subareas[i], catch.range = catch.range, type = "presentation")
@@ -325,13 +325,11 @@ newpres <- newpres %>%
 add_slide(layout="Summary", master="1_Office Theme") %>%
   ph_with(value = "Subarea E", location = ph_location_label(ph_label = "Title"), index=1) %>% #This is the title
   ph_with(value = unordered_list(
-    level_list = c(1,1, 1, 1, 1, 1),
-    str_list = c("EDIT MANUALLY",
-                 "Not covered by the habitat suitability model",
+    level_list = c( 1, 1, 1, 1),
+    str_list = c("Not covered by the habitat suitability model",
                  "Only available data to assess this area includes survey data, commercial catch rate, and landings",
-                 paste0("In ",survey.year,", no fishing occured "),
-                 paste0("Commercial size abundances were ", format(round((survey.ind.E %>% filter(YEAR == survey.year & SUBAREA == "SFA29E" & size == "comm") %>% dplyr::select("yst"))[1,1],1),nsmall = 1), " per tow, recruit size abundances were ", format(round((survey.ind.E %>% filter(YEAR == survey.year & SUBAREA == "SFA29E" & size == "rec") %>% dplyr::select("yst"))[1,1],1),nsmall = 1), " per tow"),
-                 paste0("In ",survey.year,", no fishing occured "))),
+                 paste0("EDIT MANUALLY: In ",survey.year,", no fishing occured "),
+                 paste0("Commercial size abundances were ", format(round((survey.ind.E %>% filter(YEAR == survey.year & SUBAREA == "SFA29E" & size == "comm") %>% dplyr::select("yst"))[1,1],1),nsmall = 1), " per tow, recruit size abundances were ", format(round((survey.ind.E %>% filter(YEAR == survey.year & SUBAREA == "SFA29E" & size == "rec") %>% dplyr::select("yst"))[1,1],1),nsmall = 1), " per tow"))),
     location = ph_location_label(ph_label = "Text Placeholder"), level=2, index=2) %>% 
   
   
