@@ -116,7 +116,7 @@ bin.sdm.nas <- bin.sdm.int %>%
 #Finally the plot!!
 
 p <- pecjector(area =list(x=c( -66.7, -65.4), y=c(43.7, 43.1), crs=4326),repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey40", scale.bar = c('bl',0.5,-1,-1)))
+               add_layer = list(land = "grey40", scale.bar = c('bl',0.2,-1,-1)))
 
 p +
   geom_sf_pattern(data = bin.sdm.nas, aes(pattern = w001001.adf, fill = w001001.adf, colour = w001001.adf),
@@ -143,22 +143,21 @@ p +
   coord_sf(xlim = c(-66.7, -65.4), ylim = c(43.7, 43.1), expand = FALSE)+
   theme(legend.key = element_rect(colour = "black", size=0.5),
         legend.key.size = unit(5,"mm"),
-        axis.title = element_text(size = 12),
         axis.text = element_text(size = 8),
         legend.title = element_text(size = 10, face = "bold"), 
         legend.text = element_text(size = 7),
-        legend.position = c(.12,.365), #legend position
+        legend.position = c(.12,.39), #legend position
         legend.box.background = element_rect(colour = "white", fill= "white"), #Legend bkg colour and transparency
         legend.box.margin = margin(2, 3, 2, 3),
         panel.border = element_blank(), panel.grid.major = element_blank(),
-        plot.margin = margin(1,1,1.5,1.2, "cm"))
+        plot.margin = margin(0,0.5,0,0, "cm"))
 
 #annotation_scale(width_hint = scale.width,pad_x = unit(xpad + 1.5, "cm"), pad_y = unit(ypad + 1.5, "cm")) + 
 #annotation_north_arrow(location = scal.loc, which_north = "true", height = unit(1.25,"cm"), width = unit(1,'cm'),
  #                      pad_x = unit(xpad + 1.5, "cm"), pad_y = unit(ypad+1.9, "cm"),style = north_arrow_fancy_orienteering)+
 
 #save
-ggsave(filename = "C:/Users/WILSONB/Documents/1_Inshore_Scallop/ScallopSDM_binned_greyscale.png", plot = last_plot(), scale = 2.5, width = 8, height = 6, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = "C:/Users/WILSONB/Documents/1_Inshore_Scallop/ScallopSDM_binned_greyscale.png", plot = last_plot(), scale = 2.5, width = 7, height = 5, dpi = 300, units = "cm", limitsize = TRUE)
 
 
 
