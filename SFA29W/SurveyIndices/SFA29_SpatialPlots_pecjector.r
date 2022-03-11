@@ -9,6 +9,8 @@
 
 ### This script is compatible with the SFA29W folder structure from 2021 onwards, if previous year outputs are needed, file paths will need to be entered manually..   
 
+## While running each plot, check console for errors. Levels (lvls) may need adjusting and could cause errors when running.
+
 
 # Spatial figures of commercial, recruit and pre-recruit scallop sizes of Survey Density, Survey Biomass, Condition, Meat count and Clappers for SFA29.
 
@@ -282,7 +284,19 @@ plot.theme <-   theme(legend.key.size = unit(6,"mm"),
                       legend.text = element_text(size = 10),
                       legend.position = c(.90,.77), #legend position
                       legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.8)), #Legend bkg colour and transparency
-                      legend.box.margin = margin(2, 3, 2, 3))
+                      legend.box.margin = margin(2, 3, 2, 3),
+                      panel.border = element_rect(colour = "black", fill=NA, size=1))
+
+plot.theme.2 <-   theme(legend.key.size = unit(6,"mm"),
+                      plot.title = element_text(size = 14, hjust = 0.5), #plot title size and position
+                      axis.title = element_text(size = 12),
+                      axis.text = element_text(size = 10),
+                      legend.title = element_text(size = 10, face = "bold"), 
+                      legend.text = element_text(size = 10),
+                      legend.position = c(.88,.77), #legend position
+                      legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.8)), #Legend bkg colour and transparency
+                      legend.box.margin = margin(2, 3, 2, 3),
+                      panel.border = element_rect(colour = "black", fill=NA, size=1))
 
 		
 # ------------------------------COMMERCIAL SCALLOP - SURVEY DISTRIBUTION PLOTS -------------------------------------------
@@ -314,7 +328,7 @@ cfd <- scale_fill_manual(values = alpha(col, 0.3), breaks = labels, name = expre
 
 #Plot with Pecjector
 p <- pecjector(area = "sfa29",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", scale.bar = c('bl',0.5,-1,-1)),
+               add_layer = list(land = "grey", bathy = "ScallopMap", scale.bar = c('bl',0.25,-1,-1)),
                add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>%
                                    mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 #p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
@@ -334,6 +348,8 @@ p + #Plot survey data and format figure.
 #save
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_ComDensity',survey.year,'.png'), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
+#ggsave(filename = paste0("Y:/Inshore/SFA29/2020/figures/ContPlot_SFA29_ComDensity",survey.year,".png"), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+
 #FR
 p + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv %>% 
@@ -343,7 +359,7 @@ p + #Plot survey data and format figure.
   labs(x = "Longitude", y = "Latitude") + #title = paste(survey.year, "", "SFA29 Density (>= 100mm)"), 
   guides(fill = guide_legend(title="Nombre par trait", override.aes= list(alpha = .7))) + #Legend transparency
   coord_sf(xlim = c(-66.50,-65.45), ylim = c(43.10,43.80), expand = FALSE)+
-  plot.theme
+  plot.theme.2
 #save
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_ComDensity',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
@@ -395,6 +411,8 @@ p + #Plot survey data and format figure.
 #save
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_ComBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
+#ggsave(filename = paste0("Y:/Inshore/SFA29/2020/figures/ContPlot_SFA29_ComBiomass",survey.year,".png"), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+
 # ----CONDITION PLOT-----
 
 com.contours <- contour.gen(con.dat %>% filter(year==survey.year) %>% dplyr::select(ID, lon, lat, Condition),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
@@ -437,6 +455,8 @@ p + #Plot survey data and format figure.
   plot.theme
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_Condition',survey.year,'.png'), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+
+#ggsave(filename = paste0("Y:/Inshore/SFA29/2020/figures/ContPlot_SFA29_Condition",survey.year,".png"), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 
 # ----MEAT COUNT -----
@@ -525,6 +545,8 @@ p + #Plot survey data and format figure.
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_ComClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
+#ggsave(filename = paste0("Y:/Inshore/SFA29/2020/figures/ContPlot_SFA29_ComClappers",survey.year,".png"), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+
 # ----PROPORTION OF CLAPPERS -----
 
 com.contours<-contour.gen(prop.clappers %>% filter(year==survey.year) %>% 
@@ -600,7 +622,7 @@ cfd <- scale_fill_manual(values = alpha(col, 0.5), breaks = labels, name = expre
 
 #Plot with Pecjector
 p <- pecjector(area = "sfa29",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", scale.bar = c('bl',0.5,-1,-1)), 
+               add_layer = list(land = "grey", bathy = "ScallopMap", scale.bar = c('bl',0.25,-1,-1)), 
                add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>%
                                    mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 #p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
@@ -619,6 +641,8 @@ p + #Plot survey data and format figure.
 #save
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_RecDensity',survey.year,'.png'), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
+#ggsave(filename = paste0("Y:/Inshore/SFA29/2020/figures/ContPlot_SFA29_RecDensity2019.png"), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+
 #FR
 p + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv %>% 
@@ -628,7 +652,7 @@ p + #Plot survey data and format figure.
   labs(x = "Longitude", y = "Latitude") + #title = paste(survey.year, "", "SFA29 Density (90-99 mm)"), 
   guides(fill = guide_legend(title="Nombre par trait", override.aes= list(alpha = .7))) + #Legend transparency
   coord_sf(xlim = c(-66.50,-65.45), ylim = c(43.10,43.80), expand = FALSE)+
-  plot.theme
+  plot.theme.2
 #save
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_RecDensity',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
@@ -686,7 +710,8 @@ rec.contours<-contour.gen(ScallopSurv.dead %>%  filter(year==survey.year) %>%
                             dplyr::select(ID,lon,lat,rec),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',
                           blank=T,plot=F,res=0.01)
 
-lvls=c(1,5,10,15,20,25,30,50,100) #levels to be color coded
+#lvls=c(1,5,10,15,20,25,30,50,100) #levels to be color coded
+lvls=c(0.5, 1, 5, 10, 15, 20, 25)
 
 CL <- contourLines(rec.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
 CP <- convCP(CL)
@@ -703,7 +728,8 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   mutate(level = unique(CP$PolyData$level))
 
 #Colour aesthetics and breaks for contours
-labels <- c("1-5", "5-10", "10-15", "15-20", "20-23", "23-30", "30-50", "50-100", "100+")
+#labels <- c("1-5", "5-10", "10-15", "15-20", "20-23", "23-30", "30-50", "50-100", "100+")
+labels <- c("1", "1-5", "5-10", "10-15", "15-20", "20-25","+25")
 col <- brewer.pal(length(lvls),"YlGn") #set colours
 cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = expression(frac(N,tow)), limits = labels) #set custom fill arguments for pecjector.
 
@@ -722,6 +748,8 @@ p + #Plot survey data and format figure.
   plot.theme
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_RecClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+
+#ggsave(filename = paste0("Y:/Inshore/SFA29/2020/figures/ContPlot_SFA29_RecClappers",survey.year,".png"), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----PROPORTION OF CLAPPERS -----
 
@@ -797,7 +825,7 @@ cfd <- scale_fill_manual(values = alpha(col, 0.5), breaks = labels, name = expre
 
 #Plot with Pecjector
 p <- pecjector(area = "sfa29",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", bathy = "ScallopMap", scale.bar = c('bl',0.5,-1,-1)), 
+               add_layer = list(land = "grey", bathy = "ScallopMap", scale.bar = c('bl',0.25,-1,-1)), 
                add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>%
                                    mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 #p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
@@ -817,16 +845,18 @@ p + #Plot survey data and format figure.
 #save
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_PreDensity',survey.year,'.png'), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
+#ggsave(filename = paste0("Y:/Inshore/SFA29/2020/figures/ContPlot_SFA29_PreDensity2019.png"), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+
 #FR
 p + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv %>% 
                        filter(year == survey.year),
                      aes(lon, lat), size = 0.5) +
   geom_sf(data = sfa29.poly, size = 0.5, colour = "black", fill = NA) +
-  labs(title = paste(survey.year, "", "SFA29 Density (< 90 mm)"), x = "Longitude", y = "Latitude") +
+  labs(x = "Longitude", y = "Latitude") + #title = paste(survey.year, "", "SFA29 Density (< 90 mm)"), 
   guides(fill = guide_legend(title="Nombre par trait", override.aes= list(alpha = .7))) + #Legend transparency
   coord_sf(xlim = c(-66.50,-65.45), ylim = c(43.10,43.80), expand = FALSE)+
-  plot.theme
+  plot.theme.2
 #save
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_PreDensity',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
@@ -953,7 +983,8 @@ p + #Plot survey data and format figure.
         legend.text = element_text(size = 10),
         legend.position = c(.86,.82), #legend position
         legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.8)),
-        legend.box.margin = margin(2, 3, 2, 3))
+        legend.box.margin = margin(2, 3, 2, 3),
+        panel.border = element_rect(colour = "black", fill=NA, size=1))
 
 ggsave(filename = paste0(saveplot.dir,'LobsterSpatialPlot_SFA29',survey.year,'.png'), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
