@@ -151,7 +151,7 @@ myco.datw <- merge(myco.datw, tow.dat, by = "ID", all.x = TRUE) %>%
   rename(tow = tow.x)
 
 #Saves file
-write.csv(myco.datw %>% filter(year == survey.year), paste0("Y:/Inshore/SFA29/",assessmentyear,"/Assessment/Data/SurveyIndices/SFA29towsdd_MYCOprop",survey.year,".csv"), row.names = FALSE)
+#write.csv(myco.datw %>% filter(year == survey.year), paste0("Y:/Inshore/SFA29/",assessmentyear,"/Assessment/Data/SurveyIndices/SFA29towsdd_MYCOprop",survey.year,".csv"), row.names = FALSE)
 
 #Save files for each year
 #for(i in unique(myco.datw$year)){
@@ -185,7 +185,7 @@ greymeat.datw <- merge(greymeat.datw, tow.dat, by = "ID", all.x = TRUE) %>%
   rename(tow = tow.x)
 
 #Save file
-write.csv(greymeat.datw %>% filter(year == survey.year), paste0("Y:/Inshore/SFA29/",assessmentyear,"/Assessment/Data/SurveyIndices/SFA29towsdd_QUALITYprop",survey.year,".csv"))
+#write.csv(greymeat.datw %>% filter(year == survey.year), paste0("Y:/Inshore/SFA29/",assessmentyear,"/Assessment/Data/SurveyIndices/SFA29towsdd_QUALITYprop",survey.year,".csv"))
 
 #Save files for each year
 #for(i in unique(greymeat.datw$year)){
@@ -205,7 +205,8 @@ plot.theme <- theme(legend.key.size = unit(6,"mm"),
                       legend.text = element_text(size = 10),
                       legend.position = c(.90,.77), #legend position
                       legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.8)), #Legend bkg colour and transparency
-                      legend.box.margin = margin(2, 3, 2, 3))
+                      legend.box.margin = margin(2, 3, 2, 3),
+                    panel.border = element_rect(colour = "black", fill=NA, size=1))
 
 
 # -------------- MYCOBACTERIUM ------------------------------------------------------------
@@ -366,7 +367,8 @@ p + #Plot survey data and format figure.
         legend.text = element_text(size = 10),
         legend.position = c(.90,.80), #legend position
         legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.8)), #Legend bkg colour and transparency
-        legend.box.margin = margin(2, 3, 2, 3))
+        legend.box.margin = margin(2, 3, 2, 3),
+        panel.border = element_rect(colour = "black", fill=NA, size=1))
 
 #ggsave(filename = paste0("Y:/Inshore/SFA29/2020/figures/ContPlot_SFA29_GreyMeatProportion2019.png"), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 

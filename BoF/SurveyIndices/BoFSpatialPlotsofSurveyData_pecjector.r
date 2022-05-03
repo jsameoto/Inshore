@@ -49,7 +49,7 @@ pwd <- keyring::key_get("Oracle", uid)
 #set year 
 survey.year <- 2021  #removed maxyear in script and changed to survey year
 assessmentyear <- 2021 #year in which you are providing advice for- determines where to save files to
-path.directory <- "Y:/INSHORE SCALLOP/BoF/"
+path.directory <- "Y:/Inshore/BoF/"
 
 #set up directory to save plot
 saveplot.dir <- paste0(path.directory,assessmentyear,"/Assessment/Figures/")
@@ -136,7 +136,7 @@ ScallopSurv <- ScallopSurv %>%
   mutate(year = year(TOW_DATE)) %>%  #Formats TOW_DATE as date
   mutate(lat = convert.dd.dddd(START_LAT)) %>% #Convert to DD
   mutate(lon = convert.dd.dddd(START_LONG)) %>% #Convert to DD 
-  rename(tow = TOW_NO) %>%  #Rename column TOW_NO to tow - required for one of the mapping functions.
+  dplyr::rename(tow = TOW_NO) %>%  #Rename column TOW_NO to tow - required for one of the mapping functions.
   mutate(tot = dplyr::select(., BIN_ID_0:BIN_ID_195) %>% rowSums(na.rm = TRUE)/4267.2) %>% #standardize number per tow to numbers per m^2
   unite(ID, c("CRUISE", "tow"), sep = ".", remove = FALSE) %>%  #Creates ID column with cruise and tow number
   mutate(com = dplyr::select(., BIN_ID_80:BIN_ID_195) %>% rowSums(na.rm = TRUE) %>% round(0)) %>% # Commercial scallop - BIN_ID_80:BIN_ID_195
@@ -175,7 +175,7 @@ ScallopSurv.dead <- ScallopSurv.dead %>%
   mutate(year = year(TOW_DATE)) %>%  #Formats TOW_DATE as date - works with SFA29
   mutate(lat = convert.dd.dddd(START_LAT)) %>% #Convert to DD
   mutate(lon = convert.dd.dddd(START_LONG)) %>% #Convert to DD 
-  rename(tow = TOW_NO) %>%  #Rename column TOW_NO to tow - required for one of the mapping functions.
+  dplyr::rename(tow = TOW_NO) %>%  #Rename column TOW_NO to tow - required for one of the mapping functions.
   mutate(tot = dplyr::select(., BIN_ID_0:BIN_ID_195) %>% rowSums(na.rm = TRUE)/4267.2) %>%  #add tot for bin 0 to bin 195 and standardize to #/m^2
   unite(ID, c("CRUISE", "tow"), sep = ".", remove = FALSE) %>%  #Creates ID column with cruise and tow number
   mutate(com = dplyr::select(., BIN_ID_80:BIN_ID_195) %>% rowSums(na.rm = TRUE) %>% round(0)) %>% # Commercial scallop - BIN_ID_80:BIN_ID_195
@@ -244,10 +244,10 @@ head(liveweight)
 #...SETTING UP DATA...#
 #create year, lat (DD), lon (DD), tow, tot (standardized to #/m^2), ID (cruise.tow#), and biomass for commerical, recruit and prerecruit data columns
 ScallopSurv.kg <- liveweight %>%
-  rename(year = YEAR) %>% 
+  dplyr::rename(year = YEAR) %>% 
   mutate(lat = convert.dd.dddd(START_LAT)) %>% #Convert to DD
   mutate(lon = convert.dd.dddd(START_LONG)) %>% #Convert to DD
-  rename(tow = TOW_NO) %>%  #Rename column TOW_NO to tow - required for one of the mapping functions.
+  dplyr::rename(tow = TOW_NO) %>%  #Rename column TOW_NO to tow - required for one of the mapping functions.
   mutate(tot = dplyr::select(., BIN_ID_0:BIN_ID_195) %>% rowSums(na.rm = TRUE)/4267.2) %>%  #add tot for bin 0 to bin 195 and standardize to #/m^2
   unite(ID, c("CRUISE", "tow"), sep = ".", remove = FALSE) %>%  #Creates ID column with cruise and tow number
   mutate(com.bm = dplyr::select(., BIN_ID_80:BIN_ID_195) %>% rowSums(na.rm = TRUE) %>% round(0)/1000) %>% # Commercial scallop - BIN_ID_80:BIN_ID_195 /1000
@@ -311,7 +311,7 @@ table(con.dat$CRUISE)
 #...SETTING UP DATA...#
 #create year, lat (DD), lon (DD), and ID (cruise.tow#) columns
 con.dat <- con.dat %>%
-  rename(year = YEAR) %>% 
+  dplyr::rename(year = YEAR) %>% 
   mutate(lat = convert.dd.dddd(START_LAT)) %>% #Convert to DD
   mutate(lon = convert.dd.dddd(START_LONG)) %>%  #Convert to DD
   rename(tow = TOW_NO) %>% 
