@@ -157,7 +157,7 @@ p2 +
         axis.text = element_text(size = 8),
         legend.title = element_text(size = 10, face = "bold"), 
         legend.text = element_text(size = 7),
-        legend.position = c(.12,.39), #legend position
+        legend.position = c(.14,.39), #legend position
         legend.box.background = element_rect(colour = "white", fill= "white"), #Legend bkg colour and transparency
         legend.box.margin = margin(2, 3, 2, 3),
         panel.border = element_blank(), panel.grid.major = element_blank(),
