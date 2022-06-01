@@ -39,8 +39,10 @@ for(fun in funcs)
 
 
 # -----Land Shapefile and bathy contours --------------------------------------------------------------------
+sf::sf_use_s2(FALSE)
 
-land.sf <- st_read("C:/Users/WILSONB/Documents/1_GISdata/Shapefiles/AtlCan_EasternUSA_land.shp")
+land.sf <- st_read("C:/Users/WILSONB/Documents/1_GISdata/Shapefiles/AtlCan_EasternUSA_land.shp") 
+
 bathy <- getNOAA.bathy(-68.3, -54.9, 39.9, 47.9, resolution = 1, keep=TRUE)
 bathy <- marmap::as.raster(bathy)
 bathy.cont <- rasterToContour(bathy)
@@ -64,7 +66,7 @@ levels(SFA28.merge$Area)
 SFA28 <- SFA28 %>% 
   st_union() %>%
   st_sf() %>% 
-  mutate(Area = "SFA28")
+  mutate(Area = "SFA 28 (SFA A-D)")
 #plot(SFA28)
 
 #SFA28E polygon
@@ -232,7 +234,6 @@ bbs.scallop.bounds <- scallop.offshore %>%
   mutate(ID = "Browns South") %>% 
   mutate(Area = "Offshore")
 
-
 # ----------Load survey data from Database for species distribution plot ------------
 
 uid <- keyring::key_list("Oracle")[1,2]
@@ -344,18 +345,67 @@ sfa29.scallop.bounds <- st_union(totCont.poly.sf) %>%
   mutate(Area = "Inshore")
 #plot(sfa29.scallop.bounds)
 
-#OFFSHORE - Scallop distributions:
+#SFA29 East
+sfa29E.scallop.bounds <- st_read("Y:/Inshore/Inshore Scallop Fishing Area Map/Management_Spatial_Scale_Maps/shp/sfa29E_scallop_bounds.shp")
 
-#Offshore Scallop beds:
-#GBa.scallop.bounds <- st_read("Z:/Projects/OFI/BEcoME/Data/WP3/shp/OFI_GBa_2020.shp") %>% 
-#dplyr::select(brk)
-  
-#plot(GBa.scallop.bounds)
+#SFA29E shapefile was acquired by running the following:
+#set to TRUE if SFA29E needs to be re-run
+if (FALSE){
 
-#GBb.scallop.bounds <- st_read("Z:/Projects/OFI/BEcoME/Data/WP3/shp/OFI_GBb_2020.shp")
-#plot(GBb.scallop.bounds)
+quer3 <- paste(
+  "SELECT *                         ",
+  "FROM scallop.scallop_log_marfis            ",
+  sep=""
+)
 
+#ROracle: 
+ScallopLogs <- dbGetQuery(chan, quer3)
 
+ScallopLogs.sfa29E <- ScallopLogs %>% 
+  mutate(LATITUDE = convert.dd.dddd(LATITUDE/100)) %>% #Convert to DD
+  mutate(LONGITUDE = (-1)*convert.dd.dddd(LONGITUDE/100)) %>%
+  mutate(lat = LATITUDE) %>% #Duplicate coord columns for use later
+  mutate(lon = LONGITUDE) %>%
+ filter(!is.na(lon)) %>% 
+  filter(ASSIGNED_AREA %in% c("29", "U"))
+
+#create Sf object to "cut" logs to SFA29E area (new.SFA29E)
+ScallopLogs.sfa29E.sf <- st_as_sf(ScallopLogs.sfa29E, coords = c("LONGITUDE","LATITUDE"), crs = 4326)
+
+# Remove points on land
+ScallopLogs.sfa29E.sf <- st_difference(ScallopLogs.sfa29E.sf, st_combine(land.sf)) #Takes a few minutes
+#  Crop to SFA29E
+ScallopLogs.sfa29E.sf <- st_intersection(ScallopLogs.sfa29E.sf, new.SFA29E)
+#mapview::mapview(ScallopLogs.sfa29E.sf)
+
+#remove geometry
+ScallopLogs.sfa29E <- st_set_geometry(ScallopLogs.sfa29E.sf, NULL) %>% 
+  mutate(ID = seq(1, nrow(ScallopLogs.sfa29E.sf),1)) %>% 
+  filter(!is.na(CPUE_KG))
+
+com.contours <- contour.gen(ScallopLogs.sfa29E %>% dplyr::select(ID, lon, lat, CPUE_KG), ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
+
+lvls=c(1,5,10,50,100,200,300,400,500) #levels to be color coded
+CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
+CP <- convCP(CL)
+totCont.poly <- CP$PolySet
+
+##Convert pbsmapping object to sf
+totCont.poly <- as.PolySet(totCont.poly,projection = "LL") #assuming you provide Lat/Lon data and WGS84
+totCont.poly <- PolySet2SpatialLines(totCont.poly) # Spatial lines is a bit more general (don't need to have boxes closed)
+totCont.poly.sf <- st_as_sf(totCont.poly) %>%
+  st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
+  st_cast("POLYGON") %>% #Convert multilines to polygons
+  st_make_valid() %>%
+  mutate(level = unique(CP$PolyData$level))
+
+sfa29E.scallop.bounds <- st_union(totCont.poly.sf) %>% 
+  st_sf() %>% 
+  mutate(ID = "SFA29E") %>% 
+  mutate(Area = "Inshore")
+#plot(sfa29E.scallop.bounds)
+#st_write(sfa29E.scallop.bounds, "Y:/Inshore/Inshore Scallop Fishing Area Map/Management_Spatial_Scale_Maps/shp/sfa29E_scallop_bounds.shp")
+}
 
 # Colour palettes ---------------------------------------------------------
 
@@ -422,7 +472,7 @@ ggplot()+
   #geom_sf_text(data = SFA_all %>% filter(Area == "SFA28B"), aes(label = Area), size = 3, colour = "black", angle = 30)+ #SFA28B label
   #geom_sf_text(data = SFA_all %>% filter(Area == "SFA28C"), aes(label = Area), size = 3, colour = "black", nudge_x = -0.3) + #SFA28C label
   #geom_sf_text(data = SFA_all %>% filter(Area == "SFA28D"), aes(label = Area), size = 3, colour = "black", nudge_x = 0.6)+ #SFA28D label
-  scale_fill_manual(values = mycols.1, name = "Scallop Fishing Areas (SFA)")+
+  scale_fill_manual(values = mycols.1, name = "National Reporting Areas\n (e.g. FSP, SFF)")+
   ggsn::scalebar(data = C68_boundaries, dist = 150, st.size=4, height=0.009, transform = TRUE, dist_unit = "km", model = 'WGS84', border.size = 0.3, anchor = c(x = -55.6, y = 40.35))+
   ggsn::north(C68_boundaries, symbol = 11, scale = 0.092, anchor = c(x = -55.4, y = 41.50))+
   coord_sf(xlim = c(-68.3,-54.9), ylim = c(39.9,47.9), expand = FALSE)+
@@ -443,9 +493,9 @@ ggplot()+
   geom_sf(data = SFA_all, aes(fill = forcats::fct_inorder(Area)), size = 0.5, colour = "black", alpha = 0.6) +
   geom_sf(data = land.sf)+
   #geom_sf_text(data = SFA29E, aes(label = Area), size = 3, colour = "black", angle = 25, nudge_y = 0.12)+ #SFA29E label
-  scale_fill_manual(values = mycols.2, name = "Scallop Fishing Areas\n and Subareas")+
+  scale_fill_manual(values = mycols.2, name = "Scallop Fishing Areas")+
   ggsn::scalebar(data = C68_boundaries, dist = 150, st.size=4, height=0.009, transform = TRUE, dist_unit = "km", model = 'WGS84', border.size = 0.3, anchor = c(x = -55.6, y = 40.35))+
-  ggsn::north(C68_boundaries, symbol = 11, scale = 0.092, anchor = c(x = -55.4, y = 41.50))+
+  ggsn::north(SFA_all, symbol = 11, scale = 0.092, anchor = c(x = -55.4, y = 41.50))+
   coord_sf(xlim = c(-68.3,-54.9), ylim = c(39.9,47.9), expand = FALSE)+
   labs(x = "Longitude", y = "Latitude")+
   theme_bw()+
@@ -474,9 +524,9 @@ ggplot()+
   geom_sf(data = SPA_Bank_all, aes(fill = forcats::fct_inorder(ET_ID)), size = 0.5, colour = "black", alpha = 0.6) +
   geom_sf(data = land.sf)+
   #geom_sf_text(data = SFA29E, aes(label = Area), size = 3, colour = "black", angle = 25, nudge_y = 0.12)+ #SFA29E label
-  scale_fill_manual(values = mycols.3,name = "Scallop Production Areas\n and Offshore Banks")+
-  ggsn::scalebar(data = C68_boundaries, dist = 150, st.size=4, height=0.009, transform = TRUE, dist_unit = "km", model = 'WGS84', border.size = 0.3, anchor = c(x = -55.6, y = 40.35))+
-  ggsn::north(C68_boundaries, symbol = 11, scale = 0.092, anchor = c(x = -55.4, y = 41.50))+
+  scale_fill_manual(values = mycols.3,name = "Management Areas")+
+  ggsn::scalebar(data = SPA_Bank_all, dist = 150, st.size=4, height=0.009, transform = TRUE, dist_unit = "km", model = 'WGS84', border.size = 0.3, anchor = c(x = -55.6, y = 40.35))+
+  ggsn::north(SPA_Bank_all, symbol = 11, scale = 0.092, anchor = c(x = -55.4, y = 41.50))+
   coord_sf(xlim = c(-68.3,-54.9), ylim = c(39.9,47.9), expand = FALSE)+
   labs(x = "Longitude", y = "Latitude")+
   theme_bw()+
@@ -488,7 +538,7 @@ ggplot()+
 
 # Figure 3. Biological Population Groupings  ---------------------------
 
-scallop.bounds <- rbind(bof.scallop.bounds, sfa29.scallop.bounds, ban.scallop.bounds,
+scallop.bounds <- rbind(bof.scallop.bounds, sfa29.scallop.bounds, sfa29E.scallop.bounds, ban.scallop.bounds,
                         mid.scallop.bounds, bbn.scallop.bounds, bbs.scallop.bounds, ger.scallop.bounds,
                         Gb.scallop.bounds, sab.scallop.bounds)
 
@@ -501,8 +551,8 @@ ggplot()+
   geom_sf(data = land.sf)+
   scale_fill_manual(values = mycols.4, name = "Scallop Habitat")+
   scale_colour_manual(values = mycols.5, name = "Scallop Habitat")+
-  ggsn::scalebar(data = C68_boundaries, dist = 150, st.size=4, height=0.009, transform = TRUE, dist_unit = "km", model = 'WGS84', border.size = 0.3, anchor = c(x = -55.6, y = 40.35))+
-  ggsn::north(C68_boundaries, symbol = 11, scale = 0.092, anchor = c(x = -55.4, y = 41.50))+
+  ggsn::scalebar(data = scallop.bounds, dist = 150, st.size=4, height=0.009, transform = TRUE, dist_unit = "km", model = 'WGS84', border.size = 0.3, anchor = c(x = -55.6, y = 40.35))+
+  ggsn::north(scallop.bounds, symbol = 11, scale = 0.092, anchor = c(x = -55.4, y = 41.50))+
   coord_sf(xlim = c(-68.3,-54.9), ylim = c(39.9,47.9), expand = FALSE)+
   labs(x = "Longitude", y = "Latitude")+
   theme_bw()+
