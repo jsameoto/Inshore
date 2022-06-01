@@ -1,17 +1,44 @@
-##data entry checks
 
-mwsh <- read.csv("Y:/INSHORE SCALLOP/Survey/2019/data entry templates and examples/BI2019/BI2019_HGTWGT.csv")
-str(mwsh)
+######  DATA CHECKS ########
 
+#libraries
 require(ggplot2)
+
+#Check tows spatial function:
+
+funcs <- "https://raw.githubusercontent.com/Mar-scal/Inshore/master/Survey/check.tows.spatial.r"
+dir <- getwd()
+for(fun in funcs) 
+{
+  temp <- dir
+  download.file(fun,destfile = basename(fun))
+  source(paste0(dir,"/",basename(fun)))
+  file.remove(paste0(dir,"/",basename(fun)))
+}
+#source(paste0("Y:/Inshore/Survey/", year, "/data entry templates and examples/entry check functions/check.tows.spatial.r"))
+
+#define
+direct <- "Y:/Inshore/Survey/"
+year <- 2021
+CRUISE <- "BI" # "BF", "GM", "SFA29"
+
+
+# HGTWGT.csv ----------------------------------------------------------------
+
+mwsh <- read.csv(paste0("Y:/Inshore/Survey/", year,"/data entry templates and examples/",CRUISE, year,"/",CRUISE,year,"_HGTWGT.csv"))
+str(mwsh)
 
 mwsh$Weight <- as.numeric(as.character(mwsh$Weight))
 
 summary(mwsh)
 
+#Plots height and weight
+
+#all data points
+ggplot() + geom_text(data=mwsh, aes(Height, Weight, colour=as.factor(Tow), label=Num)) 
+
 # adjust tow numbers to test it out # if an entire tow is away from the rest, make sure that the height and weight columns weren't flipped!!
-ggplot() + geom_text(data=mwsh
-                     [mwsh$Tow>109 & mwsh$Tow<140,]
+ggplot() + geom_text(data=mwsh[mwsh$Tow>109 & mwsh$Tow<140,]
                      , aes(Height, Weight, colour=as.factor(Tow), label=Num)) 
 
 ggplot() + geom_text(data=mwsh[mwsh$Tow==111 
@@ -23,8 +50,9 @@ ggplot() + geom_text(data=mwsh[mwsh$Tow>109& mwsh$Tow<135,], aes(Height, Weight,
 ggplot() + geom_text(data=mwsh[mwsh$Tow==113,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
 
 
+# bycatch.csv ----------------------------------------------------------------
 
-bycatch <- read.csv("Y:/INSHORE SCALLOP/Survey/2019/data entry templates and examples/BI2019/BI2019_bycatch.csv")
+bycatch <- read.csv(paste0("Y:/Inshore/Survey/", year,"/data entry templates and examples/",CRUISE, year,"/",CRUISE,year,"_bycatch.csv"))
 
 ## NO NA's ALLOWED! REPLACE THESE WITH APPROPRIATE CODES (unknown sex=0!)
 print(bycatch[is.na(bycatch$Species_code) & !is.na(bycatch$Tow_num) |
@@ -43,6 +71,8 @@ ggplot() + geom_point(data=bycatch, aes(Sex, as.factor(Species_code)))
 # We only record ocean pout, so the species code should be 640. Change records of 845 or other (642, 598) to 640. Note that in 2012, they were miscoded as 845. 
 # bycatch[which(bycatch$Species_code%in% c(845, 642, 598)),]
 
+#Note - horse mussels are not entered in the bycatch.csv. These are entered in a seperate file (so there should *not* be species code 4332 in this file)
+
 ggplot() + geom_point(data=bycatch, aes(as.factor(Sex), Measurement)) + facet_wrap(~Species_code, scales="free")
 #bycatch[which(bycatch$Species_code==1191 & bycatch$Tow_num==53 & bycatch$Measurement>100),]$Measurement <-24
 #bycatch[which(bycatch$Species_code==1191 & bycatch$Measurement==30.5),]$Measurement <- 30
@@ -51,7 +81,10 @@ ggplot() + geom_point(data=bycatch, aes(as.factor(Sex), Measurement)) + facet_wr
 #write.csv(bycatch, file="Y:/INSHORE SCALLOP/Survey/2018/data entry templates and examples/entry check functions/BF2018_bycatch_FK.csv")
 
 
-dhf <-  read.csv("Y:/INSHORE SCALLOP/Survey/2019/data entry templates and examples/BI2019/BI2019_dhf.csv")
+# dhf.csv ----------------------------------------------------------------
+
+dhf <-  read.csv(paste0("Y:/Inshore/Survey/", year,"/data entry templates and examples/",CRUISE, year,"/",CRUISE,year,"_dhf.csv"))
+
 dhf <- reshape2::melt(dhf, id.vars=c("CRUISE", "TOW", "GEAR", "DEPTH", "c"))
 dhf <- dplyr::arrange(dhf, TOW)
 dhf$variable <- gsub('X', '', dhf$variable)
@@ -59,6 +92,7 @@ dhf$bin <- ifelse(dhf$c %in% c(0,2), dhf$variable,
                   ifelse(dhf$c %in% c(1,3), as.numeric(dhf$variable)+100, NA))
 dhf <- dplyr::arrange(dhf, TOW, GEAR, c)
 
+#Plot to look for outliers:
 dhf1 <- dhf[dhf$TOW>0 & dhf$TOW < 25,]
 ggplot() + geom_point(data=dhf1, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
 
@@ -111,6 +145,134 @@ dhf8 <- dhf[dhf$TOW>331 & dhf$TOW < 342,]
 ggplot() + geom_point(data=dhf8, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
 
 
+# Horsemussellivefreq.csv---------------------
+
+hm.live <- read.csv(paste0("Y:/Inshore/Survey/", year,"/data entry templates and examples/",CRUISE, year,"/",CRUISE,year,"_horsemussellive.csv"))
+
+#Species Code must be "4332"
+table(hm.live$SPECIES.CODE)
+
+hm.live <- hm.live %>% 
+    mutate(flag = case_when(SPECIES.CODE != 4332 ~ "check",
+                            TRUE ~ "ok"))
+hm.live %>% filter(flag == "check")
+
+#Prorate factor can only be 1 or 2
+table(hm.live$PRORATE.FACTOR)
+
+hm.live <- hm.live %>% 
+  mutate(flag = case_when(PRORATE.FACTOR != as.numeric(1|2) ~ "check",
+                          TRUE ~ "ok"))
+hm.live %>% filter(flag == "check")
+
+#For any tows where PRORATE.FACTOR == 2, check
+hm.live <- hm.live %>% 
+  mutate(flag = case_when(PRORATE.FACTOR == as.numeric(2) ~ "check",
+                          TRUE ~ "ok"))
+hm.live %>% filter(flag == "check") #Ensure this correctly marked as prorated.
+
+#Tow numbers should match number of tows from survey
+table(hm.live$TOW == tows_BI2021$Oracle.tow..) #Should all be TRUE
+
+#There should be 137 unique tows:
+length(unique(hm.live$TOW))
+table(duplicated(hm.live$TOW)) #Should all be false
+
+
+#LIVE.DEAD column should only contain "L"s. D's will be in the Horsemusseldeadfreq.csv
+hm.live <- hm.live %>% 
+  mutate(flag = case_when(LIVE.DEAD != "L" ~ "check",
+                          TRUE ~ "ok"))
+hm.live %>% filter(flag == "check")
+
+#Check Cruise - should only be one cruise!
+unique(hm.live$CRUISE)
+table(hm.live$CRUISE)
+
+#Does the cruise in the data sheet match the cruise you are data checking?
+unique(hm.live$CRUISE) == paste0(CRUISE,year)
+
+#All numbers under Bin ID columns should be > 0. Also flag any values > 400 (not necessarily incorrect, but will flag these tows to check)
+#Less than 0?
+hm.live %>% 
+  filter_at(vars(5:44), any_vars(. <0))
+
+#Greater than 400?
+hm.live %>% 
+  filter_at(vars(5:44), any_vars(. >400))
+
+# Horsemusseldeadfreq.csv ---------------------
+
+hm.dead <- read.csv(paste0("Y:/Inshore/Survey/", year,"/data entry templates and examples/",CRUISE, year,"/",CRUISE,year,"_horsemusseldead.csv"))
+
+#Species Code must be "4332"
+table(hm.dead$SPECIES.CODE)
+
+hm.dead <- hm.dead %>% 
+  mutate(flag = case_when(SPECIES.CODE != 4332 ~ "check",
+                          TRUE ~ "ok"))
+hm.dead %>% filter(flag == "check")
+
+#Prorate factor can only be 1 or 2
+table(hm.dead$PRORATE.FACTOR)
+
+hm.dead <- hm.dead %>% 
+  mutate(flag = case_when(PRORATE.FACTOR != as.numeric(1|2) ~ "check",
+                          TRUE ~ "ok"))
+hm.dead %>% filter(flag == "check")
+
+#For any tows where PRORATE.FACTOR == 2, check
+hm.dead <- hm.dead %>% 
+  mutate(flag = case_when(PRORATE.FACTOR == as.numeric(2) ~ "check",
+                          TRUE ~ "ok"))
+hm.dead %>% filter(flag == "check") #Ensure this correctly marked as prorated.
+
+#Tow numbers should match number of tows from survey
+table(hm.dead$TOW == tows_BI2021$Oracle.tow..) #Should all be TRUE
+
+#Number of unique tows should match number of tows from survey:
+length(unique(hm.dead$TOW))
+table(duplicated(hm.dead$TOW)) #Should all be false
+
+
+#LIVE.DEAD column should only contain "D"s. 
+hm.dead <- hm.dead %>% 
+  mutate(flag = case_when(LIVE.DEAD != "D" ~ "check",
+                          TRUE ~ "ok"))
+hm.dead %>% filter(flag == "check")
+
+#Check Cruise - should only be one cruise!
+unique(hm.dead$CRUISE)
+table(hm.dead$CRUISE)
+
+#Does the cruise in the data sheet match the cruise you are data checking?
+unique(hm.dead$CRUISE) == paste0(CRUISE,year)
+
+#All numbers under Bin ID columns should be > 0. Also flag any values > 400 (not necessarily incorrect, but will flag these tows to check)
+#Less than 0?
+hm.dead %>% 
+  filter_at(vars(5:44), any_vars(. <0))
+
+#Greater than 400?
+hm.dead %>% 
+  filter_at(vars(5:44), any_vars(. >400))
+
+#Extra horse mussel checks ------------------------------------------------
+
+#Tows where horse mussels were present - live or dead
+hm.check.l <- hm.live %>% 
+  mutate(totlive = dplyr::select(., X0:X195) %>% rowSums(na.rm = TRUE) %>% round(0))
+hm.check.d <- hm.dead %>% 
+  mutate(totdead = dplyr::select(., X0:X195) %>% rowSums(na.rm = TRUE) %>% round(0))
+
+hm.check <- data.frame(cbind("TOW" = hm.check.l$TOW, "Total.Live" = hm.check.l$totlive , "TOW.D" = hm.check.d$TOW, "Total.Dead" = hm.check.d$totdead))
+
+hm.check %>% filter(Total.Live > 0 | Total.Dead > 0) 
+nrow(hm.check %>% filter(Total.Live > 0 | Total.Dead > 0)) # This number should match the number of records that will be entered into SCBYATCHES 
+#associated with code 4332 for that given cruise, and can be used later on as a check to ensure the HM records are being inserted properly.
+
+
+# SPATIAL CHECKS ----------------------------------------------------------
 ### tow data spatial checks
 ### use SCSTRATAINFO to make sure that they don't cross strata
 ### calculate distances between tow start/end to make sure they are within 1km-ish
@@ -118,11 +280,9 @@ ggplot() + geom_point(data=dhf8, aes(as.numeric(bin), value)) + facet_grid(GEAR~
 # cruise <- "BI2019"
 # direct <- "Y:/INSHORE SCALLOP/Survey/"
 # desktop="C:/Users/keyserf/Desktop/"
-year <- 2019
-source(paste0(direct, year, "/data entry templates and examples/entry check functions/check.tows.spatial.r"))
 
-check.tows.spatial(cruise="BI2019", year=2019, direct="Y:/INSHORE SCALLOP/Survey/", desktop="NULL", 
-                   previouscruisefolder = "data entry templates and examples/BI2018", previouscruisename = "BI2018", plot=TRUE, df=TRUE)
+check.tows.spatial(cruise= paste0(CRUISE,year), year=year, direct="Y:/Inshore/Survey/", desktop="NULL", 
+                   previouscruisefolder = paste0("data entry templates and examples/",CRUISE,year-2), previouscruisename = paste0(CRUISE,year-2), plot=TRUE, df=TRUE)
 
 area <- read.csv(paste0(direct, year, "/data entry templates and examples/entry check functions/BayofFundyFishingBoundaries_WGS84.csv"))
 area$AREA_ID <- as.numeric(area$Area)
@@ -135,11 +295,6 @@ area$AREA_ID <- as.numeric(area$Area)
 # geom_point(data=flagged.tows_BI2019[flagged.tows_BI2019$Oracle.tow..==84,], aes(x=Start_long, y=Start_lat))+
 # geom_point(data=flagged.tows_BI2019[flagged.tows_BI2019$Oracle.tow..==84,], aes(x=End_long, y=End_lat))
 
-check.tows.spatial(cruise="GM2017", year=2017, direct="Y:/INSHORE SCALLOP/Survey/", desktop="NULL", 
-                   previouscruisefolder = "SPA6", previouscruisename = "GM2016", plot=TRUE, df=TRUE)
-
-check.tows.spatial(cruise="BI2017", year=2017, direct="Y:/INSHORE SCALLOP/Survey/", desktop="NULL", 
-                   previouscruisefolder = "SPA3", previouscruisename = "BI2016", plot=TRUE, df=TRUE)
 
 ## Need a way to handle overlapping strata! E.g. 31 and 32. THIS WAS ADDRESSED KIND OF...
 # ggplot() + geom_polygon(data=strata[strata$STRATA_ID %in% c(31,32),], aes(LONGITUDE, LATITUDE, group=STRATA_ID), fill=NA, colour="black")
@@ -151,7 +306,6 @@ test2<- subset(unique(double.strata[,1:30]), Strata_id==32)
 length(unique(test2$Oracle.tow..))
 
 ### data validation
-
 bitows <- read.csv(paste0(direct, year, "/data entry templates and examples/", cruise, "/", cruise, "tow_CONVERTED.csv"))
 
 start_long_less6500 <- subset(bitows, Start_long < abs(6500))
@@ -217,58 +371,10 @@ ggplot() +
   xlim(-67.2, -66.4) +
   ylim(44.4, 45.1)
 
-### FINAL
-source(paste0(direct, year, "/data entry templates and examples/entry check functions/check.tows.spatial.r"))
-check.tows.spatial(cruise="GM2017", year=2017, direct="Y:/INSHORE SCALLOP/Survey/", 
-                   desktop="NULL", previouscruisefolder="SPA6", 
-                   previouscruisename="GM2016",plot=TRUE, df=TRUE)
-check.tows.spatial(cruise="BF2018", year=2018, direct="Y:/INSHORE SCALLOP/Survey/", 
-                   desktop="NULL", previouscruisefolder="data entry templates and examples/BF2017", 
-                   previouscruisename="BF2017",plot=TRUE, df=TRUE)
-check.tows.spatial(cruise="BI2018", year=2018, direct="Y:/INSHORE SCALLOP/Survey/", 
-                   desktop="NULL", previouscruisefolder="data entry templates and examples/BI2017", 
-                   previouscruisename="BI2017",plot=TRUE, df=TRUE)
 
-checktows_BF2018 <- dplyr::select(tows_BF2018, Oracle.tow.., Tow_len, Start_lat, Start_long, End_lat, End_long, Strata_id)
-checktows_BI2019 <- dplyr::select(tows_BI2019, Oracle.tow.., Tow_len, Start_lat, Start_long, End_lat, End_long, Strata_id)
-checktows_GM2017 <- dplyr::select(tows_GM2017, Oracle.tow.., Tow_len, Start_lat, Start_long, End_lat, End_long, Strata_id)
+# ----temperature data matching to tows------------------------------------------------------------
 
-checks <- rbind(#checktows_BF2018
-                #, 
-                checktows_BI2019
-                #, 
-                #checktows_GM2017
-                )
-checks$Start_lat <- convert.dd.dddd(format="dec.deg", x=checks$Start_lat)
-checks$Start_long <- convert.dd.dddd(format="dec.deg", x=checks$Start_long)
-checks$End_lat <- convert.dd.dddd(format="dec.deg", x=checks$End_lat)
-checks$End_long <- convert.dd.dddd(format="dec.deg", x=checks$End_long)
-checks$Start_long <- -checks$Start_long
-checks$End_long <- -checks$End_long
-checks$dist.calc <- geosphere::distGeo(matrix(c(checks$Start_long, checks$Start_lat), ncol=2), matrix(c(checks$End_long, checks$End_lat), ncol=2))
-
-checks$dir.dist <- checks$dist.calc - checks$Tow_len
-mean(abs(checks$dir.dist), na.rm=T)
-summary(checks$dir.dist)
-ggplot() + geom_histogram(data=checks, aes(dir.dist)) + 
-  annotate(x=-200, y=5, geom="text", label="dist.calc shorter\n179 tows < -200", colour="white") +
-  annotate(x=200, y=5, geom="text", label="dist.calc longer\n84 tows > 200", colour="white") +
-  annotate(geom="segment", x=0, xend=0, y=-Inf, yend=Inf, lty="dashed", colour="white") +
-  theme_bw() +
-  xlab("Difference between dist.calc and Tow_len (dist.calc - Tow_len)") +
-  annotate(x=-600, y=50, geom="text", label="589 tows total", hjust=0, size=5)
-
-
-#length(flagged[flagged$dir.dist <0,]$Oracle.tow..) # means calculated distance was greater than OLEX distance written (took too long to record coords)
-#length(flagged[flagged$dir.dist >0,]$Oracle.tow..) # means calculated distance was less than OLEX distance written (straight line distance on computer is too short)
-length(checks[is.na(checks$dir.dist)=="FALSE" & checks$dir.dist > 400,]$Oracle.tow..)
-length(checks[is.na(checks$dir.dist)=="FALSE" & checks$dir.dist < -500,]$Oracle.tow..)
-View(checks[is.na(checks$dir.dist)=="FALSE" & checks$dir.dist < -500,])
-checks[is.na(checks$dir.dist)=="FALSE" & checks$dir.dist > 400,]
-
-
-## temperature data matching to tows
-source("Y:/Inshore scallop/Survey/TemperatureDataScripts/Extract_survey_temperatures_function.r")
+source("Y:/Inshore/Survey/TemperatureDataScripts/Extract_survey_temperatures_function.r")
 survey.bottom.temps(direct = "Y:/Inshore scallop/Survey/2019/", cruise = "BI2019", num.temps=4,
                     survey_time = "start", tow_duration=19, fig="pdf", export=T)
 survey.bottom.temps(direct = "Y:/Inshore scallop/Survey/2019/", cruise = "BF2019", num.temps=4,
