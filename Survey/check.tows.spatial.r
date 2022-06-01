@@ -10,9 +10,9 @@
 ##### This function DOES NOT: 
 ############# automatically correct tow files (must do manually in excel),
 ############# or run in-depth geoprocessing to calculate exact lengths (only used to identify tiny or extremely long tows),
-############# or explicitly identify tows that cross a strata line (must do this by plotting and looking at them yourself).
+############# or explicitly identify tows that cross a strata line (must do this by plotting and looking at them yourself). 
 
-check.tows.spatial <- function(cruise="BF2017", direct="Y:/INSHORE SCALLOP/Survey/", previouscruisefolder="SPA145", previouscruisename="BF2016", desktop="NULL", year="2017", plot=TRUE, df=TRUE) {
+check.tows.spatial <- function(cruise="BF2017", direct="Y:/Inshore/Survey/", previouscruisefolder="SPA145", previouscruisename="BF2016", desktop="NULL", year="2017", plot=TRUE, df=TRUE) {
   
   # Clean up any open plot devices.
   if(!is.null(dev.list())) dev.off()
@@ -21,8 +21,23 @@ check.tows.spatial <- function(cruise="BF2017", direct="Y:/INSHORE SCALLOP/Surve
   require(reshape2)
   require(rgeos)
   require(ggplot2)
+  require(geosphere)
+  require(sp)
+  require(readr)
   
+  # this gets the convert.dd.dddd.r functions from Github (previously #source("Y:/Inshore/BoF/Assessment_fns/convert.dd.dddd.r"))
+  funcs <- "https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Survey_and_OSAC/convert.dd.dddd.r"
+  # Note: uses older contour.gen.r version (working on alternative to contour.gen altogether).
+  dir <- getwd()
+  for(fun in funcs) 
+  {
+    temp <- dir
+    download.file(fun,destfile = basename(fun))
+    source(paste0(dir,"/",basename(fun)))
+    file.remove(paste0(dir,"/",basename(fun)))
+  }
   
+  #####
   
   # grab the strata polygons file. this was downloaded from database on August 29, 2017 and saved to Y:
   strata <- read.csv(paste0(direct, year, "/data entry templates and examples/entry check functions/SCSTRATAINFO_August2017.csv"))
@@ -34,19 +49,19 @@ check.tows.spatial <- function(cruise="BF2017", direct="Y:/INSHORE SCALLOP/Surve
   
   # grab the Authoritative SPA polygons file. These polygons were created by Leslie Nasmith in 2014 and is saved on the Y drive as a CSV in August 2017.
   area <- read.csv(paste0(direct, year, "/data entry templates and examples/entry check functions/BayofFundyFishingBoundaries_WGS84.csv"))
-  area$AREA_ID <- as.numeric(area$Area)
+  area$AREA_ID <- parse_number(area$Area)
   # this creates strata labels
   area_lab <- ddply(.data=area, .(AREA_ID, Area),
-                      summarize,
-                      LONGITUDE = mean(Longitude), 
-                      LATITUDE = mean(Latitude))
+                    summarize,
+                    LONGITUDE = mean(Longitude), 
+                    LATITUDE = mean(Latitude))
   
   
   # this reads the tow file from the desktop if desktop path is specified, or from Y: if no desktop path provided
   if(desktop=="NULL" & !df=="TRUE"){
-  bftows <- read.csv(paste0(direct, year, "/data entry templates and examples/", cruise, "/", cruise, "tow_CONVERTED.csv"))}
+    bftows <- read.csv(paste0(direct, year, "/data entry templates and examples/", cruise, "/", cruise, "tow_CONVERTED.csv"))}
   if(!desktop=="NULL" & !df=="TRUE")
-  bftows <- read.csv(paste0(desktop, cruise, "tow_CONVERTED.csv"))
+    bftows <- read.csv(paste0(desktop, cruise, "tow_CONVERTED.csv"))
   
   # this reads the tow file from the desktop if desktop path is specified, or from Y: if no desktop path provided
   if(desktop=="NULL" & df=="TRUE"){
@@ -56,8 +71,6 @@ check.tows.spatial <- function(cruise="BF2017", direct="Y:/INSHORE SCALLOP/Surve
     bftows <- read.csv(paste0(desktop, cruise, "_tow.csv"))
     assign(paste0("tows_", cruise), bftows, env=.GlobalEnv)}
   
-  # this gets the convert.dd.dddd.r functions from Y drive
-  source("Y:/INSHORE SCALLOP/BoF/Assessment_fns/convert.dd.dddd.r")
   
   # converting all lats and longs to decimal degrees
   bftows$Start_lat <- convert.dd.dddd(format="dec.deg", x=bftows$Start_lat)
@@ -67,7 +80,6 @@ check.tows.spatial <- function(cruise="BF2017", direct="Y:/INSHORE SCALLOP/Surve
   bftows$Start_long <- -bftows$Start_long
   bftows$End_long <- -bftows$End_long
   
-  require(geosphere)
   
   # calculating the distance of each tow
   bftows$dist.calc <- geosphere::distGeo(matrix(c(bftows$Start_long, bftows$Start_lat), ncol=2), matrix(c(bftows$End_long, bftows$End_lat), ncol=2))
@@ -101,20 +113,20 @@ check.tows.spatial <- function(cruise="BF2017", direct="Y:/INSHORE SCALLOP/Surve
       plot.list <- NULL
       for(i in unique(strata$STRATA_ID)){
         p <- ggplot() + geom_polygon(data=strata, aes(LONGITUDE, LATITUDE, group=STRATA_ID), fill=NA, colour="black") +
-              geom_text(data=strata_lab, aes(LONGITUDE, LATITUDE, label=STRATA_ID), size=3, colour="blue") +
-              coord_map() + 
-              theme_bw() + theme(panel.grid=element_blank()) +
-              geom_path(data=towpath, aes(LONGITUDE, LATITUDE, group=Oracle.tow.., colour=flag)) +
-              geom_text(data=bftows, aes(Start_long, Start_lat, label=Oracle.tow..), size=3) +
-              geom_text(data=bftows, aes(End_long, End_lat, label=Strata_id), size=2) +
-              xlim(min(strata[strata$STRATA_ID %in% i,]$LONGITUDE)-0.05, max(strata[strata$STRATA_ID %in% i,]$LONGITUDE)+0.05) +
-              ylim(min(strata[strata$STRATA_ID %in% i,]$LATITUDE)-0.05, max(strata[strata$STRATA_ID %in% i,]$LATITUDE)+0.05)
+          geom_text(data=strata_lab, aes(LONGITUDE, LATITUDE, label=STRATA_ID), size=3, colour="blue") +
+          coord_map() + 
+          theme_bw() + theme(panel.grid=element_blank()) +
+          geom_path(data=towpath, aes(LONGITUDE, LATITUDE, group=Oracle.tow.., colour=flag)) +
+          geom_text(data=bftows, aes(Start_long, Start_lat, label=Oracle.tow..), size=3) +
+          geom_text(data=bftows, aes(End_long, End_lat, label=Strata_id), size=2) +
+          xlim(min(strata[strata$STRATA_ID %in% i,]$LONGITUDE)-0.05, max(strata[strata$STRATA_ID %in% i,]$LONGITUDE)+0.05) +
+          ylim(min(strata[strata$STRATA_ID %in% i,]$LATITUDE)-0.05, max(strata[strata$STRATA_ID %in% i,]$LATITUDE)+0.05)
         plot.list[[i]] <- p
       }
-  
-    pdf(paste0(direct, year, "/data entry templates and examples/", cruise, "/", cruise, "_strata_check.pdf"),onefile=T,width=22,height=12)
-    print(plot.list)
-    dev.off()
+      
+      pdf(paste0(direct, year, "/data entry templates and examples/", cruise, "/", cruise, "_strata_check.pdf"),onefile=T,width=22,height=12)
+      print(plot.list)
+      dev.off()
     }
     
     # if working off desktop:
@@ -132,10 +144,10 @@ check.tows.spatial <- function(cruise="BF2017", direct="Y:/INSHORE SCALLOP/Surve
           ylim(min(strata[strata$STRATA_ID %in% i,]$LATITUDE)-0.05, max(strata[strata$STRATA_ID %in% i,]$LATITUDE)+0.05)
         plot.list[[i]] <- p
       }
-    
-    pdf(paste0(desktop, cruise, "_strata_check.pdf"),onefile=T,width=22,height=12)
-    print(plot.list)
-    dev.off()
+      
+      pdf(paste0(desktop, cruise, "_strata_check.pdf"),onefile=T,width=22,height=12)
+      print(plot.list)
+      dev.off()
     }
   }
   
@@ -149,7 +161,7 @@ check.tows.spatial <- function(cruise="BF2017", direct="Y:/INSHORE SCALLOP/Surve
   }
   
   if(desktop=="NULL"){
-  write.csv(flagged.tows, paste0(direct, year, "/data entry templates and examples/", cruise, "/", cruise, "_flagged_tows.csv"))
+    write.csv(flagged.tows, paste0(direct, year, "/data entry templates and examples/", cruise, "/", cruise, "_flagged_tows.csv"))
   }
   if(!desktop=="NULL"){
     write.csv(flagged.tows, paste0(desktop, cruise, "_flagged_tows.csv"))
@@ -157,7 +169,6 @@ check.tows.spatial <- function(cruise="BF2017", direct="Y:/INSHORE SCALLOP/Surve
   
   # this checks to make sure tows were assigned to the right strata. Compares the strata ID in the CRUISEtow.csv file to the strata ID where it is located
   strata.test <- NULL
-  require(sp)
   for(i in unique(strata$STRATA_ID)){
     points <- SpatialPoints(matrix(c(bftows$Start_long[!(is.na(bftows$Start_long) & is.na(bftows$Start_lat))], 
                                      bftows$Start_lat[!(is.na(bftows$Start_long) & is.na(bftows$Start_lat))]), ncol=2), 
@@ -230,8 +241,8 @@ check.tows.spatial <- function(cruise="BF2017", direct="Y:/INSHORE SCALLOP/Surve
           scale_colour_manual(values=c("black", "white")) +
           geom_text(data=bftows, aes(Start_long, Start_lat, label=Oracle.tow..), size=3) +
           geom_text(data=bftows, aes(End_long, End_lat, label=Strata_id), size=2) #+
-          #xlim(min(area[area$AREA_ID %in% i,]$Longitude)-0.05, max(area[area$AREA_ID %in% i,]$Longitude)+0.05) +
-          #ylim(min(area[area$AREA_ID %in% i,]$Latitude)-0.05, max(area[area$AREA_ID %in% i,]$Latitude)+0.05)
+        #xlim(min(area[area$AREA_ID %in% i,]$Longitude)-0.05, max(area[area$AREA_ID %in% i,]$Longitude)+0.05) +
+        #ylim(min(area[area$AREA_ID %in% i,]$Latitude)-0.05, max(area[area$AREA_ID %in% i,]$Latitude)+0.05)
         plot.list[[i]] <- p
       }
       
@@ -248,8 +259,8 @@ check.tows.spatial <- function(cruise="BF2017", direct="Y:/INSHORE SCALLOP/Surve
   for(i in unique(area$AREA_ID)){
     
     points <- SpatialPoints(matrix(c(bftows$Start_long[!(is.na(bftows$Start_long) & is.na(bftows$Start_lat))], 
-                                      bftows$Start_lat[!(is.na(bftows$Start_long) & is.na(bftows$Start_lat))]), ncol=2), 
-                             proj4string=CRS("+proj=longlat +datum=WGS84"))
+                                     bftows$Start_lat[!(is.na(bftows$Start_long) & is.na(bftows$Start_lat))]), ncol=2), 
+                            proj4string=CRS("+proj=longlat +datum=WGS84"))
     
     coord_list <- split(area[area$AREA_ID %in% i, c(3,2,5)], area[area$AREA_ID %in% i,]$AREA_ID)
     coord_list <- lapply(coord_list, function(x) { x["AREA_ID"] <- NULL; x })
@@ -321,7 +332,7 @@ check.tows.spatial <- function(cruise="BF2017", direct="Y:/INSHORE SCALLOP/Surve
      unique(as.character(area.test$Area)) %in% c("SPA6B") |
      unique(as.character(area.test$Area)) %in% c("SPA6C") |
      unique(as.character(area.test$Area)) %in% c("SPA6D")){
-  
+    
     ## if in area 6 (grand manan) you need to change the strata to VMS strata
     inVMS<-read.csv("Y:/INSHORE SCALLOP/BoF/2015/SPA6/Survey/SPA6_VMS_IN_R_final_MOD.csv")
     outVMS<-read.csv("Y:/INSHORE SCALLOP/BoF/2015/SPA6/Survey/SPA6_VMS_OUT_R_final_MOD.csv")
@@ -341,7 +352,7 @@ check.tows.spatial <- function(cruise="BF2017", direct="Y:/INSHORE SCALLOP/Surve
       print(p)
       dev.off()
     } 
-   
+    
     inVMS$polyID <- "in"
     outVMS$polyID <- "out"
     
@@ -403,8 +414,8 @@ check.tows.spatial <- function(cruise="BF2017", direct="Y:/INSHORE SCALLOP/Surve
     
     names(VMS.test.end)[2] <- "VMSid"
     VMS.test.end <- ddply(.data=VMS.test.end, .(Oracle.tow..),
-                      summarize,
-                      VMSid = min(as.numeric(as.character(VMSid))))
+                          summarize,
+                          VMSid = min(as.numeric(as.character(VMSid))))
     VMS.test.end <- join(bftows, VMS.test.end, type="left")
     VMS.test.end$VMSid <- as.numeric(as.character(VMS.test.end$VMSid))
     VMS.test.end[is.na(VMS.test.end$VMSid),]$VMSid <- 10
@@ -422,21 +433,21 @@ check.tows.spatial <- function(cruise="BF2017", direct="Y:/INSHORE SCALLOP/Surve
     VMS.test$VMS <- ifelse(VMS.test$VMSstart==VMS.test$VMSend, VMS.test$VMSstart, "check")
     
     if(df=="TRUE"){
-    assign(paste0("VMS.test_", cruise), VMS.test, env=.GlobalEnv)
+      assign(paste0("VMS.test_", cruise), VMS.test, env=.GlobalEnv)
     }
     
     if(desktop=="NULL"){
-    write.csv(VMS.test, paste0(direct, year, "/data entry templates and examples/", cruise, "/", cruise, "VMS_strata.csv"))
+      write.csv(VMS.test, paste0(direct, year, "/data entry templates and examples/", cruise, "/", cruise, "VMS_strata.csv"))
     }
     
     if(!desktop=="NULL"){
       write.csv(VMS.test, paste0(desktop, cruise, "/", cruise, "VMS_strata.csv"))
     }
   }
-
+  
   ## check repeat tows. make sure they're close enough together
   repeatsthisyear <- subset(towpath, Tow_type_id==5)
-  repeatslastyear <- read.csv(paste0(direct, as.numeric(year)-1, "/", previouscruisefolder, "/", previouscruisename, "tow_CONVERTED.csv"))
+  repeatslastyear <- read.csv(paste0(direct, as.numeric(year)-2, "/", previouscruisefolder, "/", previouscruisename, "tow_CONVERTED.csv"))
   
   # converting all lats and longs to decimal degrees
   repeatslastyear$Start_lat <- convert.dd.dddd(format="dec.deg", x=repeatslastyear$Start_lat)
@@ -467,7 +478,7 @@ check.tows.spatial <- function(cruise="BF2017", direct="Y:/INSHORE SCALLOP/Surve
   towpath_lastyear <- rbind(towpath_start, towpath_end)
   
   if(plot=="TRUE"){
-  # if working off directory:
+    # if working off directory:
     if(desktop=="NULL"){
       plot.list <- NULL
       for(i in 1:length(unique(repeatsthisyear$Oracle.tow..))){
@@ -480,14 +491,14 @@ check.tows.spatial <- function(cruise="BF2017", direct="Y:/INSHORE SCALLOP/Surve
           theme_bw() + 
           theme(panel.grid=element_blank())
         plot.list[[i]] <- p
-       }
+      }
       
       pdf(paste0(direct, year, "/data entry templates and examples/", cruise, "/", cruise, "_repeat_check.pdf"),onefile=T,width=22,height=12)
       print(plot.list)
       dev.off()
     }
     
-  # if working off desktop:
+    # if working off desktop:
     if(!desktop=="NULL"){
       plot.list <- NULL
       for(i in unique(repeatsthisyear$Oracle.tow..)){
@@ -505,7 +516,8 @@ check.tows.spatial <- function(cruise="BF2017", direct="Y:/INSHORE SCALLOP/Surve
       print(plot.list)
       dev.off()
     }
-  
+    
   }
 }
+
 
