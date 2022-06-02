@@ -3,6 +3,7 @@
 
 #libraries
 require(ggplot2)
+require(tidyverse)
 
 #Check tows spatial function:
 
@@ -20,7 +21,7 @@ for(fun in funcs)
 #define
 direct <- "Y:/Inshore/Survey/"
 year <- 2021
-CRUISE <- "BI" # "BF", "GM", "SFA29"
+CRUISE <- "BF" # "BF", "GM", "SFA29"
 
 
 # HGTWGT.csv ----------------------------------------------------------------
@@ -41,13 +42,13 @@ ggplot() + geom_text(data=mwsh, aes(Height, Weight, colour=as.factor(Tow), label
 ggplot() + geom_text(data=mwsh[mwsh$Tow>109 & mwsh$Tow<140,]
                      , aes(Height, Weight, colour=as.factor(Tow), label=Num)) 
 
-ggplot() + geom_text(data=mwsh[mwsh$Tow==111 
+ggplot() + geom_text(data=mwsh[mwsh$Tow==110 
                                #& mwsh$Tow <50
                                ,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
 
 ggplot() + geom_text(data=mwsh[mwsh$Tow>109& mwsh$Tow<135,], aes(Height, Weight, colour=as.factor(Tow), label=Num)) + facet_wrap(~Tow, scales="free")
 
-ggplot() + geom_text(data=mwsh[mwsh$Tow==113,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
+ggplot() + geom_text(data=mwsh[mwsh$Tow==114,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
 
 
 # bycatch.csv ----------------------------------------------------------------
@@ -71,7 +72,7 @@ ggplot() + geom_point(data=bycatch, aes(Sex, as.factor(Species_code)))
 # We only record ocean pout, so the species code should be 640. Change records of 845 or other (642, 598) to 640. Note that in 2012, they were miscoded as 845. 
 # bycatch[which(bycatch$Species_code%in% c(845, 642, 598)),]
 
-#Note - horse mussels are not entered in the bycatch.csv. These are entered in a seperate file (so there should *not* be species code 4332 in this file)
+#Note - horse mussels are not entered in the bycatch.csv. These are entered in a separate file (so there should *not* be species code 4332 in this file)
 
 ggplot() + geom_point(data=bycatch, aes(as.factor(Sex), Measurement)) + facet_wrap(~Species_code, scales="free")
 #bycatch[which(bycatch$Species_code==1191 & bycatch$Tow_num==53 & bycatch$Measurement>100),]$Measurement <-24
@@ -145,45 +146,52 @@ dhf8 <- dhf[dhf$TOW>331 & dhf$TOW < 342,]
 ggplot() + geom_point(data=dhf8, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
 
 
-# Horsemussellivefreq.csv---------------------
+# horsemussellive.csv---------------------
 
 hm.live <- read.csv(paste0("Y:/Inshore/Survey/", year,"/data entry templates and examples/",CRUISE, year,"/",CRUISE,year,"_horsemussellive.csv"))
+num.tows <- read.csv(paste0("Y:/Inshore/Survey/", year,"/data entry templates and examples/",CRUISE, year,"/",CRUISE,year,"tow_CONVERTED.csv"))
 
 #Species Code must be "4332"
 table(hm.live$SPECIES.CODE)
 
 hm.live <- hm.live %>% 
-    mutate(flag = case_when(SPECIES.CODE != 4332 ~ "check",
+    mutate(flag.speciescode = case_when(SPECIES.CODE != 4332 ~ "check",
                             TRUE ~ "ok"))
-hm.live %>% filter(flag == "check")
+hm.live %>% filter(flag.speciescode == "check")
 
-#Prorate factor can only be 1 or 2
+#Prorate factor can only be 1 or 2. 
+# - 1 if both lined drags fished AND sampled the catch from both these drags (i.e. no prorating) 
+# - 2 if only had 1 lined drag fish (i.e. correspond to you having to make NUM_LINED_FREQ = 1 when normally it's 2) OR
+   #you had both lined drags fish but subsampled the catch by only counting/measuring the length frequencies from one of the 2 lined drags. 
+
 table(hm.live$PRORATE.FACTOR)
+hm.live$PRORATE.FACTOR <- as.numeric(hm.live$PRORATE.FACTOR)
 
 hm.live <- hm.live %>% 
-  mutate(flag = case_when(PRORATE.FACTOR != as.numeric(1|2) ~ "check",
+  mutate(flag.proratefac = case_when((PRORATE.FACTOR != 1) & (PRORATE.FACTOR != 2) ~ "check",
                           TRUE ~ "ok"))
-hm.live %>% filter(flag == "check")
+hm.live %>% filter(flag.proratefac == "check")
 
 #For any tows where PRORATE.FACTOR == 2, check
 hm.live <- hm.live %>% 
-  mutate(flag = case_when(PRORATE.FACTOR == as.numeric(2) ~ "check",
+  mutate(flag.factor2 = case_when(PRORATE.FACTOR == as.numeric(2) ~ "check",
                           TRUE ~ "ok"))
-hm.live %>% filter(flag == "check") #Ensure this correctly marked as prorated.
+hm.live %>% filter(flag.factor2 == "check") #Ensure this correctly marked as prorated.
 
-#Tow numbers should match number of tows from survey
-table(hm.live$TOW == tows_BI2021$Oracle.tow..) #Should all be TRUE
+#Number of tows should match number of tows from survey
+length(hm.live$TOW) == length(num.tows$Oracle.tow..) # same length
+table(hm.live$TOW == num.tows$Oracle.tow..) #Same numbers? Should all be TRUE
 
-#There should be 137 unique tows:
+#There should be x unique tows where x is the number of tows from the survey:
 length(unique(hm.live$TOW))
 table(duplicated(hm.live$TOW)) #Should all be false
 
 
-#LIVE.DEAD column should only contain "L"s. D's will be in the Horsemusseldeadfreq.csv
+#LIVE.DEAD column should only contain "L"s. D's will be in the horsemusseldead.csv
 hm.live <- hm.live %>% 
-  mutate(flag = case_when(LIVE.DEAD != "L" ~ "check",
+  mutate(flag.live = case_when(LIVE.DEAD != "L" ~ "check",
                           TRUE ~ "ok"))
-hm.live %>% filter(flag == "check")
+hm.live %>% filter(flag.live == "check")
 
 #Check Cruise - should only be one cruise!
 unique(hm.live$CRUISE)
@@ -192,16 +200,16 @@ table(hm.live$CRUISE)
 #Does the cruise in the data sheet match the cruise you are data checking?
 unique(hm.live$CRUISE) == paste0(CRUISE,year)
 
-#All numbers under Bin ID columns should be > 0. Also flag any values > 400 (not necessarily incorrect, but will flag these tows to check)
+#All numbers under Bin ID columns should be > 0. Also flag any numbers per bin > 100 (not necessarily incorrect, but will flag these tows to check)
 #Less than 0?
 hm.live %>% 
   filter_at(vars(5:44), any_vars(. <0))
 
-#Greater than 400?
+#Greater than 100?
 hm.live %>% 
-  filter_at(vars(5:44), any_vars(. >400))
+  filter_at(vars(5:44), any_vars(. >100))
 
-# Horsemusseldeadfreq.csv ---------------------
+# Horsemusseldead.csv ---------------------
 
 hm.dead <- read.csv(paste0("Y:/Inshore/Survey/", year,"/data entry templates and examples/",CRUISE, year,"/",CRUISE,year,"_horsemusseldead.csv"))
 
@@ -209,26 +217,27 @@ hm.dead <- read.csv(paste0("Y:/Inshore/Survey/", year,"/data entry templates and
 table(hm.dead$SPECIES.CODE)
 
 hm.dead <- hm.dead %>% 
-  mutate(flag = case_when(SPECIES.CODE != 4332 ~ "check",
+  mutate(flag.speciescode = case_when(SPECIES.CODE != 4332 ~ "check",
                           TRUE ~ "ok"))
-hm.dead %>% filter(flag == "check")
+hm.dead %>% filter(flag.speciescode == "check")
 
 #Prorate factor can only be 1 or 2
 table(hm.dead$PRORATE.FACTOR)
 
 hm.dead <- hm.dead %>% 
-  mutate(flag = case_when(PRORATE.FACTOR != as.numeric(1|2) ~ "check",
+  mutate(flag.proratefac = case_when((PRORATE.FACTOR != 1) & (PRORATE.FACTOR != 2) ~ "check",
                           TRUE ~ "ok"))
-hm.dead %>% filter(flag == "check")
+hm.dead %>% filter(flag.proratefac == "check")
 
 #For any tows where PRORATE.FACTOR == 2, check
 hm.dead <- hm.dead %>% 
-  mutate(flag = case_when(PRORATE.FACTOR == as.numeric(2) ~ "check",
+  mutate(flag.factor2 = case_when(PRORATE.FACTOR == as.numeric(2) ~ "check",
                           TRUE ~ "ok"))
-hm.dead %>% filter(flag == "check") #Ensure this correctly marked as prorated.
+hm.dead %>% filter(flag.factor2 == "check") #Ensure this correctly marked as prorated.
 
 #Tow numbers should match number of tows from survey
-table(hm.dead$TOW == tows_BI2021$Oracle.tow..) #Should all be TRUE
+length(hm.dead$TOW) == length(num.tows$Oracle.tow..)# same length
+table(hm.dead$TOW == num.tows$Oracle.tow..) #Should all be TRUE
 
 #Number of unique tows should match number of tows from survey:
 length(unique(hm.dead$TOW))
@@ -237,9 +246,9 @@ table(duplicated(hm.dead$TOW)) #Should all be false
 
 #LIVE.DEAD column should only contain "D"s. 
 hm.dead <- hm.dead %>% 
-  mutate(flag = case_when(LIVE.DEAD != "D" ~ "check",
+  mutate(flag.dead = case_when(LIVE.DEAD != "D" ~ "check",
                           TRUE ~ "ok"))
-hm.dead %>% filter(flag == "check")
+hm.dead %>% filter(flag.dead == "check")
 
 #Check Cruise - should only be one cruise!
 unique(hm.dead$CRUISE)
@@ -248,14 +257,14 @@ table(hm.dead$CRUISE)
 #Does the cruise in the data sheet match the cruise you are data checking?
 unique(hm.dead$CRUISE) == paste0(CRUISE,year)
 
-#All numbers under Bin ID columns should be > 0. Also flag any values > 400 (not necessarily incorrect, but will flag these tows to check)
+#All numbers under Bin ID columns should be > 0. Also flag any values > 50 (not necessarily incorrect, but will flag these tows to check)
 #Less than 0?
 hm.dead %>% 
   filter_at(vars(5:44), any_vars(. <0))
 
-#Greater than 400?
+#Greater than 50?
 hm.dead %>% 
-  filter_at(vars(5:44), any_vars(. >400))
+  filter_at(vars(5:44), any_vars(. >50))
 
 #Extra horse mussel checks ------------------------------------------------
 
@@ -281,19 +290,51 @@ nrow(hm.check %>% filter(Total.Live > 0 | Total.Dead > 0)) # This number should 
 # direct <- "Y:/INSHORE SCALLOP/Survey/"
 # desktop="C:/Users/keyserf/Desktop/"
 
+#Check for strange Lat Long outliers
+
+start_long_less6500 <- num.tows %>% filter(Start_long < abs(6500))
+min(start_long_less6500$Start_long)
+which(start_long_less6500$Start_long == min(start_long_less6500$Start_long)) #Which row is this?
+
+end_long_less6500 <- num.tows %>% filter(End_long < abs(6500))
+which(end_long_less6500$End_long == min(end_long_less6500$End_long)) #Which row is this?
+
+end_lat_less4300 <- num.tows %>% filter(End_lat < abs(4300))
+min(end_lat_less4300$End_lat) #warning if none.
+which(end_lat_less4300$End_lat == min(end_lat_less4300$End_lat)) #Which row is this?
+
+end_lat_more4600 <- num.tows %>% filter(End_lat > abs(4600))
+min(end_lat_more4600$End_lat)#warning if none.
+which(end_lat_more4600$End_lat == min(end_lat_more4600$End_lat)) #Which row is this?
+
+end_long_less6500 <- num.tows %>% filter(End_long > abs(6500))
+min(end_long_less6500$End_long)
+which(end_long_less6500$End_long == min(end_long_less6500$End_long)) #Which row is this?
+
+
+# -----Run check.tows.spatial function --------------------------------------------------------------------
+
+# Produces the following files for review:
+# - CRUISE_repeat_check.pdf
+# - CRUISE_SPA_check.pdf
+# - CRUISE_strata_check
+# - CRUISE_flagged_tows.csv
+# - Will also return the area and strata objects added within the function for further investigating any flagged tows.
+
 check.tows.spatial(cruise= paste0(CRUISE,year), year=year, direct="Y:/Inshore/Survey/", desktop="NULL", 
                    previouscruisefolder = paste0("data entry templates and examples/",CRUISE,year-2), previouscruisename = paste0(CRUISE,year-2), plot=TRUE, df=TRUE)
 
-area <- read.csv(paste0(direct, year, "/data entry templates and examples/entry check functions/BayofFundyFishingBoundaries_WGS84.csv"))
-area$AREA_ID <- as.numeric(area$Area)
-# 
-# flagged.tows_BI2019[flagged.tows_BI2019$Oracle.tow..==84,]
-# 
-# ggplot() + 
-#  geom_polygon(data=area, aes(Longitude, Latitude, group=AREA_ID, fill=Area), colour="black") +
-#   #geom_segment(data=flagged.tows_BF2018[flagged.tows_BF2018$Oracle.tow..==275,], aes(x=Start_long, y=Start_lat, xend=End_long, yend=End_lat), lwd=2)
-# geom_point(data=flagged.tows_BI2019[flagged.tows_BI2019$Oracle.tow..==84,], aes(x=Start_long, y=Start_lat))+
-# geom_point(data=flagged.tows_BI2019[flagged.tows_BI2019$Oracle.tow..==84,], aes(x=End_long, y=End_lat))
+#enter flag.tows_CRUISE produced by the check.tows.spatial function. 
+flagged.tows <- flagged.tows_BF2021
+
+#Enter the tow number indicated in the flagged_tows file 
+flagged.tows[flagged.tows$Oracle.tow..==272,]
+
+#Plot (add more tows if needed)
+ ggplot() + 
+  geom_polygon(data=area, aes(Longitude, Latitude, group=AREA_ID, fill=Area), colour="black") +
+  geom_segment(data=flagged.tows[flagged.tows$Oracle.tow..==272,], aes(x=Start_long, y=Start_lat, xend=End_long, yend=End_lat), lwd=2)#+
+ #geom_segment(data=flagged.tows[flagged.tows$Oracle.tow..==272,], aes(x=Start_long, y=Start_lat, xend=End_long, yend=End_lat), lwd=2)
 
 
 ## Need a way to handle overlapping strata! E.g. 31 and 32. THIS WAS ADDRESSED KIND OF...
@@ -305,57 +346,7 @@ length(unique(test$Oracle.tow..))
 test2<- subset(unique(double.strata[,1:30]), Strata_id==32)
 length(unique(test2$Oracle.tow..))
 
-### data validation
-bitows <- read.csv(paste0(direct, year, "/data entry templates and examples/", cruise, "/", cruise, "tow_CONVERTED.csv"))
-
-start_long_less6500 <- subset(bitows, Start_long < abs(6500))
-min(start_long_less6500$Start_long)
-
-end_long_less6500 <- subset(bitows, End_long < abs(6500))
-min(end_long_less6500$End_long)
-
-# area1 <- read.table(paste0(direct, "/", year, "/data entry templates and examples/BF2017/data validation/R/area1 tows.txt"), fill=T)
-# area4 <- read.table(paste0(direct, "/", year, "/data entry templates and examples/BF2017/data validation/R/area4 tows.txt"), fill=T)
-# area5 <- read.table(paste0(direct, "/", year, "/data entry templates and examples/BF2017/data validation/R/area5 tows.txt"), fill=T)
-# 
-# area1$area <- 1
-# area1 <- area1[-c(1:4),]
-# area4$area <- 4
-# area4 <- area4[-c(1:4),]
-# area5$area <- 5
-# area5 <- area5[-c(1:4),]
-# 
-# area <- rbind(area1, area4, area5)
-# area <- area[,c(1:4, 14)]
-# area$V2 <- as.numeric(as.character(area$V2))
-# area <- subset(area, is.na(V2)==FALSE)
-# tows <- data.frame(V2=1:334)
-# 
-# area <- join(area, tows, type="full")
-# 
-# area <- arrange(area, V2)
-# names(area) <- c("CRUISE", "Oracle.tow..", "STRATA", "NA", "area.val")
-
-# write.csv(area, paste0(direct, "/", year, "/data entry templates and examples/BF2017/data validation/R/area.csv"))
-
-# area.check <- join(area, area.test, type="left")
-# area.check$val.check <- area.check$area==area.check$SPA.start
-# 
-# subset(area.check, val.check=="FALSE"|is.na(val.check))
-# ## ALL GOOD
-# 
-# write.csv(area.check, paste0(direct, "/", year, "/data entry templates and examples/BF2017/data validation/R/area_checked.csv"))
-
-end_lat_less4300 <- subset(bftows, End_lat < abs(4300))
-min(end_lat_less4300$End_lat)
-
-end_lat_more4600 <- subset(bftows, End_lat > abs(4600))
-min(end_lat_more4600$End_lat)
-
-end_long_less6500 <- subset(bftows, End_long < abs(6500))
-min(end_long_less6500$End_long)
-
-
+#FOR GM CRUISES ONLY
 # VMS strata check
 VMS.test[VMS.test$VMS=="check",]
 ggplot() + 
