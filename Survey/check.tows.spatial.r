@@ -447,7 +447,7 @@ check.tows.spatial <- function(cruise="BF2017", direct="Y:/Inshore/Survey/", pre
   
   ## check repeat tows. make sure they're close enough together
   repeatsthisyear <- subset(towpath, Tow_type_id==5)
-  repeatslastyear <- read.csv(paste0(direct, as.numeric(year)-2, "/", previouscruisefolder, "/", previouscruisename, "tow_CONVERTED.csv"))
+  repeatslastyear <- read.csv(paste0(direct, as.numeric(year)-1, "/", previouscruisefolder, "/", previouscruisename, "tow_CONVERTED.csv"))
   
   # converting all lats and longs to decimal degrees
   repeatslastyear$Start_lat <- convert.dd.dddd(format="dec.deg", x=repeatslastyear$Start_lat)

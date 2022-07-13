@@ -66,7 +66,7 @@ levels(SFA28.merge$Area)
 SFA28 <- SFA28 %>% 
   st_union() %>%
   st_sf() %>% 
-  mutate(Area = "SFA 28 (SFA A-D)")
+  mutate(Area = "SFA28 A-D")
 #plot(SFA28)
 
 #SFA28E polygon
@@ -458,6 +458,11 @@ SFA27<- rbind(GBa,GBb) %>%
 C68_boundaries <- rbind(SFA25, SFA26, SFA27, SFA28, SFA29W_nobound, new.SFA29E)
 plot(C68_boundaries)
 
+#SFF_FSP_SFA_boundaries <- rbind(SFA26, SFA27, SFA28, SFA29W_nobound)
+#plot(SFF_FSP_SFA_boundaries)
+#SFF_FSP_SFA_boundaries <- SFF_FSP_SFA_boundaries %>%
+#  st_make_valid()
+#st_write(SFF_FSP_SFA_boundaries, "Y:/Inshore/Inshore Scallop Fishing Area Map/Management_Spatial_Scale_Maps/shp/SFA_stockdefinitions.shp")
 
 ggplot()+
   geom_sf(data = bathy.sf, colour = "grey", alpha = 0.6)+

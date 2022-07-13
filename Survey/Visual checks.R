@@ -20,8 +20,8 @@ for(fun in funcs)
 
 #define
 direct <- "Y:/Inshore/Survey/"
-year <- 2021
-CRUISE <- "BF" # "BF", "GM", "SFA29"
+year <- 2022
+CRUISE <- "BI" # "BI", BF", "GM", "SFA29"
 
 
 # HGTWGT.csv ----------------------------------------------------------------
@@ -30,26 +30,41 @@ mwsh <- read.csv(paste0("Y:/Inshore/Survey/", year,"/data entry templates and ex
 str(mwsh)
 
 mwsh$Weight <- as.numeric(as.character(mwsh$Weight))
+mwsh$Mycobacteria <- as.factor(mwsh$Mycobacteria)
+mwsh$Meat_Colour <- as.factor(mwsh$Meat_Colour)
 
 summary(mwsh)
 
 #Plots height and weight
 
 #all data points
-ggplot() + geom_text(data=mwsh, aes(Height, Weight, colour=as.factor(Tow), label=Num)) 
+ggplot() + geom_text(data=mwsh, aes(Height, Weight, colour=as.factor(Tow), label=as.factor(Tow)))
 
 # adjust tow numbers to test it out # if an entire tow is away from the rest, make sure that the height and weight columns weren't flipped!!
-ggplot() + geom_text(data=mwsh[mwsh$Tow>109 & mwsh$Tow<140,]
-                     , aes(Height, Weight, colour=as.factor(Tow), label=Num)) 
+#(labels are Tow numbers)
+ggplot() + geom_text(data=mwsh[mwsh$Tow>1 & mwsh$Tow<50,]
+                     , aes(Height, Weight, colour=as.factor(Tow), label=as.factor(Tow)))
 
-ggplot() + geom_text(data=mwsh[mwsh$Tow==110 
-                               #& mwsh$Tow <50
-                               ,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
+#Plot individual tows (labels are sample numbers)
+ggplot() + geom_text(data=mwsh[mwsh$Tow==41,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
+ggplot() + geom_text(data=mwsh[mwsh$Tow==23,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
+ggplot() + geom_text(data=mwsh[mwsh$Tow==29,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
+ggplot() + geom_text(data=mwsh[mwsh$Tow==31,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
 
-ggplot() + geom_text(data=mwsh[mwsh$Tow>109& mwsh$Tow<135,], aes(Height, Weight, colour=as.factor(Tow), label=Num)) + facet_wrap(~Tow, scales="free")
+ggplot() + geom_text(data=mwsh[mwsh$Tow>50 & mwsh$Tow<100,]
+                     , aes(Height, Weight, colour=as.factor(Tow), label=as.factor(Tow))) 
 
-ggplot() + geom_text(data=mwsh[mwsh$Tow==114,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
+#Plot individual tows (labels are sample numbers)
+ggplot() + geom_text(data=mwsh[mwsh$Tow==63,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
+ggplot() + geom_text(data=mwsh[mwsh$Tow==98,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
+ggplot() + geom_text(data=mwsh[mwsh$Tow==80,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
+ggplot() + geom_text(data=mwsh[mwsh$Tow==71,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
 
+ggplot() + geom_text(data=mwsh[mwsh$Tow>100 & mwsh$Tow<132,]
+                     , aes(Height, Weight, colour=as.factor(Tow), label=as.factor(Tow))) 
+
+#Plot individual tows (labels are sample numbers)
+ggplot() + geom_text(data=mwsh[mwsh$Tow==102,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
 
 # bycatch.csv ----------------------------------------------------------------
 
@@ -95,60 +110,74 @@ dhf <- dplyr::arrange(dhf, TOW, GEAR, c)
 
 #Plot to look for outliers:
 dhf1 <- dhf[dhf$TOW>0 & dhf$TOW < 25,]
-ggplot() + geom_point(data=dhf1, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
+ggplot(dhf1, aes(as.numeric(bin), value)) + geom_bar(fill = "aquamarine3", stat = "identity") + facet_grid(GEAR~TOW, scales="free")
 
 dhf2 <- dhf[dhf$TOW>24 & dhf$TOW < 50,]
-ggplot() + geom_point(data=dhf2, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
+#ggplot() + geom_point(data=dhf2, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
+ggplot(dhf2, aes(as.numeric(bin), value)) + geom_bar(fill = "aquamarine3", stat = "identity") + facet_grid(GEAR~TOW, scales="free")
 
 dhf3 <- dhf[dhf$TOW>49 & dhf$TOW < 75,]
-ggplot() + geom_point(data=dhf3, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
+#ggplot() + geom_point(data=dhf3, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
+ggplot(dhf3, aes(as.numeric(bin), value)) + geom_bar(fill = "aquamarine3", stat = "identity") + facet_grid(GEAR~TOW, scales="free")
 
 dhf4 <- dhf[dhf$TOW>74 & dhf$TOW < 100,]
-ggplot() + geom_point(data=dhf4, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
+#ggplot() + geom_point(data=dhf4, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
+ggplot(dhf4, aes(as.numeric(bin), value)) + geom_bar(fill = "aquamarine3", stat = "identity") + facet_grid(GEAR~TOW, scales="free")
 
 dhf5 <- dhf[dhf$TOW>99 & dhf$TOW < 125,]
-ggplot() + geom_point(data=dhf5, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
+#ggplot() + geom_point(data=dhf5, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
+ggplot(dhf5, aes(as.numeric(bin), value)) + geom_bar(fill = "aquamarine3", stat = "identity") + facet_grid(GEAR~TOW, scales="free")
+
+dhf6 <- dhf[dhf$TOW>124 & dhf$TOW < 137,]
+#ggplot() + geom_point(data=dhf5, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
+ggplot(dhf6, aes(as.numeric(bin), value)) + geom_bar(fill = "aquamarine3", stat = "identity") + facet_grid(GEAR~TOW, scales="free")
+
+#End for BI
 
 dhf6 <- dhf[dhf$TOW>124 & dhf$TOW < 150,]
-ggplot() + geom_point(data=dhf6, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
+#ggplot() + geom_point(data=dhf6, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
+ggplot(dhf6, aes(as.numeric(bin), value)) + geom_bar(fill = "aquamarine3", stat = "identity") + facet_grid(GEAR~TOW, scales="free")
 
 dhf7 <- dhf[dhf$TOW>231 & dhf$TOW < 242,]
-ggplot() + geom_point(data=dhf7, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
+#ggplot() + geom_point(data=dhf7, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
+ggplot(dhf7, aes(as.numeric(bin), value)) + geom_bar(fill = "aquamarine3", stat = "identity") + facet_grid(GEAR~TOW, scales="free")
 
 dhf8 <- dhf[dhf$TOW>241 & dhf$TOW < 252,]
-ggplot() + geom_point(data=dhf8, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
+#ggplot() + geom_point(data=dhf8, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
+ggplot(dhf8, aes(as.numeric(bin), value)) + geom_bar(fill = "aquamarine3", stat = "identity") + facet_grid(GEAR~TOW, scales="free")
 
-dhf8 <- dhf[dhf$TOW>251 & dhf$TOW < 262,]
-ggplot() + geom_point(data=dhf8, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
+dhf9 <- dhf[dhf$TOW>251 & dhf$TOW < 262,]
+#ggplot() + geom_point(data=dhf8, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
+ggplot(dhf9, aes(as.numeric(bin), value)) + geom_bar(fill = "aquamarine3", stat = "identity") + facet_grid(GEAR~TOW, scales="free")
 
-dhf8 <- dhf[dhf$TOW>261 & dhf$TOW < 272,]
-ggplot() + geom_point(data=dhf8, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
+dhf10 <- dhf[dhf$TOW>261 & dhf$TOW < 272,]
+ggplot() + geom_point(data=dhf10, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
 
-dhf8 <- dhf[dhf$TOW>271 & dhf$TOW < 282,]
-ggplot() + geom_point(data=dhf8, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
+dhf11 <- dhf[dhf$TOW>271 & dhf$TOW < 282,]
+ggplot() + geom_point(data=dhf11, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
 
-dhf8 <- dhf[dhf$TOW>281 & dhf$TOW < 292,]
-ggplot() + geom_point(data=dhf8, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
+dhf12 <- dhf[dhf$TOW>281 & dhf$TOW < 292,]
+ggplot() + geom_point(data=dhf12, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
 
-dhf8 <- dhf[dhf$TOW>291 & dhf$TOW < 302,]
-ggplot() + geom_point(data=dhf8, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
+dhf13 <- dhf[dhf$TOW>291 & dhf$TOW < 302,]
+ggplot() + geom_point(data=dhf13, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
 
-dhf8 <- dhf[dhf$TOW>301 & dhf$TOW < 312,]
-ggplot() + geom_point(data=dhf8, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
+dhf14 <- dhf[dhf$TOW>301 & dhf$TOW < 312,]
+ggplot() + geom_point(data=dhf14, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
 
-dhf8 <- dhf[dhf$TOW>311 & dhf$TOW < 322,]
-ggplot() + geom_point(data=dhf8, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
+dhf15 <- dhf[dhf$TOW>311 & dhf$TOW < 322,]
+ggplot() + geom_point(data=dhf15, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
 
-dhf8 <- dhf[dhf$TOW>321 & dhf$TOW < 332,]
-ggplot() + geom_point(data=dhf8, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
+dhf16 <- dhf[dhf$TOW>321 & dhf$TOW < 332,]
+ggplot() + geom_point(data=dhf16, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
 
-dhf8 <- dhf[dhf$TOW>331 & dhf$TOW < 342,]
-ggplot() + geom_point(data=dhf8, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
+dhf17 <- dhf[dhf$TOW>331 & dhf$TOW < 342,]
+ggplot() + geom_point(data=dhf17, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
 
 
 # horsemussellive.csv---------------------
 
-hm.live <- read.csv(paste0("Y:/Inshore/Survey/", year,"/data entry templates and examples/",CRUISE, year,"/",CRUISE,year,"_horsemussellive.csv"))
+hm.live <- read.csv(paste0("Y:/Inshore/Survey/", year,"/data entry templates and examples/",CRUISE, year,"/",CRUISE,year,"_horsemussellivefreq.csv"))
 num.tows <- read.csv(paste0("Y:/Inshore/Survey/", year,"/data entry templates and examples/",CRUISE, year,"/",CRUISE,year,"tow_CONVERTED.csv"))
 
 #Species Code must be "4332"
@@ -211,7 +240,7 @@ hm.live %>%
 
 # Horsemusseldead.csv ---------------------
 
-hm.dead <- read.csv(paste0("Y:/Inshore/Survey/", year,"/data entry templates and examples/",CRUISE, year,"/",CRUISE,year,"_horsemusseldead.csv"))
+hm.dead <- read.csv(paste0("Y:/Inshore/Survey/", year,"/data entry templates and examples/",CRUISE, year,"/",CRUISE,year,"_horsemusseldeadfreq.csv"))
 
 #Species Code must be "4332"
 table(hm.dead$SPECIES.CODE)
@@ -322,7 +351,7 @@ which(end_long_less6500$End_long == min(end_long_less6500$End_long)) #Which row 
 # - Will also return the area and strata objects added within the function for further investigating any flagged tows.
 
 check.tows.spatial(cruise= paste0(CRUISE,year), year=year, direct="Y:/Inshore/Survey/", desktop="NULL", 
-                   previouscruisefolder = paste0("data entry templates and examples/",CRUISE,year-2), previouscruisename = paste0(CRUISE,year-2), plot=TRUE, df=TRUE)
+                   previouscruisefolder = paste0("data entry templates and examples/",CRUISE,year-1), previouscruisename = paste0(CRUISE,year-1), plot=TRUE, df=TRUE)
 
 #enter flag.tows_CRUISE produced by the check.tows.spatial function. 
 flagged.tows <- flagged.tows_BF2021
