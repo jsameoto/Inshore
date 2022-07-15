@@ -1,3 +1,6 @@
+
+#R standardize depth workflow (used from 2021 on wards). Prior to 2021, ArcGIS workflow was used.
+
 library(ROracle)
 require(sf)
 require(raster)
@@ -31,8 +34,8 @@ for(fun in funcs)
 chan <- dbConnect(dbDriver("Oracle"),username=uid, password=pwd,'ptran')
 
 #set survey.year and cruise - *Note: requires single quotations within double quotations*
-survey.year <- "'2021'"
-cruise <- "'SFA292021'"
+survey.year <- "'2022'"
+cruise <- "'BI2022'"
 #appendingfile_year <- "2021" # for importing the current spreadsheet to append to.
 #updatefile_year <- "2021" #For saving file
 
@@ -72,10 +75,10 @@ ScallopSurv.sf <- st_as_sf(ScallopSurv, coords = c("lon", "lat"), crs = 4326)
 #Read in Bathy (with raster):  #Former process involved importing raster (UTM zone 20 into Arcmap, and extracting imported points from database. ArcMap converts data points to UTM zone 20 in order to extract.)  *DO NOT TRANSFORM THE RASTER OR DATA*. raster::extract() gives warning "Transforming SpatialPoints to the CRS of the Raster".
 
 if(grepl('SFA29',cruise)){
-  bathy <- raster("Y:/INSHORE SCALLOP/StandardDepth/SFA29_mbDEM/sfa29_utm/w001001.adf")
+  bathy <- raster("Y:/Inshore/StandardDepth/SFA29_mbDEM/sfa29_utm/w001001.adf")
 }else
   {
-    bathy <- raster("Y:/INSHORE SCALLOP/StandardDepth/ScotianShelfDEM_Olex/mdem_olex/w001001.adf")
+    bathy <- raster("Y:/Inshore/StandardDepth/ScotianShelfDEM_Olex/mdem_olex/w001001.adf")
 }
 
 #mapview::mapview(bathy)
@@ -90,18 +93,18 @@ ScallopSurv.dpth <-cbind(ScallopSurv.sf, olex.depth) %>%
   st_set_geometry(NULL) #removes geometry
   
 #Load previous towsdd_stdDepth.csv file to append to.
-towsdd <- read.csv(paste0("Y:/INSHORE SCALLOP/StandardDepth/towsdd_StdDepth.csv"))
+towsdd <- read.csv(paste0("Y:/Inshore/StandardDepth/towsdd_StdDepth.csv"))
 
 #Appending to towsdd
 towsdd.updt <- rbind(towsdd, ScallopSurv.dpth )
 
-#Check values and plot if nessessary
+#Check values and plot if necessary
 summary(towsdd.updt)
-mapview::mapview(ScallopSurv.sf %>% filter(CRUISE == "SFA292021"))+ # %>% filter(TOW_NO %in% c(269,270,272)))
+mapview::mapview(ScallopSurv.sf)+ # %>% filter(TOW_NO %in% c(269,270,272)))
   mapview::mapview(bathy)
 
 #Save
-write.csv(towsdd.updt, "Y:/INSHORE SCALLOP/StandardDepth/towsdd_StdDepth.csv", row.names = FALSE)
+write.csv(towsdd.updt, "Y:/Inshore/StandardDepth/towsdd_StdDepth.csv", row.names = FALSE)
 
 #**make copy manually and add year to name - move file to Archived folder under Y:/INSHORE SCALLOP/StandardDepth **
 
