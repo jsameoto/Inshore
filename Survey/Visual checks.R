@@ -306,9 +306,28 @@ hm.check.d <- hm.dead %>%
 hm.check <- data.frame(cbind("TOW" = hm.check.l$TOW, "Total.Live" = hm.check.l$totlive , "TOW.D" = hm.check.d$TOW, "Total.Dead" = hm.check.d$totdead))
 
 hm.check %>% filter(Total.Live > 0 | Total.Dead > 0) 
+
+#Moving bycatch length frequency data into SCBYCATCHLENGTHFREQUENCIES table#
 nrow(hm.check %>% filter(Total.Live > 0 | Total.Dead > 0)) # This number should match the number of records that will be entered into SCBYATCHES 
 #associated with code 4332 for that given cruise, and can be used later on as a check to ensure the HM records are being inserted properly.
 
+#How many records were there in total (i.e. cells that are not NAs)
+hm.l.long <- pivot_longer(hm.check.l, 
+             cols = starts_with("X"),
+             names_to = "Bin",
+             names_prefix = "X",
+             values_to = "Number",
+             values_drop_na = TRUE)
+
+hm.d.long <- pivot_longer(hm.check.d, 
+                          cols = starts_with("X"),
+                          names_to = "Bin",
+                          names_prefix = "X",
+                          values_to = "Number",
+                          values_drop_na = TRUE)
+
+
+nrow(hm.l.long)+nrow(hm.d.long)
 
 # SPATIAL CHECKS ----------------------------------------------------------
 ### tow data spatial checks
