@@ -21,12 +21,12 @@ require(data.table)
 uid <- keyring::key_list("Oracle")[1,2]
 pwd <- keyring::key_get("Oracle", uid)
 
-surveyyear <- 2021  #This is the last survey year for which you want to include  - not should match year of cruise below 
-cruise <- "BI2021"  #note should match year for surveyyear set above 
+surveyyear <- 2022  #This is the last survey year for which you want to include  - not should match year of cruise below 
+cruise <- "BI2022"  #note should match year for surveyyear set above 
 
-assessmentyear <- 2021 #year in which you are conducting the survey 
+assessmentyear <- 2022 #year in which you are conducting the survey 
 area <- "3"  #SPA assessing recall SPA 1A, 1B, and 4 are grouped; options: "1A1B4and5", "3", "6" 
-path.directory <- "Y:/INSHORE SCALLOP/BoF/"
+path.directory <- "Y:/Inshore/BoF/"
 
 
 
@@ -69,7 +69,7 @@ BIlivefreq.dat$ID <- paste(BIlivefreq.dat$CRUISE,BIlivefreq.dat$TOW_NO,sep='.')
 detail.ID <- unique(BIdetail.dat$ID)
 livefreq.ID <- unique(BIlivefreq.dat$ID)
 
-OlexTows_all <- read.csv("Y:/INSHORE SCALLOP/StandardDepth/towsdd_StdDepth.csv")
+OlexTows_all <- read.csv("Y:/Inshore/StandardDepth/towsdd_StdDepth.csv")
 names(OlexTows_all)[which(colnames(OlexTows_all)=="RASTERVALU")] <- "OLEXDEPTH_M"   #rename "RASTERVALU" column
 OlexTows_all$OLEXDEPTH_M[OlexTows_all$OLEXDEPTH_M==-9999] <- NA
 OlexTows_all$ID <- paste(OlexTows_all$CRUISE,OlexTows_all$TOW_NO,sep='.')
@@ -118,7 +118,7 @@ MWTSHBI.YYYY <- glmer(WET_MEAT_WGT~Log.HEIGHT.CTR+Log.DEPTH.CTR+(Log.HEIGHT.CTR|
 summary(MWTSHBI.YYYY)
 
 #Save summary to txt file
-sink(paste0(path.directory, assessmentyear, "/Assessment/Data/Growth/SPA",area,"/MWTSHBI2021_ModelSummary.txt"))
+sink(paste0(path.directory, assessmentyear, "/Assessment/Data/Growth/SPA",area,"/MWTSHBI",surveyyear,"_ModelSummary.txt"))
 print(summary(MWTSHBI.YYYY))
 sink()
 
@@ -213,7 +213,7 @@ write.csv(livefreq.condition.spatial, paste0(path.directory, assessmentyear, "/A
 
 # ---- For Condition Time Series Figure ----
 
-#mean.depth <- read.csv('Y:/INSHORE SCALLOP/BoF/StandardDepth/BoFMeanDepths.csv') #File for the constant depth to predict on by area
+#mean.depth <- read.csv('Y:/Inshore/BoF/StandardDepth/BoFMeanDepths.csv') #File for the constant depth to predict on by area
 #DEFINE DEPTH:
 #SPA3 VMS IN Modelled Area (InVMSandSMB) = -47.63
 #SMB = -24.59
@@ -222,7 +222,7 @@ write.csv(livefreq.condition.spatial, paste0(path.directory, assessmentyear, "/A
 
 
 #Bring in file with depths by area, note some are by strata groups within area
-mean.depth <- read.csv('Y:/INSHORE SCALLOP/StandardDepth/BoFMeanDepths.csv')[ ,c("AREA", "MeanDepth_m")] #File for the constant depth to predict on by area
+mean.depth <- read.csv('Y:/Inshore/StandardDepth/BoFMeanDepths.csv')[ ,c("AREA", "MeanDepth_m")] #File for the constant depth to predict on by area
 unique(mean.depth$AREA)
 length(mean.depth$AREA)
 
@@ -257,10 +257,12 @@ mean.depth.BI$Condition <- round(mean.depth.BI$Condition,3)
 #note contains IN and OUT VMS strata condition; they don't vary much since the only predictor is depth and SH is constant at 100mm 
 BI.con.ts <- read.csv(paste0(path.directory, assessmentyear-1,"/Assessment/Data/SurveyIndices/SPA3/SPA3_ConditionTimeSeries.csv"))
 #BI.con.ts <- BI.con.ts[BI.con.ts$YEAR!=2019,]
-BI.con.ts <- BI.con.ts %>% add_row(YEAR = 2020, STRATA = "InVMS_SMB", CONDITION = NA) %>% 
-  add_row(YEAR = 2020, STRATA = "OutVMS", CONDITION = NA) %>% 
-  add_row(YEAR = 2020, STRATA = "InVMS", CONDITION = NA) %>%
-  add_row(YEAR = 2020, STRATA = "SMB", CONDITION = NA)
+
+#Below was run for 2021 assessment only.. won't need to run again.
+#BI.con.ts <- BI.con.ts %>% add_row(YEAR = 2020, STRATA = "InVMS_SMB", CONDITION = NA) %>% 
+#  add_row(YEAR = 2020, STRATA = "OutVMS", CONDITION = NA) %>% 
+#  add_row(YEAR = 2020, STRATA = "InVMS", CONDITION = NA) %>%
+#  add_row(YEAR = 2020, STRATA = "SMB", CONDITION = NA)
 #BI.con.ts <- BI.con.ts %>% arrange(STRATA, YEAR)
 
 #update timeseries and write out new file: 
