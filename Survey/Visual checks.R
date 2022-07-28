@@ -21,7 +21,7 @@ for(fun in funcs)
 #define
 direct <- "Y:/Inshore/Survey/"
 year <- 2022
-CRUISE <- "BI" # "BI", BF", "GM", "SFA29"
+CRUISE <- "GM" # "BI", BF", "GM", "SFA29"
 
 
 # HGTWGT.csv ----------------------------------------------------------------
@@ -46,25 +46,24 @@ ggplot() + geom_text(data=mwsh[mwsh$Tow>1 & mwsh$Tow<50,]
                      , aes(Height, Weight, colour=as.factor(Tow), label=as.factor(Tow)))
 
 #Plot individual tows (labels are sample numbers)
-ggplot() + geom_text(data=mwsh[mwsh$Tow==41,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
-ggplot() + geom_text(data=mwsh[mwsh$Tow==23,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
-ggplot() + geom_text(data=mwsh[mwsh$Tow==29,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
-ggplot() + geom_text(data=mwsh[mwsh$Tow==31,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
+ggplot() + geom_text(data=mwsh[mwsh$Tow==42,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
+ggplot() + geom_text(data=mwsh[mwsh$Tow==22,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
+ggplot() + geom_text(data=mwsh[mwsh$Tow==99,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
 
 ggplot() + geom_text(data=mwsh[mwsh$Tow>50 & mwsh$Tow<100,]
                      , aes(Height, Weight, colour=as.factor(Tow), label=as.factor(Tow))) 
 
 #Plot individual tows (labels are sample numbers)
-ggplot() + geom_text(data=mwsh[mwsh$Tow==63,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
-ggplot() + geom_text(data=mwsh[mwsh$Tow==98,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
-ggplot() + geom_text(data=mwsh[mwsh$Tow==80,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
-ggplot() + geom_text(data=mwsh[mwsh$Tow==71,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
+ggplot() + geom_text(data=mwsh[mwsh$Tow==64,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
+ggplot() + geom_text(data=mwsh[mwsh$Tow==60,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
+#ggplot() + geom_text(data=mwsh[mwsh$Tow==80,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
+#ggplot() + geom_text(data=mwsh[mwsh$Tow==71,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
 
-ggplot() + geom_text(data=mwsh[mwsh$Tow>100 & mwsh$Tow<132,]
+ggplot() + geom_text(data=mwsh[mwsh$Tow>100 & mwsh$Tow<119,]
                      , aes(Height, Weight, colour=as.factor(Tow), label=as.factor(Tow))) 
 
 #Plot individual tows (labels are sample numbers)
-ggplot() + geom_text(data=mwsh[mwsh$Tow==102,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
+ggplot() + geom_text(data=mwsh[mwsh$Tow==117,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
 
 # bycatch.csv ----------------------------------------------------------------
 
@@ -128,11 +127,11 @@ dhf5 <- dhf[dhf$TOW>99 & dhf$TOW < 125,]
 #ggplot() + geom_point(data=dhf5, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
 ggplot(dhf5, aes(as.numeric(bin), value)) + geom_bar(fill = "aquamarine3", stat = "identity") + facet_grid(GEAR~TOW, scales="free")
 
+#End of GM 2022 (122 tows)
+
 dhf6 <- dhf[dhf$TOW>124 & dhf$TOW < 137,]
 #ggplot() + geom_point(data=dhf5, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
 ggplot(dhf6, aes(as.numeric(bin), value)) + geom_bar(fill = "aquamarine3", stat = "identity") + facet_grid(GEAR~TOW, scales="free")
-
-#End for BI
 
 dhf6 <- dhf[dhf$TOW>124 & dhf$TOW < 150,]
 #ggplot() + geom_point(data=dhf6, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
@@ -355,7 +354,7 @@ end_lat_more4600 <- num.tows %>% filter(End_lat > abs(4600))
 min(end_lat_more4600$End_lat)#warning if none.
 which(end_lat_more4600$End_lat == min(end_lat_more4600$End_lat)) #Which row is this?
 
-end_long_less6500 <- num.tows %>% filter(End_long > abs(6500))
+end_long_less6500 <- num.tows %>% filter(End_long < abs(6500))
 min(end_long_less6500$End_long)
 which(end_long_less6500$End_long == min(end_long_less6500$End_long)) #Which row is this?
 
