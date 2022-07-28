@@ -226,16 +226,12 @@ SPA3.SHF$y.2003 <- SPA3.Inner.SHFmeans[,c(grep("2003",colnames(SPA3.Inner.SHFmea
 
 # 2004-2019: SMB and InVMS (total NH=315429.3213, SMB prop=0.3737, InVMS prop=0.6263)
 col.temp <- dim((SPA3.SMB.SHFmeans[,c(grep("2004",colnames(SPA3.SMB.SHFmeans)):grep("2019",colnames(SPA3.SMB.SHFmeans)))]*0.3737) + (SPA3.Inner.SHFmeans[,c(grep("2004",colnames(SPA3.Inner.SHFmeans)):grep("2019",colnames(SPA3.Inner.SHFmeans)))]*0.6263))[2]
-
 SPA3.SHF[,c((dim(SPA3.SHF)[2]+1):((dim(SPA3.SHF)[2])+col.temp))] <- (SPA3.SMB.SHFmeans[,c(grep("2004",colnames(SPA3.SMB.SHFmeans)):grep("2019",colnames(SPA3.SMB.SHFmeans)))]*0.3737) + (SPA3.Inner.SHFmeans[,c(grep("2004",colnames(SPA3.Inner.SHFmeans)):grep("2019",colnames(SPA3.Inner.SHFmeans)))]*0.6263) 
 
-# 2021:SMB and InVMS (total NH=315429.3213, SMB prop=0.3737, InVMS prop=0.6263)
-SPA3.SHF$y.2021 <- (SPA3.SMB.SHFmeans[,c(grep("2021",colnames(SPA3.SMB.SHFmeans)))]*0.3737)+ (SPA3.Inner.SHFmeans[,c(grep("2021",colnames(SPA3.Inner.SHFmeans)))]*0.6263)
-
-# 2004-surveyyear: SMB and InVMS (total NH=315429.3213, SMB prop=0.3737, InVMS prop=0.6263)
-#col.temp <- dim((SPA3.SMB.SHFmeans[,c(grep("2004",colnames(SPA3.SMB.SHFmeans)):grep(surveyyear,colnames(SPA3.SMB.SHFmeans)))]*0.3737) + (SPA3.Inner.SHFmeans[,c(grep("2004",colnames(SPA3.Inner.SHFmeans)):grep(surveyyear,colnames(SPA3.Inner.SHFmeans)))]*0.6263))[2]
-
-#SPA3.SHF[,c((dim(SPA3.SHF)[2]+1):((dim(SPA3.SHF)[2])+col.temp))] <- (SPA3.SMB.SHFmeans[,c(grep("2004",colnames(SPA3.SMB.SHFmeans)):grep(surveyyear,colnames(SPA3.SMB.SHFmeans)))]*0.3737) + (SPA3.Inner.SHFmeans[,c(grep("2004",colnames(SPA3.Inner.SHFmeans)):grep(surveyyear,colnames(SPA3.Inner.SHFmeans)))]*0.6263) 
+# 2021-surveyyear:SMB and InVMS (total NH=315429.3213, SMB prop=0.3737, InVMS prop=0.6263)
+#SPA3.SHF$y.2021 <- (SPA3.SMB.SHFmeans[,c(grep("2021",colnames(SPA3.SMB.SHFmeans)))]*0.3737)+ (SPA3.Inner.SHFmeans[,c(grep("2021",colnames(SPA3.Inner.SHFmeans)))]*0.6263)
+col.temp <- dim((SPA3.SMB.SHFmeans[,c(grep("2021",colnames(SPA3.SMB.SHFmeans)):grep(paste0(surveyyear),colnames(SPA3.SMB.SHFmeans)))]*0.3737) + (SPA3.Inner.SHFmeans[,c(grep("2021",colnames(SPA3.Inner.SHFmeans)):grep(paste0(surveyyear),colnames(SPA3.Inner.SHFmeans)))]*0.6263))[2]
+SPA3.SHF[,c((dim(SPA3.SHF)[2]+1):((dim(SPA3.SHF)[2])+col.temp))] <- (SPA3.SMB.SHFmeans[,c(grep("2021",colnames(SPA3.SMB.SHFmeans)):grep(paste0(surveyyear),colnames(SPA3.SMB.SHFmeans)))]*0.3737) + (SPA3.Inner.SHFmeans[,c(grep("2021",colnames(SPA3.Inner.SHFmeans)):grep(paste0(surveyyear),colnames(SPA3.Inner.SHFmeans)))]*0.6263) 
 
 colnames(SPA3.SHF)[2:dim(SPA3.SHF)[2]] <- colnames(SPA3.Inner.SHFmeans)
 
@@ -415,7 +411,7 @@ for(i in 1:length(SPA3.SMBb.lbar$Year)){
   SPA3.SMBb.lbar[i,2]<-sum(temp.data*seq(82.5,197.5,by=5))/sum(temp.data)}
 SPA3.SMBb.lbar
 
-years <- 2021
+years <- 2021:surveyyear
 X <- length(years)
 SPA3.SMBc.lbar <- data.frame(Year=years, SMB.lbar=rep(NA,X))
 for(i in 1:length(SPA3.SMBc.lbar$Year)){
@@ -484,8 +480,8 @@ crossref.spa3<-merge (crossref.spa3, subset (BIlivefreq.dat, select=c("STRATA_ID
 
 #subset for years
 tows<-c(1,5)
-livefreq2019<-subset (BIlivefreq.dat, YEAR==2019 & TOW_TYPE_ID%in%tows)
 livefreq2021<-subset (BIlivefreq.dat, YEAR==2021 & TOW_TYPE_ID%in%tows)
+livefreq2022<-subset (BIlivefreq.dat, YEAR==2022 & TOW_TYPE_ID%in%tows)
 
 #....................
 #. SMB TOWS (StrataID 22) crossref.spa3[crossref.spa3$STRATA_ID==22,]
@@ -493,8 +489,8 @@ livefreq2021<-subset (BIlivefreq.dat, YEAR==2021 & TOW_TYPE_ID%in%tows)
 before<-crossref.spa3$TOW_NO_REF[crossref.spa3$STRATA_ID==22] # update  # year t-1 
 after<-crossref.spa3$TOW_NO[crossref.spa3$STRATA_ID==22] # update  # year t 
 
-data.before<-livefreq2019 #update year t-1
-data.after<-livefreq2021  #update year t
+data.before<-livefreq2021 #update year t-1
+data.after<-livefreq2022  #update year t
 
 SMB.before<-subset (data.before, TOW_NO%in%before)
 SMB.after<-subset (data.after, TOW_NO%in%after)
@@ -506,7 +502,7 @@ SMB.aftermeans<-sapply(split(SMB.after[c(11:50)], SMB.after$YEAR), function(x){a
 y.lim <-c(0,50)
 data.ref<-SMB.beforemeans #In.beforemeans  ,  SMB.beforemeans   , out.beforemeans
 data.year<-SMB.aftermeans #In.aftermeans, SMB.aftermeans, out.aftermeans
-year <- 2019 #Update year t-1
+year <- surveyyear-1 #Update year t-1
 tows <- length(after) 
 
 windows()
@@ -518,7 +514,7 @@ abline(v=c(19.323,15.74), lty=3)
 text (30, y.lim[2]-3, paste ("N tows", tows, sep=" :"))
 
 a<-barplot(data.year[1:35],xaxt="n",ylab="",xlab=" ",ylim=y.lim)
-text(1,y.lim[2]-3,paste (year+2)) #year +2 for 2019-2021 comparison tows - need to change back for 2022!!!!
+text(1,y.lim[2]-3,paste (year+1))
 abline(v=c(19.323,15.74), lty=3)
 text (30, y.lim[2]-3, paste ("N tows", tows, sep=" :"))
 
@@ -533,8 +529,8 @@ mtext("Survey mean no./tow", 2, -1, outer = T)
 before<-crossref.spa3$TOW_NO_REF[crossref.spa3$STRATA_ID==99] # update  # year t-1 
 after<-crossref.spa3$TOW_NO[crossref.spa3$STRATA_ID==99] # update  # year t 
 
-data.before<-livefreq2019 #update year t-1
-data.after<-livefreq2021  #update year t
+data.before<-livefreq2021 #update year t-1
+data.after<-livefreq2022  #update year t
 
 In.Before<-subset (data.before, TOW_NO%in%before)
 In.After<-subset (data.after, TOW_NO%in%after)
@@ -547,7 +543,7 @@ In.aftermeans<-sapply(split(In.After[c(11:50)], In.After$YEAR), function(x){appl
 y.lim <-c(0,50)
 data.ref<-In.beforemeans #In.beforemeans  ,  SMB.beforemeans   , out.beforemeans
 data.year<-In.aftermeans #In.aftermeans, SMB.aftermeans, out.aftermeans
-year <- 2019 #Update as year t-1
+year <- 2021 #Update as year t-1
 tows <- length(after) #Update length(after)
 
 windows()
@@ -559,7 +555,7 @@ abline(v=c(19.323,15.74), lty=3)
 text (30, y.lim[2]-3, paste ("N tows", tows, sep=" :"))
 
 a<-barplot(data.year[1:35],xaxt="n",ylab="",xlab=" ",ylim=y.lim)
-text(1,y.lim[2]-3,paste (year+2)) #year +2 for 2019-2021 comparison tows - need to change back for 2022!!!!
+text(1,y.lim[2]-3,paste (year+1))
 abline(v=c(19.323,15.74), lty=3)
 text (30, y.lim[2]-3, paste ("N tows", tows, sep=" :"))
 
@@ -575,8 +571,8 @@ mtext("Survey mean no./tow", 2, -1, outer = T)
 before<-crossref.spa3$TOW_NO_REF[crossref.spa3$STRATA_ID%in%c(23,24)] # update  # year t-1 
 after<-crossref.spa3$TOW_NO[crossref.spa3$STRATA_ID%in%c(23,24)] # update  # year t 
 
-data.before<-livefreq2019 #update year t-1
-data.after<-livefreq2021  #update yeaer t
+data.before<-livefreq2021 #update year t-1
+data.after<-livefreq2022  #update yeaer t
 
 out.before<-subset (data.before, TOW_NO%in%before)
 out.after<-subset (data.after, TOW_NO%in%after)
@@ -590,7 +586,7 @@ out.aftermeans<-sapply(split(out.after[c(11:50)], out.after$YEAR), function(x){a
 y.lim <-c(0,50)
 data.ref<-out.beforemeans #In.beforemeans  ,  SMB.beforemeans   , out.beforemeans
 data.year<-out.aftermeans #In.aftermeans, SMB.aftermeans, out.aftermeans
-year <- 2019 #Update year t-1
+year <- 2021 #Update year t-1
 tows <- length(after) 
 
 windows()
@@ -602,7 +598,7 @@ abline(v=c(19.323,15.74), lty=3)
 text (30, y.lim[2]-3, paste ("N tows", tows, sep=" :"))
 
 a<-barplot(data.year[1:35],xaxt="n",ylab="",xlab=" ",ylim=y.lim)
-text(1,y.lim[2]-3,paste (year+2)) #year +2 for 2019-2021 comparison tows - need to change back for 2022!!!!
+text(1,y.lim[2]-3,paste (year+1))
 abline(v=c(19.323,15.74), lty=3)
 text (30, y.lim[2]-3, paste ("N tows", tows, sep=" :"))
 
