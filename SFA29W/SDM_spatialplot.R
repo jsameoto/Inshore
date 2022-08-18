@@ -103,7 +103,15 @@ ggsave(filename = paste0("Y:/Inshore/SFA29/", assessment.year,"/Assessment/Figur
 
 # Coloured FR Version -------------------------------------------------------
 
-p2 +
+#West = Ouest
+lony.fr <- paste0(substr(lon.tmp$Degree_Min$Degree_Minutes,1,2),expression("*{degree}*"), substr(lon.tmp$Degree_Min$Degree_Minutes,4,5),expression("*{minute}*"), substr(lon.tmp$Degree_Min_Sec$Degree_Minute_Seconds,7,8),expression("*{second}*O"))
+# And then replot the figure
+p3 <- pt +
+  scale_x_continuous(breaks =-lon.loc,labels=parse(text = lony.fr)) +
+  scale_y_continuous(breaks = lat.loc,labels=parse(text = latty))
+p3
+
+p3 +
   geom_stars(data = bin.sdm, aes(x=x,y=y, fill = w001001.adf))+
   scale_fill_manual(values = c('firebrick3', 'grey68', 'darkblue'), na.value = 'transparent', name = "Qualité de l'habitat", breaks = c("[0.6,1)", "[0.3,0.6)", "[0,0.3)"),labels = c("[0.6,1)"="Élevée [0.6,1)", "[0.3,0.6)"= "Moyenne [0.3,0.6) ", "[0,0.3)"="Faible [0,0.3)"))+
   geom_sf(data = sfa29.poly, size = 1, colour = "black", fill = NA)+
@@ -199,7 +207,7 @@ p2 +
 
 #FR version
 
-p2 +
+p3 +
   geom_sf_pattern(data = bin.sdm.nas, aes(pattern = w001001.adf, fill = w001001.adf, colour = w001001.adf),
                   colour = NA,
                   pattern_colour = NA,
@@ -239,8 +247,3 @@ p2 +
 
 #save
 ggsave(filename = paste0("Y:/Inshore/SFA29/", assessment.year,"/Assessment/Figures/ScallopSDM_binned_greyscale_FR.png"), plot = last_plot(), scale = 2.5, width = 7, height = 5, dpi = 300, units = "cm", limitsize = TRUE)
-
-
-
-
-
