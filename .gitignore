@@ -19,7 +19,7 @@
 .Rproj.user/
 
 # Wiki related products
-#BoF/Bof_Assessment_Wiki/*.html
+BoF/Bof_Assessment_Wiki/*.html
 BoF/Bof_Assessment_Wiki/*.css
 BoF/Bof_Assessment_Wiki/*.tex
 
