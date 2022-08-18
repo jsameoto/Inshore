@@ -18,9 +18,11 @@
 # RStudio files
 .Rproj.user/
 
-# produced vignettes
-vignettes/*.html
-vignettes/*.pdf
+# Wiki related products
+
+BoF/Bof_Assessment_Wiki/*.html
+BoF/Bof_Assessment_Wiki/*.css
+BoF/Bof_Assessment_Wiki/*.tex
 
 # OAuth2 token, see https://github.com/hadley/httr/releases/tag/v0.3
 .httr-oauth
@@ -49,6 +51,6 @@ Archive/
 *.doc
 *.pdf
 *.png
-InshoreAssessmentWorkflow/*.html
+*.html
 InshoreAssessmentWorkflow/*.tex
 InshoreAssessmentWorkflow/*.css
