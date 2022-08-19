@@ -1,11 +1,43 @@
 
 #Shell Length Frequency data set-up and plots are modified from Scallop SHF scripts
 
+
+library(ROracle)
+
+uid <- keyring::key_list("Oracle")[1,2]
+pwd <- keyring::key_get("Oracle", uid)
+
 surveyyear <- 2021
 years <-c(2018:2019, 2021:surveyyear)
 
+#### Import Mar-scal functions 
+funcs <- "https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Survey_and_OSAC/convert.dd.dddd.r"
+# Note: uses older contour.gen.r version (working on alternative to contour.gen altogether).
+dir <- getwd()
+for(fun in funcs) 
+{
+  temp <- dir
+  download.file(fun,destfile = basename(fun))
+  source(paste0(dir,"/",basename(fun)))
+  file.remove(paste0(dir,"/",basename(fun)))
+}
+
+
 #Load standardized horsemussel data:
-livefreq.hm <- readRDS("Z:/Projects/Horse_Mussel/HM_InshoreSurvey/data/Prorated/horsemussellive_prorated.rds") %>% filter(SAMPLE.METHOD != 1)#remove tows where no SHF data was collected.
+
+#ROracle
+chan <- dbConnect(dbDriver("Oracle"),username=uid, password=pwd,'ptran')
+
+#Db Query:
+quer2 <- paste(
+  "SELECT * 			                ",
+  "FROM scallsur.sclivehorsemussel_std_vw 			",
+  sep=""
+)
+
+livefreq.hm <- dbGetQuery(chan, quer2)
+
+#livefreq.hm <- readRDS("Z:/Projects/Horse_Mussel/HM_InshoreSurvey/data/Prorated/horsemussellive_prorated.rds") %>% filter(SAMPLE.METHOD != 1)#remove tows where no SHF data was collected.
 
 # add YEAR column to data
 livefreq.hm$YEAR <- ifelse(grepl("SFA29", livefreq.hm$CRUISE), as.numeric(substr(livefreq.hm$CRUISE,6,9)), as.numeric(substr(livefreq.hm$CRUISE,3,6)))
