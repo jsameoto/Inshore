@@ -683,7 +683,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA4_ComBiomass',biomass.year,'.
 
 # ----SPA3 -----
 #NOTE: TO PLOT OTHER YEARS CHANGE *biomass.year*
-biomass.year <- survey.year # change year (e.g. biomass.year <- "2019") to plot other years (dependant on the files that were loaded in the object biomass.year)
+biomass.year <- survey.year # change year (e.g. biomass.year <- "2019") to plot other years (dependent on the files that were loaded in the object biomass.year)
 
 #Create contour and specify plot aesthetics
 com.contours <- contour.gen(ScallopSurv.kg %>% 
@@ -729,7 +729,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA3_ComBiomass',biomass.year,'.
 
 # ----SPA6 -----
 #NOTE: TO PLOT OTHER YEARS CHANGE *biomass.year*
-biomass.year <- survey.year # change year (e.g. biomass.year <- "2019") to plot other years (dependant on the files that were loaded in the object biomass.year)
+biomass.year <- survey.year # change year (e.g. biomass.year <- "2019") to plot other years (dependent on the files that were loaded in the object biomass.year)
 
 com.contours<-contour.gen(ScallopSurv.kg %>% filter(year==biomass.year, STRATA_ID %in% c(30,31,32,54)) %>% #Only SPA6
                             dplyr::select(ID,lon,lat,com.bm),
@@ -777,7 +777,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA6_ComBiomass',biomass.year,'.
 # ----CONDITION PLOTS-----
 
 #NOTE: TO PLOT OTHER YEARS CHANGE *cond.year*
-cond.year <- survey.year # change year (e.g. cond.year <- "2019") to plot other years (dependant on the files that were loaded in the object con.dat)
+cond.year <- survey.year # change year (e.g. cond.year <- "2019") to plot other years (dependent on the files that were loaded in the object con.dat)
 
 #For FULL BAY, SPA1A, SPA1B, SPA4&5
 
@@ -880,7 +880,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA4_Condition',cond.year,'.png'
 
 # ----SPA3 -----
 
-cond.year <- survey.year # change year (e.g. cond.year <- "2019") to plot other years (dependant on the files that were loaded in the object con.dat)
+cond.year <- survey.year # change year (e.g. cond.year <- "2019") to plot other years (dependent on the files that were loaded in the object con.dat)
 
 com.contours <- contour.gen(con.dat %>% filter(year== cond.year, str_detect(CRUISE, "BI")) %>% #Only SPA3
                             dplyr::select(ID,lon,lat,Condition),
@@ -927,7 +927,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA3_Condition',cond.year,'.png'
 
 # ----SPA6 -----
 
-cond.year <- survey.year # change year (e.g. cond.year <- "2019") to plot other years (dependant on the files that were loaded in the object con.dat)
+cond.year <- survey.year # change year (e.g. cond.year <- "2019") to plot other years (dependent on the files that were loaded in the object con.dat)
 
 com.contours <- contour.gen(con.dat %>% filter(year== cond.year, str_detect(CRUISE, "GM")) %>% #Only SPA6
                             dplyr::select(ID,lon,lat,Condition),
@@ -2963,7 +2963,7 @@ mgmt.zones.crop <- rmapshaper::ms_erase(mgmt.zones,land)
 # ----Commercial Biomass - full bay -----
 
 #NOTE: TO PLOT OTHER YEARS CHANGE *biomass.year*
-biomass.year <- survey.year # change year (e.g. biomass.year <- "2019") to plot other years (dependant on the files that were loaded in the object liveweight)
+biomass.year <- survey.year # change year (e.g. biomass.year <- "2019") to plot other years (dependent on the files that were loaded in the object liveweight)
 
 #For FULL BAY, (SPA1A, SPA1B, SPA3, SPA4, SPA5, SPA6)
 com.contours<-contour.gen(ScallopSurv.kg %>% filter(year==biomass.year) %>%
@@ -3119,6 +3119,66 @@ p+ #Plot survey data and format figure.
 
 ggsave(filename = paste0(saveplot.dir,'ContPlot_BoFAll_PrerecDensity',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
+
+# ---- Plots for referencing (not for industry supplement) -----
+
+# ---- Condition - full bay -----
+
+#Make sure to read in the mgmt.zone shapefile before plotting (in the beginning of the script section "Plots for Industry Supplemental Update Document (Markdown)")
+
+cond.year <- survey.year # change year (e.g. cond.year <- "2019") to plot other years (dependent on the files that were loaded in the object con.dat)
+
+#For FULL BAY, (SPA1A, SPA1B, SPA3, SPA4, SPA5, SPA6)
+com.contours<-contour.gen(con.dat %>% filter(year==cond.year) %>%
+                            dplyr::select(ID,lon,lat, Condition),
+                          ticks='define', nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
+
+#lvls=c(5,6,7,8,9,10,11,12) #levels to be color coded
+lvls=c(4,6,8,10,12,14,16) #for higher conditions
+
+CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
+CP <- convCP(CL)
+totCont.poly <- CP$PolySet
+
+##Convert pbsmapping object to sf
+totCont.poly <- as.PolySet(totCont.poly,projection = "LL") #assuming you provide Lat/Lon data and WGS84
+totCont.poly <- PolySet2SpatialLines(totCont.poly) # Spatial lines is a bit more general (don't need to have boxes closed)
+totCont.poly.sf <- st_as_sf(totCont.poly) %>%
+  st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
+  st_cast("POLYGON") %>% #Convert multilines to polygons
+  st_make_valid() %>% 
+  mutate(level = unique(CP$PolyData$level))
+
+#Set aesthetics for plot
+#labels <- c("5-6", "6-7", "7-8", "8-9", "9-10", "10-11", "11-12", "12+")
+labels <- c("4-6", "6-8", "8-10", "10-12", "12-14", "14-16","16+") #for higher conditions
+col <- brewer.pal(length(lvls),"YlOrBr") #set colours
+cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = "Condition (g)", limits = labels) #set custom fill arguments for pecjector.
+
+p <- pecjector(area =list(x=c(-67.08,-64.4), y=c(45.62, 43.65), crs=4326), repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',add_layer = list(land = "grey", bathy = c(50,'c'), scale.bar = c('tl',0.5,-1,-1)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+
+
+p+ #Plot survey data and format figure.
+  geom_spatial_point(data = con.dat %>% filter(year==cond.year), aes(lon, lat), size = 0.5) +
+  geom_sf(data = mgmt.zones.crop, size = 0.3, colour= "black", alpha = 0.4, fill = NA)+
+  geom_sf(data = grey.zone, size = 1, colour= "black", fill = NA)+
+  #geom_sf(data = outVMS, linetype = "dashed", size = 0.4, colour = "black", alpha = 0.7, fill = NA) + #SPA6 - VMS OUT
+  geom_sf(data = inVMS, linetype = "dashed",size = 0.3, colour = "black", alpha = 0.7, fill = NA) + #SPA6 - VMS IN
+  geom_sf(data = spa3.poly, linetype = "dashed",size = 0.3, colour = "black", alpha = 0.7, fill = NA) +
+  labs(x = "Longitude", y = "Latitude")+
+  guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  coord_sf(xlim = c(-67.08,-64.4), ylim = c(43.65, 45.62), expand = FALSE)+
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        legend.title = element_text(size = 14, face = "bold"), 
+        legend.text = element_text(size = 11),
+        legend.key.size = unit(1.1, "cm"),
+        legend.key = element_rect(color=alpha("black", 0.3)),
+        legend.position = c(.87,.32), #legend position
+        legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.8)), #Legend bkg colour and border
+        legend.box.margin = margin(6, 10, 6, 8)) #Legend bkg margin (top, right, bottom, left)
+
+ggsave(filename = paste0(saveplot.dir,'ContPlot_BoFAll_Condition',cond.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 
 # --------------STATIC BoF strata plot for appendix by F.Keyser - Modified for pecjector by B.Wilson (2021) ----------------------------------
