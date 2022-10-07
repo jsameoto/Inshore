@@ -201,10 +201,10 @@ sdmtows.updt$SDM[sdmtows.updt$sdmval_LWM >= 0.6] <- "high"
 
 # ---Save updated dataframe ----------------------------------------------------------------------
 
-write.csv(sdmtows.updt, "Y:/INSHORE SCALLOP/SFA29/ScalSurv_SDM/SFA29Tows_SDM.csv", row.names = F)
+write.csv(sdmtows.updt, "Y:/Inshore/SFA29/ScalSurv_SDM/SFA29Tows_SDM.csv", row.names = F)
 
 #save single year to archive folder for records
-write.csv(sdmtows, paste0("Y:/INSHORE SCALLOP/SFA29/ScalSurv_SDM/Archived/SFA29",survey.year,"Tows_SDM.csv")) #save out file with year
+write.csv(sdmtows, paste0("Y:/Inshore/SFA29/ScalSurv_SDM/Archived/SFA29",survey.year,"Tows_SDM.csv")) #save out file with year
 
 
 #########################################################################################################

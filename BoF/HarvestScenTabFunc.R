@@ -28,7 +28,7 @@ harvest.scen.tab = function(area = area, catch.range = catch.range)
   }
   
   if(area == "SPA1B") {
-    catch.range <- c(150, 190, 230, 270, 310, 350, 390, 430, 470)
+    catch.range <- c(175, 225, 275, 325, 375, 425, 475, 525, 575)
     decision.table <- SPA1B.decision.table
     table.caption <- paste0("Table 2. Harvest scenario table for SPA 1B to evaluate ", year,"/", year+1, " catch levels in terms of resulting exploitation (e), expected changes in commercial biomass (%), probability (Pr) of commercial biomass increase, probability that after removal the stock will be above the Upper Stock Reference (USR; ", SPA1B$USR, " t), and above the Lower Reference Point (LRP; ", SPA1B$LRP, " t). Potential catches (t) in ", year,"/", year+1," are evaluated in terms of the posterior probability of exceeding exploitation rate of 0.15.")
   }

@@ -1,0 +1,1169 @@
+---
+title: SFA29 West Scallop Assessment Script Workflow
+author: Brittany Wilson
+date: 2021-05-18
+output:
+  html_document:
+    toc: true
+    toc_depth: 5
+    toc_float: true
+    toc_collapsed: true
+    number_sections: false
+    theme: lumen
+  pdf_document:
+    toc: true
+    includes:
+      in_header: style.tex
+always_allow_html: true
+css: style.css
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+```{r Setup, include = FALSE}
+
+require(usethis)
+require(lubridate)
+require(fs)
+require(tidyverse)
+require(flextable)
+require(shinyWidgets)
+#devtools::install_github("timelyportfolio/sweetalertR") #required for pop up reminders to save changes to github.
+#require(sweetalertR)
+
+
+#To use this Rmarkdown as a guide to run scripts, it requires you to have forked the Marscal Inshore repository (https://github.com/Mar-scal)
+
+#Set working directory to *YOUR FORKED INSHORE REPOSITORY* (Not the Marscal master versions on ESS).
+#dir <- ("https://github.com/Mar-scal/Inshore/tree/main/") #Github
+dir <- "C:/Users/WILSONB/Documents/GitHub/Inshore" #Brittany
+#dir <- () #Jamie
+#dir <- () #Jessica
+
+year <- 2022
+
+#Remember to follow github workflow (i.e. commiting all changes with details (see commit protocol document (*To be made*)), pushing those changes up to your github forked repository and merging with the master Inshore repo on Marscal.
+```
+
+# Overview
+
+This document is intended as a guide to the inshore scallop assessment
+workflow and the R-scripts that are used in the assessment process. This
+document can be used as a Rmarkdown allowing the user to open the
+required scripts within Rstudio, or be read as a html or PDF document
+where the user can review the workflow and manually locate the scripts
+within the specified directory.
+
+The SFA29 West assessment is separated by subareas:
+
+A, B, C, D and E
+
+# SFA29 West
+
+## 1. Standard Depth
+
+```{r Open Standardize_depth.R, eval =  FALSE, include = FALSE}
+file.show(paste0(dir, "/Standardize_depth.R")) #Opens Standardize_depth.R
+```
+
+-   **Script Directory:**
+
+    To be your forked Marscal Inshore repository path (e.g. `r dir`)
+
+-   **Purpose:**
+
+    This script is used to pull bathymetry values from survey point
+    locations and appends it to survey data (i.e. standardize depth
+    values).
+
+-   **Output(s):**
+
+    towsdd_StdDepth.csv
+
+-   **Output Directory(s):**
+
+    ESS:/Inshore/StandardDepth
+
+------------------------------------------------------------------------
+
+::: {.infobox .caution data-latex="{caution}"}
+**COMMIT CHANGES**
+
+Ensure that all changes made to the script Standardize_depth.R have been
+saved and pushed to Marscal Inshore repository before continuing!
+:::
+
+------------------------------------------------------------------------
+
+## 2. Intersecting data with scallop SDM layer
+
+```{r Open Standardize_depth.R, eval =  FALSE, include = FALSE}
+file.show(paste0(dir, "/SFA29W/SFA29_SDM_LWM.R")) #Opens SFA29_SDM_LWM.R
+```
+
+-   **Script Directory:**
+
+    To be your forked Marscal Inshore repository path (e.g. `r dir`)
+
+-   **Purpose:**
+
+    This script is used for intersecting survey data with scallop species distribution model (SDM) layer (ESRI grid - sdm_utm_50)
+
+-   **Output(s):**
+
+    SFA29Tows_SDM.csv
+
+-   **Output Directory(s):**
+
+    ESS:/Inshore/SFA29/ScalSurv_SDM
+
+------------------------------------------------------------------------
+
+::: {.infobox .caution data-latex="{caution}"}
+**COMMIT CHANGES**
+
+Ensure that all changes made to the script SFA29_SDM_LWM.R have been
+saved and pushed to Marscal Inshore repository before continuing!
+:::
+
+------------------------------------------------------------------------
+
+
+## 2. Meat Weight - Shell Height and Condition modeling (Growth) {#meat-weight---shell-height-and-condition-modeling-growth}
+
+```{r open MeatweightShellHeight.R files, eval =  FALSE, include = FALSE}
+
+file.show(paste0("Y:/Inshore/SFA29/",year,"/Assessment/Scripts/Growth/SFA29_MeatWeightShellHeight_",year,".R")) 
+
+#Eventually will be housed on github repo
+file.show(paste0(dir, "/SFA/Growth/SFA29_MeatWeightShellHeight.R"))
+
+#$\bar{M}_{t+1} = \bar{\lambda}_{t+1}/ \bar{H}_{t+1}$
+```
+
+-   **Script Directory:**
+
+    Y:/Inshore/BoF/`r year`/Assessment/Scripts/Growth (eventually to be
+    our forked Marscal/inshore repository, e.g.
+    `r paste0(dir, "/BoF/Growth")`)
+
+-   **Purpose:**
+
+    The MeatWeightShellHeight.R scripts models meat weight with shell
+    height, depth and tow.
+
+-   **Overview:** <mark>Edits to model object YYYY will need to be made
+    every assessment (e.g. MWTSHBF.YYYY)</mark>
+
+1.  Set up data for modelling:
+
+    -   Query detailed meat weight/shell height sampling data from
+        database (scallsur.scwgthgt) for specified cruises
+        (SPA1A1B4and5, SPA3, SPA6).
+    -   Query shell height bin data from database (scallsur.scliveres)
+        for specified cruises (SPA1A1B4and5, SPA3, SPA6).
+    -   Format and merge depth information (from towsdd_StdDepth.csv) to
+        the meat weight/shell height dataframe (BFdetail).
+    -   Format and merge depth information (from towsdd_StdDepth.csv) to
+        the shell height bin data (BFlivefreq).
+
+2.  Run the Meat Weight Shell Height Model:
+
+    -   Subset for the survey year, shell height > 40mm
+
+    -   Centre Height and Depth values (e.g log height - mean(log
+        height))
+
+    -   Run model (GLM) predicting meat weight as a function of fixed
+        effects shell height and depth and random effect shell height
+        grouped by tow.
+
+        <center>
+
+        $EQUATION HERE$
+
+        </center>
+
+    -   Assess/plot residuals (full area and by tow) and fitted data.
+
+3.  Predicting:
+
+    -   Subset for the survey year
+    -   Centre Height values (log of the midpoint of the bins - mean of
+        the log height)
+    -   Centre Depth values (log depth - mean(test.data\$Log.DEPTH)
+    -   Create a matrix of depths by tow to use in predict function
+    -   Predict using Random effects for tows where meat weight shell
+        height samples were taken - gives MWT-SH relationship for one
+        individual
+    -   Predict using Fixed effects for tows where meat weight shell
+        height samples were not taken - gives MWT-SH relationship for
+        one individual
+    -   Multiply prediction matrix (weight) by live numbers to get
+        weight/bin size
+
+4.  Condition data for Spatial plots
+
+    -   centre depth using same mean depth used in the MWTSH model
+        (mean(test.data\$Log.DEPTH))
+
+    -   Subset for tows that were sampled for meat weight shell height
+
+    -   Predict a meat weight for shell height 100mm for sampled tows
+        only.
+
+        <center>
+
+        $EQUATION HERE$
+
+        </center>
+
+-   **Output(s):**
+
+    -   **SPA 1A, 1B, 4 and 5**
+
+        -   BFliveweight.csv (MWTSH)
+
+        -   BFConditionforMap.csv (Condition)
+
+        -   BFgrowthYYYY.RData
+
+        -   Figures: BFtowdepthYYYY.png, MWTSHBFYYYY.png,
+            MWTSHBFYYYY_towresid.png, and MWTSHBFYYYY_towfit.png
+
+        -   Model summary - MWTSHBFYYYY_ModelSummary.txt
+
+    -   **SPA 3**
+
+        -   BIliveweight.csv (MWTSH)
+
+        -   BIConditionforMap.csv (Condition)
+
+        -   BIgrowthYYYY.RData
+
+        -   Figures: BItowdepthYYYY.png, MWTSHBIYYYY.png,
+            MWTSHBIYYYY_towresid.png, and MWTSHBIYYYY_towfit.png
+
+        -   Model summary - MWTSHBIYYYY_ModelSummary.txt
+
+    -   **SPA 6**
+
+        -   GMliveweight.csv (MWTSH)
+
+        -   GMConditionforMap.csv (Condition)
+
+        -   GMgrowthYYYY.RData
+
+        -   Figures: GMtowdepthYYYY.png, MWTSHGMYYYY.png,
+            MWTSHGMYYYY_towresid.png, and MWTSHGMYYYY_towfit.png
+
+        -   Model summary - MWTSHGMYYYY_ModelSummary.txt
+
+    -   **Other**
+
+        -   AREA_ConditionTimeSeries.png (Condition Time series)
+
+\
+
+-   **Output Directory(s):**
+
+    -   **SPA 1A, 1B, 4 and 5**
+
+        -   Y:/Inshore/BoF/YYYY/Assessment/Data/SurveyIndices/SPA1A1B4and5
+            (.csv)
+
+    -   **SPA 3**
+
+        -   Y:/Inshore/BoF/YYYY/Assessment/Data/SurveyIndices/SPA3
+            (.csv)
+
+    -   **SPA 6**
+
+        -   Y:/Inshore/BoF/YYYY/Assessment/Data/SurveyIndices/SPA6
+            (.csv)
+
+    -   **Figures**
+
+        -   Y:/Inshore/BoF/YYYY/Assessment/Figures/Growth (.png)
+
+        -   Y:/Inshore/BoF/YYYY/Assessment/Figures (Condition time
+            series .png)
+
+------------------------------------------------------------------------
+
+::: {.infobox .caution data-latex="{caution}"}
+**COMMIT CHANGES**
+
+Ensure that all changes made to scripts MeatWeightShellHeight.R for each
+SPA have been saved and pushed to Marscal Inshore repository before
+continuing!
+:::
+
+------------------------------------------------------------------------
+
+## 3. Spatial plots (Survey Indices)
+
+```{r open Spatial plot scripts, eval =  FALSE, include = FALSE}
+#year <- year(Sys.Date())-1 #Extract previous years folder structure for example
+file.show(paste0(dir, "/BoF/SurveyIndices/BoFSpatialPlotsofSurveyData_pecjector.r"))
+
+```
+
+-   **Purpose:** Plot spatial patterns for Density, Biomass, Condition,
+    Meat Count and Clapper data for the Full Bay of Fundy extent, SPA1A,
+    1B, 3, 4 and 5, and 6.
+
+-   **Script Directory:** To be your forked Marscal Inshore repository
+    path (e.g. `r paste0(dir, "/BoF/SurveyIndicies")`)
+
+-   **Output(s):**
+
+    -   Spatial plots for each area and commercial, recruit and
+        pre-recruit size ranges
+
+        -   Density - ContPlot_SPA#\_ComDensityYYYY.png,
+            ContPlot_SPA#\_RecDensityYYYY.png,
+            ContPlot_SPA#\_PreDensityYYYY.png
+
+        -   Biomass - ContPlot_SPA#\_ComBiomassYYYY.png,
+            ContPlot_SPA#\_RecBiomassYYYY.png,
+            ContPlot_SPA#\_PreBiomassYYYY.png
+
+        -   Condition - ContPlot_SPA#\_ConditionYYYY.png (using only
+            commercial sizes)
+
+        -   Meat Count - ContPlot_SPA#\_MeatcountYYYY.png (using only
+            commercial sizes)
+
+        -   Clappers and Clapper proportion -
+            ContPlot_SPA#\_ComClappersYYYY.png,
+            ContPlot_SPA#\_RecClappersYYYY.png,
+            ContPlot_SPA#\_PropComClappersYYYY.png,
+            ContPlot_SPA#\_PropRecClappersYYYY.png
+
+-   **Output Directory(s):** Y:/Inshore/BoF/YYYY/Assessment/Figures
+
+------------------------------------------------------------------------
+
+::: {.infobox .caution data-latex="{caution}"}
+**COMMIT CHANGES**
+
+Ensure that all changes made to BoFSpatialPlotsofSurveyData_pecjector.r
+have been saved and pushed to Marscal Inshore repository before
+continuing!
+:::
+
+------------------------------------------------------------------------
+
+## 4. VonB (Growth)
+
+```{r Open AREA_VonB_YYYY.R, eval =  FALSE, include = FALSE}
+
+file.show(paste0("Y:/Inshore/BoF/",year,"/Assessment/Scripts/Growth/BoF_VonB_2016.R")) #Script for SPA 1A, 1B, 4 and 5 (last updated 2016).
+file.show(paste0("Y:/Inshore/BoF/",year,"/Assessment/Scripts/Growth/SPA3_VonB_2021.R")) #Script for SPA 3 (last updated 2017)
+file.show(paste0("Y:/Inshore/BoF/",year,"/Assessment/Scripts/Growth/SPA6_VonB_2017.R")) #Script for SPA 6 (last updated 2017)
+
+#file.show(paste0(dir, "/BoF/Growth/BoF_VonB_2016.R"))
+#file.show(paste0(dir, "/BoF/Growth/SPA3_VonB_2017.R"))
+#file.show(paste0(dir, "/BoF/Growth/SPA6_VonB_2017.R"))
+```
+
+-   **Purpose:** These scripts model growth using the von-Bertalanffy
+    growth equation for specified cruises (SPA1A1B4and5, SPA3, SPA6).
+
+    **NOTE:** This script does not need to be run every year. New aging
+    data is required for updated outputs.
+
+-   **Overview:**
+
+Set up data for modelling: - Query detailed meat weight/shell height
+sampling data from database (scallsur.scwgthgt) for specified cruises
+(SPA1A1B4and5, SPA3, SPA6). - Format data for the model - Run the VonB
+
+<center>
+
+$L_t = L_\infty(1-e^{-K(t)})$
+
+</center>
+
+Where:
+
+$L_t$ = Length at age $t$
+
+$L_\infty$ = asymptotic length (length at which growth rate is zero) -
+estimated from the data
+
+$K$ = Brody growth coeff (rate of growth towards asymptote) - estimated
+from the data
+
+$t$ = scallop age (years)
+
+-   **Script Directory:** To be your forked Marscal Inshore repository
+    path (e.g. `r paste0(dir, "/BoF/Growth")`)
+
+-   **Output(s):**
+
+-   **Output Directory(s):**
+
+------------------------------------------------------------------------
+
+::: {.infobox .caution data-latex="{caution}"}
+**COMMIT CHANGES**
+
+Ensure that all changes made to VonB.R scripts have been saved and
+pushed to Marscal Inshore repository before continuing!
+:::
+
+------------------------------------------------------------------------
+
+## 5. Shell Height Frequencies (Growth) {#shell-height-frequencies-growth}
+
+```{r Open AREA_SHF_YYYY.R, eval = FALSE, include = FALSE}
+
+file.show(paste0("Y:/Inshore/BoF/",year,"/Assessment/Scripts/Growth/SPA1A_SHF_",year,".R"))
+file.show(paste0("Y:/Inshore/BoF/",year,"/Assessment/Scripts/Growth/SPA1B_SHF_",year,".R"))
+file.show(paste0("Y:/Inshore/BoF/",year,"/Assessment/Scripts/Growth/SPA3_SHF_",year,".R"))
+file.show(paste0("Y:/Inshore/BoF/",year,"/Assessment/Scripts/Growth/SPA4_SHF_",year,".R"))
+file.show(paste0("Y:/Inshore/BoF/",year,"/Assessment/Scripts/Growth/SPA6_SHF_",year,".R"))
+
+#file.show(paste0(dir, "/BoF/Growth/SPA1A_SHF.R"))
+#file.show(paste0(dir, "/BoF/Growth/SPA1B_SHF.R"))
+#file.show(paste0(dir, "/BoF/Growth/SPA3_SHF.R"))
+#file.show(paste0(dir, "/BoF/Growth/SPA4_SHF.R"))
+#file.show(paste0(dir, "/BoF/Growth/SPA6_SHF.R"))
+```
+
+-   **Purpose:** This script produces plots of shell height frequencies
+    for specified strata by year, and calculates commercial mean shell
+    height in year t ($\bar{L}$) and uses parameters from the VonB
+    growth model to predict how much a shell of height $L$ will grow in
+    one year.
+
+    **NOTE** - requires the script BoFstratadef.R (Inshore github repo)
+    and PEDstrata package to run. <mark>**NOTE - TO DO: source the
+    .RData files created by the vonB scripts (i.e. read in the outputs
+    directly instead of hardcoding them in)** </mark>
+
+-   **Overview:**
+
+-   For each area (SPA1A, SPA1B, SPA3, SPA4 and SPA6) scripts are run
+    separately.
+
+    -   Query shell height bin data from database (scallsur.scliveres)
+        for specified Strata.
+
+    -   Calculate shell height frequency for each year by strata.
+        <mark>**NOTE - Look into using sf to stratify**</mark>
+
+    -   Calculate stratified shell height frequency for all of area
+        (SPA1A, SPA1B, SPA3, SPA4 and SPA6) by year
+
+    -   Plot shell height frequencies for each year (last 7 years)
+
+    -   Calculate $\bar{L}$ for all of area (SPA1A, SPA1B, SPA3, SPA4
+        and SPA6) by year for commercial and recruit sizes
+
+    -   Predict $\bar{L}$ in $t+1$:
+
+    <center>
+
+    $\bar{L}_{t+1} = L_\infty * (1-e^{-e^{logK}}) + (e^{-e^{logK}}) * (\bar{L})$
+
+    </center>
+
+    -   Calculate $\bar{L}$ for each subarea for plotting
+
+    -   Repeat Tow plots (SPA1B - query from scallsur.sccomparisontows)
+
+See Y:/Inshore/BoF/SurveyDesignTables/Areas for BoF Assessment
+modelling_Notes.docx for more details on substrata areas.
+
+![](C:/Users/WILSONB/Documents/GitHub/BayofFundy/InshoreAssessmentWorkflow/images/SurveyStrataMap.png)
+
+1.  SPA1A:
+
+    -   2 to 8 mile = Strata 6 and 7
+
+    -   8 to 16 mile = Strata 12, 13, 14, 15, 16, 17, 18, 19, 20
+
+    -   Mid-Bay South = Strata 39
+
+2.  SPA1B:
+
+    -   Mid-Bay North = Strata 38 (Gets separated into East and West
+        strata) <mark>**NOTE** Check east and west in script - The
+        object names are reversed (i.e. West should be East) </mark>
+
+    -   Cape Spencer = Strata 37
+
+    -   Upper Bay 28C = Strata 53
+
+    -   Advocate Harbour = Strata 35
+
+    -   28D Outer = Strata 49
+
+    -   Spencers Island = Strata 52
+
+    -   Scotts Bay = Strata 51
+
+![](C:/Users/WILSONB/Documents/GitHub/BayofFundy/InshoreAssessmentWorkflow/images/SPA1B_MidBayN.png)
+
+3.  SPA3:
+
+    -   St. Mary's Bay = Strata 22
+
+    -   Outside VMS strata = Strata 23, 24 (Brier Island, Lurcher)
+
+    -   Within VMS strata = Strata 99 (created using VMS strata
+        shapefile - github)
+
+![](C:/Users/WILSONB/Documents/GitHub/BayofFundy/InshoreAssessmentWorkflow/images/SPA3_Strata.png)
+
+4.  SPA4:
+
+    -   SPA4 (Modelled area) = Strata 1, 2, 3, 4, 5, 8, 9, 10
+
+    -   0-2 mile = Strata 47
+
+5.  SPA6:
+
+    -   VMS IN STRATA
+
+    -   VMS OUT STRATA
+
+![](C:/Users/WILSONB/Documents/GitHub/BayofFundy/InshoreAssessmentWorkflow/images/SPA6_StrataInOut.png)
+
+-   **Script Directory:** To be your forked Marscal Inshore repository
+    path (e.g. `r paste0(dir, "/BoF/Growth")`)
+
+-   **Output(s):** - Shell Height Frequency plots for each year by
+    strata
+
+    -   SPA1A
+
+        -   2 to 8 mile - SPA1A_SHF_2to8.png
+
+        -   8 to 16 mile - SPA1A_SHF_8to16.png
+
+        -   Mid-Bay South - SPA1A_SHF_MBS.png
+
+        -   All SPA1A Area - SPA1A_SHF_all.png
+
+        -   Plot of Commercial mean SH by year ($\bar{L}$) -
+            SPA1A_lbar.png
+
+        -   Commercial mean SH by year ($\bar{L}$) -
+            SPA1A.lbar.to.YYYY.csv & SPA1A.lbar.by.strata.YYYY.csv
+
+        -   Saved objects for predicting mean weight -
+            SPA1A.YYYY.SHobj.R
+
+    -   SPA1B
+
+        -   Mid-Bay North - SPA1B_SHF_MBN.png
+
+        -   Cape Spencer - SPA1B_SHF_CS.png
+
+        -   Upper Bay 28C - SPA1B_SHF_28C.png
+
+        -   Advocate Harbour - SPA1B_SHF_AH.png
+
+        -   28D Outer - SPA1B_SHF_Out.png
+
+        -   Spencers Island - SPA1B_SHF_SI.png
+
+        -   Scotts Bay - SPA1B_SHF_SB.png
+
+        -   All SPA1B Area - SPA1B_SHF_all.png
+
+        -   Repeated Tows - SPA1B_SHF_MBN_RepeatTows.png,
+            SPA1B_SHF_AH_RepeatTows.png, SPA1B_SHF_28C_RepeatTows.png,
+            SPA1B_SHF_Out_RepeatTows.png
+
+        -   Plot of Commercial mean SH by year ($\bar{L}$) -
+            SPA1B_lbar.png
+
+        -   Commercial mean SH by year ($\bar{L}$) -
+            SPA1B.lbar.to.YYYY.csv
+
+        -   Saved objects for predicting mean weight -
+            SPA1B.YYYY.SHobj.R, SPA1BYYYY.lbarbyStrataGroup.R
+
+    -   SPA3
+
+        -   Inner VMS - SPA3_SHF_InVMS.png
+
+        -   Saint Mary's Bay - SPA3_SHF_SMB.png
+
+        -   Outer VMS - SPA3_SHF_OutVMS.png
+
+        -   Modelled Area - SPA3_SHF_ModelledArea.png
+
+        -   Plot of Commercial mean SH by year ($\bar{L}$) -
+            SPA3_lbar.png, SPA3_strata_lbar.png
+
+        -   Commercial mean SH by year ($\bar{L}$) -
+            SPA3.SHF.modelled.area.means.to.YYYY.csv,
+            SPA3.lbar.toYYYY.csv
+
+        -   Saved objects for predicting mean weight - SPA3.SHobj.YYYY.R
+
+        -   Repeat Tows - <mark>**NOTE** Needs to be updated to ggplot
+            </mark>
+
+    -   SPA4
+
+        -   SPA4_SHF.png
+
+        -   SPA4_SHF_0to2mile.png
+
+        -   Plot of Commercial mean SH by year ($\bar{L}$) -
+            SPA4_lbar.png
+
+        -   Commercial mean SH by year ($\bar{L}$) -
+            SPA4.SHFmeans.toYYYY.csv, SPA4.lbar.toYYYY.csv
+
+        -   Saved objects for predicting mean weight - SPA4.SHobj.YYYY.R
+
+    -   SPA6
+
+        -   Inner VMS Strata - SPA6_SHF_InVMS.png
+
+        -   Outer VMS Strata - SPA6_SHF_OutVMS.png
+
+        -   Plot of Commercial mean SH by year ($\bar{L}$) -
+            SPA6_lbar.png
+
+        -   Commercial mean SH by year ($\bar{L}$) -
+            SPA6.lbar.by.strata.YYYY.csv
+
+        -   Saved objects for predicting mean weight -
+            SPA6.SHobj.IN.YYYY.R, SPA6.SHobj.OUT.YYYY.R
+
+-   **Output Directory(s):**
+
+    -   Y:/Inshore/BoF/Figures (.png)
+
+    -   Y:/Inshore/BoF/Assessment/Data/SurveyIndices/AREA (.csv)
+
+------------------------------------------------------------------------
+
+::: {.infobox .caution data-latex="{caution}"}
+**COMMIT CHANGES**
+
+Ensure that all changes made to SHF.R scripts have been saved and pushed
+to Marscal Inshore repository before continuing!
+:::
+
+------------------------------------------------------------------------
+
+## 6. SPA5 Numbers Weight per Tow, SHF and Clappers
+
+```{r Open SPA5 survey indices script, eval = FALSE, include = FALSE}
+file.show(paste0("Y:/Inshore/BoF/",year,"/Assessment/Scripts/SurveyIndices/SPA4and5/SPA5_NumbersWeightperTow_SHF_Clappers_",year,".R"))
+```
+
+-   **Purpose:** Calculates numbers per tow and weight per tow, plots
+    shell height frequency, clappers per tow, clapper shell height
+    frequency.
+
+-   **Overview:**
+
+    -   Calculates numbers per tow and weight per tow using simple mean.
+
+    -   Calculates weights per tow and weight per tow using simple mean
+
+    -   Calculates numbers of clappers per tow and weight per tow using
+        simple mean.
+
+-   **Script Directory:** To be your forked Marscal Inshore repository
+    path (e.g. `r paste0(dir, "/BoF/SurveyIndices")`)
+
+-   **Output(s):**
+
+    -   SPA5.Index.NumbersYYYY.csv
+
+    -   SPA5.Index.WeightYYYY.csv
+
+    -   SPA5_NumberWeightPerTowYYYY.png
+
+    -   SPA5_SHF_YYYY.png
+
+    -   Clappers - SPA5.Index.ClappersYYYY.csv
+
+    -   SPA5_ClappersPerTowYYYY.png
+
+    -   SPA5_dead_SHF_YYYY.png
+
+-   **Output Directory(s):**
+
+    -   Y:/Inshore/BoF/Figures (.png)
+
+    -   Y:/Inshore/BoF/Assessment/Data/SurveyIndices/SPA1A1B4and5 (.csv)
+
+## 7. Growth Rates (Growth)
+
+```{r Open GrowthRates_AREA_new_2020.R, eval =  FALSE, include = FALSE}
+
+file.show(paste0("Y:/Inshore/BoF/",year,"/Assessment/Scripts/Growth/GrowthRates_SPA1A_",year,".R"))
+file.show(paste0("Y:/Inshore/BoF/",year,"/Assessment/Scripts/Growth/GrowthRates_SPA1B_",year,".R"))
+file.show(paste0("Y:/Inshore/BoF/",year,"/Assessment/Scripts/Growth/GrowthRates_SPA3_",year,".r"))
+file.show(paste0("Y:/Inshore/BoF/",year,"/Assessment/Scripts/Growth/GrowthRates_SPA4_",year,".r"))
+file.show(paste0("Y:/Inshore/BoF/",year,"/Assessment/Scripts/Growth/GrowthRates_SPA6_",year,".R"))
+
+```
+
+-   **Purpose:** Saves Predicted and Actual growth rates for commercial
+    ($g$) and recruit ($gR$) sized scallops.
+
+**NOTE:** This script requires inputs from [2. Meat Weight - Shell
+Height and Condition modeling
+(Growth)](#meat-weight---shell-height-and-condition-modeling-growth) and
+[5. Shell Height Frequencies (Growth)](#shell-height-frequencies-growth)
+
+-   **Overview:**
+
+    -   Import outputs from previous scripts in respective areas (SPA1A,
+        SPA1B, SPA3, SPA4and5, and SPA6) e.g. AREAgrowth2019.RData,
+        AREA2019.SHobj.R, AREA.ActualGrowthRateObj.YYYY.R,
+        AREAPredictedGrowthRateObj.YYYY.R
+
+    -   Imports predicted and actual shell height, MWSH.YYYY model, and
+        meat weight shell height data from samples.
+
+        **Actual Growth Rates**
+
+    -   commercial mean meat weight in year t-1 is predicted using
+        predicted SH (SH predicted from year t-1 to year t) and actual
+        mw/sh relationship in year t
+
+    -   recruit mean meat weight in year t-1 is predicted using
+        predicted SH (SH predicted from year t-1 to year t) and actual
+        mw/sh relationship in year t
+
+    -   actual commercial mean meat weight in year t is predicted and
+
+    -   actual recruit mean meat weight in year t is predicted.
+
+        **Predicted Growth Rates**
+
+    -   Calculate mean weight of commercial and recruit animals:
+
+        1\. In year t ("actual") using mean SH in year t and meat weight
+        shell height relationship in year t
+
+        2\. In year t+1 ("pred") using predicted mean SH in year t+1
+        (predicted from year t) and meat weight shell height
+        relationship in year t
+
+    -   i.e. predicted g and gR were from year t to t+1, assuming it is
+        unknown.
+
+    <center>
+
+    $g_{t-1} = \bar{w_t}/\bar{w}_{t-1}$
+
+    </center>
+
+-   **Script Directory:** To be your forked Marscal Inshore repository
+    path (e.g. `r paste0(dir, "/BoF/Growth")`)
+
+-   **Output(s):**
+
+    -   SPA1A
+
+        -   spa1A.growthrate.YYYY.csv
+
+        -   SPA1A_GrowthRate_ComRec_Actual.png
+
+        -   SPA1A_GrowthRate_Com_ActualPredicted.png
+
+        -   SPA1A_GrowthRate_Rec_ActualPredicted.png
+
+    -   SPA1B
+
+        -   spa1B.growthrate.YYYY.csv
+
+        -   SPA1B_GrowthRate_ComRec_Actual.png
+
+        -   SPA1B_GrowthRate_Com_ActualPredicted.png
+
+        -   SPA1B_GrowthRate_Rec_ActualPredicted.png
+
+    -   SPA3
+
+        -   spa3.growthrate.YYYY.csv
+
+        -   SPA3_GrowthRate_ComRec_Actual.png
+
+        -   SPA3_GrowthRate_Com_ActualPredicted.png
+
+        -   SPA3_GrowthRate_Rec_ActualPredicted.png
+
+    -   SPA4
+
+        -   spa4.growthrate.YYYY.csv
+
+        -   SPA4_GrowthRate_ComRec_Actual.png
+
+        -   SPA4_GrowthRate_Com_ActualPredicted.png
+
+        -   SPA4_GrowthRate_Rec_ActualPredicted.png
+
+
+    -   SPA6
+
+        -   spa6.growthrate.YYYY.csv
+
+        -   SPA6_GrowthRate_ComRec_Actual.png
+
+        -   SPA6_GrowthRate_Com_ActualPredicted.png
+
+        -   SPA6_GrowthRate_Rec_ActualPredicted.png
+
+-   **Output Directory(s):**
+
+    -   Y:/Inshore/BoF/Figures (.png)
+
+    -   Y:/Inshore/BoF/Assessment/Data/Growth/AREA (.csv)
+
+------------------------------------------------------------------------
+
+::: {.infobox .caution data-latex="{caution}"}
+**COMMIT CHANGES**
+
+Ensure that all changes made to GrowthRates_AREA.R scripts have been
+saved and pushed to Marscal Inshore repository before continuing!
+:::
+
+------------------------------------------------------------------------
+
+## 8. Number Weights per Tow (Survey Indices)
+
+```{r Open AREA_NumbersWeightperTow_YYYY.R, eval =  FALSE, include = FALSE}
+
+file.show(paste0("Y:/Inshore/BoF/",year,"/Assessment/Scripts/SurveyIndices/SPA1A/SPA1A_NumbersWeightperTow_",year,".R"))
+file.show(paste0("Y:/Inshore/BoF/",year,"/Assessment/Scripts/SurveyIndices/SPA1B/SPA1B_NumbersWeightperTow_",year,".R"))
+file.show(paste0("Y:/Inshore/BoF/",year,"/Assessment/Scripts/SurveyIndices/SPA3/SPA3_NumbersWeightperTow_",year,".R"))
+file.show(paste0("Y:/Inshore/BoF/",year,"/Assessment/Scripts/SurveyIndices/SPA4and5/SPA4_NumbersWeightperTow_",year,".R"))
+
+```
+
+-   **Purpose:** Calculates population numbers (numbers scaled to total
+    area) and biomass indices.
+
+**NOTE:** This script requires inputs from [2. Meat Weight - Shell
+Height and Condition modeling
+(Growth)](#meat-weight---shell-height-and-condition-modeling-growth)
+(AREAliveweightYYYY.csv) and data from Scallsur database (scliveres and
+sccomparisontows).
+
+-   **Overview:**
+
+    -   Checks for potential errors that will break the SPR estimates
+        (i.e. miss-matches in StrataIDs, or if one repeat has 0s
+        recorded for recruit or commercial sizes), and correct for any
+        errors from previous years.
+
+    -   Calculates numbers per tow and population numbers for Recruit
+        and Commercial size scallops:
+
+        -   Runs simple means and SPR for each area.
+
+    -   Calculates weights per tow and population biomass for Recruit
+        and Commercial size scallops:
+
+        -   Runs simple means and SPR for each area.
+
+-   **Script Directory:** To be your forked Marscal Inshore repository
+    path (e.g. `r paste0(dir, "/BoF/SurveyIndices")`)
+
+-   **Output(s):**
+
+    -   AREA.Index.Numbers.YYYY.csv - contains $Npt$, $N$
+
+    -   AREA.Index.WeightYYYY.csv - contains $I$, $IR$, $Icv$, $IRcv$
+
+    -   AREA_NumberpertowYYYY.png
+
+    -   AREA_WeightpertowYYYY.png
+
+-   **Output Directory(s):**
+
+    -   Y:/Inshore/BoF/Figures (.png)
+
+    -   Y:/Inshore/BoF/Assessment/Data/Growth/AREA (.csv)
+
+------------------------------------------------------------------------
+
+::: {.infobox .caution data-latex="{caution}"}
+**COMMIT CHANGES**
+
+Ensure that all changes made to AREA_NumbersWeightperTow_YYYY.r scripts
+have been saved and pushed to Marscal Inshore repository before
+continuing!
+:::
+
+------------------------------------------------------------------------
+
+## 9. Clappers (Survey Indices)
+
+```{r Open AREA_Clapper_YYYY.R,  eval =  FALSE, include = FALSE}
+
+file.show(paste0("Y:/Inshore/BoF/",year,"/Assessment/Scripts/SurveyIndices/SPA1A/SPA1A_Clapper_",year,".R"))
+file.show(paste0("Y:/Inshore/BoF/",year,"/Assessment/Scripts/SurveyIndices/SPA1B/SPA1B_Clapper_",year,".R"))
+file.show(paste0("Y:/Inshore/BoF/",year,"/Assessment/Scripts/SurveyIndices/SPA1B/SPA3_Clappers_",year,".R"))
+file.show(paste0("Y:/Inshore/BoF/",year,"/Assessment/Scripts/SurveyIndices/SPA4and5/SPA4_Clappers_",year,".R"))
+file.show(paste0("Y:/Inshore/BoF/",year,"/Assessment/Scripts/SurveyIndices/SPA6/SPA6_Clapper_simpleMeans_",year,".R"))
+
+```
+
+-   **Purpose:**
+
+    -   Calculates clapper numbers per tow, clapper population numbers
+        and clapper shell height frequencies
+
+-   **Overview:**
+
+    -   Clapper numbers per tow clapper population numbers for
+        commercial and recruit sizes are calculated using simple means.
+
+    -   plots shell height frequencies for clappers for each area
+
+-   **Script Directory:** To be your forked Marscal Inshore repository
+    path (e.g. `r paste0(dir, "/BoF/SurveyIndices")`)
+
+    <mark>**NOTE** Drop the 's' in file name for SPA3 and 4 OR add them
+    for the others for consistency </mark>
+
+-   **Output(s):**
+
+    -   AREA.Index.Clappers.YYYY.csv
+
+    -   AREA.Clappers.N.formodel.YYYY.csv
+
+    -   AREA_clapper_NumberpertowYYYY.png
+
+    -   AREA_clapper_SHF.png (1 for each for each substrata)
+
+-   **Output Directory(s):**
+
+    -   Y:/Inshore/BoF/Figures (.png)
+
+    -   Y:/Inshore/BoF/Assessment/Data/Growth/AREA (.csv)
+
+------------------------------------------------------------------------
+
+::: {.infobox .caution data-latex="{caution}"}
+**COMMIT CHANGES**
+
+Ensure that all changes made to Clapper_AREA.r scripts have been saved
+and pushed to Marscal Inshore repository before continuing!
+:::
+
+------------------------------------------------------------------------
+
+## 10. Ratio Lined-Unlined (Survey Indices)
+
+```{r Open AREA_SPA1A_ratioLinedtoUnlinedYYYY.R, eval =  FALSE, include = FALSE}
+
+file.show(paste0("Y:/Inshore/BoF/",year,"/Assessment/Scripts/SurveyIndices/SPA1A/SPA1A_RatioLinedUnlined_",year,".R"))
+file.show(paste0("Y:/Inshore/BoF/",year,"/Assessment/Scripts/SurveyIndices/SPA1B/SPA1B_RatioLinedUnlined_",year,".R"))
+file.show(paste0("Y:/Inshore/BoF/",year,"/Assessment/Scripts/SurveyIndices/SPA1B/SPA3_RatioLinedUnlined_",year,".R"))
+file.show(paste0("Y:/Inshore/BoF/",year,"/Assessment/Scripts/SurveyIndices/SPA4and5/SPA4_RatioLinedUnlined_",year,".R"))
+file.show(paste0("Y:/Inshore/BoF/",year,"/Assessment/Scripts/SurveyIndices/SPA6/SPA6_VMS_Indices_RatioLinedtoUnlined_",year,".r"))
+
+```
+
+-   **Purpose:** Calculates ratio of unlined and lined numbers per tow.
+
+**NOTE:** This script requires inputs from Scallsur database
+(sclinedlive_std, scunlinedlive_std and sccomparisontows).
+
+-   **Overview:**
+
+    -   Errors that will break the SPR estimates (i.e. miss-matches in
+        StrataIDs, or if one repeat has 0s recorded for recruit or
+        commercial sizes) are corrected.
+
+    -   Calculates estimates for lined gear (scaled to total area) for
+        commercial size scallops for each year in each area
+
+        -   Runs simple means and SPR.
+
+    -   Calculates estimates for unlined gear (scaled to total area) for
+        commercial size scallops for each year in each area
+
+        -   Runs simple means and SPR.
+        
+    -   Calculates ratio of lined and unlined estimates (mean numbers
+        per tow).
+        
+    -   Plots time series Lined and Unlined mean numbers per tow.
+    
+
+-   **Script Directory:** To be your forked Marscal Inshore repository
+    path (e.g. `r paste0(dir, "/BoF/SurveyIndices")`)
+
+-   **Output(s):**
+
+    -   AREA_lined.vs.unlinedYYYY.png
+
+    -   AREA_ratioYYYY.png
+
+    -   AREA_ratioLinedtoUnlinedYYYY.csv
+
+-   **Output Directory(s):**
+
+    -   Y:/Inshore/BoF/Figures (.png)
+
+    -   Y:/Inshore/BoF/Assessment/Data/SurveyIndices/AREA (.csv)
+
+------------------------------------------------------------------------
+
+::: {.infobox .caution data-latex="{caution}"}
+**COMMIT CHANGES**
+
+Ensure that all changes made to AREA_RatioLinedUnlined_YYYY.r scripts
+have been saved and pushed to Marscal Inshore repository before
+continuing!
+:::
+
+------------------------------------------------------------------------
+
+## 11. Model (Model)
+
+-   **Purpose:**
+
+    -   Population model - Bayesian state space model
+
+        <center>
+
+        $B_{t+1} = (e^{-m_t}g_t(B_t-C_t)+e^{-m_t}g_{Rt}R_t)\tau_t$
+
+        </center>
+
+-   **Overview:**
+
+    -   Model formulation for BoF: have biomass remove catch then grow
+        up and kill off.
+
+    -   Starts by creating comparison file (SPAx_ModelData_R.xlsx).
+        Ensure previous years data has not changed. Investigate if
+        differences are flagged.
+
+    -   Import data from generated SPAx_ModelData_R\_YYYY-MM-DD.xlsx :
+
+        -   C - Catch
+
+        -   N - population numbers
+
+        -   I - Biomass scaled to full area
+
+        -   I.cv -
+
+        -   IR - Recruit Biomass scaled to full area
+
+        -   IR.cv -
+
+        -   ratiolined - ratio of lined to unlined
+
+        -   g - Commercial growth
+
+        -   gR - recruit growth
+
+        -   clappers - clapper numbers
+
+    -   Set parameters to be returned from the winbugs model run:
+
+        -   B - Commercial Biomass (in tonnes)
+
+        -   R - Recruit Biomass (in tonnes)
+
+        -   q - Catchability
+
+        -   K - Scaling parameter
+
+        -   P - Biomass scaled by K
+
+        -   **sigma**
+
+        -   S - dissolution factor (factors into the clapper model)
+
+        -   m - mortality
+
+        -   **kappa.tau - observation error for clappers?**
+
+        -   r - recruit biomass scaled by K
+
+        -   Fmort - instant mortality
+
+        -   mu - exploitation rate
+
+        -   Irep - Commercial Biomass not scaled by q
+
+        -   IRrep - Recruit Biomass not scaled by q
+
+        -   Presid, sPresid, Iresid, IRresid, sIresid, sIRresid -
+            residuals
+
+    -   Model is run in Winbugs and diagnostics are run (i.e. checks for
+        model convergence)
+
+    -   Plots of time series of survey biomass estimates are made
+
+    -   Plots biomass time series (EN/FR), box plot contains 80% of the
+        data when pred.lim = 0.2 (i.e. 80% of the data is located
+        between the whiskers)
+
+    -   Plot of the posteriors
+
+    -   Plots of residuals
+
+    -   Plot of the predicted prediction-evaluation
+
+    -   Creates decision table and saves out model summary.
+
+-   **Script Directory:** To be your forked Marscal Inshore repository
+    path (e.g. `r paste0(dir, "/BoF/Model")`)
+
+-   **Output(s):**
+
+    -   SPAx_ModelData_R.xlsx
+
+    -   SPAx_Model_YYYY.RData
+
+    -   spaXModelOutput.csv
+
+    -   Survey_est_figure_AREA.png
+
+    -   Model_biomass_figure_AREA.png
+
+    -   plot.Presids_AREA.png, plot.sPresid_AREA.png,
+        plot.Iresid_AREA.png. plot.IRresid_Area.png
+
+    -   Prediction_evaluation_figure_predicted_AREA.png
+
+    -   Prediction_evaluation_figure_actual_AREA.png
+
+    -   decisiontableYYYY_AREA.csv
+
+    -   SPA6_Model_YYYY.RData
+
+    -   Model_results_and_diagnostics_YYYY_AREA.RData
+
+-   **Output Directory(s):**
+
+    -   Y:/Inshore/BoF/Model/AREA
+
+------------------------------------------------------------------------
+
+::: {.infobox .caution data-latex="{caution}"}
+**COMMIT CHANGES**
+
+Ensure that all changes made to Model scripts have been saved and pushed
+to Marscal Inshore repository before continuing!
+:::
+
+------------------------------------------------------------------------

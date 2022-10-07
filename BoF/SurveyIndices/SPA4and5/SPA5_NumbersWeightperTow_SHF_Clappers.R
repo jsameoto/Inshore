@@ -25,10 +25,10 @@ pwd <- pw.sameotoj
 uid <- keyring::key_list("Oracle")[1,2]
 pwd <- keyring::key_get("Oracle", uid)
 
-surveyyear <- 2021  #This is the last survey year 
-assessmentyear <- 2021 #year in which you are conducting the survey 
+surveyyear <- 2022  #This is the last survey year 
+assessmentyear <- 2022 #year in which you are conducting the survey 
 area <- "1A1B4and5"  #SPA assessing recall SPA 1A, 1B, and 4 are grouped; options: "1A1B4and5", "3", "6" 
-path.directory <- "Y:/INSHORE SCALLOP/BoF/"
+path.directory <- "Y:/Inshore/BoF/"
 
 
 ####
@@ -178,7 +178,7 @@ spa5.numbers.plot <- ggplot(data = SPA5.Numbers, aes(x=Year, y=Mean.nums, col=Si
   geom_point() + 
   geom_line(aes(linetype = Size)) + 
   theme_bw() + ylab("Survey mean no./tow") + xlab("Year") + 
-  theme(legend.position = c(0.1, 0.9)) + 
+  theme(legend.position = c(0.1, 0.85)) + 
   scale_linetype_manual(values=c("solid", "dotted"))+
   scale_color_manual( values=c('black','red')) + 
   geom_hline(yintercept = median(SPA5.Numbers$Mean.nums[SPA5.Numbers$Year>=1990&SPA5.Numbers$Year<=2008&SPA5.Numbers$Size=="Commercial"], na.rm=TRUE), col="black", linetype="longdash") +
@@ -189,7 +189,7 @@ spa5.weight.plot <- ggplot(data = SPA5.Weight, aes(x=Year, y= kg, col=Size, pch=
   geom_point() + 
   geom_line(aes(linetype = Size)) + 
   theme_bw() + ylab("Mean kg/tow") + xlab("Year") + 
-  theme(legend.position = c(0.1, 0.9)) + 
+  theme(legend.position = c(0.1, 0.85)) + 
   scale_linetype_manual(values=c("solid", "dotted"))+
   scale_color_manual( values=c('black','red')) + 
   xlim(c(min(SPA5.Numbers$Year),surveyyear)) + 

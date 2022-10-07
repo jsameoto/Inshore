@@ -45,8 +45,8 @@ uid <- keyring::key_list("Oracle")[1,2]
 pwd <- keyring::key_get("Oracle", uid)
 
 #set year 
-survey.year <- 2021  #removed maxyear in script and changed to survey year
-assessmentyear <- 2021 #year in which you are providing advice for- determines where to save files to
+survey.year <- 2022  #removed maxyear in script and changed to survey year
+assessmentyear <- 2022 #year in which you are providing advice for- determines where to save files to
 path.directory <- "Y:/Inshore/BoF/"
 
 #set up directory to save plot
@@ -249,7 +249,8 @@ plot.theme.6 <- theme(plot.title = element_text(size = 14, hjust = 0.5), #plot t
                       legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.7)), #Legend bkg colour and transparency
                       legend.box.margin = margin(6, 8, 6, 8))
 
-
+#Need to run to use pecjector - will look into 
+sf::sf_use_s2(FALSE)
 
 # -------------- MYCOBACTERIUM ------------------------------------------------------------
 
@@ -281,7 +282,7 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
 #Colour aesthetics and breaks for contours
 labels <- c("0-0.02", "0.02-0.03", "0.03-0.04", "0.04-0.05", "0.05-0.06", "0.06-0.08", "0.08-0.1", "0.1+")
 col <- brewer.pal(length(lvls),"RdPu") #set colours
-cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = expression(frac(N,tow)), limits = labels) #set custom fill arguments for pecjector
+cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = "Proportion Infected", limits = labels) #set custom fill arguments for pecjector
 
 
 # ----FULL BAY -----
@@ -388,7 +389,7 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
 #Colour aesthetics and breaks for contours
 labels <- c("0-0.02", "0.02-0.03", "0.03-0.04", "0.04-0.05", "0.05-0.06", "0.06-0.08", "0.08-0.1", "0.1+")
 col <- brewer.pal(length(lvls),"RdPu") #set colours
-cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = expression(frac(N,tow)), limits = labels) #set custom fill arguments for pecjector
+cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = "Proportion Infected", limits = labels) #set custom fill arguments for pecjector
 
 p <- pecjector(area = "spa3",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
                add_layer = list(land = "grey", survey = c("inshore", "outline"), scale.bar = c('tl',0.5,-1,-1)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
@@ -432,7 +433,7 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
 #Colour aesthetics and breaks for contours
 labels <- c("0-0.02", "0.02-0.03", "0.03-0.04", "0.04-0.05", "0.05-0.06", "0.06-0.08", "0.08-0.1", "0.1+")
 col <- brewer.pal(length(lvls),"RdPu") #set colours
-cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = expression(frac(N,tow)), limits = labels) #set custom fill arguments for pecjector
+cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = "Proportion Infected", limits = labels) #set custom fill arguments for pecjector
 
 
 p <- pecjector(area =list(x=c(-66.4, -67.5), y=c(44.4, 45.2), crs=4326),repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
@@ -537,7 +538,7 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   mutate(level = unique(CP$PolyData$level))
 
 #Colour aesthetics and breaks for contours
-labels <- c("0-1", "1-2", "3-3", "3-4", "4-5", "5+")
+labels <- c("0-1", "1-2", "2-3", "3-4", "4-5", "5+")
 col <- brewer.pal(length(lvls),"RdPu") #set colours
 cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = expression(frac("N Infected",tow)), limits = labels) #set custom fill arguments for pecjector
 
@@ -732,7 +733,7 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   mutate(level = unique(CP$PolyData$level))
 
 #Colour aesthetics and breaks for contours
-labels <- c("0-1", "1-2", "3-3", "3-4", "4-5", "5+")
+labels <- c("0-1", "1-2", "2-3", "3-4", "4-5", "5+")
 col <- brewer.pal(length(lvls),"RdPu") #set colours
 cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = expression(frac("N Infected",tow)), limits = labels) #set custom fill arguments for pecjector
 
@@ -763,7 +764,7 @@ p + #Plot survey data and format figure.
         legend.box.margin = margin(6, 10, 6, 8)) #Legend bkg margin (top, right, bottom, left)
 
 #save
-ggsave(filename = paste0(saveplot.dir,'ContPlot_BF_Myco_per_Tow',survey.year,'_new.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir,'ContPlot_BF_Myco_per_Tow',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 
 
@@ -800,7 +801,7 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
 #labels <- c("0-0.01", "0.01-0.05","0.05-0.1", "0.1-0.15", "0.15-0.2", "0.2-0.25", "0.25-0.3", "0.3+")
 labels <- c("0-0.01", "0.01-0.02","0.02-0.03", "0.03-0.04", "0.04-0.05", "0.05-0.06", "0.06+")
 col <- brewer.pal(length(lvls),"Greys") #set colours
-cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = expression(frac(N,tow)), limits = labels) #set custom fill arguments for pecjector
+cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = "Proportion", limits = labels) #set custom fill arguments for pecjector
 
 
 # ----FULL BAY -----
@@ -906,7 +907,7 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
 #Colour aesthetics and breaks for contours
 labels <- c("0-0.05", "0.05-0.1", "0.1-0.2", "0.2-0.3", "0.3-0.4", "0.4-0.5", "0.5+")
 col <- brewer.pal(length(lvls),"Greys") #set colours
-cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = expression(frac(N,tow)), limits = labels) #set custom fill arguments for pecjector
+cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = "Proportion", limits = labels) #set custom fill arguments for pecjector
 
 p <- pecjector(area = "spa3",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
                add_layer = list(land = "grey", survey = c("inshore", "outline"), scale.bar = c('tl',0.5,-1,-1)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
@@ -950,7 +951,7 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
 #Colour aesthetics and breaks for contours
 labels <- c("0-0.05", "0.05-0.1", "0.1-0.2", "0.2-0.3", "0.3-0.4", "0.4-0.5", "0.5+")
 col <- brewer.pal(length(lvls),"Greys") #set colours
-cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = expression(frac(N,tow)), limits = labels) #set custom fill arguments for pecjector
+cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = "Proportion", limits = labels) #set custom fill arguments for pecjector
 
 
 p <- pecjector(area =list(x=c(-66.4, -67.5), y=c(44.4, 45.2), crs=4326),repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
@@ -994,7 +995,7 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
 #Colour aesthetics and breaks for contours
 labels <- c("0-0.05", "0.05-0.1", "0.1-0.2", "0.2-0.3", "0.3-0.4", "0.4-0.5", "0.5+")
 col <- brewer.pal(length(lvls),"Greys") #set colours
-cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = "Proportion Infected", limits = labels) #set custom fill arguments for pecjector
+cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = "Proportion", limits = labels) #set custom fill arguments for pecjector
 
 
 #Plot with Pecjector
@@ -1010,7 +1011,7 @@ p + #Plot survey data and format figure.
   geom_spatial_point(data = greymeat.datw %>% 
                        filter(year == survey.year),
                      aes(lon, lat), size = 0.5) +
-  labs(title = paste(survey.year, "", "Proportion of Myco Infections"), x = "Longitude", y = "Latitude") +
+  labs(title = paste(survey.year, "", "Proportion of Grey Meats"), x = "Longitude", y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   coord_sf(xlim = c(-67.08,-64.4), ylim = c(43.65,45.62), expand = FALSE)+
   theme(axis.title = element_text(size = 12),
@@ -1024,7 +1025,7 @@ p + #Plot survey data and format figure.
         legend.box.margin = margin(6, 10, 6, 8)) #Legend bkg margin (top, right, bottom, left)
 
 #save
-ggsave(filename = paste0(saveplot.dir,'ContPlot_BFAll_GreyMeatProportion',survey.year,'_new.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir,'ContPlot_BFAll_GreyMeatProportion',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 
 # Number of Grey meats (moderate + severe) per Tow  ------------------------------------------------------
@@ -1058,7 +1059,7 @@ labels <- c("0-1", "1-2", "2-3", "3-4", "4-5", "5+")
 #labels <- c("0-0.1", "0.1-0.3","0.3-0.5", "0.5-0.7", "0.7-0.9", "0.9-1.0", "1+")
 #col.nu <- c("grey90", "grey80", "grey70", "grey60", "grey50", "grey40","grey30", "grey20")
 col <- brewer.pal(length(lvls),"Greys") #set colours
-cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = expression(frac("N Infected",tow)), limits = labels) #set custom fill arguments for pecjector
+cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = expression(frac(N,tow)), limits = labels) #set custom fill arguments for pecjector
 
 # ----FULL BAY -----
 
@@ -1080,7 +1081,7 @@ p + #Plot survey data and format figure.
 ggsave(filename = paste0(saveplot.dir,'ContPlot_BF_GreyMeats_per_Tow',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 #save
-ggsave(filename = paste0("Y:/Inshore/BoF/2018/Figures/ContPlot_BF_GreyMeats_per_Tow2018.png"), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+#ggsave(filename = paste0("Y:/Inshore/BoF/2018/Figures/ContPlot_BF_GreyMeats_per_Tow2018.png"), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA1A -----
 
@@ -1256,7 +1257,7 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
 #Colour aesthetics and breaks for contours
 labels <- c("0-1", "1-2", "2-3", "3-4", "4-5", "5+")
 col <- brewer.pal(length(lvls),"Greys") #set colours
-cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = expression(frac("N Infected",tow)), limits = labels) #set custom fill arguments for pecjector
+cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = expression(frac(N,tow)), limits = labels) #set custom fill arguments for pecjector
 
 #Plot with Pecjector for each area:
 
