@@ -81,14 +81,14 @@ ScallopSurv.dat  <- ScallopSurv.dat  %>%
 #Move start and end coords into same column
 ScallopSurv.start <- ScallopSurv.dat  %>% 
   dplyr::select(-DDElon,-DDElat) %>% #remove end coords
-  rename(LAT = DDSlat) %>% 
-  rename(LONG = DDSlon) %>% 
+  dplyr::rename(LAT = DDSlat) %>% 
+  dplyr::rename(LONG = DDSlon) %>% 
   mutate(POSITION = "START")
 
 ScallopSurv.end <- ScallopSurv.dat  %>% 
   dplyr::select(-DDSlon,-DDSlat) %>% #remove Start coords
-  rename(LAT = DDElat) %>% 
-  rename(LONG = DDElon) %>% 
+  dplyr::rename(LAT = DDElat) %>% 
+  dplyr::rename(LONG = DDElon) %>% 
   mutate(POSITION = "END")
 
 ScallopSurv <- rbind(ScallopSurv.start, ScallopSurv.end) %>% 
@@ -102,7 +102,7 @@ ScallopSurv$longitude <- ScallopSurv$LONG
 ScallopSurv.sf <- st_as_sf(ScallopSurv, coords = c("longitude", "latitude"), crs = 4326) %>% 
   st_transform(crs = 32619) %>% #Convert to utm zone 19
   group_by(TOW_NO) %>%
-  summarize(do_union=FALSE) %>% 
+  dplyr::summarize(do_union=FALSE) %>% 
   st_cast("LINESTRING") %>%
   st_segmentize(units::set_units(50,m)) %>% #Segment line geometry by 50m (i.e. the resolution of the sdm layer)
   st_cast("POINT") #convert each geometry to point (~800m/50m = ~16 points per tow)

@@ -4,6 +4,7 @@
 #libraries
 require(ggplot2)
 require(tidyverse)
+require(sf)
 
 #Check tows spatial function:
 
@@ -21,7 +22,7 @@ for(fun in funcs)
 #define
 direct <- "Y:/Inshore/Survey/"
 year <- 2022
-CRUISE <- "GM" # "BI", BF", "GM", "SFA29"
+CRUISE <- "SFA29" # "BI", BF", "GM", "SFA29"
 
 
 # HGTWGT.csv ----------------------------------------------------------------
@@ -46,24 +47,24 @@ ggplot() + geom_text(data=mwsh[mwsh$Tow>1 & mwsh$Tow<50,]
                      , aes(Height, Weight, colour=as.factor(Tow), label=as.factor(Tow)))
 
 #Plot individual tows (labels are sample numbers)
-ggplot() + geom_text(data=mwsh[mwsh$Tow==42,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
-ggplot() + geom_text(data=mwsh[mwsh$Tow==22,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
-ggplot() + geom_text(data=mwsh[mwsh$Tow==99,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
+ggplot() + geom_text(data=mwsh[mwsh$Tow==20,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
+ggplot() + geom_text(data=mwsh[mwsh$Tow==26,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
+ggplot() + geom_text(data=mwsh[mwsh$Tow==39,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
 
 ggplot() + geom_text(data=mwsh[mwsh$Tow>50 & mwsh$Tow<100,]
                      , aes(Height, Weight, colour=as.factor(Tow), label=as.factor(Tow))) 
 
 #Plot individual tows (labels are sample numbers)
-ggplot() + geom_text(data=mwsh[mwsh$Tow==64,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
-ggplot() + geom_text(data=mwsh[mwsh$Tow==60,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
+ggplot() + geom_text(data=mwsh[mwsh$Tow==73,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
+ggplot() + geom_text(data=mwsh[mwsh$Tow==76,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
 #ggplot() + geom_text(data=mwsh[mwsh$Tow==80,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
 #ggplot() + geom_text(data=mwsh[mwsh$Tow==71,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
 
-ggplot() + geom_text(data=mwsh[mwsh$Tow>100 & mwsh$Tow<119,]
+ggplot() + geom_text(data=mwsh[mwsh$Tow>100 & mwsh$Tow<122,]
                      , aes(Height, Weight, colour=as.factor(Tow), label=as.factor(Tow))) 
 
 #Plot individual tows (labels are sample numbers)
-ggplot() + geom_text(data=mwsh[mwsh$Tow==117,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
+ggplot() + geom_text(data=mwsh[mwsh$Tow==107,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
 
 # bycatch.csv ----------------------------------------------------------------
 
@@ -108,38 +109,38 @@ dhf$bin <- ifelse(dhf$c %in% c(0,2), dhf$variable,
 dhf <- dplyr::arrange(dhf, TOW, GEAR, c)
 
 #Plot to look for outliers:
-dhf1 <- dhf[dhf$TOW>0 & dhf$TOW < 25,]
+dhf1 <- dhf[dhf$TOW>0 & dhf$TOW < 15,]
 ggplot(dhf1, aes(as.numeric(bin), value)) + geom_bar(fill = "aquamarine3", stat = "identity") + facet_grid(GEAR~TOW, scales="free")
 
-dhf2 <- dhf[dhf$TOW>24 & dhf$TOW < 50,]
+dhf2 <- dhf[dhf$TOW>16 & dhf$TOW < 30,]
 #ggplot() + geom_point(data=dhf2, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
 ggplot(dhf2, aes(as.numeric(bin), value)) + geom_bar(fill = "aquamarine3", stat = "identity") + facet_grid(GEAR~TOW, scales="free")
 
-dhf3 <- dhf[dhf$TOW>49 & dhf$TOW < 75,]
+dhf3 <- dhf[dhf$TOW>31 & dhf$TOW < 45,]
 #ggplot() + geom_point(data=dhf3, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
 ggplot(dhf3, aes(as.numeric(bin), value)) + geom_bar(fill = "aquamarine3", stat = "identity") + facet_grid(GEAR~TOW, scales="free")
 
-dhf4 <- dhf[dhf$TOW>74 & dhf$TOW < 100,]
+dhf4 <- dhf[dhf$TOW>46 & dhf$TOW < 60,]
 #ggplot() + geom_point(data=dhf4, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
 ggplot(dhf4, aes(as.numeric(bin), value)) + geom_bar(fill = "aquamarine3", stat = "identity") + facet_grid(GEAR~TOW, scales="free")
 
-dhf5 <- dhf[dhf$TOW>99 & dhf$TOW < 125,]
+dhf5 <- dhf[dhf$TOW>61 & dhf$TOW < 75,]
 #ggplot() + geom_point(data=dhf5, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
 ggplot(dhf5, aes(as.numeric(bin), value)) + geom_bar(fill = "aquamarine3", stat = "identity") + facet_grid(GEAR~TOW, scales="free")
 
-#End of GM 2022 (122 tows)
-
-dhf6 <- dhf[dhf$TOW>124 & dhf$TOW < 137,]
+dhf6 <- dhf[dhf$TOW>76 & dhf$TOW < 90,]
 #ggplot() + geom_point(data=dhf5, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
 ggplot(dhf6, aes(as.numeric(bin), value)) + geom_bar(fill = "aquamarine3", stat = "identity") + facet_grid(GEAR~TOW, scales="free")
 
-dhf6 <- dhf[dhf$TOW>124 & dhf$TOW < 150,]
+dhf6 <- dhf[dhf$TOW>91 & dhf$TOW < 110,]
 #ggplot() + geom_point(data=dhf6, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
 ggplot(dhf6, aes(as.numeric(bin), value)) + geom_bar(fill = "aquamarine3", stat = "identity") + facet_grid(GEAR~TOW, scales="free")
 
-dhf7 <- dhf[dhf$TOW>231 & dhf$TOW < 242,]
+dhf7 <- dhf[dhf$TOW>111 & dhf$TOW < 122,]
 #ggplot() + geom_point(data=dhf7, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
 ggplot(dhf7, aes(as.numeric(bin), value)) + geom_bar(fill = "aquamarine3", stat = "identity") + facet_grid(GEAR~TOW, scales="free")
+
+#End of SFA292022 (122 tows)
 
 dhf8 <- dhf[dhf$TOW>241 & dhf$TOW < 252,]
 #ggplot() + geom_point(data=dhf8, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
@@ -154,6 +155,7 @@ ggplot() + geom_point(data=dhf10, aes(as.numeric(bin), value)) + facet_grid(GEAR
 
 dhf11 <- dhf[dhf$TOW>271 & dhf$TOW < 282,]
 ggplot() + geom_point(data=dhf11, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
+
 
 dhf12 <- dhf[dhf$TOW>281 & dhf$TOW < 292,]
 ggplot() + geom_point(data=dhf12, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
@@ -372,18 +374,59 @@ check.tows.spatial(cruise= paste0(CRUISE,year), year=year, direct="Y:/Inshore/Su
                    previouscruisefolder = paste0("data entry templates and examples/",CRUISE,year-1), previouscruisename = paste0(CRUISE,year-1), plot=TRUE, df=TRUE)
 
 #enter flag.tows_CRUISE produced by the check.tows.spatial function. 
-flagged.tows <- flagged.tows_BF2021
+#find flagged.tows object in global enviro:
+for(obj in ls(pattern = "flagged.tows_")) #name changes every year and every cruise so search re-assign the object name with this:
+flagged.tows <- print(get(obj))
 
 #Enter the tow number indicated in the flagged_tows file 
-flagged.tows[flagged.tows$Oracle.tow..==272,]
+flagged.tows[flagged.tows$Oracle.tow..==4,]
 
 #Plot (add more tows if needed)
  ggplot() + 
   geom_polygon(data=area, aes(Longitude, Latitude, group=AREA_ID, fill=Area), colour="black") +
-  geom_segment(data=flagged.tows[flagged.tows$Oracle.tow..==272,], aes(x=Start_long, y=Start_lat, xend=End_long, yend=End_lat), lwd=2)#+
- #geom_segment(data=flagged.tows[flagged.tows$Oracle.tow..==272,], aes(x=Start_long, y=Start_lat, xend=End_long, yend=End_lat), lwd=2)
+  geom_segment(data=flagged.tows[flagged.tows$Oracle.tow..==4,], aes(x=Start_long, y=Start_lat, xend=End_long, yend=End_lat), lwd=2)+
+ geom_segment(data=flagged.tows[flagged.tows$Oracle.tow..==11,], aes(x=Start_long, y=Start_lat, xend=End_long, yend=End_lat), lwd=2)+
+   geom_segment(data=flagged.tows[flagged.tows$Oracle.tow..==13,], aes(x=Start_long, y=Start_lat, xend=End_long, yend=End_lat), lwd=2)+
+   geom_segment(data=flagged.tows[flagged.tows$Oracle.tow..==83,], aes(x=Start_long, y=Start_lat, xend=End_long, yend=End_lat), lwd=2)
 
+ ######## NEW (Added in 2022) ########
+ #Plot with mapview:
+ 
+ #First make sf object - convert to linstring with start and end coords:
+ #Move start and end coords into same column
+ flagged.tows.start <- flagged.tows  %>% 
+   dplyr::select(-End_long,-End_lat) %>% #remove end coords
+   dplyr::rename(LAT = Start_lat) %>% 
+   dplyr::rename(LONG = Start_long) %>% 
+   mutate(POSITION = "START")
+ 
+ flagged.tows.end <- flagged.tows  %>% 
+   dplyr::select(-Start_long,-Start_lat) %>% #remove Start coords
+   dplyr::rename(LAT = End_lat) %>% 
+   dplyr::rename(LONG = End_long) %>% 
+   mutate(POSITION = "END")
+ 
+ flagged.tows <- rbind(flagged.tows.start, flagged.tows.end) %>% 
+   arrange(Oracle.tow..)
+ 
+ #duplicate lat lon columns: (To keep coord columns after converting to sf)
+ flagged.tows$latitude <-  flagged.tows$LAT
+ flagged.tows$longitude <-  flagged.tows$LONG
+ 
+ #Convert dataframe to sf points to lines:
 
+ flagged.tows$Oracle.tow.. <- as.factor(flagged.tows$Oracle.tow..)
+ 
+ flagged.tows.sf <- st_as_sf( flagged.tows, coords = c("longitude", "latitude"), crs = 4326) %>% 
+   st_transform(crs = 32620) %>% 
+   group_by(Oracle.tow..) %>%
+   dplyr::summarize(do_union=FALSE) %>% 
+   st_cast("LINESTRING")
+
+#Use Mapview to inspect:
+ mapview::mapview(flagged.tows.sf)
+ 
+ 
 ## Need a way to handle overlapping strata! E.g. 31 and 32. THIS WAS ADDRESSED KIND OF...
 # ggplot() + geom_polygon(data=strata[strata$STRATA_ID %in% c(31,32),], aes(LONGITUDE, LATITUDE, group=STRATA_ID), fill=NA, colour="black")
 
