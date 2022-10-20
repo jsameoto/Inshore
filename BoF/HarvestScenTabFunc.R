@@ -48,7 +48,8 @@ harvest.scen.tab = function(area = area, catch.range = catch.range)
   if(area == "SPA6") {
     catch.range <- c(100, 120, 140, 160, 180, 200, 220)
     decision.table <- SPA6.decision.table
-    table.caption <- paste0("Table 5. Harvest scenario table for the SPA 6 modelled area to evaluate ", year-1,"/", year, " fishing season catch levels in terms of resulting exploitation (e), expected changes in commercial biomass (%), and probability (Pr) of commercial biomass increase.")
+    table.caption <- paste0("Table 5. Harvest scenario table for the SPA 6 modelled area to evaluate ", year,"/", year+1, " catch levels in terms of resulting exploitation (\U1D452), expected changes in commercial biomass (%), probability (Pr) of commercial biomass increase. The probability that after removal the stock will be above the Candidate Upper Stock Reference (C.USR; ", SPA6$USR, " t), and above the Candidate Lower Reference Point (C.LRP; ", SPA6$LRP, " t); grey shaded columns. Corresponding catch levels for the whole area of SPA 6 are conditional on the proportion of catch from the modeled area staying the same in ", year+1," as in ", year," (", (SPA6.landings %>% filter(Year == "Prop_IN") %>%
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           dplyr::select(paste0(year)) %>% pull()*100),"%).")
   }
   
   #FOR SPA1A, 1B, 3, 4 create table this way:
@@ -59,10 +60,12 @@ harvest.scen.tab = function(area = area, catch.range = catch.range)
     ex.table <<- dplyr::filter(ex.table, Next.year.Catch %in% catch.range)
     ex.table <<- ex.table %>% mutate(across(where(is.numeric), ~ round(., 2))) %>%  #All columns 2 decimal places (Catch should be whole number)
       mutate(Next.year.B.change = round(Next.year.B.change, 0)) %>% #% change no decimal places
+      mutate(Next.year.p.LRP = format(Next.year.p.LRP,nsmall = 2)) %>% 
+      mutate(Next.year.p.USR = format(Next.year.p.USR,nsmall = 2)) %>% 
       mutate(Next.year.p.LRP = as.character(Next.year.p.LRP)) %>% 
       mutate(Next.year.p.USR = as.character(Next.year.p.USR)) %>% 
-      mutate(Next.year.p.LRP = replace(Next.year.p.LRP, Next.year.p.LRP == "1", ">0.99")) %>%  #if Prob > LRP is 1.00 change to >0.99.
-      mutate(Next.year.p.USR = replace(Next.year.p.USR, Next.year.p.USR == "1", ">0.99")) #if Prob > USR is 1.00 change to >0.99. %>% 
+      mutate(Next.year.p.LRP = replace(Next.year.p.LRP, Next.year.p.LRP == "1.00", ">0.99")) %>%  #if Prob > LRP is 1.00 change to >0.99.
+      mutate(Next.year.p.USR = replace(Next.year.p.USR, Next.year.p.USR == "1.00", ">0.99")) #if Prob > USR is 1.00 change to >0.99. %>% 
     
     ex.table <<- ex.table %>% dplyr::select(-Interim.RRP.Catch) #remove duplicated catch column
     #rownames(ex.table) <- NULL
@@ -122,15 +125,17 @@ harvest.scen.tab = function(area = area, catch.range = catch.range)
     
     ex.table <<- ex.table %>% mutate(across(where(is.numeric), ~ round(., 2))) %>%  #All columns 2 decimal places (Catch should be whole number)
       mutate(Next.year.B.change = round(Next.year.B.change, 0)) %>% #% change no decimal places
+      mutate(Next.year.p.LRP = format(Next.year.p.LRP,nsmall = 2)) %>% 
+      mutate(Next.year.p.USR = format(Next.year.p.USR,nsmall = 2)) %>% 
       mutate(Next.year.p.LRP = as.character(Next.year.p.LRP)) %>% 
       mutate(Next.year.p.USR = as.character(Next.year.p.USR)) %>% 
-      mutate(Next.year.p.LRP = replace(Next.year.p.LRP, Next.year.p.LRP == "1", ">0.99")) %>%  #if Prob > LRP is 1.00 change to >0.99.
-      mutate(Next.year.p.USR = replace(Next.year.p.USR, Next.year.p.USR == "1", ">0.99")) #if Prob > USR is 1.00 change to >0.99. %>% 
+      mutate(Next.year.p.LRP = replace(Next.year.p.LRP, Next.year.p.LRP == "1.00", ">0.99")) %>%  #if Prob > LRP is 1.00 change to >0.99.
+      mutate(Next.year.p.USR = replace(Next.year.p.USR, Next.year.p.USR == "1.00", ">0.99")) #if Prob > USR is 1.00 change to >0.99. %>% 
     
     ex.table <<- ex.table %>% dplyr::select(., Next.year.Catch:Next.year.Catch.all) #Select columns for table
     
     #rownames(ex.table) <- NULL
-    names(ex.table) <<- c("Catch (t)", "\U1D452", "%\n Change", "Pr\n Increase", "Pr\n >\n LRP", "Pr\n >\n USR", " Catch (t) ")
+    names(ex.table) <<- c("Catch (t)", "\U1D452", "%\n Change", "Pr\n Increase", "Pr\n >\n C.LRP", "Pr\n >\n C.USR", " Catch (t) ")
     
     #ex.table <- ex.table[,c(1:4)]
     
@@ -156,6 +161,7 @@ harvest.scen.tab = function(area = area, catch.range = catch.range)
       set_bottom_border(2, everywhere) %>% #bottom border on Area row, all columns
       set_bottom_border(final(1), everywhere) %>% #bottom border on last row (final), all columns
       set_right_border(everywhere, 6) %>%
+      set_background_color(everywhere, 5:6, "grey90") %>% 
       set_font_size(14) %>% 
       set_align("center") %>% #Horizontal alignment of text
       set_valign("middle") %>% #Vertical alignment of text
@@ -173,6 +179,6 @@ harvest.scen.tab = function(area = area, catch.range = catch.range)
   
 }
 
-#test <- harvest.scen.tab(area = "SPA1B", catch.range = catch.range)
+#test <- harvest.scen.tab(area = "SPA1A", catch.range = catch.range)
 #ex.hux
 #ex.table
