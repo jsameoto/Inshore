@@ -6,9 +6,10 @@ require(ggplot2)
 require(tidyverse)
 require(sf)
 
-#Check tows spatial function:
+#Check tows spatial function and coord convert function:
 
-funcs <- "https://raw.githubusercontent.com/Mar-scal/Inshore/master/Survey/check.tows.spatial.r"
+funcs <- c("https://raw.githubusercontent.com/Mar-scal/Inshore/master/Survey/check.tows.spatial.r",
+           "https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Survey_and_OSAC/convert.dd.dddd.r")
 dir <- getwd()
 for(fun in funcs) 
 {
@@ -19,10 +20,44 @@ for(fun in funcs)
 }
 #source(paste0("Y:/Inshore/Survey/", year, "/data entry templates and examples/entry check functions/check.tows.spatial.r"))
 
+
 #define
 direct <- "Y:/Inshore/Survey/"
 year <- 2022
 CRUISE <- "SFA29" # "BI", BF", "GM", "SFA29"
+
+
+#Read in shapefiles if needed
+temp <- tempfile()
+# Download this to the temp directory
+download.file("https://raw.githubusercontent.com/Mar-scal/GIS_layers/master/inshore_boundaries/inshore_boundaries.zip", temp)
+# Figure out what this file was saved as
+temp2 <- tempfile()
+# Unzip it
+unzip(zipfile=temp, exdir=temp2)
+
+# Now read in the shapefiles
+SPA1A <- st_read(paste0(temp2, "/SPA1A_polygon_NAD83.shp")) %>% mutate(ET_ID = "1A")
+SPA1B <- st_read(paste0(temp2, "/SPA1B_polygon_NAD83.shp")) %>% mutate(ET_ID = "1B")
+SPA2 <- st_read(paste0(temp2, "/SPA2_polygon_NAD83.shp")) %>% mutate(ET_ID = "2")
+SPA3 <- st_read(paste0(temp2, "/SPA3_polygon_NAD83.shp")) %>% mutate(ET_ID = "3")
+SPA4 <- st_read(paste0(temp2, "/SPA4_polygon_NAD83.shp")) %>% mutate(ET_ID = "4")
+SPA5 <- st_read(paste0(temp2, "/SPA5_polygon_NAD83.shp")) %>% mutate(ET_ID = "5")
+SPA6A <- st_read(paste0(temp2, "/SPA6A_polygon_NAD83.shp")) %>% mutate(ET_ID = "6A")
+SPA6B <- st_read(paste0(temp2, "/SPA6B_polygon_NAD83.shp")) %>% mutate(ET_ID = "6B")
+SPA6C <- st_read(paste0(temp2, "/SPA6C_polygon_NAD83.shp")) %>% mutate(ET_ID = "6C")
+SPA6D <- st_read(paste0(temp2, "/SPA6D_polygon_NAD83.shp")) %>% mutate(ET_ID = "6D")
+
+VMS_out <- st_read(paste0(temp2, "/SPA6_VMSstrata_OUT_2015.shp")) %>% mutate(ET_ID = "OUT")
+VMS_in <- st_read(paste0(temp2, "/SPA6_VMSstrata_IN_2015.shp")) %>% mutate(ET_ID = "IN")
+
+SFA29 <- st_read(paste0(temp2, "/SFA29_subareas_utm19N.shp")) %>% mutate(ID = seq(1,5,1)) %>%  #TO FIX IN COPY ON GITHUB (ET_ID missing so adding it here)
+  mutate(ET_ID = case_when(ID == 1 ~ 41, 
+                           ID == 2 ~ 42,
+                           ID == 3 ~ 43,
+                           ID == 4 ~ 44,
+                           ID == 5 ~ 45)) %>% 
+  dplyr::select(Id = ID, ET_ID) %>% st_transform(crs = 4326)
 
 
 # HGTWGT.csv ----------------------------------------------------------------
@@ -392,6 +427,17 @@ flagged.tows[flagged.tows$Oracle.tow..==4,]
  ######## NEW (Added in 2022) ########
  #Plot with mapview:
  
+ #select tows to filter out if needed
+ #check.tows <- c(118,119,120,121,122)
+ #flagged.tows <- num.tows %>% filter(Oracle.tow.. %in% check.tows)
+ #flagged.tows$Start_lat <- convert.dd.dddd(format="dec.deg", x=flagged.tows$Start_lat)
+ #flagged.tows$Start_long <- convert.dd.dddd(format="dec.deg", x=flagged.tows$Start_long)
+ #flagged.tows$End_lat <- convert.dd.dddd(format="dec.deg", x=flagged.tows$End_lat)
+ #flagged.tows$End_long <- convert.dd.dddd(format="dec.deg", x=flagged.tows$End_long)
+ #flagged.tows$Start_long <- -flagged.tows$Start_long
+ #flagged.tows$End_long <- -flagged.tows$End_long
+ 
+ 
  #First make sf object - convert to linstring with start and end coords:
  #Move start and end coords into same column
  flagged.tows.start <- flagged.tows  %>% 
@@ -424,7 +470,9 @@ flagged.tows[flagged.tows$Oracle.tow..==4,]
    st_cast("LINESTRING")
 
 #Use Mapview to inspect:
- mapview::mapview(flagged.tows.sf)
+ mapview::mapview(flagged.tows.sf)+
+   mapview::mapview(SFA29)
+   
  
  
 ## Need a way to handle overlapping strata! E.g. 31 and 32. THIS WAS ADDRESSED KIND OF...
