@@ -65,7 +65,7 @@ chan <- dbConnect(dbDriver("Oracle"),username=uid, password=pwd,'ptran')
 #### Import Mar-scal functions 
 funcs <- c("https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Maps/pectinid_projector_sf.R",
            "https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Survey_and_OSAC/convert.dd.dddd.r",
-           "https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/archive/2016/contour.gen.r") 
+           "https://raw.githubusercontent.com/Mar-scal/Inshore/master/contour.gen.r") 
 # Note: uses older contour.gen.r version (working on alternative to contour.gen altogether).
 dir <- getwd()
 for(fun in funcs) 
