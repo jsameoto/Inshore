@@ -15,11 +15,14 @@ library(magrittr)
 uid <- keyring::key_list("Oracle")[1,2]
 pwd <- keyring::key_get("Oracle", uid)
 
-dir <- "Y:/Inshore/Databases/Scallsur/ScallsurUpdates/2022/Db_Update_HorseMusselAddition/ptran_load/"
+#dir <- "Y:/Inshore/Databases/Scallsur/ScallsurUpdates/2022/Db_Update_HorseMusselAddition/ptran_load/"
+
 cruise <- "SFA292021"
 survey.year <- 2021
 Year <- c(2018:survey.year)
 Year <- Year[! Year %in% 2020]
+
+dir <- paste0("Z:/Projects/Horse_Mussel/HM_InshoreSurvey/data/",survey.year,"/")
 
 #### Import Source functions####
 funcs <- c("https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Survey_and_OSAC/convert.dd.dddd.r") 
@@ -66,7 +69,7 @@ colnames(hm.live) <- str_replace(colnames(hm.live), "X", "BIN_ID_") #Rename bin 
 # Join the tow data and horse mussel data ---------------------------------------------------------------
 
 #Check if number of sctows records = number of horse mussel records
-nrow(tows.dat) == nrow(hm.live)
+#nrow(tows.dat) == nrow(hm.live)
 
 hm.live <- left_join(hm.live, tows.dat, by = "ID") %>% 
   dplyr::select(!c(CRUISE.y, COMMENTS, TOW.y)) %>% #remove columns
@@ -86,7 +89,7 @@ for(i in 1:nrow(hm.live)) {
 hm.live <- hm.live %>% dplyr::select(CRUISE, TOW_NO, TOW_TYPE_ID, MGT_AREA_ID, START_LAT, START_LONG, STRATA_ID, DEPTH, BIN_ID_0:BIN_ID_195)%>%
   mutate(dplyr::select(., BIN_ID_0:BIN_ID_195) %>% round(1)) 
 
-write.csv(hm.live, paste0(dir,cruise,"_live_standardize_R_version.csv"), row.names = FALSE)
+write.csv(hm.live, paste0("Z:/Projects/Horse_Mussel/HM_InshoreSurvey/data/Prorated/",cruise,"_live_standardize_R_version.csv"), row.names = FALSE)
 
 
 # COMPARISONS -------------------------------------------------------------

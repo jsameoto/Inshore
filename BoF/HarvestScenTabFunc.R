@@ -34,7 +34,7 @@ harvest.scen.tab = function(area = area, catch.range = catch.range)
   }
   
   if(area == "SPA3") {
-    catch.range <- c(100, 120, 140, 160, 180, 200, 220, 240, 260, 280, 300)
+    catch.range <- c(110, 120, 130, 140, 150, 160, 170, 180, 190)
     decision.table <- SPA3.decision.table
     table.caption <- paste0("Table 3. Harvest scenario table for SPA 3 to evaluate ", year,"/", year+1, " catch levels in terms of resulting exploitation (e), expected changes in commercial biomass (%), probability (Pr) of commercial biomass increase, probability that after removal the stock will be above the Upper Stock Reference (USR; ", SPA3$USR, " t), and above the Lower Reference Point (LRP; ", SPA3$LRP, " t). Potential catches (t) in ", year,"/", year+1," are evaluated in terms of the posterior probability of exceeding exploitation rate of 0.15.")
   }
@@ -48,8 +48,7 @@ harvest.scen.tab = function(area = area, catch.range = catch.range)
   if(area == "SPA6") {
     catch.range <- c(100, 120, 140, 160, 180, 200, 220)
     decision.table <- SPA6.decision.table
-    table.caption <- paste0("Table 5. Harvest scenario table for the SPA 6 modelled area to evaluate ", year,"/", year+1, " catch levels in terms of resulting exploitation (\U1D452), expected changes in commercial biomass (%), probability (Pr) of commercial biomass increase. The probability that after removal the stock will be above the Candidate Upper Stock Reference (C.USR; ", SPA6$USR, " t), and above the Candidate Lower Reference Point (C.LRP; ", SPA6$LRP, " t); grey shaded columns. Corresponding catch levels for the whole area of SPA 6 are conditional on the proportion of catch from the modeled area staying the same in ", year+1," as in ", year," (", (SPA6.landings %>% filter(Year == "Prop_IN") %>%
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           dplyr::select(paste0(year)) %>% pull()*100),"%).")
+    table.caption <- paste0("Table 5. Harvest scenario table for the SPA 6 modelled area to evaluate ", year,"/", year+1, " catch levels in terms of resulting exploitation (\U1D452), expected changes in commercial biomass (%), probability (Pr) of commercial biomass increase. The probability that after removal the stock will be above the Candidate Upper Stock Reference (C.USR; ", SPA6$USR, " t), and above the Candidate Lower Reference Point (C.LRP; ", SPA6$LRP, " t); grey shaded columns. Corresponding catch levels for the whole area of SPA 6 are conditional on the proportion of catch from the modeled area staying the same in ", year+1," as in ", year," (", round((SPA6.landings %>% filter(Year == "Prop_IN") %>% dplyr::select(paste0(year)) %>% pull()*100),0),"%).")
   }
   
   #FOR SPA1A, 1B, 3, 4 create table this way:
@@ -64,8 +63,8 @@ harvest.scen.tab = function(area = area, catch.range = catch.range)
       mutate(Next.year.p.USR = format(Next.year.p.USR,nsmall = 2)) %>% 
       mutate(Next.year.p.LRP = as.character(Next.year.p.LRP)) %>% 
       mutate(Next.year.p.USR = as.character(Next.year.p.USR)) %>% 
-      mutate(Next.year.p.LRP = replace(Next.year.p.LRP, Next.year.p.LRP == "1.00", ">0.99")) %>%  #if Prob > LRP is 1.00 change to >0.99.
-      mutate(Next.year.p.USR = replace(Next.year.p.USR, Next.year.p.USR == "1.00", ">0.99")) #if Prob > USR is 1.00 change to >0.99. %>% 
+      mutate(Next.year.p.LRP = replace(Next.year.p.LRP, Next.year.p.LRP == "1.00", "> 0.99")) %>%  #if Prob > LRP is 1.00 change to >0.99.
+      mutate(Next.year.p.USR = replace(Next.year.p.USR, Next.year.p.USR == "1.00", "> 0.99")) #if Prob > USR is 1.00 change to >0.99. %>% 
     
     ex.table <<- ex.table %>% dplyr::select(-Interim.RRP.Catch) #remove duplicated catch column
     #rownames(ex.table) <- NULL
@@ -129,8 +128,8 @@ harvest.scen.tab = function(area = area, catch.range = catch.range)
       mutate(Next.year.p.USR = format(Next.year.p.USR,nsmall = 2)) %>% 
       mutate(Next.year.p.LRP = as.character(Next.year.p.LRP)) %>% 
       mutate(Next.year.p.USR = as.character(Next.year.p.USR)) %>% 
-      mutate(Next.year.p.LRP = replace(Next.year.p.LRP, Next.year.p.LRP == "1.00", ">0.99")) %>%  #if Prob > LRP is 1.00 change to >0.99.
-      mutate(Next.year.p.USR = replace(Next.year.p.USR, Next.year.p.USR == "1.00", ">0.99")) #if Prob > USR is 1.00 change to >0.99. %>% 
+      mutate(Next.year.p.LRP = replace(Next.year.p.LRP, Next.year.p.LRP == "1.00", "> 0.99")) %>%  #if Prob > LRP is 1.00 change to >0.99.
+      mutate(Next.year.p.USR = replace(Next.year.p.USR, Next.year.p.USR == "1.00", "> 0.99")) #if Prob > USR is 1.00 change to >0.99. %>% 
     
     ex.table <<- ex.table %>% dplyr::select(., Next.year.Catch:Next.year.Catch.all) #Select columns for table
     
