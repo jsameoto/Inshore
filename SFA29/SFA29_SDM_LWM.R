@@ -50,8 +50,8 @@ sdm <- raster("Y:/Inshore/Databases/Scallsur/SFA29BottomTypes/SDM/sdm_sfa29/w001
 chan <- dbConnect(dbDriver("Oracle"),username=uid, password=pwd,'ptran')
 
 #set survey.year and cruise - *Note: requires single quotations within double quotations*
-survey.year <- "'2021'"
-cruise <- "'SFA292021'"
+survey.year <- "'2022'"
+cruise <- "'SFA292022'"
 
 #Db Query:
 quer2 <- paste(
@@ -145,7 +145,7 @@ sdm.val <- raster::extract(sdm, ScallopSurv.sf, sp = TRUE)
 # --- Boxplot to check sdm ranges  ----------------------------------------------------------------------
 
 #Plot to check ranges for each tow
-p <- ggplot(sdm.val@data, aes(as.factor(TOW_NO), w001001))
+p <- ggplot(sdm.val@data, aes(as.factor(TOW_NO), sdm_sfa29))
 p + geom_boxplot()+
   xlab("Tow number")+
   ylab("SDM probability")+
@@ -154,7 +154,8 @@ p + geom_boxplot()+
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
 #Plot to check any tows if needed
-mapview::mapview(ScallopSurv.sf %>% filter(TOW_NO == 97))+ #Change TOW_NO
+check <- ScallopSurv.sf %>% filter(TOW_NO == 37)
+mapview::mapview(check)+ #Change TOW_NO
   mapview::mapview(sdm)
 
 
@@ -163,7 +164,7 @@ mapview::mapview(ScallopSurv.sf %>% filter(TOW_NO == 97))+ #Change TOW_NO
 #Take the average of the sdm values for each tow
 sdm.mean <- sdm.val@data %>% 
   group_by(TOW_NO) %>%
-  summarize(sdmval_LWM = mean(w001001))
+  summarize(sdmval_LWM = mean(sdm_sfa29))
 
 # ---formatting data to match previous years ----------------------------------------------------------------------
 
@@ -185,18 +186,17 @@ sdmtows <- sdmtows %>%
   add_column(sdmval_CNT = NA) %>% 
   dplyr::select(CRUISE, TOW_NO, ET_ID = ID, length, sdmval_LWM, sdmval_CNT)
 
+# Assign SDM level (low,med,high) based on SDM length weighted mean values (mval_LWM)
+sdmtows$SDM <- NA
+sdmtows$SDM[sdmtows$sdmval_LWM < 0.3] <- "low"
+sdmtows$SDM[sdmtows$sdmval_LWM >= 0.3 & sdmtows$sdmval_LWM < 0.6] <- "med"
+sdmtows$SDM[sdmtows$sdmval_LWM >= 0.6] <- "high"
 
 # ---Bring in the previous survey tow details and stitch them all together ----------------------------------------------------------------------
 
-sdmtows.old <- read.csv("Y:/INSHORE SCALLOP/SFA29/ScalSurv_SDM/SFA29Tows_SDM.csv")
+sdmtows.old <- read.csv("Y:/Inshore/SFA29/ScalSurv_SDM/SFA29Tows_SDM.csv")
 sdmtows.updt <- rbind(sdmtows.old,sdmtows)
 sdmtows.updt <-sdmtows.updt %>% arrange(CRUISE, TOW_NO)
-
-# Assign SDM level (low,med,high) based on SDM length weighted mean values (mval_LWM)
-sdmtows.updt$SDM <- NA
-sdmtows.updt$SDM[sdmtows.updt$sdmval_LWM < 0.3] <- "low"
-sdmtows.updt$SDM[sdmtows.updt$sdmval_LWM >= 0.3 & sdmtows.updt$sdmval_LWM < 0.6] <- "med"
-sdmtows.updt$SDM[sdmtows.updt$sdmval_LWM >= 0.6] <- "high"
 
 
 # ---Save updated dataframe ----------------------------------------------------------------------
@@ -204,7 +204,7 @@ sdmtows.updt$SDM[sdmtows.updt$sdmval_LWM >= 0.6] <- "high"
 write.csv(sdmtows.updt, "Y:/Inshore/SFA29/ScalSurv_SDM/SFA29Tows_SDM.csv", row.names = F)
 
 #save single year to archive folder for records
-write.csv(sdmtows, paste0("Y:/Inshore/SFA29/ScalSurv_SDM/Archived/SFA29",survey.year,"Tows_SDM.csv")) #save out file with year
+#write.csv(sdmtows, paste0("Y:/Inshore/SFA29/ScalSurv_SDM/Archived/SFA29",survey.year,"Tows_SDM.csv")) #save out file with year
 
 
 #########################################################################################################
