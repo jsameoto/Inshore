@@ -24,31 +24,31 @@ harvest.scen.tab = function(area = area, catch.range = catch.range)
   if(area == "SPA1A") {
     catch.range <- c(200, 220, 240, 260, 280, 300, 320, 340, 360, 380)
     decision.table <- SPA1A.decision.table
-    table.caption <- paste0("Table 1. Harvest scenario table for SPA 1A to evaluate ", year,"/", year+1, " catch levels in terms of resulting exploitation (e), expected changes in commercial biomass (%), probability (Pr) of commercial biomass increase, probability that after removal the stock will be above the Upper Stock Reference (USR; ", SPA1A$USR, " t), and above the Lower Reference Point (LRP; ", SPA1A$LRP, " t). Potential catches (t) in ", year,"/", year+1," are evaluated in terms of the posterior probability of exceeding exploitation rate of 0.15.")
+    table.caption <- paste0("Table 1. Harvest scenario table for SPA 1A to evaluate ", year,"--", year+1-2000, " catch levels in terms of resulting exploitation (e), expected changes in commercial biomass (%), probability (Pr) of commercial biomass increase, probability that after removal the stock will be above the Upper Stock Reference (USR; ", SPA1A$USR, " t), and above the Lower Reference Point (LRP; ", SPA1A$LRP, " t). Potential catches (t) in ", year,"--", year+1-2000," are evaluated in terms of the posterior probability of exceeding exploitation rate of 0.15.")
   }
   
   if(area == "SPA1B") {
     catch.range <- c(175, 225, 275, 325, 375, 425, 475, 525, 575)
     decision.table <- SPA1B.decision.table
-    table.caption <- paste0("Table 2. Harvest scenario table for SPA 1B to evaluate ", year,"/", year+1, " catch levels in terms of resulting exploitation (e), expected changes in commercial biomass (%), probability (Pr) of commercial biomass increase, probability that after removal the stock will be above the Upper Stock Reference (USR; ", SPA1B$USR, " t), and above the Lower Reference Point (LRP; ", SPA1B$LRP, " t). Potential catches (t) in ", year,"/", year+1," are evaluated in terms of the posterior probability of exceeding exploitation rate of 0.15.")
+    table.caption <- paste0("Table 2. Harvest scenario table for SPA 1B to evaluate ", year,"--", year+1-2000, " catch levels in terms of resulting exploitation (e), expected changes in commercial biomass (%), probability (Pr) of commercial biomass increase, probability that after removal the stock will be above the Upper Stock Reference (USR; ", SPA1B$USR, " t), and above the Lower Reference Point (LRP; ", SPA1B$LRP, " t). Potential catches (t) in ", year,"--", year+1-2000," are evaluated in terms of the posterior probability of exceeding exploitation rate of 0.15.")
   }
   
   if(area == "SPA3") {
     catch.range <- c(110, 120, 130, 140, 150, 160, 170, 180, 190)
     decision.table <- SPA3.decision.table
-    table.caption <- paste0("Table 3. Harvest scenario table for SPA 3 to evaluate ", year,"/", year+1, " catch levels in terms of resulting exploitation (e), expected changes in commercial biomass (%), probability (Pr) of commercial biomass increase, probability that after removal the stock will be above the Upper Stock Reference (USR; ", SPA3$USR, " t), and above the Lower Reference Point (LRP; ", SPA3$LRP, " t). Potential catches (t) in ", year,"/", year+1," are evaluated in terms of the posterior probability of exceeding exploitation rate of 0.15.")
+    table.caption <- paste0("Table 3. Harvest scenario table for SPA 3 to evaluate ", year,"--", year+1-2000, " catch levels in terms of resulting exploitation (e), expected changes in commercial biomass (%), probability (Pr) of commercial biomass increase, probability that after removal the stock will be above the Upper Stock Reference (USR; ", SPA3$USR, " t), and above the Lower Reference Point (LRP; ", SPA3$LRP, " t). Potential catches (t) in ", year,"--", year+1-2000," are evaluated in terms of the posterior probability of exceeding exploitation rate of 0.15.")
   }
   
   if(area == "SPA4") {
     catch.range <- c(100, 120, 140, 160, 180, 200, 220)
     decision.table <- SPA4.decision.table
-    table.caption <- paste0("Table 4. Harvest scenario table for SPA 4 to evaluate ", year,"/", year+1, " catch levels in terms of resulting exploitation (e), expected changes in commercial biomass (%), probability (Pr) of commercial biomass increase, probability that after removal the stock will be above the Upper Stock Reference (USR; ", SPA4$USR, " t), and above the Lower Reference Point (LRP; ", SPA4$LRP, " t). Potential catches (t) in ", year,"/", year+1," are evaluated in terms of the posterior probability of exceeding exploitation rate of 0.15.")
+    table.caption <- paste0("Table 4. Harvest scenario table for SPA 4 to evaluate ", year,"--", year+1-2000, " catch levels in terms of resulting exploitation (e), expected changes in commercial biomass (%), probability (Pr) of commercial biomass increase, probability that after removal the stock will be above the Upper Stock Reference (USR; ", SPA4$USR, " t), and above the Lower Reference Point (LRP; ", SPA4$LRP, " t). Potential catches (t) in ", year,"--", year+1-2000," are evaluated in terms of the posterior probability of exceeding exploitation rate of 0.15.")
   }
   
   if(area == "SPA6") {
     catch.range <- c(100, 120, 140, 160, 180, 200, 220)
     decision.table <- SPA6.decision.table
-    table.caption <- paste0("Table 5. Harvest scenario table for the SPA 6 modelled area to evaluate ", year,"/", year+1, " catch levels in terms of resulting exploitation (\U1D452), expected changes in commercial biomass (%), probability (Pr) of commercial biomass increase. The probability that after removal the stock will be above the Candidate Upper Stock Reference (C.USR; ", SPA6$USR, " t), and above the Candidate Lower Reference Point (C.LRP; ", SPA6$LRP, " t); grey shaded columns. Corresponding catch levels for the whole area of SPA 6 are conditional on the proportion of catch from the modeled area staying the same in ", year+1," as in ", year," (", round((SPA6.landings %>% filter(Year == "Prop_IN") %>% dplyr::select(paste0(year)) %>% pull()*100),0),"%).")
+    table.caption <- paste0("Table 5. Harvest scenario table for the SPA 6 modelled area to evaluate ", year,"--", year+1-2000, " catch levels in terms of resulting exploitation (\U1D452), expected changes in commercial biomass (%), probability (Pr) of commercial biomass increase. The probability that after removal the stock will be above the Candidate Upper Stock Reference (C.USR; ", SPA6$USR, " t), and above the Candidate Lower Reference Point (C.LRP; ", SPA6$LRP, " t); grey shaded columns. Corresponding catch levels for the whole area of SPA 6 are conditional on the proportion of catch from the modeled area staying the same in ", year+1," as in ", year," (", round((SPA6.landings %>% filter(Year == "Prop_IN") %>% dplyr::select(paste0(year)) %>% pull()*100),0),"%).")
   }
   
   #FOR SPA1A, 1B, 3, 4 create table this way:
@@ -85,7 +85,7 @@ harvest.scen.tab = function(area = area, catch.range = catch.range)
       insert_row("Catch \n(t)", "\U1D486", "%\n Change", "Pr\n Increase", "Pr\n >\n LRP", "Pr\n >\n USR", "Probability Exploitation > 0.15","", "","", "", "", after = 0) %>% #new row at top
       set_bold(1, 7) %>% #Bold "Probability exploitation > 0.15"
       merge_cells(1, 7:12) %>% #Merging right and left side of table (Prob exploitation header)
-      insert_row(paste0(year,"/", year+1, " Fishing Season"),"" ,"", "","", "", paste0(year+1,"/", year+2, " Fishing Season"),"", "","", "", "", after = 0) %>% #Table header - ADJUST YEARS!
+      insert_row(paste0(year,"--", year+1-2000, " Fishing Season"),"" ,"", "","", "", paste0(year+1,"--", year+2-2000, " Fishing Season"),"", "","", "", "", after = 0) %>% #Table header - ADJUST YEARS!
       set_number_format(1, c(1,7), 0) %>% #defaults to scientific notation - so specify no decimal places for year.
       merge_cells(1, 1:6) %>% #Merging top row left section (YYYY/YYYY Fishing Season header)
       merge_cells(1, 7:12) %>% #Merging top row right section (YYYY/YYYY Fishing Season header)
@@ -152,7 +152,7 @@ harvest.scen.tab = function(area = area, catch.range = catch.range)
       set_italic(1, everywhere) %>% 
       merge_cells(1, 1:6) %>% #Merging Modeled Area columns
       #set_bold(1, 7) %>% #Bold "Probability exploitation > 0.15"
-      insert_row(paste0(year,"/", year+1, " Fishing Season"),"" ,"", "","", "","", after = 0) %>% #Table header - ADJUST YEARS!
+      insert_row(paste0(year,"--", year+1-2000, " Fishing Season"),"" ,"", "","", "","", after = 0) %>% #Table header - ADJUST YEARS!
       merge_cells(1, everywhere) %>% #Merging right and left side of table (Modeled/Whole area header)
       set_number_format(1, c(1,7), 0) %>% #defaults to scientific notation - so specify no decimal places for year.
       set_number_format(everywhere, c(2,4,6), 2) %>%

@@ -45,9 +45,9 @@ library(ROracle)
 uid <- keyring::key_list("Oracle")[1,2]
 pwd <- keyring::key_get("Oracle", uid)
 
-survey.year <- 2021  #This is the last survey year 
-assessmentyear <- 2022 #year in which you are providing advice for - (e.g. 2017 survey is 2018 assessment) - Save to folder year
-cruise <- "'SFA292021'"
+survey.year <- 2022  #This is the last survey year 
+assessmentyear <- 2023 #year in which you are providing advice for - (e.g. 2017 survey is 2018 assessment) - Save to folder year
+cruise <- "'SFA292022'"
 
 #for multiple cruises:
 #cruise <- c('SFA292018','SFA292019') 
@@ -74,7 +74,7 @@ chan <- dbConnect(dbDriver("Oracle"),username=uid, password=pwd,'ptran')
 #### Import Mar-scal functions
 funcs <- c("https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Maps/pectinid_projector_sf.R",
            "https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Survey_and_OSAC/convert.dd.dddd.r",
-           "https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/archive/2016/contour.gen.r")
+           "https://raw.githubusercontent.com/Mar-scal/Inshore/master/contour.gen.r")
 dir <- getwd()
 for(fun in funcs) 
 {
@@ -438,6 +438,7 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
 
 #Colour aesthetics and breaks for contours
 labels <- c("4-5", "5-6", "6-7", "7-8", "8-9", "9-10", "10-11", "11-12", "12+")
+#labels <- c("4-6", "6-8", "8-10", "10-12", "12-14", "14-16", "16+")
 col <- brewer.pal(length(lvls),"YlOrBr") #set colours
 cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = "Condition (g)", limits = labels) #set custom fill arguments for pecjector.
 

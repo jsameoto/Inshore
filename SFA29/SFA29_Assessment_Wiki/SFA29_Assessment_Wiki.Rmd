@@ -137,157 +137,72 @@ saved and pushed to Marscal Inshore repository before continuing!
 file.show(paste0("Y:/Inshore/SFA29/",year,"/Assessment/Scripts/Growth/SFA29_MeatWeightShellHeight_",year,".R")) 
 
 #Eventually will be housed on github repo
-file.show(paste0(dir, "/SFA/Growth/SFA29_MeatWeightShellHeight.R"))
+file.show(paste0(dir, "/SFA29/Growth/SFA29_MeatWeightShellHeight.R"))
 
 #$\bar{M}_{t+1} = \bar{\lambda}_{t+1}/ \bar{H}_{t+1}$
 ```
 
 -   **Script Directory:**
 
-    Y:/Inshore/BoF/`r year`/Assessment/Scripts/Growth (eventually to be
+    Y:/Inshore/SFA29/`r year`/Assessment/Scripts/Growth (eventually to be
     our forked Marscal/inshore repository, e.g.
-    `r paste0(dir, "/BoF/Growth")`)
+    `r paste0(dir, "/SFA29/Growth")`)
 
 -   **Purpose:**
 
-    The MeatWeightShellHeight.R scripts models meat weight with shell
+    The SFA29_MeatWeightShellHeight.R scripts models meat weight with shell
     height, depth and tow.
 
--   **Overview:** <mark>Edits to model object YYYY will need to be made
-    every assessment (e.g. MWTSHBF.YYYY)</mark>
+-   **Overview:** 
 
-1.  Set up data for modelling:
+<mark>Need to move files from previous year over:
 
-    -   Query detailed meat weight/shell height sampling data from
-        database (scallsur.scwgthgt) for specified cruises
-        (SPA1A1B4and5, SPA3, SPA6).
-    -   Query shell height bin data from database (scallsur.scliveres)
-        for specified cruises (SPA1A1B4and5, SPA3, SPA6).
-    -   Format and merge depth information (from towsdd_StdDepth.csv) to
-        the meat weight/shell height dataframe (BFdetail).
-    -   Format and merge depth information (from towsdd_StdDepth.csv) to
-        the shell height bin data (BFlivefreq).
+Y:/Inshore/SFA29/YYYY/Assessment/Data/SurveyIndices/SFA29liveweight2014toYYYY.csv
+Y:/Inshore/SFA29/YYYY/Assessment/Data/SurveyIndices/SFA29ConditionTimeseries2001toYYYY.csv
 
-2.  Run the Meat Weight Shell Height Model:
+</mark>
 
-    -   Subset for the survey year, shell height > 40mm
+1.  Set up data
 
-    -   Centre Height and Depth values (e.g log height - mean(log
-        height))
-
-    -   Run model (GLM) predicting meat weight as a function of fixed
-        effects shell height and depth and random effect shell height
-        grouped by tow.
-
-        <center>
-
-        $EQUATION HERE$
-
-        </center>
-
-    -   Assess/plot residuals (full area and by tow) and fitted data.
-
-3.  Predicting:
-
-    -   Subset for the survey year
-    -   Centre Height values (log of the midpoint of the bins - mean of
-        the log height)
-    -   Centre Depth values (log depth - mean(test.data\$Log.DEPTH)
-    -   Create a matrix of depths by tow to use in predict function
-    -   Predict using Random effects for tows where meat weight shell
-        height samples were taken - gives MWT-SH relationship for one
-        individual
-    -   Predict using Fixed effects for tows where meat weight shell
-        height samples were not taken - gives MWT-SH relationship for
-        one individual
-    -   Multiply prediction matrix (weight) by live numbers to get
-        weight/bin size
+2.  Run the Meat Weight Shell Height Model
 
 4.  Condition data for Spatial plots
 
-    -   centre depth using same mean depth used in the MWTSH model
-        (mean(test.data\$Log.DEPTH))
-
-    -   Subset for tows that were sampled for meat weight shell height
-
-    -   Predict a meat weight for shell height 100mm for sampled tows
-        only.
-
-        <center>
-
-        $EQUATION HERE$
-
-        </center>
-
+   
 -   **Output(s):**
 
-    -   **SPA 1A, 1B, 4 and 5**
+    -   **SFA29W**
 
-        -   BFliveweight.csv (MWTSH)
+        -   SFA29liveweight2014toYYYY.csv (MWTSH)
+        
+        -   SFA29liveweightYYYY.csv (MWTSH)
 
-        -   BFConditionforMap.csv (Condition)
+        -   SFA29W_ConditionTimeSeries2001toYYYY.csv (Condition)
+        
+        -   SFA29ConditionforMapYYYY.csv (Condition)
 
-        -   BFgrowthYYYY.RData
+        -   SFA29growthYYYY.RData
 
-        -   Figures: BFtowdepthYYYY.png, MWTSHBFYYYY.png,
-            MWTSHBFYYYY_towresid.png, and MWTSHBFYYYY_towfit.png
+        -   Figures: SFA29towdepthYYYY.png, MWTSH.29.YYYY.png,
+            MWTSH.29.YYYY_towresid.png, and MWTSH.29.YYYY_towfit.png
 
-        -   Model summary - MWTSHBFYYYY_ModelSummary.txt
+        -   Model summary - MWTSHSFA29YYYY_ModelSummary.txt
 
-    -   **SPA 3**
-
-        -   BIliveweight.csv (MWTSH)
-
-        -   BIConditionforMap.csv (Condition)
-
-        -   BIgrowthYYYY.RData
-
-        -   Figures: BItowdepthYYYY.png, MWTSHBIYYYY.png,
-            MWTSHBIYYYY_towresid.png, and MWTSHBIYYYY_towfit.png
-
-        -   Model summary - MWTSHBIYYYY_ModelSummary.txt
-
-    -   **SPA 6**
-
-        -   GMliveweight.csv (MWTSH)
-
-        -   GMConditionforMap.csv (Condition)
-
-        -   GMgrowthYYYY.RData
-
-        -   Figures: GMtowdepthYYYY.png, MWTSHGMYYYY.png,
-            MWTSHGMYYYY_towresid.png, and MWTSHGMYYYY_towfit.png
-
-        -   Model summary - MWTSHGMYYYY_ModelSummary.txt
-
-    -   **Other**
-
-        -   AREA_ConditionTimeSeries.png (Condition Time series)
-
+   
 \
 
 -   **Output Directory(s):**
 
-    -   **SPA 1A, 1B, 4 and 5**
+    -   **SFA29W**
 
-        -   Y:/Inshore/BoF/YYYY/Assessment/Data/SurveyIndices/SPA1A1B4and5
-            (.csv)
-
-    -   **SPA 3**
-
-        -   Y:/Inshore/BoF/YYYY/Assessment/Data/SurveyIndices/SPA3
-            (.csv)
-
-    -   **SPA 6**
-
-        -   Y:/Inshore/BoF/YYYY/Assessment/Data/SurveyIndices/SPA6
+        -   Y:/Inshore/SFA29/YYYY/Assessment/Data/SurveyIndices/
             (.csv)
 
     -   **Figures**
 
-        -   Y:/Inshore/BoF/YYYY/Assessment/Figures/Growth (.png)
+        -   Y:/Inshore/SFA29/YYYY/Assessment/Figures/Growth (.png)
 
-        -   Y:/Inshore/BoF/YYYY/Assessment/Figures (Condition time
+        -   Y:/Inshore/SFA29/YYYY/Assessment/Figures (Condition time
             series .png)
 
 ------------------------------------------------------------------------
@@ -295,8 +210,8 @@ file.show(paste0(dir, "/SFA/Growth/SFA29_MeatWeightShellHeight.R"))
 ::: {.infobox .caution data-latex="{caution}"}
 **COMMIT CHANGES**
 
-Ensure that all changes made to scripts MeatWeightShellHeight.R for each
-SPA have been saved and pushed to Marscal Inshore repository before
+Ensure that all changes made to scripts MeatWeightShellHeight.R for
+SFA29 have been saved and pushed to Marscal Inshore repository before
 continuing!
 :::
 
@@ -306,50 +221,49 @@ continuing!
 
 ```{r open Spatial plot scripts, eval =  FALSE, include = FALSE}
 #year <- year(Sys.Date())-1 #Extract previous years folder structure for example
-file.show(paste0(dir, "/BoF/SurveyIndices/BoFSpatialPlotsofSurveyData_pecjector.r"))
+file.show(paste0(dir, "/SFA29/SurveyIndices/SFA29SpatialPlotsofSurveyData_pecjector.r"))
 
 ```
 
 -   **Purpose:** Plot spatial patterns for Density, Biomass, Condition,
-    Meat Count and Clapper data for the Full Bay of Fundy extent, SPA1A,
-    1B, 3, 4 and 5, and 6.
+    Meat Count and Clapper data for SFA29W.
 
 -   **Script Directory:** To be your forked Marscal Inshore repository
-    path (e.g. `r paste0(dir, "/BoF/SurveyIndicies")`)
+    path (e.g. `r paste0(dir, "/SFA29/SurveyIndicies")`)
 
 -   **Output(s):**
 
     -   Spatial plots for each area and commercial, recruit and
         pre-recruit size ranges
 
-        -   Density - ContPlot_SPA#\_ComDensityYYYY.png,
-            ContPlot_SPA#\_RecDensityYYYY.png,
-            ContPlot_SPA#\_PreDensityYYYY.png
+        -   Density - ContPlot_SFA29_ComDensityYYYY.png,
+            ContPlot_SFA29_RecDensityYYYY.png,
+            ContPlot_SFA29_PreDensityYYYY.png
 
-        -   Biomass - ContPlot_SPA#\_ComBiomassYYYY.png,
-            ContPlot_SPA#\_RecBiomassYYYY.png,
-            ContPlot_SPA#\_PreBiomassYYYY.png
+        -   Biomass - ContPlot_SFA29_ComBiomassYYYY.png,
+            ContPlot_SFA29_RecBiomassYYYY.png,
+            ContPlot_SFA29_PreBiomassYYYY.png
 
-        -   Condition - ContPlot_SPA#\_ConditionYYYY.png (using only
+        -   Condition - ContPlot_SFA29_ConditionYYYY.png (using only
             commercial sizes)
 
-        -   Meat Count - ContPlot_SPA#\_MeatcountYYYY.png (using only
+        -   Meat Count - ContPlot_SFA29_MeatcountYYYY.png (using only
             commercial sizes)
 
         -   Clappers and Clapper proportion -
-            ContPlot_SPA#\_ComClappersYYYY.png,
-            ContPlot_SPA#\_RecClappersYYYY.png,
-            ContPlot_SPA#\_PropComClappersYYYY.png,
-            ContPlot_SPA#\_PropRecClappersYYYY.png
+            ContPlot_SFA29_ComClappersYYYY.png,
+            ContPlot_SFA29_RecClappersYYYY.png,
+            ContPlot_SFA29_PropComClappersYYYY.png,
+            ContPlot_SFA29_PropRecClappersYYYY.png
 
--   **Output Directory(s):** Y:/Inshore/BoF/YYYY/Assessment/Figures
+-   **Output Directory(s):** Y:/Inshore/SFA29/YYYY/Assessment/Figures
 
 ------------------------------------------------------------------------
 
 ::: {.infobox .caution data-latex="{caution}"}
 **COMMIT CHANGES**
 
-Ensure that all changes made to BoFSpatialPlotsofSurveyData_pecjector.r
+Ensure that all changes made to SFA29SpatialPlotsofSurveyData_pecjector.r
 have been saved and pushed to Marscal Inshore repository before
 continuing!
 :::
@@ -358,19 +272,16 @@ continuing!
 
 ## 4. VonB (Growth)
 
-```{r Open AREA_VonB_YYYY.R, eval =  FALSE, include = FALSE}
+```{r Open SFA28W_VonB_YYYY.R, eval =  FALSE, include = FALSE}
 
-file.show(paste0("Y:/Inshore/BoF/",year,"/Assessment/Scripts/Growth/BoF_VonB_2016.R")) #Script for SPA 1A, 1B, 4 and 5 (last updated 2016).
-file.show(paste0("Y:/Inshore/BoF/",year,"/Assessment/Scripts/Growth/SPA3_VonB_2021.R")) #Script for SPA 3 (last updated 2017)
-file.show(paste0("Y:/Inshore/BoF/",year,"/Assessment/Scripts/Growth/SPA6_VonB_2017.R")) #Script for SPA 6 (last updated 2017)
+file.show(paste0("Y:/Inshore/SFA29/",year,"/Assessment/Scripts/Growth/SFA29W_VonB_",year,".R")) #Script for SPA 1A, 1B, 4 and 5 (last updated 2016).
 
-#file.show(paste0(dir, "/BoF/Growth/BoF_VonB_2016.R"))
-#file.show(paste0(dir, "/BoF/Growth/SPA3_VonB_2017.R"))
-#file.show(paste0(dir, "/BoF/Growth/SPA6_VonB_2017.R"))
+#file.show(paste0(dir, "/SFA29/Growth/SFA29W_VonB_YYYY.R"))
+
 ```
 
 -   **Purpose:** These scripts model growth using the von-Bertalanffy
-    growth equation for specified cruises (SPA1A1B4and5, SPA3, SPA6).
+    growth equation for specified cruise.
 
     **NOTE:** This script does not need to be run every year. New aging
     data is required for updated outputs.
@@ -378,8 +289,7 @@ file.show(paste0("Y:/Inshore/BoF/",year,"/Assessment/Scripts/Growth/SPA6_VonB_20
 -   **Overview:**
 
 Set up data for modelling: - Query detailed meat weight/shell height
-sampling data from database (scallsur.scwgthgt) for specified cruises
-(SPA1A1B4and5, SPA3, SPA6). - Format data for the model - Run the VonB
+sampling data from database (scallsur.scwgthgt) for specified cruise. - Format data for the model - Run the VonB
 
 <center>
 
@@ -400,7 +310,7 @@ from the data
 $t$ = scallop age (years)
 
 -   **Script Directory:** To be your forked Marscal Inshore repository
-    path (e.g. `r paste0(dir, "/BoF/Growth")`)
+    path (e.g. `r paste0(dir, "/SFA29/Growth")`)
 
 -   **Output(s):**
 
@@ -411,7 +321,7 @@ $t$ = scallop age (years)
 ::: {.infobox .caution data-latex="{caution}"}
 **COMMIT CHANGES**
 
-Ensure that all changes made to VonB.R scripts have been saved and
+Ensure that all changes made to VonB.R script has been saved and
 pushed to Marscal Inshore repository before continuing!
 :::
 
@@ -419,50 +329,33 @@ pushed to Marscal Inshore repository before continuing!
 
 ## 5. Shell Height Frequencies (Growth) {#shell-height-frequencies-growth}
 
-```{r Open AREA_SHF_YYYY.R, eval = FALSE, include = FALSE}
+```{r Open SFA29_SHF_YYYY.R, eval = FALSE, include = FALSE}
 
-file.show(paste0("Y:/Inshore/BoF/",year,"/Assessment/Scripts/Growth/SPA1A_SHF_",year,".R"))
-file.show(paste0("Y:/Inshore/BoF/",year,"/Assessment/Scripts/Growth/SPA1B_SHF_",year,".R"))
-file.show(paste0("Y:/Inshore/BoF/",year,"/Assessment/Scripts/Growth/SPA3_SHF_",year,".R"))
-file.show(paste0("Y:/Inshore/BoF/",year,"/Assessment/Scripts/Growth/SPA4_SHF_",year,".R"))
-file.show(paste0("Y:/Inshore/BoF/",year,"/Assessment/Scripts/Growth/SPA6_SHF_",year,".R"))
+file.show(paste0("Y:/Inshore/SFA29/",year,"/Assessment/Scripts/Growth/SFA29_SHF_",year,".R"))
 
-#file.show(paste0(dir, "/BoF/Growth/SPA1A_SHF.R"))
-#file.show(paste0(dir, "/BoF/Growth/SPA1B_SHF.R"))
-#file.show(paste0(dir, "/BoF/Growth/SPA3_SHF.R"))
-#file.show(paste0(dir, "/BoF/Growth/SPA4_SHF.R"))
-#file.show(paste0(dir, "/BoF/Growth/SPA6_SHF.R"))
+#file.show(paste0(dir, "/SFA29/Growth/SFA29_SHF.R"))
+
 ```
 
 -   **Purpose:** This script produces plots of shell height frequencies
-    for specified strata by year, and calculates commercial mean shell
+    for SFA29W by subarea by year, and calculates commercial mean shell
     height in year t ($\bar{L}$) and uses parameters from the VonB
     growth model to predict how much a shell of height $L$ will grow in
     one year.
 
-    **NOTE** - requires the script BoFstratadef.R (Inshore github repo)
-    and PEDstrata package to run. <mark>**NOTE - TO DO: source the
-    .RData files created by the vonB scripts (i.e. read in the outputs
-    directly instead of hardcoding them in)** </mark>
-
 -   **Overview:**
 
--   For each area (SPA1A, SPA1B, SPA3, SPA4 and SPA6) scripts are run
-    separately.
-
     -   Query shell height bin data from database (scallsur.scliveres)
-        for specified Strata.
+        for specified Subareas.
 
-    -   Calculate shell height frequency for each year by strata.
+    -   Calculate shell height frequency for each year.
         <mark>**NOTE - Look into using sf to stratify**</mark>
 
-    -   Calculate stratified shell height frequency for all of area
-        (SPA1A, SPA1B, SPA3, SPA4 and SPA6) by year
+    -   Calculate stratified shell height frequency by year
 
     -   Plot shell height frequencies for each year (last 7 years)
 
-    -   Calculate $\bar{L}$ for all of area (SPA1A, SPA1B, SPA3, SPA4
-        and SPA6) by year for commercial and recruit sizes
+    -   Calculate $\bar{L}$ for all of Subareas by year for commercial and recruit sizes
 
     -   Predict $\bar{L}$ in $t+1$:
 
