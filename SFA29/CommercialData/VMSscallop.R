@@ -2,10 +2,10 @@
 # RETREIVE VMS BY YEAR AS FUNCTION OF LIST OF VRNs IN SCALLOP #
 #  calculate speed, add SDM, prorate catch, spatial plots     #
 # J. Sameoto												                          #
-# Dec 2020; revamped Jan 2022
+# Dec 2020; revamped Jan 2022, Jan 2023
 ###.........................................................###
 
-	options(stringsAsFactors=FALSE)
+#	options(stringsAsFactors=FALSE)
 
 	#Packages and functions needed 
 	library(ROracle)
@@ -24,6 +24,7 @@
 	library(foreign) 
 	library(plyr)
   library(lubridate)
+	library(tidyverse)
 # library(spData)        # load geographic data
 # library(spDataLarge)   # load larger geographic data
 #install_github('Maritimes/Mar.datawrangling')
@@ -62,11 +63,11 @@ poly.sf <- st_transform(poly.sf, crs = sp::CRS(SRS_string = "EPSG:32619"))
 #ORACLE Username and Password
   uid <- un.sameotoj
   pwd <- pw.sameotoj
-  surveyyear <- 2021  #This is the last survey year 
-  assessmentyear <- 2022 #year in which you are conducting the survey 
+  surveyyear <- 2022  #This is the last survey year 
+  assessmentyear <- 2023 #year in which you are conducting the survey 
   path.directory <- paste0(":/Inshore/SFA29/")
-  startdate <- "2021-01-01"   # Start DateTime for VMS 
-  stopdate <- "2021-12-31"    # Stop DateTime for VMS 
+  startdate <- "2022-01-01"   # Start DateTime for VMS 
+  stopdate <- "2022-12-31"    # Stop DateTime for VMS 
  
 #open database connection 
   chan <- dbConnect(dbDriver("Oracle"),username=uid, password=pwd,'ptran')
@@ -114,7 +115,7 @@ poly.sf <- st_transform(poly.sf, crs = sp::CRS(SRS_string = "EPSG:32619"))
   names(dat)[grep("latitude", names(dat))] <- "lat"
   head(dat)
   paste("Number of VMS records for ",surveyyear,": ",dim(dat)[1],sep="")
-  #[1] "Number of VMS records for 2020: 733352"; #2021 729580
+  #[1] "Number of VMS records for 2020: 733352"; #2021 729580; "Number of VMS records for 2022: 803407"
 	if(dim(dat)[1]>1000000){ 
 	  print("PROBLEM! You've hit your ceiling for records - edit rowNum in VME_get_rec() to ensure you're getting all rows") 
 	  } else { print("You're good to go -- your records is under the ceiling limit specified")}
@@ -159,6 +160,7 @@ poly.sf <- st_transform(poly.sf, crs = sp::CRS(SRS_string = "EPSG:32619"))
 	#In 2019: 738889
 	#In 2020: 736888
 	#in 2021: 734981
+	#in 2022: 183091... something not right with this method for this year - using Mike's method for 2023 assessment 
 	
 # ---- Clean scallop VMS data selected from VMS_pos ---- 
 # Remove duplicates and cross against SCALLOP MONITORING DOCS on VRN and Date to ID Scallop Only trips
@@ -174,6 +176,7 @@ poly.sf <- st_transform(poly.sf, crs = sp::CRS(SRS_string = "EPSG:32619"))
 	#In 2019: 89
  #In 2020 136 removed 
  #In 2021 904 removed ; 898 Mikes way 
+	#In 2022  753 removed
 	
 #
 # ---- Cross against logs to pull out SCALLOP trips ----
@@ -211,6 +214,9 @@ poly.sf <- st_transform(poly.sf, crs = sp::CRS(SRS_string = "EPSG:32619"))
 	#"Number of SCALLOP VMS records for 2019: 229112"
 	# Number of SCALLOP VMS records for 2020: 228368
 	# Number of SCALLOP VMS records for 2021: 228401   (old numbers: 234122; 235841
+	# "Number of SCALLOP VMS records for 2022: 226976"
+	
+	
 	
 	vms.vrn <- unique(vms.dat$vrn) # vessels from vms data
 	aa <- length(vms.vrn)
@@ -222,6 +228,8 @@ poly.sf <- st_transform(poly.sf, crs = sp::CRS(SRS_string = "EPSG:32619"))
   #In 2019:   "Vessels with MonDocs and no matching VMS:23"
 	#"Vessels with MonDocs and no matching VMS:26 or 27" #in 2020
 	#"Vessels with MonDocs and no matching VMS:121" #in 2021 with Mike's pull; 21 from JS pull 
+	# "Vessels with MonDocs and no matching VMS:16"
+	
 	
 	missing.vms <- is.element(el=log.vrn, set=vms.vrn) # log vrn with no matching VMS 
 	length(log.vrn[missing.vms==FALSE]) #check of length; should match print out of vessels with mondocs and no matching vms
@@ -285,6 +293,7 @@ poly.sf <- st_transform(poly.sf, crs = sp::CRS(SRS_string = "EPSG:32619"))
   # 27984 in 2019
 	# 35613 in 2020 
 	# 35408 in 2021 ; 35529 from JS pull 
+	# 25329 in 2022 
 	
 	unique(vms.29$assigned_area)
 	table(vms.29$assigned_area)
@@ -327,6 +336,7 @@ poly.sf <- st_transform(poly.sf, crs = sp::CRS(SRS_string = "EPSG:32619"))
 	dim(vms.29.cln)
 	#28396  with minDist_m = 50 
 	#35408   with minDist_m = 0
+	# 25300    with minDist_m = 0 in 2022 
 	
 	# to be comparable need to add option to subset data to minimum breaks -- i.e. pair down data to coarses temporal resolution. 
 	# in my perl script - this is the minimumInterogationTime -- which for 29W we set to 48 minutes (i.e. 1 hour polling)
@@ -339,16 +349,21 @@ poly.sf <- st_transform(poly.sf, crs = sp::CRS(SRS_string = "EPSG:32619"))
 	# reorder columns and Format for PERL #
 	vms.29 <- vms.29[c( "vesid", "lon", "lat", "vessel_name", "vrn", "year", "vmsdate", "vmstime", "hailout", "julian_date", "inst_speed", "obs", "ves_id", "licence_href","assigned_area","uid")]
 	
-#	vms.29 <- vms.29 %>% select(vrn      lat       lon             vmstime speed_knots         update_date    vmsdate)
-	
+#If from Mikes data VMS pull
+	vms.29$year <- year(vms.29$vmsdate)
+	vms.29 <- vms.29 %>% dplyr::select(vesid = vrn,   lon, lat, vessel_name = vrn, 
+	                                 vrn = vrn, year, vmsdate,   vmstime, assigned_area, uid)
+	head(vms.29)
+
 	write.table(vms.29, paste0(ess,path.directory,assessmentyear,"/Assessment/Data/CommercialData/VMS/SFA29vms_",surveyyear,".txt",sep=""),quote=FALSE, row.names=FALSE, sep="\t") #write inshore scallop vms data to table for year = YR
 	#place here: D:\VMS\data\vms\vmsFormatted\sfa29
 	
 #Creates run.bat file and runs. Must specify folder that contains both PERL script and VMS script for which speed will be calculated. 
 	setwd("D:/VMS/scripts/perl/")
 	#note: move file: E:\Documents and Settings\VMS\data\vms\vmsFormatted\sfa29\SFA29vms_YYYY.txt  to same folder as perl script. Update line 4 of perl script with file name SFA29vms_YYYY.txt 
-	cat(  "perl onehour_add_tripID.pl > SFA29vms_2021out.txt", file="run.bat") #update output file name
-	system( "run.bat",  intern=FALSE, wait=TRUE, show.output.on.console = TRUE)
+	# In 2022 unable to run Perl via R -- ran perl via command prompt. 
+#	cat(  "perl onehour_add_tripID.pl > SFA29vms_2022out.txt", file="run.bat") #update output file name
+#	system( "run.bat",  intern=FALSE, wait=TRUE, show.output.on.console = TRUE)
 
 	#move output here D:\VMS\scripts\perl\out_60min\sfa29_byYr
 	
@@ -514,6 +529,7 @@ names(vms.sdm.29)[grep("Y", names(vms.sdm.29))] <- 'lat'
 	dim(vms29)
 	#[1] 3633   27
 	#  3774   in 2021 
+	#2959   in 2022 
 	
 	#Effort by trip
 	vms.effort <- aggregate(vms29$TIME_DIFF_S, by=list(vms29$TRIP_ID_LOGS, vms29$SUM_SLIP_WEIGHT_LBS), FUN=sum)
@@ -530,11 +546,11 @@ names(vms.sdm.29)[grep("Y", names(vms.sdm.29))] <- 'lat'
   plot(vms29$PropCatch_kg)
   summary(vms29$PropCatch_kg)
   vms29 <- vms29[vms29$PropCatch_kg < 400,]
-  dim(vms29) #2019: 2977 ;  3347 in 2018; 3504 in 2017
+  dim(vms29) #2019: 2977 ;  3347 in 2018; 3504 in 2017; 2959 in 2022 
   names(vms29)
 
 # Export vms with prorated catch # 
-  write.csv(vms29, paste0(ess, path.directory,assessmentyear,"/Assessment/Data/CommercialData/VMS/SFA29vms_",surveyyear,"_proratedCatch.csv"), row.names = FALSE)
+  write.csv(vms29, paste0(ess, path.directory,assessmentyear,"/Assessment/Data/CommercialData/VMS/VMSproratedCatch/SFA29vms_",surveyyear,"_proratedCatch.csv"), row.names = FALSE)
 #read in all data since 2002 and append recent year data to full dataset#
   vms.prorated.catch <- read.csv(paste0(ess, path.directory,assessmentyear,"/Assessment/Data/CommercialData/VMS/VMSproratedCatch/SFA29vms.2002to",(surveyyear-1),".proratedCatch.csv"))
   table(vms.prorated.catch$year)
@@ -704,6 +720,17 @@ ggsave(paste0("SFA29vms_",yy,"v",xx,"_filtered.png"), path=paste0(ess,path.direc
 	areas <- aggregate(areas$Area.sq.km, by=list(areas$subarea, areas$sdmstrata),sum)
 	names(areas) <- c("subarea","sdmstrata","Area.sq.km")
 	
+	
+	
+	
+	
+	### START HERE ONCE LANDINGS AREA CSV COMPLETE ## 
+	
+	
+	
+	
+	
+	
 	#landings by subarea 
 	landings <- read.csv(paste0(ess,path.directory,assessmentyear,"/Assessment/Data/CommercialData/SFA29_totalLandings_YearSubarea.csv"))
 	landings$landingskg <- landings$Landingsmt*1000
@@ -862,28 +889,28 @@ ggsave(paste0("SFA29vms_",yy,"v",xx,"_filtered.png"), path=paste0(ess,path.direc
 	
 #... Fishing Effort per sq km ... 
 	# Subarea A
-	ggplot(effort.bins[effort.bins$subarea=="A",], (aes(x=as.factor(sdm), y=effort.std))) + geom_col() + facet_wrap(~year) +
+	ggplot(effort.bins[effort.bins$subarea=="A",], (aes(x=as.factor(sdm), y=effort.std))) + geom_col() + facet_wrap(~year, scales = "free_y") +
 	labs(x ="Habitat suitability", y = expression(paste("Fishing intensity  ", (h/km^2),sep=""))) + 
 	  theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) 
 	ggsave(paste0("VMSFishingIntensity_Bins_A.",(surveyyear),".png"), path=paste0(ess,path.directory,assessmentyear,"/Assessment/Figures/CommercialData/"), dpi=300, width = 12, height = 6, units = c("in"))   
 	
 
 	# Subarea B
-	ggplot(effort.bins[effort.bins$subarea=="B",], (aes(x=as.factor(sdm), y=effort.std))) + geom_col() + facet_wrap(~year) +
+	ggplot(effort.bins[effort.bins$subarea=="B",], (aes(x=as.factor(sdm), y=effort.std))) + geom_col() + facet_wrap(~year, scales = "free_y") +
 	  labs(x ="Habitat suitability", y = expression(paste("Fishing intensity  ", (h/km^2),sep=""))) + 
 	  theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) 
 	ggsave(paste0("VMSFishingIntensity_Bins_B.",(surveyyear),".png"), path=paste0(ess,path.directory,assessmentyear,"/Assessment/Figures/CommercialData/"), dpi=300, width = 12, height = 6, units = c("in"))  
 	
 	
 	# Subarea C
-	ggplot(effort.bins[effort.bins$subarea=="C",], (aes(x=as.factor(sdm), y=effort.std))) + geom_col() + facet_wrap(~year) +
+	ggplot(effort.bins[effort.bins$subarea=="C",], (aes(x=as.factor(sdm), y=effort.std))) + geom_col() + facet_wrap(~year, scales = "free_y") +
 	  labs(x ="Habitat suitability", y = expression(paste("Fishing intensity  ", (h/km^2),sep=""))) + 
 	  theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) 
 	ggsave(paste0("VMSFishingIntensity_Bins_C.",(surveyyear),".png"), path=paste0(ess,path.directory,assessmentyear,"/Assessment/Figures/CommercialData/"),dpi=300, width = 12, height = 6, units = c("in"))  
 	
 	
 	# Subarea D
-	ggplot(effort.bins[effort.bins$subarea=="D",], (aes(x=as.factor(sdm), y=effort.std))) + geom_col() + facet_wrap(~year) +
+	ggplot(effort.bins[effort.bins$subarea=="D",], (aes(x=as.factor(sdm), y=effort.std))) + geom_col() + facet_wrap(~year, scales = "free_y") +
 	  labs(x ="Habitat suitability", y = expression(paste("Fishing intensity  ", (h/km^2),sep=""))) + 
 	  theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) 
 	ggsave(paste0("VMSFishingIntensity_Bins_D.",(surveyyear),".png"), path=paste0(ess,path.directory,assessmentyear,"/Assessment/Figures/CommercialData/"), dpi=300, width = 12, height = 6, units = c("in"))  
