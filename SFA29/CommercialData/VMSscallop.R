@@ -889,28 +889,28 @@ ggsave(paste0("SFA29vms_",yy,"v",xx,"_filtered.png"), path=paste0(ess,path.direc
 	
 #... Fishing Effort per sq km ... 
 	# Subarea A
-	ggplot(effort.bins[effort.bins$subarea=="A",], (aes(x=as.factor(sdm), y=effort.std))) + geom_col() + facet_wrap(~year) +
+	ggplot(effort.bins[effort.bins$subarea=="A",], (aes(x=as.factor(sdm), y=effort.std))) + geom_col() + facet_wrap(~year, scales = "free_y") +
 	labs(x ="Habitat suitability", y = expression(paste("Fishing intensity  ", (h/km^2),sep=""))) + 
 	  theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) 
 	ggsave(paste0("VMSFishingIntensity_Bins_A.",(surveyyear),".png"), path=paste0(ess,path.directory,assessmentyear,"/Assessment/Figures/CommercialData/"), dpi=300, width = 12, height = 6, units = c("in"))   
 	
 
 	# Subarea B
-	ggplot(effort.bins[effort.bins$subarea=="B",], (aes(x=as.factor(sdm), y=effort.std))) + geom_col() + facet_wrap(~year) +
+	ggplot(effort.bins[effort.bins$subarea=="B",], (aes(x=as.factor(sdm), y=effort.std))) + geom_col() + facet_wrap(~year, scales = "free_y") +
 	  labs(x ="Habitat suitability", y = expression(paste("Fishing intensity  ", (h/km^2),sep=""))) + 
 	  theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) 
 	ggsave(paste0("VMSFishingIntensity_Bins_B.",(surveyyear),".png"), path=paste0(ess,path.directory,assessmentyear,"/Assessment/Figures/CommercialData/"), dpi=300, width = 12, height = 6, units = c("in"))  
 	
 	
 	# Subarea C
-	ggplot(effort.bins[effort.bins$subarea=="C",], (aes(x=as.factor(sdm), y=effort.std))) + geom_col() + facet_wrap(~year) +
+	ggplot(effort.bins[effort.bins$subarea=="C",], (aes(x=as.factor(sdm), y=effort.std))) + geom_col() + facet_wrap(~year, scales = "free_y") +
 	  labs(x ="Habitat suitability", y = expression(paste("Fishing intensity  ", (h/km^2),sep=""))) + 
 	  theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) 
 	ggsave(paste0("VMSFishingIntensity_Bins_C.",(surveyyear),".png"), path=paste0(ess,path.directory,assessmentyear,"/Assessment/Figures/CommercialData/"),dpi=300, width = 12, height = 6, units = c("in"))  
 	
 	
 	# Subarea D
-	ggplot(effort.bins[effort.bins$subarea=="D",], (aes(x=as.factor(sdm), y=effort.std))) + geom_col() + facet_wrap(~year) +
+	ggplot(effort.bins[effort.bins$subarea=="D",], (aes(x=as.factor(sdm), y=effort.std))) + geom_col() + facet_wrap(~year, scales = "free_y") +
 	  labs(x ="Habitat suitability", y = expression(paste("Fishing intensity  ", (h/km^2),sep=""))) + 
 	  theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) 
 	ggsave(paste0("VMSFishingIntensity_Bins_D.",(surveyyear),".png"), path=paste0(ess,path.directory,assessmentyear,"/Assessment/Figures/CommercialData/"), dpi=300, width = 12, height = 6, units = c("in"))  
