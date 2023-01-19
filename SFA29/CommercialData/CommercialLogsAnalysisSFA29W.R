@@ -28,8 +28,8 @@ source("Y:/Inshore/BoF/Assessment_fns/convert.dd.dddd.r")
 #### DEFINE ####
 
 direct <- "Y:/Inshore/SFA29"
-fishingyear <- 2021 #most recent year of commercial fishing data to be used (e.g. if fishing season is 2019/2020, use 2020)
-assessmentyear <- 2022 #year in which you are conducting the assessment
+fishingyear <- 2022 #most recent year of commercial fishing data to be used (e.g. if fishing season is 2019/2020, use 2020)
+assessmentyear <- 2023 #year in which you are conducting the assessment
 un.ID = #ptran username
 pwd.ID = #ptran password
 ess <- "Y" #identify ess drive
