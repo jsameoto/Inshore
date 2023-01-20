@@ -44,11 +44,11 @@ pwd <- pw.sameotoj
 uid <- keyring::key_list("Oracle")[1,2]
 pwd <- keyring::key_get("Oracle", uid)
 
-surveyyear <- 2021  #This is the last survey year for which you want to include  - not should match year of cruise below 
-cruise <- "SFA292021"  #note should match year for surveyyear set above 
-assessmentyear <- 2022 #year in which you are conducting the survey 
+surveyyear <- 2022  #This is the last survey year for which you want to include  - note should match year of cruise below 
+cruise <- "SFA292022"  #note should match year for surveyyear set above 
+assessmentyear <- 2023 #year in which you are conducting the survey 
 path.directory <- "Y:/Inshore/SFA29/"
-years <- c(2001:2021) 
+years <- c(2001:2022) 
 
 #Bring in survey tow data with SDM value (note - SFA29_SDM_LWM.R script must be run to get updated survey tows with SDM values prior to runnint this script)
 sdmtows <- read.csv("Y:/Inshore/SFA29/ScalSurv_SDM/SFA29Tows_SDM.csv")
@@ -220,9 +220,10 @@ comm.size[[as.character(years[i])]] <- aggregate(SHF ~  SDM+STRATA,tmp[comm,],FU
 comm.size[[as.character(years[i])]]$year <- year.names.2[i]
 } 
 
-# Uuwrap list to get Recruit and commerical sizes for all areas and years
+# Unwrap list to get Recruit and commercial sizes for all areas and years
 rec.size <- do.call("rbind",rec.size)
 comm.size <- do.call("rbind",comm.size)
+
 # Order the levels so they plot nicely..
 rec.size$SDM  <- factor(rec.size$SDM, levels = c("low","med","high"))
 comm.size$SDM  <- factor(comm.size$SDM, levels = c("low","med","high"))
@@ -236,6 +237,9 @@ comm.size.2020 <- comm.size %>% distinct(SDM, STRATA) %>% mutate(SHF = NA, year 
 comm.size <- rbind(comm.size, comm.size.2020) 
 comm.size <- comm.size %>% dplyr::arrange(STRATA,SDM,year)  
 
+#Remove row headers - they get out mis-matched when adding in 2020.
+row.names(rec.size) <- NULL
+row.names(comm.size) <- NULL
 
 #---- Plot Avg Commercial size (lbar) and avg recruit size by year ---- 
 # Plotting the average SHF for each year (i.e. Lbar) by SFA and bottom.  
