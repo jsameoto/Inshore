@@ -54,8 +54,8 @@ sdmtows <- sdmtows[,c("uid","SDM")]
 #towable units by subarea and strata 
 towable.units <- read.csv(paste0(path.directory,assessmentyear,"/Assessment/Scripts/Model/SFA29W_model_areas_towable_units.csv")) 
 
-# Get meat weight data - cannot calculate weight per tow from 2014 on since have done these mw-sh models. Stephen did the models for pre 2014 and don't have the weight-SHF data - using his values of the summarized data 
-weight.per.tow.pre.2014 <- read.csv("Y:/Inshore/SFA29/2022/Assessment/Data/SurveyIndices/SurveymeanwgttowSFA29_2001to2019.csv")
+# Get meat weight data - cannot calculate weight per tow prior to 2014 since cannot reproduce the mw-sh models. Stephen did the models for pre 2014 and don't have the weight-SHF data - using his values of the summarized data 
+weight.per.tow.previous <- read.csv(paste0("Y:/Inshore/SFA29/",assessmentyear-1,"/Assessment/Data/SurveyIndices/SDM.HighMedLow.2001to",surveyyear-1,".Commercial.Weight.csv"))
 
 # sfa29shw.dat <- read.csv("dataoutput/SFA29liveweight2014_JS.csv") #note 2014 data from Jessica's MTWT-SH model - will be slightly different than values from Stephen
 sfa29shw.dat <- read.csv(paste0("Y:/Inshore/SFA29/",assessmentyear,"/Assessment/Data/SurveyIndices/SFA29liveweight2014to",surveyyear,".csv"))
@@ -241,10 +241,6 @@ sdm.levels.est.all
 		sdm.levels.prerec <- sdm.levels.est.all
 		sdm.levels.prerec
 		
-#writeout data 
-#		write.csv(sdm.levels.prerec, paste0(path.directory, assessmentyear, "/Assessment/Data/SurveyIndices/SDM.HighMedLow.2014to",surveyyear,".Weight.",size,".csv"))
-		
-
 		
 ### Stratified estimates (one estimate for each subarea by year)
 		sdm.strat.est.all <- out.strat.2014toYYYY[,c("YEAR","SUBAREA","yst","se.yst","descrip")] 
@@ -272,9 +268,6 @@ sdm.levels.est.all
 		sdm.strat.est.all.prerec <- sdm.strat.est.all
 		sdm.strat.est.all.prerec
 		
-# writeout data Just for 2014+ years
-#	write.csv(sdm.strat.est.all.prerec, paste0(path.directory, assessmentyear, "/Assessment/Data/SurveyIndices/SDM.StratifiedEstimates.2014to",surveyyear,".Weight.",size,".csv"))
-	
 	
 # ---- RECRUITS ----		
 	# NOTE this section of code is run once for each size (comm, rec, precec). Define below
@@ -409,9 +402,6 @@ sdm.levels.est.all
 	sdm.levels.rec <- sdm.levels.est.all
 	sdm.levels.rec
 	
-	#writeout data 
-#	write.csv(sdm.levels.rec, paste0(path.directory, assessmentyear, "/Assessment/Data/SurveyIndices/SDM.HighMedLow.2014to",surveyyear,".Weight.",size,".csv"))
-	
 	
 ### Stratified estimates (one estimate for each subarea by year)
 	sdm.strat.est.all <- out.strat.2014toYYYY[,c("YEAR","SUBAREA","yst","se.yst","descrip")] 
@@ -439,9 +429,7 @@ sdm.levels.est.all
 	sdm.strat.est.all.rec <- sdm.strat.est.all
 	sdm.strat.est.all.rec
 	
-	# Just for 2014+ years
-#	write.csv(sdm.strat.est.all.rec, paste0(path.directory, assessmentyear, "/Assessment/Data/SurveyIndices/SDM.StratifiedEstimates.2014to",surveyyear,".Weight.",size,".csv"))
-	
+
 # ---- COMMERCIAL ----		
 	# NOTE this section of code is run once for each size (comm, rec, precec). Define below
 	strata.group <- SDMareas
@@ -574,10 +562,7 @@ sdm.levels.est.all
 	
 	sdm.levels.comm <- sdm.levels.est.all
 	sdm.levels.comm
-	
-	#writeout data 
-#	write.csv(sdm.levels.comm, paste0(path.directory, assessmentyear, "/Assessment/Data/SurveyIndices/SDM.HighMedLow.2014to",surveyyear,".Weight.",size,".csv"))
-	
+
 
 ### Stratified estimates (one estimate for each subarea by year)
 	sdm.strat.est.all <- out.strat.2014toYYYY[,c("YEAR","SUBAREA","yst","se.yst","descrip")] 
@@ -605,25 +590,19 @@ sdm.levels.est.all
 	sdm.strat.est.all.comm <- sdm.strat.est.all
 	sdm.strat.est.all.comm
 	
-	# Just for 2014+ years
-#	write.csv(sdm.strat.est.all.comm, paste0(path.directory, assessmentyear, "/Assessment/Data/SurveyIndices/SDM.StratifiedEstimates.2014to",surveyyear,".Weight.",size,".csv"))
-	
 	
 # ---- Merge dataframes A-D & calculate inputs for model ---- 
 	
 	#estimates by SDM strata 
 	sdm.levels <- rbind(sdm.levels.prerec, sdm.levels.rec, sdm.levels.comm) 
-	
-	#writeout data 
-	write.csv(sdm.levels, paste0(path.directory, assessmentyear, "/Assessment/Data/SurveyIndices/SDM.HighMedLow.2014to",surveyyear,".Weight.csv"))
-	
+
 	#merge to pre-2014 weight per tow for commerical size  
-	pre.2014 <- weight.per.tow.pre.2014 %>% dplyr::select(YEAR, Mean, SUBAREA, Strata)
+	pre.2014 <- weight.per.tow.previous %>% dplyr::select(YEAR, Mean, SUBAREA, Strata)
 	since.2014 <- sdm.levels %>% filter(size == "comm") %>% dplyr::select(YEAR, Mean, SUBAREA, Strata)
 	sdm.levels.2001toYYYY <- rbind(pre.2014, since.2014)
 	
 	#writeout data 
-	write.csv(sdm.levels.2001toYYYY, paste0(path.directory, assessmentyear, "/Assessment/Data/SurveyIndices/SDM.HighMedLow.2001to",surveyyear,".Commercial.Weight.csv"))
+	write.csv(sdm.levels.2001toYYYY, paste0(path.directory, assessmentyear, "/Assessment/Data/SurveyIndices/SDM.HighMedLow.2001to",surveyyear,".Commercial.Weight.csv"), row.names = F)
 	
 	
 	#Stratified estimates 
@@ -635,7 +614,7 @@ sdm.levels.est.all
 	
 	## data for model
 	# "Ih" - commercial biomass scaled to respective SDM strata in millions 
-	# "obs.tau" commercial biomass  per tow CV
+	# "obs.tau" commercial biomass  per tow CV - note only from 2014 on since using Stephen's cv values from the 2014 framework, sorry I named the output file since 2001, not trying to confuse on purpose but can we just leave as is? If change need to update Create.model.files.R.... 
 	Ih.obs.tau <- sdm.levels %>% filter(size == "comm" & !(SUBAREA == "SFA29A" & Strata == "high")) %>% dplyr::select(YEAR, SUBAREA, Strata, Mean, CV, size) 
 	Ih.obs.tau <-  merge(Ih.obs.tau, towable.units, by = c("SUBAREA", "Strata")) 
 	Ih.obs.tau <- Ih.obs.tau %>% mutate(Ih = round(((Mean*TowableUnits)/1000),digits =4)) #units mt 
