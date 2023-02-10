@@ -221,14 +221,14 @@ revised <- left_join(dplyr::select(model.data.for.subarea, SUBAREA, Strata, Year
 
 #In Dec 2022, corrections were made to SFA292019 database to NUM_UNLINED_FREQ for tows #96, 87 and 64. This caused discrepancies between previous model data files in the rh, obs.nu, clappers,obs.phi and L columns for 2019 and 2020 Subarea B - high habitat and Subarea D - medium habitat and Subarea E (not modeled). So we will now adjust 2019 (and 2020) values to the corrected numbers. These tows corresponded to Subarea B, D and E only (tow 96 = B, tow 64 = D, tow 87 = E).Note, the wk for 2019 did not change so we keep the wk from the "revised" object for 2019 and 2020.
 
-#Note: This should not need to be re-run next year (2024 assessment)
+#Note: This should not need to be re-run next year (2024 assessment). Delete out lines 224-232 in 2024.
 #add 2019 and 2020 year data from the model.data.Subarea object.
 #Only need to run For high strata - note only high strata have "Catch.actual", "wk"
-revised[revised$Year==2019 & revised$Strata == "high", c("Catch.actual", "Ih", "obs.tau", "rh", "obs.nu", "clappers", "obs.phi", "L", "VMSEffort", "gh")] <- 
-  model.data.for.subarea[model.data.for.subarea$Year==2019 & revised$Strata == "high", c("Catch.actual", "Ih", "obs.tau", "rh", "obs.nu", "clappers", "obs.phi", "L", "VMSEffort", "gh")]
+revised[revised$Year==2019 & revised$Strata == "high", c("Ih", "obs.tau", "rh", "obs.nu", "clappers", "obs.phi", "L", "gh")] <- 
+  model.data.for.subarea[model.data.for.subarea$Year==2019 & revised$Strata == "high", c("Ih", "obs.tau", "rh", "obs.nu", "clappers", "obs.phi", "L", "gh")] #Keep old Catch.actual and VMSEffort values
 
-revised[revised$Year==2020 & revised$Strata == "high", c("Catch.actual", "Ih", "obs.tau", "rh", "obs.nu", "clappers", "obs.phi", "L", "VMSEffort")] <- 
-  model.data.for.subarea[model.data.for.subarea$Year==2020 & revised$Strata == "high", c("Catch.actual", "Ih", "obs.tau", "rh", "obs.nu", "clappers", "obs.phi", "L", "VMSEffort")] #leave out gh to keep value from old file.
+revised[revised$Year==2020 & revised$Strata == "high", c("Ih", "obs.tau", "rh", "obs.nu", "clappers", "obs.phi", "L")] <- 
+  model.data.for.subarea[model.data.for.subarea$Year==2020 & revised$Strata == "high", c("Ih", "obs.tau", "rh", "obs.nu", "clappers", "obs.phi", "L")] #Keep old Catch.actual and VMSEffort values and leave out gh to keep value from old file, otherwise it replaces with NA.
 
 
 #add current year data 
@@ -249,7 +249,10 @@ revised$VMSEffort[revised$Year == surveyyear-1 & revised$Strata == "low"] <- mod
 revised$VMSEffort[revised$Year == surveyyear-1 & revised$Strata == "med"] <- model.data.for.subarea$VMSEffort[model.data.for.subarea$Year == surveyyear-1 & model.data.for.subarea$Strata == "med"]
 revised$VMSEffort[revised$Year == surveyyear-1 & revised$Strata == "high"] <- model.data.for.subarea$VMSEffort[model.data.for.subarea$Year == surveyyear-1 & model.data.for.subarea$Strata == "high"]
 
-revised
+
+
+#Note: For 2022 - 0 recruits for low in B -- as per process for this situation (since can't have 0 in model or NA for obs.nu) set rh = 0.001	obs.nu = 0.009950331 (note this often happens in subarea A). Rh gets set to 0.001 in model_final.R script.
+#revised$obs.nu[revised$Year == 2022 & revised$Strata == "low"] <- 0.009950331
 
 #write out data for model 
 revised <- revised %>%  select(SUBAREA, Year , Catch.actual, wk, Strata, Ih, obs.tau, rh, obs.nu, clappers,  obs.phi, L, VMSEffort, gh)  
@@ -356,6 +359,9 @@ revised$VMSEffort[revised$Year == surveyyear-1 & revised$Strata == "high"] <- mo
 
 revised
 
+#Note: For 2022 - 0 recruits and clappers for low in C -- as per process for this situation (since can't have 0 in model or NA for obs.nu) set rh = 0.001	obs.nu = 0.009950331, clappers = 0.001 and obs.phi = 0.009950331 (note this often happens in subarea A). Rh and clappers gets set to 0.001 in model_final.R script.
+#revised$obs.nu[revised$Year == 2022 & revised$Strata == "low"] <- 0.009950331
+#revised$obs.phi[revised$Year == 2022 & revised$Strata == "low"] <- 0.009950331
 
 #write out data for model 
 revised <- revised %>%  select(SUBAREA, Year , Catch.actual, wk, Strata, Ih, obs.tau, rh, obs.nu, clappers,  obs.phi, L, VMSEffort, gh)  
@@ -446,11 +452,11 @@ revised <- left_join(dplyr::select(model.data.for.subarea, SUBAREA, Strata, Year
 
 #add 2019 and 2020 year data from the model.data.Subarea object.
 #Only need to run for med strata 
-revised[revised$Year==2019 & revised$Strata == "med", c( "Catch.actual", "wk","Ih", "obs.tau", "rh", "obs.nu", "clappers", "obs.phi", "L", "VMSEffort", "gh")] <- 
-  model.data.for.subarea[model.data.for.subarea$Year==2019 & revised$Strata == "med", c( "Catch.actual", "wk","Ih", "obs.tau", "rh", "obs.nu", "clappers", "obs.phi", "L", "VMSEffort", "gh")]
+revised[revised$Year==2019 & revised$Strata == "med", c("wk","Ih", "obs.tau", "rh", "obs.nu", "clappers", "obs.phi", "L", "gh")] <- 
+  model.data.for.subarea[model.data.for.subarea$Year==2019 & revised$Strata == "med", c("wk","Ih", "obs.tau", "rh", "obs.nu", "clappers", "obs.phi", "L", "gh")] #keep old Catch.actual and VMSEffort values
 
-revised[revised$Year==2020 & revised$Strata == "med", c( "Catch.actual", "wk","Ih", "obs.tau", "rh", "obs.nu", "clappers", "obs.phi", "L", "VMSEffort")] <- 
-  model.data.for.subarea[model.data.for.subarea$Year==2020 & revised$Strata == "med", c( "Catch.actual", "wk","Ih", "obs.tau", "rh", "obs.nu", "clappers", "obs.phi", "L", "VMSEffort")] #leave out gh
+revised[revised$Year==2020 & revised$Strata == "med", c("wk","Ih", "obs.tau", "rh", "obs.nu", "clappers", "obs.phi", "L")] <- 
+  model.data.for.subarea[model.data.for.subarea$Year==2020 & revised$Strata == "med", c("wk","Ih", "obs.tau", "rh", "obs.nu", "clappers", "obs.phi", "L")] #keep old Catch.actual and VMSEffort values, and leave out gh - otherwise it replaces with an NA.
 
 
 #add current year data 
@@ -473,6 +479,9 @@ revised$VMSEffort[revised$Year == surveyyear-1 & revised$Strata == "high"] <- mo
 
 
 revised
+
+#Note: For 2022 - 0 recruits for low in D -- as per process for this situation (since can't have 0 in model or NA for obs.nu) set rh = 0.001	obs.nu = 0.009950331, (note this often happens in subarea A). Rh get set to 0.001 in model_final.R script.
+revised$obs.nu[revised$Year == 2022 & revised$Strata == "low"] <- 0.009950331
 
 #write out data for model 
 revised <- revised %>%  select(SUBAREA, Year , Catch.actual, wk, Strata, Ih, obs.tau, rh, obs.nu, clappers,  obs.phi, L, VMSEffort, gh)  
