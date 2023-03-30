@@ -652,10 +652,29 @@ sdm.levels.est.all
 #save
 ggsave(filename = paste0(path.directory,assessmentyear,"/Assessment/Figures/SFA29AtoD.Weightpertow.Commercial.",surveyyear,".png"), plot = AtoD.per.tow.comm, scale = 2.5, width =6, height = 6, dpi = 300, units = "cm", limitsize = TRUE)
 	
-#	png(paste0(path.directory,assessmentyear,"/Assessment/Figures/SFA29AtoD.Weightpertow.Commercial.",surveyyear,".png"),width=11,height=11,units #= "in",res=300)
-#	AtoD.per.tow.comm
-#	dev.off()
-	
+### --- Extra - Plots weight per tow A to D Recruit size ---- 
+#can't plot full time series for recruits for weight bc don't have that pre-2014 time series from Stephen -- but recruit weights not used in the model; numbers with avg weight is 
+
+#rec.sdm.levels.2014.YYYY <- sdm.levels %>% filter(size == "rec") %>% dplyr::select(YEAR, Mean, SUBAREA, Strata)
+
+#colors.sdm <- c("forestgreen",  "darkblue", "firebrick2") #(or 'forestgreen') (med, high, low)
+#colors.sdm <- c('firebrick2', 'darkgrey', 'darkblue')
+
+## All Subareas A-D Recruit  
+#AtoD.per.tow.rec <- ggplot(data = rec.sdm.levels.2014.YYYY %>% filter(!(SUBAREA == "SFA29A" & Strata == "high")), aes(x=YEAR, y=Mean,  col=Strata, pch=Strata)) + 
+#  geom_point() + 
+#  geom_line(aes(linetype = Strata)) + 
+#  facet_wrap(~SUBAREA, ncol=2) + 
+#  theme_bw() + ylab("Mean weight/tow (kg)") + xlab("Year") + 
+#  theme(legend.position = c(0.1, 0.85),panel.grid.minor = element_blank(),legend.title = element_blank()) + 
+#  scale_color_manual(values=colors.sdm, breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low"))+
+#  scale_linetype_manual(values = c(1,2,3),breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low"))+
+#  scale_shape_manual(values = c(15:17),breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low"))
+#AtoD.per.tow.rec
+
+#save
+#ggsave(filename = paste0(path.directory,assessmentyear,"/Assessment/Figures/SFA29AtoD.Weightpertow.Recruit.2014-.",surveyyear,".png"), plot = AtoD.per.tow.rec, scale = 2.5, width =6, height = 6, dpi = 300, units = "cm", limitsize = TRUE)
+
 	
 ### ---- SUBAREA E ----  
 ## NO DOMAIN DATAFRAME FOR E - for 2005 take simple mean #

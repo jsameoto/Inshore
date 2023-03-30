@@ -37,8 +37,8 @@ source("Y:/Inshore/SFA29/2017/model/SFA29model9-2015.R") #contains the SFA29mode
 
 #DEFINE:
 path.directory <- "Y:/Inshore/SFA29/"
-assessmentyear <- 2022 #year in which you are conducting the assessment 
-surveyyear <- 2021  #last year of survey data you are using, e.g. if max year of survey is survey from summer 2019, this would be 2019 
+assessmentyear <- 2023 #year in which you are conducting the assessment 
+surveyyear <- 2022  #last year of survey data you are using, e.g. if max year of survey is survey from summer 2019, this would be 2019 
 area <- "SFA29B"  
 
 #last year survey in model 
@@ -88,7 +88,8 @@ B.areas <- c(248.8925, 244.3425, 52.3925)
 num.areas <- length(B.areas) # The number of strata in the area...
 
 # Now bring in the model data...
-mod.dat <- read.csv(paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29B/SFA29B_ModelData.2021.csv"))  
+mod.dat <- read.csv(paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29B_ModelData.",surveyyear,".csv"))  
+#mod.dat <- read.csv(paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29B/SFA29B_ModelData.2021.csv"))  
 #mod.dat <- read.csv(paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29B/test_min_gh_for2020/SFA29B_ModelData.2021.csv"))  
 #mod.dat <- read.csv(paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29B/test_max_gh_for2020/SFA29B_ModelData.2021.csv"))  
 #mod.dat <- read.csv(paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29B/ModelRun_to2020/SFA29B_ModelData.2020.csv"))  
@@ -357,42 +358,42 @@ write.csv(Dec.tab, paste0(path.directory,assessmentyear,"/Assessment/Data/Model/
 
 
 # ---- EXTRA - Decision table to predict max level exploitation risk ----
-Decision.table <- NULL
-for(i in 1:20){
-  temp<-predict(B.mod.res,exploit=0.05*(i-1), g.parm=growth.paras)
+#Decision.table <- NULL
+#for(i in 1:20){
+#  temp<-predict(B.mod.res,exploit=0.05*(i-1), g.parm=growth.paras)
   # Get the Probability of being above the LRP, for Area B is this 1.12, for area C this is 1.41, and D is 1.30
-  lrp <- signif(length(which(temp$Bh.next$High/temp$Area[3] >= 1.12))/length(temp$Bh.next$High),digits=2)
-  usr <- signif(length(which(temp$Bh.next$High/temp$Area[3] >= 2.24))/length(temp$Bh.next$High),digits=2)
+#  lrp <- signif(length(which(temp$Bh.next$High/temp$Area[3] >= 1.12))/length(temp$Bh.next$High),digits=2)
+#  usr <- signif(length(which(temp$Bh.next$High/temp$Area[3] >= 2.24))/length(temp$Bh.next$High),digits=2)
   #temp<-predict(C.2015,exploit=0.02*(i-1), g.parm=c(1.1612, 1.1578, 1.1796))
-  Decision.table[[i]]<-as.vector(c(unlist(summary(temp)$Next.year),lrp,usr))
-}
-Dec.tab.r1 <- do.call("rbind",Decision.table)
-colnames(Dec.tab.r1) <- c(names(summary(temp)$Next.year),"Prob_above_LRP", "Prob_above_USR")
+#  Decision.table[[i]]<-as.vector(c(unlist(summary(temp)$Next.year),lrp,usr))
+#}
+#Dec.tab.r1 <- do.call("rbind",Decision.table)
+#colnames(Dec.tab.r1) <- c(names(summary(temp)$Next.year),"Prob_above_LRP", "Prob_above_USR")
 
-Dec.tab.r1
-write.csv(Dec.tab.r1, paste0(getwd(),"/SFA29B_results/B_mod",max(yrs),"_Decision_table_risk_assessment.csv"))
+#Dec.tab.r1
+#write.csv(Dec.tab.r1, paste0(getwd(),"/SFA29B_results/B_mod",max(yrs),"_Decision_table_risk_assessment.csv"))
 
 ## Make plot for exploitation risk analysis
 # Include Risk category
-Dec.tab.r1.df <- as.data.frame (Dec.tab.r1)
-library (ggplot2)
-dec.plot <- ggplot (Dec.tab.r1.df, aes (x=Exploit.High, y=Prob_above_USR)) +
-  theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
-  annotate(geom="rect",ymin=0.75,ymax=1,xmin=-Inf,xmax=Inf, fill = "lightgreen", alpha=0.5)+
-  annotate(geom="rect",ymin=0.5,ymax=0.75,xmin=-Inf,xmax=Inf, fill="gold1", alpha = 0.5) +
-  annotate(geom="rect",ymin=0.25,ymax=0.5,xmin=-Inf,xmax=Inf, fill="tomato1", alpha = 0.6) +
-  annotate(geom="rect",ymin=0,ymax=0.25,xmin=-Inf,xmax=Inf, fill="red", alpha=0.6) +
-  annotate(geom="text",x=0.7,y=0.88,label="Low")+
-  annotate(geom="text",x=0.7,y=0.62,label="Moderate")+
-  annotate(geom="text",x=0.2,y=0.38,label="Moderate High")+
-  annotate(geom="text",x=0.2,y=0.12,label="High")+
-  geom_point() + geom_line() + scale_y_continuous(limit=c(0,1), expand=c(0.01,0))+
-  xlab ("Exploitation") +ylab("Probability Above USR") + ggtitle("Subarea B Risk Analysis")
-dec.plot
+#Dec.tab.r1.df <- as.data.frame (Dec.tab.r1)
+#library (ggplot2)
+#dec.plot <- ggplot (Dec.tab.r1.df, aes (x=Exploit.High, y=Prob_above_USR)) +
+#  theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+#  annotate(geom="rect",ymin=0.75,ymax=1,xmin=-Inf,xmax=Inf, fill = "lightgreen", alpha=0.5)+
+#  annotate(geom="rect",ymin=0.5,ymax=0.75,xmin=-Inf,xmax=Inf, fill="gold1", alpha = 0.5) +
+#  annotate(geom="rect",ymin=0.25,ymax=0.5,xmin=-Inf,xmax=Inf, fill="tomato1", alpha = 0.6) +
+#  annotate(geom="rect",ymin=0,ymax=0.25,xmin=-Inf,xmax=Inf, fill="red", alpha=0.6) +
+#  annotate(geom="text",x=0.7,y=0.88,label="Low")+
+#  annotate(geom="text",x=0.7,y=0.62,label="Moderate")+
+#  annotate(geom="text",x=0.2,y=0.38,label="Moderate High")+
+#  annotate(geom="text",x=0.2,y=0.12,label="High")+
+#  geom_point() + geom_line() + scale_y_continuous(limit=c(0,1), expand=c(0.01,0))+
+#  xlab ("Exploitation") +ylab("Probability Above USR") + ggtitle("Subarea B Risk Analysis")
+#dec.plot
 
-png(paste0 ("Y:/INSHORE SCALLOP/SFA29/2019/figures/SubareaB_USRprob_RiskAnalysis", ".png"),11,9,res=400,units='in')
-dec.plot
-dev.off()
+#png(paste0 ("Y:/INSHORE SCALLOP/SFA29/2019/figures/SubareaB_USRprob_RiskAnalysis", ".png"),11,9,res=400,units='in')
+#dec.plot
+#dev.off()
 
 # ----- THE PREDICTION EVALUATION ----
 ## Now we can just run this through a loop rather than keep re-running these...
@@ -445,14 +446,14 @@ save(pe.pred,file=paste0(path.directory,assessmentyear,"/Assessment/Data/Model/S
 
 
 # Now to make the historic plot below
-# Assuming you haven't re-run everything above and wasted several hourse of you life
-# we need to bring in all the prediction evalulation data we have....
+# Assuming you haven't re-run everything above and wasted several hours of you life
+# we need to bring in all the prediction evaluation data we have....
 # Now load all the old pe.pred results, first identify where to find the data...
 
 direct <- "Y:/Inshore/SFA29/"
 pe.all <- NULL
 
-for(i in 2016:2021) {
+for(i in 2016:pe.years) {
   if(i == 2016) 
   {
     load(paste0(direct,"Model_results_2015_2017/SFA29B/prediction_evaluation_results_2011_2016.RData"))
@@ -472,6 +473,11 @@ for(i in 2016:2021) {
   if(i == 2021)
   {
     load(paste0(direct,"2022/Assessment/Data/Model/SFA29B/SFA29B.prediction.evaluation.results.2021.RData"))
+    pe.all <- c(pe.all,pe.pred)
+  }
+  if(i %in% 2022:pe.years)
+  {
+    load(paste0(direct,(i+1),"/Assessment/Data/Model/SFA29B/SFA29B.prediction.evaluation.results.",i,".RData"))
     pe.all <- c(pe.all,pe.pred)
   }
 } 
@@ -505,9 +511,9 @@ B.next.predict <- predict(B.mod.res, exploit=0.1, g.parm=c(growth.paras$gh), m.a
 summary(B.next.predict)
 
 
-#Method only does one exploitation at a time, note that I have changed the probabilites to be like those for BoF
+#Method only does one exploitation at a time, note that I have changed the probabilities to be like those for BoF
 #Workaround
-set.seed(10) # set the random number generator if you want to make your results reproducable.
+set.seed(10) # set the random number generator if you want to make your results reproducible.
 Decision.table <- matrix(NA,10,7)
 dimnames(Decision.table)[[2]] <- names(summary(B.next.predict)$Next.year)
 Decision.table
