@@ -451,3 +451,62 @@ Decision.table
 #Write out decision table 
 write.csv(Decision.table, paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29A/SFA29.A.mod.Decision.table.nat.m.1yr.",surveyyear,".csv"), row.names = FALSE) 
 
+######################################################
+#Plot of survey estimates over modelled biomass
+
+summary <- as.data.frame(mod.res$summary)
+parameters <- rownames(summary)
+summary <- cbind(parameters, data.frame(summary, row.names=NULL))
+
+n <- 2
+years <- rep(2001:surveyyear, each=n)
+Habitat <- rep(c("Low", "Med"), 22) #Need to fix this so new years are added.
+
+summary.Bh <- summary |>  filter(str_detect(summary$parameters, "^Bh"))
+summary.Bh$Year <- years
+summary.Bh$Habitat <- Habitat
+
+summary.q <- summary |>  filter(parameters== "q")
+
+summary.Bh$scaled <- summary.Bh$X50.*summary.q$X50.
+summary.Bh$scaled.2.5 <- summary.Bh$X2.5.*summary.q$X50.#*summary.q$X2.5.
+summary.Bh$scaled.97.5 <- summary.Bh$X97.5.*summary.q$X50.#*summary.q$X97.5.
+
+
+mod.dat.plot <- mod.dat |> 
+  rename(Habitat=Strata) |>
+  mutate(Habitat = case_when(#Habitat == "high" ~ "High", 
+                             Habitat == "med" ~ "Med",
+                             Habitat == "low" ~ "Low"))
+
+#Plot by Habitat Type
+ggplot()+
+  geom_point(data = summary.Bh, aes(x =Year, y= scaled))+
+  geom_line(data = summary.Bh, aes(x =Year,y=scaled), size = 0.5)+
+  geom_ribbon(data = summary.Bh, aes(x = Year, ymin=scaled.2.5, ymax=scaled.97.5),alpha=0.2)+
+  geom_point(data = (mod.dat.plot |> dplyr::filter(SUBAREA == "SFA29A")), aes(Year,Ih), colour = "red")+
+  xlab("Year")+
+  ylab("Commercial Biomass")+
+  theme_bw()+
+  facet_wrap(~Habitat)
+
+#save
+ggsave(filename = paste0(path.directory,assessmentyear,"/Assessment/Figures/Model/SFA29A/Survey_est_figure_SFA29A_",surveyyear,".png"), plot = last_plot(), scale = 2.5, width =11, height = 4, dpi = 300, units = "cm", limitsize = TRUE)
+
+#Med
+#ggplot()+
+  #geom_point(data = summary.Bh |> dplyr::filter(Habitat == "Med"), aes(x =Year, y= scaled))+
+  #geom_line(data = summary.Bh |> dplyr::filter(Habitat == "Med"), aes(x =Year,y=scaled), size = 0.5)+
+  #geom_ribbon(data = summary.Bh |> dplyr::filter(Habitat == "Med"), aes(x = Year, ymin=scaled.2.5, ymax=scaled.97.5),alpha=0.2)+
+  #geom_point(data = (mod.dat |> dplyr::filter(Habitat == "med", SUBAREA == "SFA29A")), aes(Year,Ih), colour = "red")+
+  #xlab("Year")+
+  #ylab("Commercial Biomass")
+#Low
+#ggplot()+
+#  geom_point(data = summary.Bh |> dplyr::filter(Habitat == "Low"), aes(x =Year, y= scaled))+
+#  geom_line(data = summary.Bh |> dplyr::filter(Habitat == "Low"), aes(x =Year,y=scaled), size = 0.5)+
+#  geom_ribbon(data = summary.Bh |> dplyr::filter(Habitat == "Low"), aes(x = Year, ymin=scaled.2.5, ymax=scaled.97.5),alpha=0.2)+
+#  geom_point(data = (mod.dat |> dplyr::filter(Habitat == "low", SUBAREA == "SFA29A")), aes(Year,Ih), colour = "red")+
+#  xlab("Year")+
+#  ylab("Commercial Biomass")
+
