@@ -291,6 +291,12 @@ SFA29.con.ts
 
 write.csv(SFA29.con.ts, paste0(path.directory, assessmentyear, "/Assessment/Data/SurveyIndices/SFA29W_ConditionTimeSeries2001to",surveyyear,".csv"))
 
+SFA29.con.ts <- SFA29.con.ts %>% 
+  mutate(STRATA = case_when(STRATA == "SFA29A" ~ "Subarea A", 
+                           STRATA == "SFA29B" ~ "Subarea B",
+                           STRATA == "SFA29C" ~ "Subarea C",
+                           STRATA == "SFA29D" ~ "Subarea D",
+                           STRATA == "SFA29E" ~ "Subarea E"))
 
 #... Plot Condition Time Series Figures:
 
