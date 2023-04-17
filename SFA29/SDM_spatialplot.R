@@ -18,12 +18,12 @@ library("gridExtra")
 library(magick)
 
 #Set year to save figures to appropriate directory:
-assessment.year <- 2022
+assessment.year <- 2023
 
 #Load functions:
 funcs <- c("https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Maps/pectinid_projector_sf.R",
            "https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Survey_and_OSAC/convert.dd.dddd.r",
-           "https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/archive/2016/contour.gen.r")
+           "https://raw.githubusercontent.com/Mar-scal/Inshore/master/contour.gen.r")
 dir <- getwd()
 for(fun in funcs) 
 {
@@ -113,9 +113,9 @@ p3
 
 p3 +
   geom_stars(data = bin.sdm, aes(x=x,y=y, fill = w001001.adf))+
-  scale_fill_manual(values = c('firebrick3', 'grey68', 'darkblue'), na.value = 'transparent', name = "Qualité de l'habitat", breaks = c("[0.6,1)", "[0.3,0.6)", "[0,0.3)"),labels = c("[0.6,1)"="Élevée [0.6,1)", "[0.3,0.6)"= "Moyenne [0.3,0.6) ", "[0,0.3)"="Faible [0,0.3)"))+
+  scale_fill_manual(values = c('firebrick3', 'grey68', 'darkblue'), na.value = 'transparent', name = "QualitÃ© de l'habitat", breaks = c("[0.6,1)", "[0.3,0.6)", "[0,0.3)"),labels = c("[0.6,1)"="Ã‰levÃ©e [0.6,1)", "[0.3,0.6)"= "Moyenne [0.3,0.6) ", "[0,0.3)"="Faible [0,0.3)"))+
   geom_sf(data = sfa29.poly, size = 1, colour = "black", fill = NA)+
-  geom_text(aes(label = "Nouvelle-Écosse"), x = -65.6, y = 43.65, size = 4, color = "black")+
+  geom_text(aes(label = "Nouvelle-Ã‰cosse"), x = -65.6, y = 43.65, size = 4, color = "black")+
   geom_sf_text(data = sfa29.poly %>% filter(ET_ID =="A"), aes(label = ET_ID),size = 4, colour = "black",fontface = "bold", nudge_x = -0.12 )+
   geom_sf_text(data = sfa29.poly %>% filter(ET_ID == "B"), aes(label = ET_ID),size = 4, colour = "black",fontface = "bold", nudge_y = 0.13, nudge_x = -0.0109)+
   geom_sf_text(data = sfa29.poly %>% filter(ET_ID =="C"), aes(label = ET_ID),size = 4, colour = "black",fontface = "bold", nudge_y = 0.1)+
@@ -164,7 +164,7 @@ bin.sdm.nas <- bin.sdm.int %>%
 #bin.sdm.nas.FR <- bin.sdm.int %>%
 #  mutate(w001001.adf = case_when(w001001.adf == "[0,0.3)" ~ "Faible", 
                                 # w001001.adf == "[0.3,0.6)" ~ "Moyenne",
-                                # w001001.adf == "[0.6,1)" ~ "Élevée")) %>% 
+                                # w001001.adf == "[0.6,1)" ~ "?lev?e")) %>% 
 #  mutate(w001001.adf = fct_explicit_na(w001001.adf, na_level = "Aucune information")) %>% 
 #  mutate(sdm = w001001.adf)
                                  
@@ -215,9 +215,9 @@ p3 +
                   pattern_density = 0.25,
                   pattern_spacing = 0.010,
                   pattern_key_scale_factor = 0.5) + 
-  scale_colour_manual(values= c("white","transparent","transparent","transparent"), breaks = c("High", "Medium", "Low", "No_information"),labels = c("High"="Élevée [0.6,1)", "Medium"="Moyenne [0.3,0.6)", "Low"="Faible [0,0.3)", "No_information" = "Aucune information"), name = "Qualité de l'habitat")+
-  scale_fill_manual(values = c("white","grey70","black","transparent"), breaks = c("High", "Medium", "Low", "No_information"),labels = c("High"="Élevée [0.6,1)", "Medium"="Moyenne [0.3,0.6)", "Low"="Faible [0,0.3)", "No_information" = "Aucune information"),name = "Qualité de l'habitat") +
-  scale_pattern_discrete(choices = c(Low = "none", Medium = "none", High = "none", No_information = "crosshatch"), breaks = c("High", "Medium", "Low", "No_information"),labels = c("High"="Élevée [0.6,1)", "Medium"="Moyenne [0.3,0.6)", "Low"="Faible [0,0.3)", "No_information" = "Aucune information"),name = "Qualité de l'habitat")+
+  scale_colour_manual(values= c("white","transparent","transparent","transparent"), breaks = c("High", "Medium", "Low", "No_information"),labels = c("High"="Élevée [0,6 à 1,0)", "Medium"="Moyenne [0,3 à 0,6)", "Low"="Faible [0 à 0,3)", "No_information" = "Aucune information"), name = "Qualité de l'habitat")+
+  scale_fill_manual(values = c("white","grey70","black","transparent"), breaks = c("High", "Medium", "Low", "No_information"),labels = c("High"="Élevée [0,6 à 1,0)", "Medium"="Moyenne [0,3 à 0,6)", "Low"="Faible [0 à 0,3)", "No_information" = "Aucune information"),name = "Qualité de l'habitat") +
+  scale_pattern_discrete(choices = c(Low = "none", Medium = "none", High = "none", No_information = "crosshatch"), breaks = c("High", "Medium", "Low", "No_information"),labels = c("High"="Élevée [0,6 à 1,0)", "Medium"="Moyenne [0,3 à 0,6)", "Low"="Faible [0 à 0,3)", "No_information" = "Aucune information"),name = "Qualité de l'habitat")+
   geom_sf(data = sfa29.poly, size = 1.15, colour = "black", fill = NA)+
   geom_text(aes(label = "Nouvelle-Écosse"), x = -65.6, y = 43.65, size = 4, color = "black")+
   geom_sf_text(data = sfa29.poly %>% filter(ET_ID =="A"), aes(label = ET_ID),size = 4, colour = "black",fontface = "bold", nudge_x = -0.12 )+
