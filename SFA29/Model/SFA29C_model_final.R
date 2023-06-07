@@ -362,7 +362,7 @@ summary(C.next.predict)
 #Workaround
 set.seed(10) # set the random number generator if you want to make your results reproducible.
 Decision.table <- matrix(NA,10,7)
-dimnames(Decision.table)[[2]] <- names(summary(c.next.predict)$Next.year)
+dimnames(Decision.table)[[2]] <- names(summary(C.next.predict)$Next.year)
 Decision.table
 
 #Decision table work around from D.Keith to get prob biomass>LRP after fishing occurs'
@@ -559,4 +559,49 @@ Dec.tab
 # Save the decision table.
 write.csv(Dec.tab, paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29C/SFA29.C.mod.Decision.table.m.1yr.",surveyyear,".csv"), row.names = FALSE) 
 
+######################################################
+#Plot of survey estimates over modelled biomass
 
+summary <- as.data.frame(mod.res$summary)
+parameters <- rownames(summary)
+summary <- cbind(parameters, data.frame(summary, row.names=NULL))
+
+n <- 3
+years <- rep(2001:surveyyear, each=n)
+Habitat <- rep(c("Low", "Med", "High"), 22) #Need to fix this so new years are added.
+
+summary.Bh <- summary |>  filter(str_detect(summary$parameters, "^Bh"))
+summary.Bh$Year <- years
+summary.Bh$Habitat <- Habitat
+
+summary.q <- summary |>  filter(parameters== "q")
+
+summary.Bh$scaled <- summary.Bh$X50.*summary.q$X50.
+summary.Bh$scaled.2.5 <- summary.Bh$X2.5.*summary.q$X50.#*summary.q$X2.5.
+summary.Bh$scaled.97.5 <- summary.Bh$X97.5.*summary.q$X50.#*summary.q$X97.5.
+
+
+mod.dat.plot <- mod.dat |> 
+  rename(Habitat=Strata) |>
+  mutate(Habitat = case_when(Habitat == "high" ~ "High", 
+                             Habitat == "med" ~ "Med",
+                             Habitat == "low" ~ "Low"))
+
+mod.dat.plot$Habitat <- factor(mod.dat.plot$Habitat, levels = c("Low", "Med", "High"))
+summary.Bh$Habitat <- factor(summary.Bh$Habitat, levels = c("Low", "Med", "High"))
+
+#Plot by Habitat Type
+ggplot()+
+  geom_point(data = summary.Bh, aes(x=Year, y= scaled))+
+  geom_line(data = summary.Bh, aes(x=Year,y=scaled), size = 0.5)+
+  geom_ribbon(data = summary.Bh, aes(x=Year, ymin=scaled.2.5, ymax=scaled.97.5),alpha=0.2)+
+  facet_wrap(factor(Habitat, levels=c("High","Med","Low")))+
+  geom_point(data = (mod.dat.plot |> dplyr::filter(SUBAREA == "SFA29C")), aes(Year,Ih), colour = "red")+
+  xlab("Year")+
+  ylab("Commercial Biomass")+
+  theme_bw()+
+  facet_wrap(~Habitat)
+
+
+#save
+ggsave(filename = paste0(path.directory,assessmentyear,"/Assessment/Figures/Model/SFA29C/Survey_est_figure_SFA29C_",surveyyear,".png"), plot = last_plot(), scale = 2.5, width =11, height = 4, dpi = 300, units = "cm", limitsize = TRUE)

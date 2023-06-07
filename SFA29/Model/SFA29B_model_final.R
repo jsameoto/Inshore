@@ -88,7 +88,7 @@ B.areas <- c(248.8925, 244.3425, 52.3925)
 num.areas <- length(B.areas) # The number of strata in the area...
 
 # Now bring in the model data...
-mod.dat <- read.csv(paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29B_ModelData.",surveyyear,".csv"))  
+mod.dat <- read.csv(paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29B/SFA29B_ModelData.",surveyyear,".csv"))  
 #mod.dat <- read.csv(paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29B/SFA29B_ModelData.2021.csv"))  
 #mod.dat <- read.csv(paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29B/test_min_gh_for2020/SFA29B_ModelData.2021.csv"))  
 #mod.dat <- read.csv(paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29B/test_max_gh_for2020/SFA29B_ModelData.2021.csv"))  
@@ -537,3 +537,76 @@ Dec.tab
 
 write.csv(Dec.tab, paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29B/SFA29.B.mod.Decision.table.nat.m.1yr.",surveyyear,".csv"), row.names = FALSE) 
 
+######################################################
+#Plot of survey estimates over modelled biomass
+
+summary <- as.data.frame(mod.res$summary)
+parameters <- rownames(summary)
+summary <- cbind(parameters, data.frame(summary, row.names=NULL))
+
+n <- 3
+years <- rep(2001:surveyyear, each=n)
+Habitat <- rep(c("Low", "Med", "High"), 22) #Need to fix this so new years are added.
+
+summary.Bh <- summary |>  filter(str_detect(summary$parameters, "^Bh"))
+summary.Bh$Year <- years
+summary.Bh$Habitat <- Habitat
+
+summary.q <- summary |>  filter(parameters== "q")
+
+summary.Bh$scaled <- summary.Bh$X50.*summary.q$X50.
+summary.Bh$scaled.2.5 <- summary.Bh$X2.5.*summary.q$X50.#*summary.q$X2.5.
+summary.Bh$scaled.97.5 <- summary.Bh$X97.5.*summary.q$X50.#*summary.q$X97.5.
+
+
+mod.dat.plot <- mod.dat |> 
+  rename(Habitat=Strata) |>
+  mutate(Habitat = case_when(Habitat == "high" ~ "High", 
+    Habitat == "med" ~ "Med",
+    Habitat == "low" ~ "Low"))
+
+mod.dat.plot$Habitat <- factor(mod.dat.plot$Habitat, levels = c("Low", "Med", "High"))
+summary.Bh$Habitat <- factor(summary.Bh$Habitat, levels = c("Low", "Med", "High"))
+
+#Plot by Habitat Type
+ggplot()+
+  geom_point(data = summary.Bh, aes(x=Year, y= scaled))+
+  geom_line(data = summary.Bh, aes(x=Year,y=scaled), size = 0.5)+
+  geom_ribbon(data = summary.Bh, aes(x=Year, ymin=scaled.2.5, ymax=scaled.97.5),alpha=0.2)+
+  facet_wrap(factor(Habitat, levels=c("High","Med","Low")))+
+  geom_point(data = (mod.dat.plot |> dplyr::filter(SUBAREA == "SFA29B")), aes(Year,Ih), colour = "red")+
+  xlab("Year")+
+  ylab("Commercial Biomass")+
+  theme_bw()+
+  facet_wrap(~Habitat)
+
+
+#save
+ggsave(filename = paste0(path.directory,assessmentyear,"/Assessment/Figures/Model/SFA29B/Survey_est_figure_SFA29B_",surveyyear,".png"), plot = last_plot(), scale = 2.5, width =11, height = 4, dpi = 300, units = "cm", limitsize = TRUE)
+
+#High
+#ggplot()+
+#  geom_point(data = summary.Bh |> dplyr::filter(Habitat == "High"), aes(x =Years, y= scaled))+
+#  geom_line(data = summary.Bh |> dplyr::filter(Habitat == "High"), aes(x =Years,y=scaled), size = 0.5)+
+#  geom_ribbon(data = summary.Bh |> dplyr::filter(Habitat == "High"), aes(x = Years, ymin=scaled.2.5, ymax=scaled.97.5),alpha=0.2)+
+#  geom_point(data = (mod.dat |> dplyr::filter(Strata == "high", SUBAREA == "SFA29B")), aes(Year,Ih), colour = "red")+
+#  xlab("Year")+
+#  ylab("Commercial Biomass")
+
+#Medium
+#ggplot()+
+#  geom_point(data = summary.Bh |> dplyr::filter(Habitat == "Med"), aes(x =Years, y= scaled))+
+#  geom_line(data = summary.Bh |> dplyr::filter(Habitat == "Med"), aes(x =Years,y=scaled), size = 0.5)+
+#  geom_ribbon(data = summary.Bh |> dplyr::filter(Habitat == "Med"), aes(x = Years, ymin=scaled.2.5, ymax=scaled.97.5),alpha=0.2)+
+#  geom_point(data = (mod.dat |> dplyr::filter(Strata == "med", SUBAREA == "SFA29B")), aes(Year,Ih), colour = "red")+
+#  xlab("Year")+
+#  ylab("Commercial Biomass")
+
+#Low
+#ggplot()+
+#  geom_point(data = summary.Bh |> dplyr::filter(Habitat == "Low"), aes(x =Years, y= scaled))+
+#  geom_line(data = summary.Bh |> dplyr::filter(Habitat == "Low"), aes(x =Years,y=scaled), size = 0.5)+
+#  geom_ribbon(data = summary.Bh |> dplyr::filter(Habitat == "Low"), aes(x = Years, ymin=scaled.2.5, ymax=scaled.97.5),alpha=0.2)+
+#  geom_point(data = (mod.dat |> dplyr::filter(Strata == "low", SUBAREA == "SFA29B")), aes(Year,Ih), colour = "red")+
+#  xlab("Year")+
+#  ylab("Commercial Biomass")
