@@ -181,7 +181,7 @@ p <- ggplot(SHF_sdm_means_4_plot[SHF_sdm_means_4_plot$STRATA == strata.ids[i] & 
     legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.7)),
     legend.text = element_text(size=10), 
     legend.key.size = unit(0.53, "cm"), 
-    legend.position = c(0.1, 0.95)) 
+    legend.position = c(0.90, 0.95)) 
  windows(11,11); plot(p)
 ggsave(paste0("SHF_",strata.ids[i],".png"), path=paste0(path.directory,"/",assessmentyear,"/Assessment/Figures/Growth/"), type="cairo", width=18, height=24, units = "cm", dpi=400)   
 } # end for(i in 1:length(strata.ids))

@@ -26,7 +26,7 @@ library(lubridate)
 uid <- un.sameotoj
 pwd <- pw.sameotoj
 uid <- keyring::key_list("Oracle")[1,2]
-pwd <- keyring::key_get("Oracle", uid)
+pwd <- keyring::key_get("Oracle", "WILSONBR")
 
 surveyyear <- 2022  #This is the last survey year for which you want to include  - not should match year of cruise below 
 cruise <- "GM2022"  #note should match year for surveyyear set above 
@@ -276,7 +276,7 @@ condition.ts.plot <- ggplot(GM.con.ts %>% filter(STRATA %in% c("INVMS", "OUTVMS"
   geom_line(aes(linetype=strata.name)) + geom_point( size = 3, aes(shape=strata.name)) +
   xlab("Year") + ylab("Condition (meat weight, g)") + theme_bw() +
   coord_cartesian(ylim=c(8, 14)) +
-  scale_y_continuous(breaks=seq(5, 20, 5))+
+  #scale_y_continuous(breaks=seq(5, 20, 5))+
   theme(axis.title = element_text(size = 15),
         axis.text = element_text(size = 12),
         legend.position = c(.008, .20),
@@ -295,3 +295,35 @@ ggsave(filename = paste0(path.directory, assessmentyear, "/Assessment/Figures/SP
 #png(paste0(path.directory, assessmentyear, "/Assessment/Figures/SPA6_ConditionTimeSeries.png" ),res = 200, width = 900, height = 600 )
 #condition.ts.plot
 #dev.off()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

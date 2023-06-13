@@ -335,6 +335,7 @@ p +
   annotate("text",x=-65.95, y=43.28, label="C") +
   annotate("text",x=-65.6, y=43.31, label="D") +
   annotate("text",x=-66.26, y=43.35, label="E") +
+  coord_sf(xlim = c(-66.50,-65.45), ylim = c(43.1,43.8), expand = FALSE) +
   theme(legend.position=c(0.85, 0.80),
         legend.box.background = element_rect(colour = "white", fill = alpha("white", 0.8)),
         legend.title = element_text(size = 10, face = "bold"),
@@ -367,6 +368,7 @@ p +
   annotate("text",x=-65.95, y=43.28, label="C") +
   annotate("text",x=-65.6, y=43.31, label="D") +
   annotate("text",x=-66.26, y=43.35, label="E") +
+  coord_sf(xlim = c(-66.50,-65.45), ylim = c(43.1,43.8), expand = FALSE) +
   theme(legend.position=c(0.85, 0.80),
         legend.box.background = element_rect(colour = "white", fill = alpha("white", 0.8)),
         legend.title = element_text(size = 10, face = "bold"),

@@ -36,13 +36,13 @@ source("Y:/Inshore/SFA29/2017/model/SFA29model9-2015.R") #contains the SFA29mode
 
 #DEFINE:
 path.directory <- "Y:/Inshore/SFA29/"
-assessmentyear <- 2022 #year in which you are conducting the assessment 
-surveyyear <- 2021  #last year of survey data you are using, e.g. if max year of survey is survey from summer 2019, this would be 2019 
+assessmentyear <- 2023 #year in which you are conducting the assessment 
+surveyyear <- 2022  #last year of survey data you are using, e.g. if max year of survey is survey from summer 2019, this would be 2019 
 area <- "SFA29A"  
 
 #yr <- year(Sys.Date()) # This should be set to the year after the year of the last survey.  e.g. if 2018 that means you are using the 2017 survey. This assumes you're running assessment in surveyyear + 1
-#yrs <- 2001:surveyyear  #(yr-1) 
-yrs <- 2001:2020  #(yr-1) 
+yrs <- 2001:surveyyear  #(yr-1) 
+#yrs <- 2001:2020  #(yr-1) 
 
 #setwd
 #setwd(paste0("Y:/Inshore/SFA29/",assessmentyear,"/Assessment/Data/Model/"))
@@ -54,7 +54,7 @@ nchains = 3
 nburnin= 50000
 nthin = 5
 
-# A function to autmatically generate the initial values, this still sucks as nchains needs to be 3 here...
+# A function to automatically generate the initial values, this still sucks as nchains needs to be 3 here...
 
 SFA29.inits <- function(N)
 {
@@ -76,13 +76,12 @@ dat.wrap <- function(dat,col="Ih",yrs,strata)
 SFA29.priors <- list(r.a=0,r.b=0.1,m.a=-1.9,m.b=0.5,S.a=0.1,S.b=0.99,logKh.a=1,logKh.b=10,q.a=10.64,q.b=9.36,sigma.a=0,sigma.b=10)
 
 #model parameters (same values used for all subareas)
-#SFA29.parms <- c("Bh","BBh","Ph","Rh" ,"Kh" , "m" , "sigma","q" , "S" , "log.Kh","Catch.t","CPUE.sub")
 SFA29.parms <- c("Bh","BBh","Ph","Rh" ,"Kh" , "m" , "sigma","q" , "S" , "log.Kh","Catch.t","CPUE.sub", "resid.p", "sresid.p")
 
 
 # the relationship between fishing intensity and density; !unique to subarea!
 e.parms.29A <- c(0.003317,  0.004601,  0.000000, 35.010000)
-# The area of each strata in A, I think...
+# The area of each strata in A, c(area of low, area of med+high)
 A.area <- c(137.5875, 118.125)
 num.areas <- length(A.area) # The number of strata in the area...
 
@@ -90,7 +89,8 @@ num.areas <- length(A.area) # The number of strata in the area...
 #mod.dat <- read.csv(paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29A/SFA29A_ModelData.2021.csv"))  
 #mod.dat <- read.csv(paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29A/test_min_gh_for2020/SFA29A_ModelData.2021_Minghintimeseriesfor2020.csv"))  
 #mod.dat <- read.csv(paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29A/test_max_gh_for2020/SFA29A_ModelData.2021_Maxghintimeseriesfor2020.csv"))  
-mod.dat <- read.csv(paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29A/ModelRun_to2020/SFA29A_ModelData.2020.csv"))  
+#mod.dat <- read.csv(paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29A/ModelRun_to2020/SFA29A_ModelData.2020.csv"))  
+mod.dat <- read.csv(paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29A/SFA29A_ModelData.",surveyyear,".csv"))  
 
 strata <- c("low","med")
 
@@ -297,9 +297,9 @@ A.next.predict <- predict(A.mod.res,exploit=0.1,g.parm=c(growth.paras$gh,NA))  #
 summary(A.next.predict)
 
 
-#Method only does one exploitation at a time, note that I have changed the probabilites to be like those for BoF
+#Method only does one exploitation at a time, note that I have changed the probabilities to be like those for BoF
 #Workaround
-set.seed(10) # set the random number generator if you want to make your results reproducable.
+set.seed(10) # set the random number generator if you want to make your results reproducible.
 Decision.table <- matrix(NA,10,7)
 dimnames(Decision.table)[[2]] <- names(summary(A.next.predict)$Next.year)
 
@@ -368,14 +368,14 @@ save(pe.pred,file=paste0(path.directory,assessmentyear,"/Assessment/Data/Model/S
 
 
 # Now to make the historic plot below
-# Assuming you haven't re-run everything above and wasted several hourse of you life
-# we need to bring in all the prediction evalulation data we have....
+# Assuming you haven't re-run everything above and wasted several hours of you life
+# we need to bring in all the prediction evaluation data we have....
 # Now load all the old pe.pred results, first identify where to find the data...
 direct <- "Y:/Inshore/SFA29/"
 #direct <- "D:/r/Inshore/SFA29W"
 pe.all <- NULL
-#for(i in 2016:pe.years) {
-for(i in 2016:2021) {
+for(i in 2016:pe.years) {
+#for(i in 2016:2021) {
   if(i == 2016) 
   {
     load(paste0(direct,"Model_results_2015_2017/SFA29A/prediction_evaluation_results_2011_2016.RData"))
@@ -395,6 +395,11 @@ for(i in 2016:2021) {
   if(i == 2021)
   {
     load(paste0(direct,"2022/Assessment/Data/Model/SFA29A/SFA29A.prediction.evaluation.results.2021.RData"))
+    pe.all <- c(pe.all,pe.pred)
+  }
+  if(i %in% 2022:pe.years)
+  {
+    load(paste0(direct,(i+1),"/Assessment/Data/Model/SFA29A/SFA29A.prediction.evaluation.results.",i,".RData"))
     pe.all <- c(pe.all,pe.pred)
   }
 } 
@@ -427,9 +432,9 @@ A.next.predict <- predict(A.mod.res,exploit=0.1,g.parm=c(growth.paras$gh,NA), m.
 summary(A.next.predict)
 
 
-#Method only does one exploitation at a time, note that I have changed the probabilites to be like those for BoF
+#Method only does one exploitation at a time, note that I have changed the probabilities to be like those for BoF
 #Workaround
-set.seed(10) # set the random number generator if you want to make your results reproducable.
+set.seed(10) # set the random number generator if you want to make your results reproducible.
 Decision.table <- matrix(NA,10,7)
 dimnames(Decision.table)[[2]] <- names(summary(A.next.predict)$Next.year)
 
@@ -445,4 +450,63 @@ Decision.table
 
 #Write out decision table 
 write.csv(Decision.table, paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29A/SFA29.A.mod.Decision.table.nat.m.1yr.",surveyyear,".csv"), row.names = FALSE) 
+
+######################################################
+#Plot of survey estimates over modelled biomass
+
+summary <- as.data.frame(mod.res$summary)
+parameters <- rownames(summary)
+summary <- cbind(parameters, data.frame(summary, row.names=NULL))
+
+n <- 2
+years <- rep(2001:surveyyear, each=n)
+Habitat <- rep(c("Low", "Med"), 22) #Need to fix this so new years are added.
+
+summary.Bh <- summary |>  filter(str_detect(summary$parameters, "^Bh"))
+summary.Bh$Year <- years
+summary.Bh$Habitat <- Habitat
+
+summary.q <- summary |>  filter(parameters== "q")
+
+summary.Bh$scaled <- summary.Bh$X50.*summary.q$X50.
+summary.Bh$scaled.2.5 <- summary.Bh$X2.5.*summary.q$X50.#*summary.q$X2.5.
+summary.Bh$scaled.97.5 <- summary.Bh$X97.5.*summary.q$X50.#*summary.q$X97.5.
+
+
+mod.dat.plot <- mod.dat |> 
+  rename(Habitat=Strata) |>
+  mutate(Habitat = case_when(#Habitat == "high" ~ "High", 
+                             Habitat == "med" ~ "Med",
+                             Habitat == "low" ~ "Low"))
+
+#Plot by Habitat Type
+ggplot()+
+  geom_point(data = summary.Bh, aes(x =Year, y= scaled))+
+  geom_line(data = summary.Bh, aes(x =Year,y=scaled), size = 0.5)+
+  geom_ribbon(data = summary.Bh, aes(x = Year, ymin=scaled.2.5, ymax=scaled.97.5),alpha=0.2)+
+  geom_point(data = (mod.dat.plot |> dplyr::filter(SUBAREA == "SFA29A")), aes(Year,Ih), colour = "red")+
+  xlab("Year")+
+  ylab("Commercial Biomass")+
+  theme_bw()+
+  facet_wrap(~Habitat)
+
+#save
+ggsave(filename = paste0(path.directory,assessmentyear,"/Assessment/Figures/Model/SFA29A/Survey_est_figure_SFA29A_",surveyyear,".png"), plot = last_plot(), scale = 2.5, width =11, height = 4, dpi = 300, units = "cm", limitsize = TRUE)
+
+#Med
+#ggplot()+
+  #geom_point(data = summary.Bh |> dplyr::filter(Habitat == "Med"), aes(x =Year, y= scaled))+
+  #geom_line(data = summary.Bh |> dplyr::filter(Habitat == "Med"), aes(x =Year,y=scaled), size = 0.5)+
+  #geom_ribbon(data = summary.Bh |> dplyr::filter(Habitat == "Med"), aes(x = Year, ymin=scaled.2.5, ymax=scaled.97.5),alpha=0.2)+
+  #geom_point(data = (mod.dat |> dplyr::filter(Habitat == "med", SUBAREA == "SFA29A")), aes(Year,Ih), colour = "red")+
+  #xlab("Year")+
+  #ylab("Commercial Biomass")
+#Low
+#ggplot()+
+#  geom_point(data = summary.Bh |> dplyr::filter(Habitat == "Low"), aes(x =Year, y= scaled))+
+#  geom_line(data = summary.Bh |> dplyr::filter(Habitat == "Low"), aes(x =Year,y=scaled), size = 0.5)+
+#  geom_ribbon(data = summary.Bh |> dplyr::filter(Habitat == "Low"), aes(x = Year, ymin=scaled.2.5, ymax=scaled.97.5),alpha=0.2)+
+#  geom_point(data = (mod.dat |> dplyr::filter(Habitat == "low", SUBAREA == "SFA29A")), aes(Year,Ih), colour = "red")+
+#  xlab("Year")+
+#  ylab("Commercial Biomass")
 

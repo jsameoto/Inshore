@@ -291,6 +291,12 @@ SFA29.con.ts
 
 write.csv(SFA29.con.ts, paste0(path.directory, assessmentyear, "/Assessment/Data/SurveyIndices/SFA29W_ConditionTimeSeries2001to",surveyyear,".csv"))
 
+SFA29.con.ts <- SFA29.con.ts %>% 
+  mutate(STRATA = case_when(STRATA == "SFA29A" ~ "Subarea A", 
+                           STRATA == "SFA29B" ~ "Subarea B",
+                           STRATA == "SFA29C" ~ "Subarea C",
+                           STRATA == "SFA29D" ~ "Subarea D",
+                           STRATA == "SFA29E" ~ "Subarea E"))
 
 #... Plot Condition Time Series Figures:
 
@@ -316,7 +322,7 @@ SFA29.condition.ts.plot <- ggplot(SFA29.con.ts,
 SFA29.condition.ts.plot
 
 #Export plot 
-ggsave(filename = paste0(path.directory, assessmentyear, "/Assessment/Figures/SFA29W.ConditionTimeSeries_new.png"), plot = SFA29.condition.ts.plot, scale = 2.5, width = 8, height = 6, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(path.directory, assessmentyear, "/Assessment/Figures/SFA29W.ConditionTimeSeries.png"), plot = SFA29.condition.ts.plot, scale = 2.5, width = 8, height = 6, dpi = 300, units = "cm", limitsize = TRUE)
 
 
 

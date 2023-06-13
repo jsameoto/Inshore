@@ -22,15 +22,15 @@ library(lattice)
 # Define: 
 uid <- un.sameotoj
 pwd <- pw.sameotoj
-uid <- keyring::key_list("Oracle")[1,2]
-pwd <- keyring::key_get("Oracle", uid)
+#uid <- keyring::key_list("Oracle")[1,2]
+#pwd <- keyring::key_get("Oracle", uid)
 
-surveyyear <- 2021  #This is the last survey year for which you want to include  - not should match year of cruise below 
-cruise <- "BF2021"  #note should match year for surveyyear set above 
+surveyyear <- 2022  #This is the last survey year for which you want to include  - not should match year of cruise below 
+cruise <- "BF2022"  #note should match year for surveyyear set above 
 
-assessmentyear <- 2021 #year in which you are conducting the survey 
+assessmentyear <- 2022 #year in which you are conducting the survey 
 area <- "1A1B4and5"  #SPA assessing recall SPA 1A, 1B, and 4 are grouped; options: "1A1B4and5", "3", "6" 
-path.directory <- "Y:/INSHORE SCALLOP/BoF/"
+path.directory <- "Y:/Inshore/BoF/"
 
 ###
 # read in shell height and meat weight data from database
@@ -70,7 +70,7 @@ BFlivefreq.dat$YEAR <- as.numeric(substr(BFlivefreq.dat$CRUISE,3,6))
 BFdetail.dat$ID <- paste(BFdetail.dat$CRUISE,BFdetail.dat$TOW_NO,sep='.')
 uniqueID <- unique(BFdetail.dat$ID)
 
-OlexTows_all <- read.csv("Y:/INSHORE SCALLOP/StandardDepth/towsdd_StdDepth.csv")
+OlexTows_all <- read.csv("Y:/Inshore/StandardDepth/towsdd_StdDepth.csv")
 names(OlexTows_all)[which(colnames(OlexTows_all)=="RASTERVALU")] <- "OLEXDEPTH_M"   #rename "RASTERVALU" column
 OlexTows_all$OLEXDEPTH_M[OlexTows_all$OLEXDEPTH_M==-9999] <- NA
 OlexTows_all$ID <- paste(OlexTows_all$CRUISE,OlexTows_all$TOW_NO,sep='.')
@@ -127,7 +127,7 @@ MWTSHBF.YYYY <- glmer(WET_MEAT_WGT~Log.HEIGHT.CTR+Log.DEPTH.CTR+(Log.HEIGHT.CTR|
 summary(MWTSHBF.YYYY)  
 
 #Save summary to txt file
-sink(paste0(path.directory, assessmentyear, "/Assessment/Data/Growth/SPA",area,"/MWTSHBF2021_ModelSummary.txt"))
+sink(paste0(path.directory, assessmentyear, "/Assessment/Data/Growth/SPA",area,"/MWTSHBF_ModelSummary.txt"))
 print(summary(MWTSHBF.YYYY))
 sink()
 
@@ -185,14 +185,6 @@ liveweightYYYY[,grep("BIN_ID_0", colnames(liveweightYYYY)):grep("BIN_ID_195", co
 #export file for later analysis
 write.csv(liveweightYYYY, paste0(path.directory, assessmentyear, "/Assessment/Data/SurveyIndices/SPA",area,"/BFliveweight",surveyyear,".csv")) 
 
-rm(uid)
-rm(pwd)
-rm(un.sameotoj)
-rm(pw.sameotoj)
-
-#!!!Now save workspace as .RData object: e.g. BFgrowth2019.RData
-#save.image(file = paste0(path.directory, assessmentyear, "/Assessment/Data/Growth/SPA",area,"/BFgrowth",surveyyear,".RData"))
-
 #NEW - save only the objects we need later
 save(MWTSHBF.YYYY, latt, liveweightYYYY, BFdetail.foryear, BFlivefreq, livefreqYYYY,
      file=paste0(path.directory, assessmentyear, "/Assessment/Data/Growth/SPA",area,"/BFgrowth",surveyyear,".RData"))
@@ -239,7 +231,7 @@ write.csv(livefreq.condition.spatial, paste0(path.directory, assessmentyear, "/A
 # SPA1B = -50.09
 
 #Bring in file with depths by area, note some are by strata groups within area
-mean.depth <- read.csv('Y:/INSHORE SCALLOP/StandardDepth/BoFMeanDepths.csv')[ ,c("AREA", "MeanDepth_m")] #File for the constant depth to predict on by area
+mean.depth <- read.csv('Y:/Inshore/StandardDepth/BoFMeanDepths.csv')[ ,c("AREA", "MeanDepth_m")] #File for the constant depth to predict on by area
 unique(mean.depth$AREA)
 length(mean.depth$AREA)
 
@@ -274,20 +266,20 @@ mean.depth.bof
 BF.con.ts <- read.csv(paste0(path.directory, assessmentyear,"/Assessment/Data/SurveyIndices/SPA1A1B4and5/BoF_ConditionTimeSeries.csv"))
 unique(BF.con.ts$STRATA)
 #Add NAs for 2020
-BF.con.ts <- BF.con.ts %>% add_row(YEAR = 2020, STRATA = "AdvocateHarbour", CONDITION = NA) %>% 
-  add_row(YEAR = 2020, STRATA = "CapeSpencer", CONDITION = NA) %>%
-  add_row(YEAR = 2020, STRATA = "Combined28D", CONDITION = NA) %>% 
-  add_row(YEAR = 2020, STRATA = "MidBayNorth", CONDITION = NA) %>% 
-  add_row(YEAR = 2020, STRATA = "MidBaySouth", CONDITION = NA) %>%
-  add_row(YEAR = 2020, STRATA = "Outer28D", CONDITION = NA) %>% 
-  add_row(YEAR = 2020, STRATA = "ScotsBay", CONDITION = NA) %>% 
-  add_row(YEAR = 2020, STRATA = "SPA1A", CONDITION = NA) %>%
-  add_row(YEAR = 2020, STRATA = "SPA1B", CONDITION = NA) %>% 
-  add_row(YEAR = 2020, STRATA = "SPA4", CONDITION = NA) %>% 
-  add_row(YEAR = 2020, STRATA = "SpencersIsland", CONDITION = NA) %>%
-  add_row(YEAR = 2020, STRATA = "UpperBay28C", CONDITION = NA) %>% 
-  add_row(YEAR = 2020, STRATA = "Zone2to8mile", CONDITION = NA) %>%
-  add_row(YEAR = 2020, STRATA = "Zone8to16mile", CONDITION = NA)
+#BF.con.ts <- BF.con.ts %>% add_row(YEAR = 2020, STRATA = "AdvocateHarbour", CONDITION = NA) %>% 
+#  add_row(YEAR = 2020, STRATA = "CapeSpencer", CONDITION = NA) %>%
+#  add_row(YEAR = 2020, STRATA = "Combined28D", CONDITION = NA) %>% 
+#  add_row(YEAR = 2020, STRATA = "MidBayNorth", CONDITION = NA) %>% 
+#  add_row(YEAR = 2020, STRATA = "MidBaySouth", CONDITION = NA) %>%
+#  add_row(YEAR = 2020, STRATA = "Outer28D", CONDITION = NA) %>% 
+#  add_row(YEAR = 2020, STRATA = "ScotsBay", CONDITION = NA) %>% 
+#  add_row(YEAR = 2020, STRATA = "SPA1A", CONDITION = NA) %>%
+#  add_row(YEAR = 2020, STRATA = "SPA1B", CONDITION = NA) %>% 
+#  add_row(YEAR = 2020, STRATA = "SPA4", CONDITION = NA) %>% 
+#  add_row(YEAR = 2020, STRATA = "SpencersIsland", CONDITION = NA) %>%
+#  add_row(YEAR = 2020, STRATA = "UpperBay28C", CONDITION = NA) %>% 
+#  add_row(YEAR = 2020, STRATA = "Zone2to8mile", CONDITION = NA) %>%
+#  add_row(YEAR = 2020, STRATA = "Zone8to16mile", CONDITION = NA)
 #BF.con.ts <- BF.con.ts[BF.con.ts$YEAR!=2019,]
 
 #update timeseries and write out new file: 
@@ -296,7 +288,7 @@ BF.con.ts <- rbind(BF.con.ts %>% dplyr::select(YEAR, STRATA, CONDITION), mean.de
 BF.con.ts <- BF.con.ts[order(BF.con.ts$STRATA, BF.con.ts$YEAR),]
 BF.con.ts
 
-write.csv(BF.con.ts, paste0(path.directory, assessmentyear, "/Assessment/Data/SurveyIndices/SPA",area,"/BoF_ConditionTimeSeries.csv"))
+write.csv(BF.con.ts, paste0(path.directory, assessmentyear, "/Assessment/Data/SurveyIndices/SPA",area,"/BoF_ConditionTimeSeries.csv"), row.names=FALSE)
 
 
 
@@ -380,7 +372,7 @@ SPA4.condition.ts.plot <- ggplot(BF.con.ts %>% filter(STRATA =="SPA4"),
   scale_y_continuous(breaks=seq(5, 20, 5))+
   theme(axis.title = element_text(size = 15),
         axis.text = element_text(size = 12),
-        legend.position = c(.01, .23),
+        legend.position = c(.01, .9),
         legend.justification = c("left", "top"),
         legend.box.just = "left",
         legend.margin = margin(6, 6, 6, 6),
@@ -396,3 +388,5 @@ ggsave(filename = paste0(path.directory, assessmentyear, "/Assessment/Figures/SP
 #SPA4.condition.ts.plot
 #dev.off()
 
+
+### END OF SCRIPT ###
