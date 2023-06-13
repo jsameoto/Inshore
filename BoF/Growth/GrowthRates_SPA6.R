@@ -15,24 +15,18 @@ options(stringsAsFactors = FALSE)
 
 # ///.... DEFINE THESE ENTRIES ....////
 
-#DEFINE: year, area
-year <- 2022  #this is the survey year
-area <- "6"  # choice entry here is "1A1B4and5", "3", "6";  recall SPAs 1A, 1B and 4 and 5 all modelled together
-assessmentyear <- 2022 #this is the year you are running your assessment in -- corresponds to the assessment folder year name e.g. INSHORE SCALLOP/2020/Assessment..
-
-
 # DEFINE: load required workspace with model objects - current year 
-load(paste0("Y:/Inshore/BoF/",year,"/Assessment/Data/Growth/SPA6/GMgrowth",year,".RData"))
+load("Y:/Inshore/BoF/2022/Assessment/Data/Growth/SPA6/GMgrowth2022.RData")
 
 # DEFINE: load shell height objects - current year 
-source(paste0("Y:/Inshore/BoF/",year,"/Assessment/Data/Growth/SPA6/SPA6.SHobj.IN.",year,".R"))
+source("Y:/Inshore/BoF/2022/Assessment/Data/Growth/SPA6/SPA6.SHobj.IN.2022.R")
 #Identify Shell Height objects and confirm column names: 
 #column names:    years SPA6.SHactual.Com.IN SPA6.SHactual.Rec.IN
-SPA6.SHactual.IN <- sh.actual.in %>% dplyr::select(years, SHactual.Com = SPA6.SHactual.Com.IN, SHactual.Rec = SPA6.SHactual.Rec.IN)
+SPA6.SHactual.IN <- sh.actual.in %>% select(years, SHactual.Com = SPA6.SHactual.Com.IN, SHactual.Rec = SPA6.SHactual.Rec.IN)
 SPA6.SHactual.IN
 
 # columns names:  years SPA6.SHpredict.Com SPA6.SHpredict.Rec
-SPA6.SHpredict.IN <- sh.predict.in %>% dplyr::select(years, SHpredict.Com = SPA6.SHpredict.Com.IN, SHpredict.Rec = SPA6.SHpredict.Rec.IN)
+SPA6.SHpredict.IN <- sh.predict.in %>% select(years, SHpredict.Com = SPA6.SHpredict.Com.IN, SHpredict.Rec = SPA6.SHpredict.Rec.IN)
 SPA6.SHpredict.IN
 
 # set SH object: 
@@ -41,11 +35,15 @@ SH.object <- SH.object[,-4]  #2nd and duplicated row of years
 SH.object
 
 
+#DEFINE: year, area
+year <- 2022  #this is the survey year
+area <- "6"  # choice entry here is "1A1B4and5", "3", "6";  recall SPAs 1A, 1B and 4 and 5 all modelled together
+assessmentyear <- 2022 #this is the year you are running your assessment in -- corresponds to the assessment folder year name e.g. INSHORE SCALLOP/2020/Assessment..
 
 
 # DEFINE: Source previous year meat weight and growth rate object for ACTUAL growth rates:
 # if your year defined above it for YYYY, then you should be bringing in the YYYY-1 growth rate object.
-spa6.growthrate <- read.csv(paste0("Y:/Inshore/BoF/2021/Assessment/Data/Growth/SPA6/spa6.growthrate.",year-1,".csv"))
+spa6.growthrate <- read.csv("Y:/Inshore/BoF/2021/Assessment/Data/Growth/SPA6/spa6.growthrate.2021.csv")
 spa6.growthrate <- spa6.growthrate[,-1]
 spa6.growthrate
 str(spa6.growthrate)
@@ -100,7 +98,7 @@ table(data$CRUISE)
 
 
 #Depth for prediction,: 
-#For SPA 6 Inside VMS area: -54.74; see Y:\Inshore\BoF\StandardDepth\BoFMeanDepths.csv
+#For SPA 6 Inside VMS area: -54.74; see Y:\INSHORE SCALLOP\BoF\StandardDepth\BoFMeanDepths.csv
 depth <- -54.74
 
 # ---- Actual Growth Rates ----

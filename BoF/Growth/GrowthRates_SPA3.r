@@ -14,28 +14,29 @@ options(stringsAsFactors = FALSE)
 
 # ///.... DEFINE THESE ENTRIES ....////
 
+# DEFINE: load required workspace with model objects (set for year YYYY)
+load("Y:/Inshore/BoF/2022/Assessment/Data/Growth/SPA3/BIgrowth2022.RData")
+
+# DEFINE: load shell height objects (set for year YYYY)
+source("Y:/Inshore/BoF/2022/Assessment/Data/Growth/SPA3/SPA3.SHobj.2022.R")
+#Check that you have correctly identified all required Shell Height objects and they are within the workspace (should have been loaded via the shell height object above)
+sh.actual
+sh.predict
+
+cbind(sh.actual, sh.predict) #check - assumes ordered correctly; check order of column names for renaming columns 
+SH.object <- cbind(sh.actual %>% select(years, SHactual.Com = SPA3.SHactual.Com, SHactual.Rec = SPA3.SHactual.Rec), 
+                   sh.predict %>% select(SHpredict.Com = SPA3.SHpredict.Com, SHpredict.Rec = SPA3.SHpredict.Rec))
+
+
 #DEFINE: year, area
 year <- 2022  #this is the survey year
 area <- "3"  #SPAs 1A, 1B and 4 and 5 all modelled together, therefore choice entry here is "1A1B4and5", "3", "6"
 assessmentyear <- 2022 #this is the year you are running your assessment in -- corresponds to the assessment folder year name e.g. INSHORE SCALLOP/2020/Assessment..
 
 
-# DEFINE: load required workspace with model objects (set for year YYYY)
-load(paste0("Y:/Inshore/BoF/",year,"/Assessment/Data/Growth/SPA3/BIgrowth",year,".RData"))
-
-# DEFINE: load shell height objects (set for year YYYY)
-source(paste0("Y:/Inshore/BoF/",year,"/Assessment/Data/Growth/SPA3/SPA3.SHobj.",year,".R"))
-#Check that you have correctly identified all required Shell Height objects and they are within the workspace (should have been loaded via the shell height object above)
-sh.actual
-sh.predict
-
-cbind(sh.actual, sh.predict) #check - assumes ordered correctly; check order of column names for renaming columns 
-SH.object <- cbind(sh.actual %>% dplyr::select(years, SHactual.Com = SPA3.SHactual.Com, SHactual.Rec = SPA3.SHactual.Rec), 
-                   sh.predict %>% dplyr::select(SHpredict.Com = SPA3.SHpredict.Com, SHpredict.Rec = SPA3.SHpredict.Rec))
-
 # DEFINE: Source previous year meat weight and growth rate object for ACTUAL growth rates:
 # if your year defined above it for YYYY, then you should be bringing in the YYYY-1 growth rate object.
-spa3.growthrate <- read.csv(paste0("Y:/Inshore/BoF/",year-1,"/Assessment/Data/Growth/SPA3/spa3.growthrate.",year-1,".csv"))
+spa3.growthrate <- read.csv("Y:/Inshore/BoF/2021/Assessment/Data/Growth/SPA3/spa3.growthrate.2021.csv")
 spa3.growthrate <- spa3.growthrate[,-1]
 spa3.growthrate
 str(spa3.growthrate)
@@ -68,12 +69,12 @@ data$Log.DEPTH <- log(abs(data$ADJ_DEPTH)) #take abs to keep value positive
 summary(data)
 
 
-# Depth for prediction, for SPA3 VMS IN Modelled Area -47.63	This is mean depth of area corresponding with full area modelled for SPA 3 -- SMB plus the inside VMS area in Brier Lurcher
+# Depth for prediction, for SPA3 VMS IN Modelled Area -47.63	This is mean depth of area corrsponding with full area modelled for SPA 3 -- SMB plus the inside VMS area in Brier Lurcher
 depth <- -47.63
 
 # ---- Actual Growth Rates ----
 
-# Calculate mean weight of commercial and recruit animals:
+# Calcuate mean weight of commercial and recruit animals:
 #1. In year t ("actual") using mean SH in year t and meat weight shell height relationship in year t
 #2. In year t+1 ("pred") using predicted mean SH in year t+1 (predicted from year t) and meat weight shell height relationship in year t+1
 

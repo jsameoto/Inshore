@@ -1,1 +1,0 @@
-This is where the Commercial data scripts (from Y:\INSHORE SCALLOP\BoF\2020\Assessment\Scripts\CommercialData) will be held.

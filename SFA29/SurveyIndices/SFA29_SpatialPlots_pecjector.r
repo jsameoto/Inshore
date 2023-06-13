@@ -141,7 +141,9 @@ ScallopSurv <- ScallopSurv %>%
   mutate(rec = dplyr::select(., BIN_ID_90:BIN_ID_95) %>% rowSums(na.rm = TRUE) %>% round(0)) %>% # Recruit scallop - 90-99; BINS 90 to 95
   mutate(pre = dplyr::select(., BIN_ID_0:BIN_ID_85) %>% rowSums(na.rm = TRUE) %>% round(0))# Pre-recruit scallop - 0-85 mm; BINS 0 to 85
 
-	
+#Save out for notes for Survey Summary and WSAC
+#write.csv(ScallopSurv %>% filter(year == survey.year), paste0(path.directory,assessmentyear,"/Assessment/Data/SurveyIndices/SFA29_totalpertow_sizeclass_live",survey.year,".csv"))
+
 ##.. DEAD ..##
 #Db Query:
 quer2 <- paste(
@@ -170,6 +172,8 @@ ScallopSurv.dead <- ScallopSurv.dead %>%
   mutate(rec = dplyr::select(., BIN_ID_90:BIN_ID_95) %>% rowSums(na.rm = TRUE) %>% round(0)) %>% # Recruit scallop - 90-99; BINS 90 to 95
   mutate(pre = dplyr::select(., BIN_ID_0:BIN_ID_85) %>% rowSums(na.rm = TRUE) %>% round(0))# Pre-recruit scallop - 0-85 mm; BINS 0 to 85
 
+#Save out for notes for Survey Summary and WSAC
+#write.csv(ScallopSurv.dead %>% filter(year == survey.year), paste0(path.directory,assessmentyear,"/Assessment/Data/SurveyIndices/SFA29_totalpertow_sizeclass_dead",survey.year,".csv"))
 
 # -------------------------------Import WGTHGT DATA------------------------------------------
 quer3 <- paste(
@@ -272,6 +276,9 @@ bycatch.dat <- bycatch.dat %>%
 
 bycatch.dat[is.na(bycatch.dat)] <- 0 #Assumes all NAs are 0
 
+#Save out for notes for Survey Summary and WSAC
+#write.csv(bycatch.dat, paste0(path.directory,assessmentyear,"/Assessment/Data/SurveyIndices/LOBSTER_totalpertow",survey.year,".csv"))
+
 # Set plot themes (legend orientation/aesthetics) ------------------------
 
 
@@ -350,8 +357,19 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_ComDensity',survey.year,'.
 
 #ggsave(filename = paste0("Y:/Inshore/SFA29/2020/figures/ContPlot_SFA29_ComDensity",survey.year,".png"), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
+#FR figure - need to edit longitude West = Ouest:
+#Figuring out where ticks should go? Doesn't plot properly unless coord_sf() is added...       
+pt <- p + coord_sf(xlim = c(-66.50,-65.45), ylim = c(43.10,43.80), expand = FALSE)
+lon.loc <- c(66.4, 66.2, 66.0, 65.8, 65.6)
+lony <- paste0(lon.loc,expression("*{degree}*O"))
+# And then replot the figure
+p2 <- pt +
+  scale_x_continuous(breaks =-lon.loc,labels=parse(text = lony))
+  #scale_y_continuous(breaks = lat.loc,labels=parse(text = latty))
+p2
+
 #FR
-p + #Plot survey data and format figure.
+p2 + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv %>% 
                        filter(year == survey.year),
                      aes(lon, lat), size = 0.5) +
@@ -644,8 +662,20 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_RecDensity',survey.year,'.
 
 #ggsave(filename = paste0("Y:/Inshore/SFA29/2020/figures/ContPlot_SFA29_RecDensity2019.png"), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
+
+#FR figure - need to edit longitude West = Ouest:
+#Figuring out where ticks should go? Doesn't plot properly unless coord_sf() is added...       
+pt <- p + coord_sf(xlim = c(-66.50,-65.45), ylim = c(43.10,43.80), expand = FALSE)
+lon.loc <- c(66.4, 66.2, 66.0, 65.8, 65.6)
+lony <- paste0(lon.loc,expression("*{degree}*O"))
+# And then replot the figure
+p2 <- pt +
+  scale_x_continuous(breaks =-lon.loc,labels=parse(text = lony))
+#scale_y_continuous(breaks = lat.loc,labels=parse(text = latty))
+p2
+
 #FR
-p + #Plot survey data and format figure.
+p2 + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv %>% 
                        filter(year == survey.year),
                      aes(lon, lat), size = 0.5) +
@@ -848,8 +878,19 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_PreDensity',survey.year,'.
 
 #ggsave(filename = paste0("Y:/Inshore/SFA29/2020/figures/ContPlot_SFA29_PreDensity2019.png"), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
+#FR figure - need to edit longitude West = Ouest:
+#Figuring out where ticks should go? Doesn't plot properly unless coord_sf() is added...       
+pt <- p + coord_sf(xlim = c(-66.50,-65.45), ylim = c(43.10,43.80), expand = FALSE)
+lon.loc <- c(66.4, 66.2, 66.0, 65.8, 65.6)
+lony <- paste0(lon.loc,expression("*{degree}*O"))
+# And then replot the figure
+p2 <- pt +
+  scale_x_continuous(breaks =-lon.loc,labels=parse(text = lony))
+#scale_y_continuous(breaks = lat.loc,labels=parse(text = latty))
+p2
+
 #FR
-p + #Plot survey data and format figure.
+p2 + #Plot survey data and format figure.
   geom_spatial_point(data = ScallopSurv %>% 
                        filter(year == survey.year),
                      aes(lon, lat), size = 0.5) +

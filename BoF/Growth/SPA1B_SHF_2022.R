@@ -33,15 +33,15 @@ for(fun in funcs)
 # ///.... DEFINE THESE ENTRIES ....////
 
 # Define: 
-#uid <- un.sameotoj
-#pwd <- pw.sameotoj
-uid <- keyring::key_list("Oracle")[1,2]
-pwd <- keyring::key_get("Oracle", uid)
+uid <- un.sameotoj
+pwd <- pw.sameotoj
+#uid <- keyring::key_list("Oracle")[1,2]
+#pwd <- keyring::key_get("Oracle", "WILSONBR")
 
-surveyyear <- 2021  #This is the last survey year 
-assessmentyear <- 2021 #year in which you are conducting the survey 
+surveyyear <- 2022  #This is the last survey year 
+assessmentyear <- 2022 #year in which you are conducting the survey 
 area <- "1A1B4and5"  #SPA assessing recall SPA 1A, 1B, and 4 are grouped; options: "1A1B4and5", "3", "6" 
-path.directory <- "Y:/INSHORE SCALLOP/BoF/"
+path.directory <- "Y:/Inshore/BoF/"
 
 
 #////... END OF DEFINE SECTION ...////
@@ -553,7 +553,7 @@ sh.predict <- data.frame(SPA1B.SHactual.Com %>% dplyr::select(years), SPA1B.SHpr
 dump (c('sh.actual','sh.predict'), paste0(path.directory,assessmentyear, "/Assessment/Data/Growth/SPA",area,"/SPA1B",surveyyear,".SHobj.R"))
 
 #Note that years 2001-2003 are those that with NEW SHF script for 1B are SLIGHTLY different than historical values (slightly is ~ 1 mm ) 
-write.csv(cbind(sh.actual, sh.predict %>% dplyr::select(!years)), paste0(path.directory,assessmentyear, "/Assessment/Data/Growth/SPA",area,"/SPA1B.lbar.to",surveyyear,".csv")) 
+write.csv(cbind(sh.actual, sh.predict %>% dplyr::select(!years)), paste0(path.directory,assessmentyear, "/Assessment/Data/Growth/SPA",area,"/SPA1B_SHactualpredict.",surveyyear,".csv")) 
 
 
 #---- CALCULATE lbar BY SUBAREA TO PLOT ----
@@ -678,12 +678,12 @@ livefreq$CruiseID <- paste(livefreq$CRUISE,livefreq$TOW_NO,sep = '.')  #create C
 crossref.BoF <- merge(crossref.BoF, subset(livefreq, select = c("STRATA_ID", "CruiseID")), by.x = "CruiseID", all = FALSE)
 
 #Subset to years you want to look at for repeated tows 
-crossref.BoF.prioryear <- subset(crossref.BoF, CRUISE == paste0("BF",surveyyear-2)) #CHANGE BACK TO -1 AFTER 2021
+crossref.BoF.prioryear <- subset(crossref.BoF, CRUISE == paste0("BF",surveyyear-1)) #CHANGE BACK TO -1 AFTER 2021
 crossref.BoF.currentyear <- subset(crossref.BoF, CRUISE == paste0("BF",surveyyear))
 
 #subset for years; 1 regular and 5 repeats 
 tows <- c(1,5)
-livefreq.prioryear <- subset(livefreq, YEAR == surveyyear-2 & TOW_TYPE_ID %in% tows)
+livefreq.prioryear <- subset(livefreq, YEAR == surveyyear-1 & TOW_TYPE_ID %in% tows) #CHANGE BACK TO -1 AFTER 2021
 livefreq.currentyear <- subset(livefreq, YEAR == surveyyear & TOW_TYPE_ID %in% tows)
 data.before <- livefreq.prioryear
 data.after <- livefreq.currentyear 
@@ -721,7 +721,7 @@ MBN.repeats.shf.for.plot$SH <- round(MBN.repeats.shf.for.plot$SH,3)
 ylimits <- c(0,max(MBN.repeats.shf.for.plot$SH)+10)
 xlimits <- c(0,200)
 recruitlimits <- c(65,80)
-anno <- data.frame(year = c(surveyyear-2, surveyyear), n.tows = c(before.tows.n, after.tows.n), lab = c(paste0("N=",before.tows.n), paste0("N=",after.tows.n)))
+anno <- data.frame(year = c(surveyyear-1, surveyyear), n.tows = c(before.tows.n, after.tows.n), lab = c(paste0("N=",before.tows.n), paste0("N=",after.tows.n)))
 
 # plot SHF
 plot.MBN.repeats.shf.for.plot <- ggplot() + geom_col(data = MBN.repeats.shf.for.plot, aes(x = bin.mid.pt, y = SH)) + 
@@ -767,10 +767,10 @@ AH.repeats.shf.for.plot$year <- as.numeric(AH.repeats.shf.for.plot$year)
 # AH Plot Repeat Tow SHFs, shorten SH data for plot or else get warning when run ggplot 
 AH.repeats.shf.for.plot$SH <- round(AH.repeats.shf.for.plot$SH,3)
 
-ylimits <- c(0,max(AH.repeats.shf.for.plot$SH)+10)
+ylimits <- c(0,max(AH.repeats.shf.for.plot$SH)+20)
 xlimits <- c(0,200)
 recruitlimits <- c(65,80)
-anno <- data.frame(year = c(surveyyear-2, surveyyear), n.tows = c(before.tows.n, after.tows.n), lab = c(paste0("N=",before.tows.n), paste0("N=",after.tows.n)))
+anno <- data.frame(year = c(surveyyear-1, surveyyear), n.tows = c(before.tows.n, after.tows.n), lab = c(paste0("N=",before.tows.n), paste0("N=",after.tows.n)))
 
 # plot SHF
 plot.AH.repeats.shf.for.plot <- ggplot() + geom_col(data = AH.repeats.shf.for.plot, aes(x = bin.mid.pt, y = SH)) + 
@@ -819,7 +819,7 @@ C28.repeats.shf.for.plot$SH <- round(C28.repeats.shf.for.plot$SH,3)
 ylimits <- c(0,max(C28.repeats.shf.for.plot$SH)+10)
 xlimits <- c(0,200)
 recruitlimits <- c(65,80)
-anno <- data.frame(year = c(surveyyear-2, surveyyear), n.tows = c(before.tows.n, after.tows.n), lab = c(paste0("N=",before.tows.n), paste0("N=",after.tows.n)))
+anno <- data.frame(year = c(surveyyear-1, surveyyear), n.tows = c(before.tows.n, after.tows.n), lab = c(paste0("N=",before.tows.n), paste0("N=",after.tows.n)))
 
 # plot SHF
 plot.C28.repeats.shf.for.plot <- ggplot() + geom_col(data = C28.repeats.shf.for.plot, aes(x = bin.mid.pt, y = SH)) + 
@@ -873,7 +873,7 @@ Out.repeats.shf.for.plot$SH <- round(Out.repeats.shf.for.plot$SH,3)
 ylimits <- c(0,max(Out.repeats.shf.for.plot$SH)+10)
 xlimits <- c(0,200)
 recruitlimits <- c(65,80)
-anno <- data.frame(year = c(surveyyear-2, surveyyear), n.tows = c(before.tows.n, after.tows.n), lab = c(paste0("N=",before.tows.n), paste0("N=",after.tows.n)))
+anno <- data.frame(year = c(surveyyear-1, surveyyear), n.tows = c(before.tows.n, after.tows.n), lab = c(paste0("N=",before.tows.n), paste0("N=",after.tows.n)))
 
 # plot SHF
 plot.Out.repeats.shf.for.plot <- ggplot() + geom_col(data = Out.repeats.shf.for.plot, aes(x = bin.mid.pt, y = SH)) + 

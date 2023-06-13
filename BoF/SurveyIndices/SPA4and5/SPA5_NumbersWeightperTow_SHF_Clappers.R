@@ -23,7 +23,7 @@ library(cowplot)
 uid <- un.sameotoj
 pwd <- pw.sameotoj
 uid <- keyring::key_list("Oracle")[1,2]
-pwd <- keyring::key_get("Oracle", uid)
+pwd <- keyring::key_get("Oracle",  uid)
 
 surveyyear <- 2022  #This is the last survey year 
 assessmentyear <- 2022 #year in which you are conducting the survey 
@@ -74,7 +74,7 @@ for(i in 1:num.years)
 #check data structure
 summary(BFliveweight)
 str(BFliveweight)
-
+table(BFliveweight$YEAR)
 
 ####
 ###
@@ -182,7 +182,7 @@ spa5.numbers.plot <- ggplot(data = SPA5.Numbers, aes(x=Year, y=Mean.nums, col=Si
   geom_point() + 
   geom_line(aes(linetype = Size)) + 
   theme_bw() + ylab("Survey mean no./tow") + xlab("Year") + 
-  theme(legend.position = c(0.1, 0.85)) + 
+  theme(legend.position = c(0.1, 0.9)) + 
   scale_linetype_manual(values=c("solid", "dotted"))+
   scale_color_manual( values=c('black','red')) + 
   geom_hline(yintercept = median(SPA5.Numbers$Mean.nums[SPA5.Numbers$Year>=1990&SPA5.Numbers$Year<=2008&SPA5.Numbers$Size=="Commercial"], na.rm=TRUE), col="black", linetype="longdash") +
@@ -193,7 +193,7 @@ spa5.weight.plot <- ggplot(data = SPA5.Weight, aes(x=Year, y= kg, col=Size, pch=
   geom_point() + 
   geom_line(aes(linetype = Size)) + 
   theme_bw() + ylab("Mean kg/tow") + xlab("Year") + 
-  theme(legend.position = c(0.1, 0.85)) + 
+  theme(legend.position = c(0.1, 0.9)) + 
   scale_linetype_manual(values=c("solid", "dotted"))+
   scale_color_manual( values=c('black','red')) + 
   xlim(c(min(SPA5.Numbers$Year),surveyyear)) + 
@@ -279,16 +279,15 @@ for(i in 1:length(years)){
 temp.data<-spa5dead[spa5dead$YEAR== years[i],]
 SPA5.Rec.dead[i,2] <- mean(apply(temp.data[temp.data$STRATA_ID==21, 24:26],1,sum))
 }
+
 SPA5.Rec.dead
 #NOTE no survey in 2020 but bc SPA 5 not modelled, don't need to interpolate data for 2020 
-
 
 SPA5.Comm.dead <- data.frame(Year=years, Mean.nums=rep(NA,length(years)), method=rep("simple",length(years)), Area=rep("SPA5", length(years)), Age=rep("Commercial", length(years)))
 for(i in 1:length(years)){
 temp.data<-spa5dead[spa5dead$YEAR== years[i],]
 SPA5.Comm.dead[i,2]<- mean(apply(temp.data[temp.data$STRATA_ID==21, 27:50],1,sum))
 }
-
 SPA5.Comm.dead
 #NOTE no survey in 2020 but bc SPA 5 not modelled, don't need to interpolate data for 2020 
 

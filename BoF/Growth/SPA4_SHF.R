@@ -32,15 +32,15 @@ for(fun in funcs)
 # ///.... DEFINE THESE ENTRIES ....////
 
 # Define: 
-#uid <- un.sameotoj
-#pwd <- pw.sameotoj
-uid <- keyring::key_list("Oracle")[1,2]
-pwd <- keyring::key_get("Oracle", uid)
+uid <- un.sameotoj
+pwd <- pw.sameotoj
+#uid <- keyring::key_list("Oracle")[1,2]
+#pwd <- keyring::key_get("Oracle", "WILSONBR")
 
-surveyyear <- 2021  #This is the last survey year 
-assessmentyear <- 2021 #year in which you are conducting the survey 
+surveyyear <- 2022  #This is the last survey year 
+assessmentyear <- 2022 #year in which you are conducting the survey 
 area <- "1A1B4and5"  #SPA assessing recall SPA 1A, 1B, and 4 are grouped; options: "1A1B4and5", "3", "6" 
-path.directory <- "Y:/INSHORE SCALLOP/BoF/"
+path.directory <- "Y:/Inshore/BoF/"
 
 ## Get data: 
 
@@ -74,15 +74,19 @@ livefreq %>% group_by(YEAR) %>% filter(STRATA_ID %in% strata.SPA4.new$Strata) %>
 
 years <- c(min(livefreq$YEAR):2019, 2021:surveyyear) # Runs to the most recent year by default, skips 2020.
 
-SPA4.SHFmeans <-  data.frame(Year=years, Mean.nums=rep(NA,length(years))) 
+SPA4.SHFmeans <- data.frame(bin.mid.pt = seq(2.5,200,by=5), YEAR = NA) 
+#SPA4.SHFmeans <-  data.frame(Year=years, Mean.nums=rep(NA,length(years))) ## Code previous like this but was wrong orientation and gave too many rows - fixed in 2022 
 for(i in 1:length(years)){
 temp.data <- livefreq[livefreq$YEAR==years[i],]
 for(j in 1:40){
 SPA4.SHFmeans[j,i] <- summary(PEDstrata(temp.data,strata.SPA4.new,"STRATA_ID",catch=temp.data[,10+j], Subset=temp.data$TOW_TYPE_ID==1))$yst
 }}
+SPA4.SHFmeans
 colnames(SPA4.SHFmeans) <- c(paste0("X",years))
 SPA4.SHFmeans
-
+dim(SPA4.SHFmeans)[1] == 40 
+View(SPA4.SHFmeans)  
+  
 SPA4.SHFmeans <- data.frame(bin.label = row.names(SPA4.SHFmeans), SPA4.SHFmeans)
 SPA4.SHFmeans$X2020 <- NA # add 2020 column.
 SPA4.SHFmeans$bin.mid.pt <- seq(2.5,200,by=5)
@@ -161,6 +165,7 @@ SPA4.SHactual.Rec.lbar <-  rbind(SPA4.SHactual.Rec.lbar, c(2020, NaN)) %>%  #ADD
   arrange(years)#Sort by Year
 SPA4.SHactual.Rec.lbar
 
+
 sh.actual <- data.frame(SPA4.SHactual.Com.lbar, SPA4.SHactual.Rec.lbar %>% dplyr::select(SPA4.SHactual.Rec.lbar))
 
 # Plot of Mean Commercial Shell Height (lbar)
@@ -174,6 +179,7 @@ plot.SPA4.lbar
 png(paste0(path.directory,assessmentyear, "/Assessment/Figures/SPA4_lbar.png"), type="cairo", width=15, height=15, units = "cm", res=400)
 print(plot.SPA4.lbar)
 dev.off()
+
 
 # ---- Predicted Lbar in t+1 ----
 # expected mean shell height for year t+1 (eg., for year 1983 output is expected SH in 1984)
@@ -211,10 +217,10 @@ SPA4.SHpredict.Rec <- data.frame((t(rbind(years.predict, SPA4.SHpredict.Rec))))
 
 sh.predict <- data.frame(SPA4.SHactual.Com.lbar %>% dplyr::select(years), SPA4.SHpredict.Com, SPA4.SHpredict.Rec %>% dplyr::select(SPA4.SHpredict.Rec)) #years = current year, years.predict = prediction year. (i.e. at year = 1999 acutal sh = X, year.predict = 2000, predicted sh = Y)
 
+
 #export the objects to use in predicting mean weight
 #just export 1996+ for growth rate calculation
 #export all whole time series as of 2020 
-
 dump(c('sh.actual','sh.predict'),paste0(path.directory,assessmentyear,"/Assessment/Data/Growth/SPA1A1B4and5/SPA4.SHobj.",surveyyear,".R"))
 
 write.csv(cbind(sh.actual, sh.predict %>% dplyr::select(!years)), paste0(path.directory,assessmentyear, "/Assessment/Data/Growth/SPA",area,"/SPA4.lbar.to",surveyyear,".csv"))
