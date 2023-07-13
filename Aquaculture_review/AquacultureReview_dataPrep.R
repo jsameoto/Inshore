@@ -11,46 +11,74 @@ require (RPMG)
 require (lubridate)
 require (tidyverse)
 require (sf)
-require(maptools)
+#require(maptools)
 require(forcats)
 library(ROracle)
 library(mapview)
 library(data.table)
 library(raster)
 
+sf::sf_use_s2(FALSE)
+
 uid <- keyring::key_list("Oracle")[1,2]
 pwd <- keyring::key_get("Oracle", uid)
 
 #Specify directory (make new one for each request)
-dir <- "Y:/Admin/Request and Review Tracking/Aquaculture_Reviews/2021/Beaver_Harbour/" #to save logs and read in ll data
-last.fishing.yr <- 2020
+direct <- "Y:/Admin/Request_and_Review_Tracking/Aquaculture_Reviews/2023/St. Mary's Bay/GIS_info"
+  #"Y:/Admin/Request and Review Tracking/Aquaculture_Reviews/2021/Beaver_Harbour/" #to save logs and read in ll data
+last.fishing.yr <- 2022
 start.year <- last.fishing.yr - 5 #Get data from latest year back 5 years (6 years inclusive).
 
 
 # -----READ IN SITE INFO (Zone of Influence) - PROVIDED BY Coastal Oceanography & Ecosystem Research Section (COERS) (Lindsay)-------
 
-site.name <- "BeaverHarbour"
-data <- read.table(paste0(dir,"rams_head_pez_pelagic_speed26.6_cms_ttrack_3h.ll"))
-
-zoi <- data %>% 
-  mutate(ID = seq(1,nrow(data),1)) %>% 
-  mutate(Site = site.name)
-
-zoi.sf <- st_as_sf(zoi, coords = c("V1", "V2"), crs = 4326) %>% #May need to adjust Lat long headers in coords = c()
+site.name <- "SaintMarysBay"
+data.1449 <- read.table(paste0(direct,"/1449_pez_benthic_sink0.3cms_2023-02-23.ll")) |> 
+  mutate(Site = as.factor(1449)) |> st_as_sf(coords = c("V1", "V2"), crs = 4326) %>% #May need to adjust Lat long headers in coords = c()
+    summarise(do_union = FALSE) %>% 
+    st_cast("LINESTRING") %>% 
+    st_transform(crs = 4269)#convert projection to match managment zone boundaries (NAD83)
+data.1450 <- read.table(paste0(direct,"/1450_pez_benthic_sink0.3cms_2023-02-23.ll")) |> 
+  mutate(Site = as.factor(1450))|> st_as_sf(coords = c("V1", "V2"), crs = 4326) %>% #May need to adjust Lat long headers in coords = c()
   summarise(do_union = FALSE) %>% 
   st_cast("LINESTRING") %>% 
-  st_transform(crs = 4269) #convert projection to match managment zone boundaries (NAD83)
+  st_transform(crs = 4269)#convert projection to match managment zone boundaries (NAD83)
+data.1451 <- read.table(paste0(direct,"/1451_pez_benthic_sink0.3cms_2023-02-23.ll")) |> 
+  mutate(Site = as.factor(1451))|> st_as_sf(coords = c("V1", "V2"), crs = 4326) %>% #May need to adjust Lat long headers in coords = c()
+  summarise(do_union = FALSE) %>% 
+  st_cast("LINESTRING") %>% 
+  st_transform(crs = 4269)#convert projection to match managment zone boundaries (NAD83)
+data.1452 <- read.table(paste0(direct,"/1452_pez_benthic_sink0.3cms_2023-02-23.ll")) |> 
+  mutate(Site = as.factor(1452))|> st_as_sf(coords = c("V1", "V2"), crs = 4326) %>% #May need to adjust Lat long headers in coords = c()
+  summarise(do_union = FALSE) %>% 
+  st_cast("LINESTRING") %>% 
+  st_transform(crs = 4269)#convert projection to match managment zone boundaries (NAD83)
 
+#BeaverHarbour
+#read.table(paste0(dir,"rams_head_pez_pelagic_speed26.6_cms_ttrack_3h.ll"))
+
+#zoi.sf <- st_as_sf(zoi, coords = c("V1", "V2"), crs = 4326) %>% #May need to adjust Lat long headers in coords = c()
+#  summarise(do_union = FALSE) %>% 
+#  st_cast("LINESTRING") %>% 
+#  st_transform(crs = 4269) #convert projection to match managment zone boundaries (NAD83)
+
+mapview::mapview(data.1449)+
+  mapview(data.1450)+
+  mapview(data.1451)+
+  mapview(data.1452)
+
+
+zoi.sf <- st_union(data.1449, data.1452) #These two zones cover the others, so only need 1449 and 1452
 mapview::mapview(zoi.sf)
 
-cruise <- "SPA6" #Set Cruise parameters based on where site is located
+cruise <- "SPA3" #Set Cruise parameters based on where site is located
 
 # ----Import Source functions----------------------------------------------
 
 funcs <- c("https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Maps/pectinid_projector_sf.R",
            "https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Maps/convert_coords.R",
            "https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Survey_and_OSAC/convert.dd.dddd.r",
-           "https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/archive/2016/contour.gen.r") 
+           "https://raw.githubusercontent.com/Mar-scal/Inshore/master/contour.gen.r") 
 # Note: uses older contour.gen.r version (working on alternative to contour.gen altogether).
 dir <- getwd()
 for(fun in funcs) 
@@ -84,9 +112,9 @@ SPA6B <- st_read(paste0(temp2, "/SPA6B_polygon_NAD83.shp")) %>% mutate(ET_ID = "
 SPA6C <- st_read(paste0(temp2, "/SPA6C_polygon_NAD83.shp")) %>% mutate(ET_ID = "6C")
 SPA6D <- st_read(paste0(temp2, "/SPA6D_polygon_NAD83.shp")) %>% mutate(ET_ID = "6D")
 SPA6_all <- rbind(SPA6A, SPA6B, SPA6C, SPA6D)
+
+SMB <- st_read(paste0(temp2, "/SMB_SurveyStrata.shp"))
 #SPA1A <- st_read("Y:/INSHORE SCALLOP/BoFBoundaries/SPABoundaries_Redrawn2014/SPA New Polys/shp polygons/SPA1A_polygon_NAD83.shp") %>% mutate(ET_ID = "6A")
-
-
 #mapview::mapview(SPA6A)+
 #mapview::mapview(SPA6B)+
 #mapview::mapview(SPA6C)+
@@ -101,7 +129,7 @@ temp2 <- tempfile()
 # Unzip it
 unzip(zipfile=temp, exdir=temp2)
 
-land <- st_read(paste0(temp2, "/canada_wvs_geo_wgs84.shp"), crs = 4326) %>% 
+land <- st_read(paste0(temp2, "/Atl_region_land.shp"), crs = 4326) %>% 
   st_transform(crs = 4269) %>%
   filter(PROVINCE %in% c("Nova Scotia", "New Brunswick", "Prince Edward Island", "Newfoundland and Labrador")) %>% 
   st_make_valid() %>%  #shapefile contains invalid geometry
@@ -110,6 +138,7 @@ land <- st_read(paste0(temp2, "/canada_wvs_geo_wgs84.shp"), crs = 4326) %>%
 # Select Commercial data --------------------------------------------------
 
 #Run for determining subareas for data query.
+sub.area <- NULL
 if(cruise == "SPA1A") {
   sub.area <- paste0("'1A'")
   mgmt_zone <- SPA1A
@@ -134,7 +163,6 @@ if(cruise == "SPA5") {
   sub.area <- paste0("'SPA5'")
   mgmt_zone <- SPA5
 }
-sub.area <- NULL
 if(cruise == "SPA6") {
   sub.area <- paste0("'6A','6B','6C','6D'")
   mgmt_zone <- SPA6_all
@@ -173,6 +201,10 @@ logs <- logs %>%
 
 str(logs)
 
+#logs.spa1a <- logs
+#logs.spa3 <- logs
+#logs.spa4 <- logs
+#logs <- rbind(logs.spa1a, logs.spa3, logs.spa4)
 
 # ----Filter out areas for privacy considerations (min 5 trips per area)-------
 
@@ -208,6 +240,7 @@ mapview::mapview(log.priv.sf)
 # ----Remove any data points on land---------------------------------------------------------------------
 
 log.priv.sf <- st_difference(log.priv.sf, st_combine(land)) #Takes a few minutes
+
 mapview::mapview(log.priv.sf)+
   mapview::mapview(zoi.sf)
 
@@ -304,7 +337,6 @@ mapview::mapview(grid.data, zcol="sum_CATCH") +
   mapview::mapview(grid.data, zcol = "sum_EFFORT")+
   mapview::mapview(zoi.sf)
 
-
 # ----------What is the Total catch (MT) and Effort for all of SPA # ?---------------------------------------------------------------
 
 tot.catch.eff <- grid.data %>% 
@@ -335,14 +367,36 @@ subarea.tot.catch.eff
 
 
 # -----What is the Total catch (MT) and Effort Within zone of influence--------------------------------------------------------------------
+#Take zois and make polygon
+data.1449 <- data.1449 |> 
+  st_cast("POLYGON")
+data.1452 <- data.1452 |> 
+  st_cast("POLYGON")
+
+zoi.sf <- st_union(data.1449, data.1452)
 
 site.grid <- grid.data %>% 
-  st_crop(zoi.sf) %>% 
+  st_intersection(zoi.sf) %>% 
   mutate(sum_CATCH_MT = sum_CATCH/1000) #Create sum_CATCH_MT (catch in mt) column to look at each grid cell values
 
+#st_write(site.grid, "Y:/Admin/Request_and_Review_Tracking/Aquaculture_Reviews/shp/SPA4_site_Logbook_grids_CatchEffort.shp", driver = "ESRI Shapefile", overwrite = T)
+
+#What percentage of catch from Year-Year comes from each grid...just exploring ways to look at the data.
+#grid.site.prop <- site.grid |> 
+#  mutate(CATCH_PROP = sum_CATCH/sum(sum_CATCH)*100) |> 
+#  mutate(EFFORT_PROP = sum_EFFORT/sum(sum_EFFORT)*100)
+
+mapview::mapview(zoi.sf)+ #Note cropped grid cells still contain full data.
+  mapview::mapview(data.1449)+
+  mapview::mapview(data.1450)+
+  mapview::mapview(data.1451)+
 mapview::mapview(site.grid, zcol="sum_CATCH_MT") + 
-  mapview::mapview(site.grid, zcol = "sum_EFFORT")+
-  mapview::mapview(zoi.sf)
+  mapview::mapview(site.grid, zcol = "sum_EFFORT")
+  #mapview::mapview(grid.site.prop, zcol="CATCH_PROP") + 
+  #mapview::mapview(grid.site.prop, zcol = "EFFORT_PROP")+
+  
+#st_write(site.grid, "Y:/Admin/Request_and_Review_Tracking/Aquaculture_Reviews/shp/Commercial_Grid_logdata_SPA1A-3-4.shp", driver = "ESRI Shapefile", overwrite = T)
+#st_write(data.1452, "Y:/Admin/Request_and_Review_Tracking/Aquaculture_Reviews/shp/proposed_site_data.1452.shp", driver = "ESRI Shapefile", overwrite = T)
 
 
 #Summarize all grid cells for total effort and catch (mt)
@@ -376,4 +430,6 @@ cat(paste("Summary: The Zone of Influence (ZOI) falls within",cruise, "and overl
 
 
 #Save as .txt
-cat(paste("Summary: The Zone of Influence (ZOI) falls within",cruise, "and overlaps with subarea(s)", spa.site.overlap,".\n From ",start.year, "to", last.fishing.yr,"inclusive (6 years), from usable logs, landings within the ZOI were\n", round(site.catch.eff$tot_CATCH_MT, 2), "metric tonnes corresponding to", perc.catch.spa, "% of landings in", cruise,"(", perc.catch.subarea,"% of landings within subarea", spa.site.overlap,").\n"), file = paste0(dir,site.name,"_AquacultureReview.log"))
+cat(paste("Summary: The Zone of Influence (ZOI) falls within",cruise, "and overlaps with subarea(s)", spa.site.overlap,".\n From ",start.year, "to", last.fishing.yr,"inclusive (6 years), from usable logs, landings within the ZOI were\n", round(site.catch.eff$tot_CATCH_MT, 2), "metric tonnes corresponding to", perc.catch.spa, "% of landings in", cruise,"(", perc.catch.subarea,"% of landings within subarea", spa.site.overlap,").\n"), file = paste0(direct,site.name,"_AquacultureReview.log"))
+
+

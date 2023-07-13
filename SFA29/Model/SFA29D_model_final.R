@@ -38,8 +38,8 @@ source("Y:/Inshore/SFA29/2017/model/SFA29model9-2015.R") #contains the SFA29mode
 
 #DEFINE:
 path.directory <- "Y:/Inshore/SFA29/"
-assessmentyear <- 2022 #year in which you are conducting the assessment 
-surveyyear <- 2021  #last year of survey data you are using, e.g. if max year of survey is survey from summer 2019, this would be 2019 
+assessmentyear <- 2023 #year in which you are conducting the assessment 
+surveyyear <- 2022  #last year of survey data you are using, e.g. if max year of survey is survey from summer 2019, this would be 2019 
 area <- "SFA29D"  
 
 #yr <- year(Sys.Date()) # This should be set to the year after the year of the last survey.  e.g. if 2018 that means you are using the 2017 survey. This assumes you're running assessment in surveyyear + 1
@@ -92,7 +92,8 @@ num.areas <- length(D.area) # The number of strata in the area...
 #mod.dat <- read.csv(paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29D/SFA29D_ModelData.2021.csv"))  
 #mod.dat <- read.csv(paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29D/test_min_gh_for2020/SFA29D_ModelData.2021.csv"))
 #mod.dat <- read.csv(paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29D/test_max_gh_for2020/SFA29D_ModelData.2021.csv"))  
-mod.dat <- read.csv(paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29D/ModelRun_to2020/SFA29D_ModelData.2020.csv")) 
+#mod.dat <- read.csv(paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29D/ModelRun_to2020/SFA29D_ModelData.2020.csv")) 
+mod.dat <- read.csv(paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29D/SFA29D_ModelData.",surveyyear,".csv")) 
 
 # The strata for this area.
 strata <- c("low","med","high")
@@ -103,9 +104,10 @@ growth.paras
 
 
 
-###
-## ---- Run the model  ---- 
-###
+
+##
+#  --- Current year update ----
+##
 
 yrs <- 2001:surveyyear
 NY <- length(yrs)
@@ -129,6 +131,7 @@ SFA29Ddata <- list(
   VMS.Effort = dat.wrap(mod.dat,"VMSEffort",yrs[-length(yrs)],strata)) # There won't be VMS data for the most recent data
 
 
+#### Run the model 
 
 D.mod.res <- SSModel(SFA29Ddata,SFA29.priors,inits.29D,parms=SFA29.parms,model.file=SFA29model,Years=yrs,
                 nchains=nchains,niter=niter,nburnin=nburnin,nthin=nthin,Area="SFA29W",e.parms=e.parms.29D,debug=F)
@@ -146,15 +149,17 @@ if(Rhat <= 1.05) print(paste("Good modelling friend, your max Rhat is",Rhat))
 
 
 #save model 
-#save(D.mod.res,file=paste0(file = paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29D/SFA29D.",surveyyear,".RData"))) 
+save(D.mod.res,file=paste0(file = paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29D/SFA29D.",surveyyear,".RData")))
 #save(D.mod.res,file=paste0(file = paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29D/test_min_gh_for2020/SFA29D.",surveyyear,".RData"))) 
 #save(D.mod.res,file=paste0(file = paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29D/test_max_gh_for2020/SFA29D.",surveyyear,".RData"))) 
-save(D.mod.res,file=paste0(file = paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29D/ModelRun_to2020/SFA29D.2020.RData"))) 
+#save(D.mod.res,file=paste0(file = paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29D/ModelRun_to2020/SFA29D.2020.RData"))) 
 
-#write.csv(D.mod.res$summary,file=paste0(file = paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29D/SFA29.D.mod.res.summary.",surveyyear,".csv"))) 
+
+write.csv(D.mod.res$summary,file=paste0(file = paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29D/SFA29.D.mod.res.summary.",surveyyear,".csv"))) 
 #write.csv(D.mod.res$summary,file=paste0(file = paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29D/test_min_gh_for2020/SFA29.D.mod.res.summary.",surveyyear,".csv"))) 
 #write.csv(D.mod.res$summary,file=paste0(file = paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29D/test_max_gh_for2020/SFA29.D.mod.res.summary.",surveyyear,".csv"))) 
-write.csv(D.mod.res$summary,file=paste0(file = paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29D/ModelRun_to2020/SFA29.D.mod.res.summary.2020.csv"))) 
+#write.csv(D.mod.res$summary,file=paste0(file = paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29D/ModelRun_to2020/SFA29.D.mod.res.summary.2020.csv"))) 
+
 
 
 # Get the catch and biomass so that we can figure out the explotation rate from the model for each habitat
@@ -268,7 +273,9 @@ length(low.CPUE)
 #low.CPUE <- c(0,0,0,low.CPUE[1:10],0,low.CPUE[11:length(low.CPUE)]) # need to add 1 to this each year
 
 # Now stitch these together....
-dat <- data.frame(Year = rep(yrs,3),Catch = c(high.cat,med.cat,low.cat),Biomass = c(high.bm,med.bm,low.bm),
+dat <- data.frame(Year = rep(yrs,3),
+                  Catch = c(high.cat,med.cat,low.cat),
+                  Biomass = c(high.bm,med.bm,low.bm),
                   nat.m = c(high.nat.m,med.nat.m,low.nat.m),
                   CPUE = c(high.CPUE,med.CPUE,low.CPUE),
                   mu = c(high.cat/(high.cat+high.bm),
@@ -281,10 +288,11 @@ dat <- data.frame(Year = rep(yrs,3),Catch = c(high.cat,med.cat,low.cat),Biomass 
 dat$BM.dens <- dat$Biomass/dat$size.area
 
 # This data all gets combined so we can make the figures later... 
-#write.csv(dat, file=paste0(file = paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29D/SFA29.D.model.results.summary.",surveyyear,".csv")), row.names = FALSE)
+write.csv(dat, file=paste0(file = paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29D/SFA29.D.model.results.summary.",surveyyear,".csv")), row.names = FALSE) 
 #write.csv(dat, file=paste0(file = paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29D/test_min_gh_for2020/SFA29.D.model.results.summary.",surveyyear,".csv")), row.names = FALSE) 
 #write.csv(dat, file=paste0(file = paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29D/test_max_gh_for2020/SFA29.D.model.results.summary.",surveyyear,".csv")), row.names = FALSE) 
-write.csv(dat, file=paste0(file = paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29D/ModelRun_to2020/SFA29.D.model.results.summary.2020.csv")), row.names = FALSE) 
+#write.csv(dat, file=paste0(file = paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29D/ModelRun_to2020/SFA29.D.model.results.summary.2020.csv")), row.names = FALSE) 
+
 
 
 
@@ -356,21 +364,21 @@ dev.off()
 
 
 #Predict for next year...
-# First get the growth data, this will be in the order for the "strata" is above, as long as this is low then mediume, then high this should be fine...
+# First get the growth data, this will be in the order for the "strata" is above, as long as this is low then medium, then high this should be fine...
 D.next.predict <- predict(D.mod.res,exploit=0.1,g.parm=c(growth.paras$gh))
 summary(D.next.predict)
 
 
-#Method only does one exploitation at a time, note that I have changed the probabilites to be like those for BoF
+#Method only does one exploitation at a time, note that I have changed the probabilities to be like those for BoF
 #Workaround
-set.seed(10) # set the random number generator if you want to make your results reproducable.
+set.seed(10) # set the random number generator if you want to make your results reproducible.
 Decision.table <- matrix(NA,10,7)
 dimnames(Decision.table)[[2]] <- names(summary(D.next.predict)$Next.year)
 
 # The decision table for next years fishing season...
 Decision.table <- NULL
 for(i in 1:20){
-  temp <- predict(D.mod.res,exploit=0.02*(i-1), g.parm=growth.paras$gh)
+  temp <- predict(D.mod.res,exploit=0.01*(i-1), g.parm=growth.paras$gh)
   # Get the Probability of being above the LRP, for Area B is this 1.12, for area C this is 1.41, and D is 1.30
   lrp <- signif(length(which(temp$Bh.next$High/temp$Area[3] >= 1.3))/length(temp$Bh.next$High),digits=2)
   usr <- signif(length(which(temp$Bh.next$High/temp$Area[3] >= 2.6))/length(temp$Bh.next$High),digits=2)
@@ -387,40 +395,40 @@ write.csv(Dec.tab, paste0(path.directory,assessmentyear,"/Assessment/Data/Model/
 
 ### Optional ###
 # Decision table to predict max level exploitation risk
-Decision.table <- NULL
-for(i in 1:20){
-  temp<-predict(D.mod.res,exploit=0.05*(i-1), g.parm=growth.paras)
+#Decision.table <- NULL
+#for(i in 1:20){
+#  temp<-predict(D.mod.res,exploit=0.05*(i-1), g.parm=growth.paras)
   # Get the Probability of being above the LRP, for Area B is this 1.12, for area C this is 1.41, and D is 1.30
-  lrp <- signif(length(which(temp$Bh.next$High/temp$Area[3] >= 1.3))/length(temp$Bh.next$High),digits=2)
-  usr <- signif(length(which(temp$Bh.next$High/temp$Area[3] >= 2.6))/length(temp$Bh.next$High),digits=2)
-  Decision.table[[i]]<-as.vector(c(unlist(summary(temp)$Next.year),lrp, usr))
-}
-Dec.tab.r1 <- do.call("rbind",Decision.table)
-colnames(Dec.tab.r1) <- c(names(summary(temp)$Next.year),"Prob_above_LRP", "Prob_above_USR")
+#  lrp <- signif(length(which(temp$Bh.next$High/temp$Area[3] >= 1.3))/length(temp$Bh.next$High),digits=2)
+#  usr <- signif(length(which(temp$Bh.next$High/temp$Area[3] >= 2.6))/length(temp$Bh.next$High),digits=2)
+#  Decision.table[[i]]<-as.vector(c(unlist(summary(temp)$Next.year),lrp, usr))
+#}
+#Dec.tab.r1 <- do.call("rbind",Decision.table)
+#colnames(Dec.tab.r1) <- c(names(summary(temp)$Next.year),"Prob_above_LRP", "Prob_above_USR")
 
-Dec.tab.r1
+#Dec.tab.r1
 
 ## Make plot for exploitation risk analysis
 # Include Risk category
-Dec.tab.r1.df <- as.data.frame(Dec.tab.r1)
-library (ggplot2)
-dec.plot <- ggplot (Dec.tab.r1.df, aes (x=Exploit.High, y=Prob_above_USR)) +
-  theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
-  annotate(geom="rect",ymin=0.75,ymax=1,xmin=-Inf,xmax=Inf, fill = "lightgreen", alpha=0.5)+
-  annotate(geom="rect",ymin=0.5,ymax=0.75,xmin=-Inf,xmax=Inf, fill="gold1", alpha = 0.5) +
-  annotate(geom="rect",ymin=0.25,ymax=0.5,xmin=-Inf,xmax=Inf, fill="tomato1", alpha = 0.6) +
-  annotate(geom="rect",ymin=0,ymax=0.25,xmin=-Inf,xmax=Inf, fill="red", alpha=0.6) +
-  annotate(geom="text",x=0.7,y=0.88,label="Low")+
-  annotate(geom="text",x=0.7,y=0.62,label="Moderate")+
-  annotate(geom="text",x=0.2,y=0.38,label="Moderate High")+
-  annotate(geom="text",x=0.2,y=0.12,label="High")+
-  geom_point() + geom_line() + scale_y_continuous(limit=c(0,1), expand=c(0.01,0))+
-  xlab ("Exploitation") +ylab("Probability Above USR") + ggtitle("Subarea D Risk Analysis")
-dec.plot
+#Dec.tab.r1.df <- as.data.frame(Dec.tab.r1)
+#library (ggplot2)
+#dec.plot <- ggplot (Dec.tab.r1.df, aes (x=Exploit.High, y=Prob_above_USR)) +
+#  theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+#  annotate(geom="rect",ymin=0.75,ymax=1,xmin=-Inf,xmax=Inf, fill = "lightgreen", alpha=0.5)+
+#  annotate(geom="rect",ymin=0.5,ymax=0.75,xmin=-Inf,xmax=Inf, fill="gold1", alpha = 0.5) +
+#  annotate(geom="rect",ymin=0.25,ymax=0.5,xmin=-Inf,xmax=Inf, fill="tomato1", alpha = 0.6) +
+#  annotate(geom="rect",ymin=0,ymax=0.25,xmin=-Inf,xmax=Inf, fill="red", alpha=0.6) +
+#  annotate(geom="text",x=0.7,y=0.88,label="Low")+
+#  annotate(geom="text",x=0.7,y=0.62,label="Moderate")+
+#  annotate(geom="text",x=0.2,y=0.38,label="Moderate High")+
+#  annotate(geom="text",x=0.2,y=0.12,label="High")+
+#  geom_point() + geom_line() + scale_y_continuous(limit=c(0,1), expand=c(0.01,0))+
+#  xlab ("Exploitation") +ylab("Probability Above USR") + ggtitle("Subarea D Risk Analysis")
+#dec.plot
 
-png(paste0 (getwd(),"/SFA29D_results/SubareaD_USRprob_RiskAnalysis", ".png"),11,9,res=400,units='in')
-dec.plot
-dev.off()
+#png(paste0 (getwd(),"/SFA29D_results/SubareaD_USRprob_RiskAnalysis", ".png"),11,9,res=400,units='in')
+#dec.plot
+#dev.off()
 ###
 
 
@@ -482,7 +490,7 @@ save(pe.pred,file=paste0(path.directory,assessmentyear,"/Assessment/Data/Model/S
 direct <- "Y:/Inshore/SFA29/"
 pe.all <- NULL
 
-for(i in 2016:2021) {
+for(i in 2016:pe.years) {
   if(i == 2016) 
   {
     load(paste0(direct,"Model_results_2015_2017/SFA29D/prediction_evaluation_results_2011_2016.RData"))
@@ -502,6 +510,11 @@ for(i in 2016:2021) {
   if(i == 2021)
   {
     load(paste0(direct,"2022/Assessment/Data/Model/SFA29D/SFA29D.prediction.evaluation.results.2021.RData"))
+    pe.all <- c(pe.all,pe.pred)
+  }
+  if(i %in% 2022:pe.years)
+  {
+    load(paste0(direct,(i+1),"/Assessment/Data/Model/SFA29C/SFA29C.prediction.evaluation.results.",i,".RData"))
     pe.all <- c(pe.all,pe.pred)
   }
 } 
@@ -546,4 +559,53 @@ colnames(Dec.tab.m1) <- c(names(summary(temp)$Next.year),"Prob_above_LRP", "Prob
 Dec.tab.m1
 
 write.csv(Dec.tab.m1, paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29D/SFA29.D.mod.Decision.table.nat.m.1yr.",surveyyear,".csv"), row.names = FALSE) 
+
+
+
+######################################################
+#Plot of survey estimates over modelled biomass
+
+summary <- as.data.frame(mod.res$summary)
+parameters <- rownames(summary)
+summary <- cbind(parameters, data.frame(summary, row.names=NULL))
+
+n <- 3
+years <- rep(2001:surveyyear, each=n)
+Habitat <- rep(c("Low", "Med", "High"), 22) #Need to fix this so new years are added.
+
+summary.Bh <- summary |>  filter(str_detect(summary$parameters, "^Bh"))
+summary.Bh$Year <- years
+summary.Bh$Habitat <- Habitat
+
+summary.q <- summary |>  filter(parameters== "q")
+
+summary.Bh$scaled <- summary.Bh$X50.*summary.q$X50.
+summary.Bh$scaled.2.5 <- summary.Bh$X2.5.*summary.q$X50.#*summary.q$X2.5.
+summary.Bh$scaled.97.5 <- summary.Bh$X97.5.*summary.q$X50.#*summary.q$X97.5.
+
+
+mod.dat.plot <- mod.dat |> 
+  rename(Habitat=Strata) |>
+  mutate(Habitat = case_when(Habitat == "high" ~ "High", 
+                             Habitat == "med" ~ "Med",
+                             Habitat == "low" ~ "Low"))
+
+mod.dat.plot$Habitat <- factor(mod.dat.plot$Habitat, levels = c("Low", "Med", "High"))
+summary.Bh$Habitat <- factor(summary.Bh$Habitat, levels = c("Low", "Med", "High"))
+
+#Plot by Habitat Type
+ggplot()+
+  geom_point(data = summary.Bh, aes(x=Year, y= scaled))+
+  geom_line(data = summary.Bh, aes(x=Year,y=scaled), size = 0.5)+
+  geom_ribbon(data = summary.Bh, aes(x=Year, ymin=scaled.2.5, ymax=scaled.97.5),alpha=0.2)+
+  facet_wrap(factor(Habitat, levels=c("High","Med","Low")))+
+  geom_point(data = (mod.dat.plot |> dplyr::filter(SUBAREA == "SFA29D")), aes(Year,Ih), colour = "red")+
+  xlab("Year")+
+  ylab("Commercial Biomass")+
+  theme_bw()+
+  facet_wrap(~Habitat)
+
+
+#save
+ggsave(filename = paste0(path.directory,assessmentyear,"/Assessment/Figures/Model/SFA29D/Survey_est_figure_SFA29D_",surveyyear,".png"), plot = last_plot(), scale = 2.5, width =11, height = 4, dpi = 300, units = "cm", limitsize = TRUE)
 

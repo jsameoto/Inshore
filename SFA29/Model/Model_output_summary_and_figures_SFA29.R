@@ -7,8 +7,8 @@ library(tidyverse)
 library(lubridate)
 
 #define 
-yr <- 2022 # This should be set to the year after the year of the last survey.  e.g. if 2018 that means you are using the 2017 survey.
-survey.year <- 2021
+yr <- 2023 # This should be set to the year after the year of the last survey.  e.g. if 2018 that means you are using the 2017 survey.
+survey.year <- 2022
 
 path.directory <- paste0("Y:/Inshore/SFA29/")
 
@@ -25,7 +25,7 @@ ref.points.2 <- data.frame(area = paste0("SFA29",rep(LETTERS[2:4],3)),
                          ref.pt = c(c(1.12,1.41,1.3),c(1.12,1.41,1.3)*2, c(3.75,4.68, 4.32)),
                          type = c(rep("LRP",3),rep("USR",3), rep("Dmsy",3)))
 
-# Bring in model results, which initially 
+# Bring in model results 
 mod.summary <- NULL
 #mod.res <- NULL
 for(i in 1:4)
@@ -111,7 +111,8 @@ symbs <- 15:17
 
 #Bh - Commercial biomass in t
 windows(8,7)
-ggplot(mod.summary, aes(Year,Biomass,colour = Habitat)) + geom_line(aes(group=Habitat, linetype = Habitat, color = Habitat), size = 0.56) + 
+ggplot(mod.summary, aes(Year,Biomass,colour = Habitat)) +
+  geom_line(aes(group=Habitat, linetype = Habitat, color = Habitat), size = 0.56) +
          geom_point(aes(group=Habitat, shape = Habitat, color = Habitat), size = 1.5) + facet_wrap(~area) +
   scale_color_manual(values=colr, breaks = c("High", "Med", "Low"),labels = c("high"="High", "Med"="Medium", "low"="Low")) +
   scale_linetype_manual(values = line.type, breaks = c("High", "Med", "Low"),labels = c("high"="High", "Med"="Medium", "low"="Low")) +
@@ -330,8 +331,6 @@ ggplot(mod.summary,aes(Year,nat.m.prop,colour = Habitat))  + geom_line(aes(group
   theme(legend.title = element_blank(),legend.text = element_text(size=14), panel.grid=element_blank()) 
 
 
-
-##############EXTRA PLOTS EXTRA PLOTS###
 #m - natural mortality of high (with 5-year mean)
 dat.all <- mod.summary[mod.summary$Habitat=="High" | mod.summary$area == "SFA29A" ,]
 dat.all <- dat.all[dat.all$Habitat != "Low",]
@@ -361,7 +360,7 @@ ggsave(filename = paste0(path.directory,"/",yr,"/Assessment/Figures/Model/NatMor
   
 #Proportional mortality plot with 5 year mean and long term mean 
 windows(11,7)
-ggplot(dat.all,aes(Year,nat.m,colour = Habitat, linetype = Habitat))  + geom_line( size = 0.75) + 
+ggplot(dat.all,aes(Year,nat.m.prop,colour = Habitat, linetype = Habitat))  + geom_line( size = 0.75) + 
   geom_point(aes(group=Habitat, shape = Habitat, color = Habitat)) + facet_wrap(~area, nrow=1) +
   scale_color_manual(values=colr, breaks = c("High", "Med", "Low")) +
   scale_linetype_manual(values = line.type, breaks = c("High", "Med", "Low")) +
@@ -405,7 +404,7 @@ ggsave(filename = paste0(path.directory,"/",yr,"/Assessment/Figures/Model/NatMor
 
 #Proportional mortality plot with 5 year mean and long term mean 
 windows(11,7)
-ggplot(dat.all,aes(Year,nat.m,colour = Habitat, linetype = Habitat))  + geom_line( size = 0.75) + 
+ggplot(dat.all,aes(Year,nat.m.prop,colour = Habitat, linetype = Habitat))  + geom_line( size = 0.75) + 
   geom_point(aes(group=Habitat, shape = Habitat, color = Habitat)) + facet_wrap(~area.fr, nrow=1) +
   scale_color_manual(values=colr, breaks = c("High", "Med", "Low")) +
   scale_linetype_manual(values = line.type, breaks = c("High", "Med", "Low")) +

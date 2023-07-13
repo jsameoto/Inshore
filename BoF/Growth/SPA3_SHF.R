@@ -41,7 +41,7 @@ cruise <- "'BI2022'"
 path.directory <- "Y:/Inshore/BoF/"
 
 #polygon to for assingning new strata to data #To bring in sf object from Github eventually - will need to identify in and out VMS data points.
-spa3area <- read.csv("Y:/Offshore scallop/Assessment/Data/Maps/approved/Other_Borders/SPA3_VMSpoly.csv")
+spa3area <- read.csv("Y:/Inshore/Databases/Scallsur/SPA3/SPA3_VMSpoly.csv")
 
 #////... END OF DEFINE SECTION ...////
 

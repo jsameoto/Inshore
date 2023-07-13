@@ -32,13 +32,13 @@ options(stringsAsFactors = FALSE)
 # ///.... DEFINE THESE ENTRIES ....////
 
 #DEFINE: year, area
-year <- 2021  #this is the survey year
-assessmentyear <- 2022 #this is the year you are running your assessment in -- corresponds to the assessment folder year name 
+year <- 2022  #this is the survey year
+assessmentyear <- 2023 #this is the year you are running your assessment in -- corresponds to the assessment folder year name 
 # DEFINE path for figures and dataouput to be saved; note expects within this folder that you've created a "dataoutput" and "Figures" folder under the following directory path;  MUST HAVE "/" at the end of your path! (shouldn't have to change this in most years with new folder structure)
 path.directory <- "Y:/Inshore/SFA29/"
 
 # DEFINE: load shell height objects 
-SFA29.SHactualpredict <- read.csv("Y:/Inshore/SFA29/2022/Assessment/Data/Growth/SFA29.SHobj.2021.csv")
+SFA29.SHactualpredict <- read.csv(paste0("Y:/Inshore/SFA29/",assessmentyear,"/Assessment/Data/Growth/SFA29.SHobj.",year,".csv"))
 #field size identifies if commercial or recruit
 #field SHF is actual shell height in year t, field SHF.pred is predicted shell height in year t+1 
 SFA29.SHactual.Com <- SFA29.SHactualpredict %>% filter(size == "commercial")  %>% dplyr::select(years=year, STRATA, SDM, SHactual.Com = SHF)
@@ -60,8 +60,11 @@ SH.object
 
  
 # DEFINE: Source previous year meat weight and growth rate object for ACTUAL & PREDITED growth rates:
+##COPY over the growth.actual.2001toYYYY and the SFA29growthYYYY.RData from previous year - where YYYY is year-1 into the assessment year directory 
+#Y:/Inshore/SFA29/YYYY/Assessment/Data/Growth/
+
 # if your year defined above it 2019, then you should be bringing in the 2018 growth rate object.
-sfa29.growthrate <- read.csv("Y:/Inshore/SFA29/2022/Assessment/Data/Growth/growth.actual.2001to2020.corrected.csv")
+sfa29.growthrate <- read.csv(paste0("Y:/Inshore/SFA29/",assessmentyear,"/Assessment/Data/Growth/growth.actual.2001to",year-1,".csv"))
 #sfa29.growthrate <- read.csv("Y:/INSHORE SCALLOP/BoF/2020/Assessment/Data/Growth/SPA1A1B4and5/spa1a.growthrate.2019.csv")
 #sfa29.growthrate <- sfa29.growthrate[,-1]
 sfa29.growthrate <- sfa29.growthrate %>% arrange(strata, sdm, Year)
@@ -69,23 +72,21 @@ sfa29.growthrate <- sfa29.growthrate %>% arrange(strata, sdm, Year)
 # DEFINE: load required workspace with model objects 
 # need current year model object AND previous year model object 
 # current year 
-load("Y:/Inshore/SFA29/2022/Assessment/Data/Growth/SFA29growth2021.RData")
-model.object.Y <- MWTSHSFA29.2021
-#Previous year; since don't have survey in 2020, use MWSH relationship for 2019 for 2020 
-load("Y:/Inshore/SFA29/2022/Assessment/Data/Growth/SFA29growth2019.RData")
-model.object.Yminus1 <- MWTSHSFA29.2019
+load(paste0("Y:/Inshore/SFA29/",assessmentyear,"/Assessment/Data/Growth/SFA29growth",year,".RData"))
+model.object.Y <- get(paste0("MWTSHSFA29.",year)) #Assign model.object.Y to current year model object - MWTSHSFA29.YYYY
+#Previous year;
+load(paste0("Y:/Inshore/SFA29/",assessmentyear,"/Assessment/Data/Growth/SFA29growth",year-1,".RData"))
+model.object.Yminus1 <- get(paste0("MWTSHSFA29.",year-1))
 
 summary(model.object.Y)
 summary(model.object.Yminus1)
 
 #DEFINE: Identify data object; NOTE if model above is MWTSHBF.2017 then this was run on 2017 data so you want the data as BFdetail2017:
-data.Y <- SFA29detail.2021
-data.Yminus1 <- SFA29detail.2019
+data.Y <- get(paste0("SFA29detail.",year))
+data.Yminus1 <- get(paste0("SFA29detail.",year-1))
 #In a given year, traditionally would use the data from the previous 
 
 #////... END OF DEFINE SECTION ...////
-
-
 
 #data object to hold predicted meat weights and growth rate:
 growth.YYYY <- data.frame(Year = rep(year,15), strata = c(rep("SFA29A",6), rep("SFA29B",6),rep("SFA29C",6), rep("SFA29D",6), rep("SFA29E",6)), sdm = c(rep(c("low","low", "med", "med","high","high"),5)), MW.Actual = rep(NA,30), MW.Predict = rep(NA,30),   rate = rep(NA,30),   Age = rep(c("Commercial","Recruit"),15), GrowthMethod = rep("Actual", 30))  
@@ -104,15 +105,15 @@ data.Yminus1$Log.DEPTH <- log(abs(data.Yminus1$ADJ_DEPTH)) #take abs to keep val
 summary(data.Yminus1)
 
 #create same data used to run model on
-test.data.Y <- subset(data.Y, YEAR == 2021 & HEIGHT > 40) #data subsetted as it was modelled #In 2023 assessment year can change to object year
-test.data.Yminus1 <- subset(data.Yminus1, YEAR == 2019 & HEIGHT > 40) #data subsetted as it was modelled #In 2023 assessment year can change to object year-1
+test.data.Y <- subset(data.Y, YEAR == year & HEIGHT > 40) #data subsetted as it was modelled
+test.data.Yminus1 <- subset(data.Yminus1, YEAR == year-1 & HEIGHT > 40) #data subsetted as it was modelled 
 
 # ---- Actual Growth Rates - meat weight ----
-# Calcuate mean weight of commercial and recruit animals:
+# Calculate mean weight of commercial and recruit animals:
 #1. In year t ("actual") using mean SH in year t and meat weight shell height relationship in year t
 #2. In year t+1 ("pred") using predicted mean SH in year t+1 (predicted from year t) and meat weight shell height relationship in year t+1
 #Depth to predict Growth is fixed
-# see'Y:/INSHORE SCALLOP/SFA29/SFA29DepthProfile/AreaMeanDepths.xlsx' #File for the constant depth to predict on by area
+# see'Y:/Inshore/SFA29/SFA29DepthProfile/AreaMeanDepths.xlsx' #File for the constant depth to predict on by area
 #subarea A  -75.05039
 #subarea B  -46.36262
 #subarea C  -37.33779
@@ -132,19 +133,19 @@ sdm <- "med"
 
 #A medium commercial - ACTUAL 
 #Year t-1 model to predict weight using using Year t-1 commercial size
-growth.YYYY$MW.Actual[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Commercial"] <- predict(model.object.Yminus1, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHactual.Com[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == 2019]) - mean(test.data.Yminus1$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.a))-mean(test.data.Yminus1$Log.DEPTH)), re.form=~0, type="response")
+growth.YYYY$MW.Actual[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Commercial"] <- predict(model.object.Yminus1, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHactual.Com[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == year-1]) - mean(test.data.Yminus1$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.a))-mean(test.data.Yminus1$Log.DEPTH)), re.form=~0, type="response")
 
 #A medium commercial - PREDICT 
 #Year t model to predict weight using Year t-1 SH grown up 1 year (i.e. grown to year t) (SHpredict.com)
-growth.YYYY$MW.Predict[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Commercial"] <- predict(model.object.Y, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHpredict.Com[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == 2019]) - mean(test.data.Y$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.a))-mean(test.data.Y$Log.DEPTH)), re.form=~0, type="response")
+growth.YYYY$MW.Predict[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Commercial"] <- predict(model.object.Y, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHpredict.Com[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == year-1]) - mean(test.data.Y$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.a))-mean(test.data.Y$Log.DEPTH)), re.form=~0, type="response")
 
 
 #A medium Recruit - ACTUAL
 #Year t-1 model to predict weight using using Year t-1 recruit size
-growth.YYYY$MW.Actual[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Recruit"] <- predict(model.object.Yminus1, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHactual.Rec[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == 2019]) - mean(test.data.Yminus1$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.a))-mean(test.data.Yminus1$Log.DEPTH)), re.form=~0,type="response")
+growth.YYYY$MW.Actual[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Recruit"] <- predict(model.object.Yminus1, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHactual.Rec[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == year-1]) - mean(test.data.Yminus1$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.a))-mean(test.data.Yminus1$Log.DEPTH)), re.form=~0,type="response")
 
 #A medium Recruit - PREDICT
-growth.YYYY$MW.Predict[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Recruit"] <- predict(model.object.Y, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHpredict.Rec[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == 2019]) - mean(test.data.Y$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.a))-mean(test.data.Y$Log.DEPTH)), re.form=~0,type="response")
+growth.YYYY$MW.Predict[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Recruit"] <- predict(model.object.Y, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHpredict.Rec[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == year-1]) - mean(test.data.Y$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.a))-mean(test.data.Y$Log.DEPTH)), re.form=~0,type="response")
 
 
 #...
@@ -154,19 +155,19 @@ sdm <- "low"
 
 #A low commercial - ACTUAL 
 #Year t-1 model to predict weight using using Year t-1 commercial size
-growth.YYYY$MW.Actual[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Commercial"] <- predict(model.object.Yminus1, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHactual.Com[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == 2019]) - mean(test.data.Yminus1$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.a))-mean(test.data.Yminus1$Log.DEPTH)), re.form=~0, type="response")
+growth.YYYY$MW.Actual[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Commercial"] <- predict(model.object.Yminus1, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHactual.Com[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == year-1]) - mean(test.data.Yminus1$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.a))-mean(test.data.Yminus1$Log.DEPTH)), re.form=~0, type="response")
 
 #A low commercial - PREDICT 
 #Year t model to predict weight using Year t-1 SH grown up 1 year (i.e. grown to year t) (SHpredict.com)
-growth.YYYY$MW.Predict[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Commercial"] <- predict(model.object.Y, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHpredict.Com[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == 2019]) - mean(test.data.Y$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.a))-mean(test.data.Y$Log.DEPTH)), re.form=~0, type="response")
+growth.YYYY$MW.Predict[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Commercial"] <- predict(model.object.Y, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHpredict.Com[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == year-1]) - mean(test.data.Y$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.a))-mean(test.data.Y$Log.DEPTH)), re.form=~0, type="response")
 
 
 #A low Recruit - ACTUAL
 #Year t-1 model to predict weight using using Year t-1 recruit size
-growth.YYYY$MW.Actual[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Recruit"] <- predict(model.object.Yminus1, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHactual.Rec[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == 2019]) - mean(test.data.Yminus1$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.a))-mean(test.data.Yminus1$Log.DEPTH)), re.form=~0,type="response")
+growth.YYYY$MW.Actual[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Recruit"] <- predict(model.object.Yminus1, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHactual.Rec[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == year-1]) - mean(test.data.Yminus1$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.a))-mean(test.data.Yminus1$Log.DEPTH)), re.form=~0,type="response")
 
 #A low Recruit - PREDICT
-growth.YYYY$MW.Predict[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Recruit"] <- predict(model.object.Y, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHpredict.Rec[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == 2019]) - mean(test.data.Y$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.a))-mean(test.data.Y$Log.DEPTH)), re.form=~0,type="response")
+growth.YYYY$MW.Predict[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Recruit"] <- predict(model.object.Y, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHpredict.Rec[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == year-1]) - mean(test.data.Y$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.a))-mean(test.data.Y$Log.DEPTH)), re.form=~0,type="response")
 
 
 # ---- Subarea B ----
@@ -182,19 +183,19 @@ sdm <- "high"
 
 #B high commercial - ACTUAL 
 #Year t-1 model to predict weight using using Year t-1 commercial size
-growth.YYYY$MW.Actual[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Commercial"] <- predict(model.object.Yminus1, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHactual.Com[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == 2019]) - mean(test.data.Yminus1$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.b))-mean(test.data.Yminus1$Log.DEPTH)), re.form=~0, type="response")
+growth.YYYY$MW.Actual[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Commercial"] <- predict(model.object.Yminus1, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHactual.Com[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == year-1]) - mean(test.data.Yminus1$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.b))-mean(test.data.Yminus1$Log.DEPTH)), re.form=~0, type="response")
 
 #B high commercial - PREDICT 
 #Year t model to predict weight using Year t-1 SH grown up 1 year (i.e. grown to year t) (SHpredict.com)
-growth.YYYY$MW.Predict[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Commercial"] <- predict(model.object.Y, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHpredict.Com[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == 2019]) - mean(test.data.Y$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.b))-mean(test.data.Y$Log.DEPTH)), re.form=~0, type="response")
+growth.YYYY$MW.Predict[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Commercial"] <- predict(model.object.Y, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHpredict.Com[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == year-1]) - mean(test.data.Y$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.b))-mean(test.data.Y$Log.DEPTH)), re.form=~0, type="response")
 
 
 #B high Recruit - ACTUAL
 #Year t-1 model to predict weight using using Year t-1 recruit size
-growth.YYYY$MW.Actual[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Recruit"] <- predict(model.object.Yminus1, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHactual.Rec[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == 2019]) - mean(test.data.Yminus1$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.b))-mean(test.data.Yminus1$Log.DEPTH)), re.form=~0,type="response")
+growth.YYYY$MW.Actual[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Recruit"] <- predict(model.object.Yminus1, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHactual.Rec[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == year-1]) - mean(test.data.Yminus1$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.b))-mean(test.data.Yminus1$Log.DEPTH)), re.form=~0,type="response")
 
 #B high Recruit - PREDICT
-growth.YYYY$MW.Predict[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Recruit"] <- predict(model.object.Y, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHpredict.Rec[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == 2019]) - mean(test.data.Y$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.b))-mean(test.data.Y$Log.DEPTH)), re.form=~0,type="response")
+growth.YYYY$MW.Predict[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Recruit"] <- predict(model.object.Y, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHpredict.Rec[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == year-1]) - mean(test.data.Y$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.b))-mean(test.data.Y$Log.DEPTH)), re.form=~0,type="response")
 
 
 #...
@@ -204,19 +205,19 @@ sdm <- "med"
 
 #B medium commercial - ACTUAL 
 #Year t-1 model to predict weight using using Year t-1 commercial size
-growth.YYYY$MW.Actual[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Commercial"] <- predict(model.object.Yminus1, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHactual.Com[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == 2019]) - mean(test.data.Yminus1$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.b))-mean(test.data.Yminus1$Log.DEPTH)), re.form=~0, type="response")
+growth.YYYY$MW.Actual[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Commercial"] <- predict(model.object.Yminus1, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHactual.Com[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == year-1]) - mean(test.data.Yminus1$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.b))-mean(test.data.Yminus1$Log.DEPTH)), re.form=~0, type="response")
 
 #B medium commercial - PREDICT 
 #Year t model to predict weight using Year t-1 SH grown up 1 year (i.e. grown to year t) (SHpredict.com)
-growth.YYYY$MW.Predict[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Commercial"] <- predict(model.object.Y, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHpredict.Com[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == 2019]) - mean(test.data.Y$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.b))-mean(test.data.Y$Log.DEPTH)), re.form=~0, type="response")
+growth.YYYY$MW.Predict[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Commercial"] <- predict(model.object.Y, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHpredict.Com[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == year-1]) - mean(test.data.Y$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.b))-mean(test.data.Y$Log.DEPTH)), re.form=~0, type="response")
 
 
 #B medium Recruit - ACTUAL
 #Year t-1 model to predict weight using using Year t-1 recruit size
-growth.YYYY$MW.Actual[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Recruit"] <- predict(model.object.Yminus1, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHactual.Rec[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == 2019]) - mean(test.data.Yminus1$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.b))-mean(test.data.Yminus1$Log.DEPTH)), re.form=~0,type="response")
+growth.YYYY$MW.Actual[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Recruit"] <- predict(model.object.Yminus1, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHactual.Rec[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == year-1]) - mean(test.data.Yminus1$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.b))-mean(test.data.Yminus1$Log.DEPTH)), re.form=~0,type="response")
 
 #B medium Recruit - PREDICT
-growth.YYYY$MW.Predict[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Recruit"] <- predict(model.object.Y, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHpredict.Rec[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == 2019]) - mean(test.data.Y$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.b))-mean(test.data.Y$Log.DEPTH)), re.form=~0,type="response")
+growth.YYYY$MW.Predict[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Recruit"] <- predict(model.object.Y, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHpredict.Rec[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == year-1]) - mean(test.data.Y$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.b))-mean(test.data.Y$Log.DEPTH)), re.form=~0,type="response")
 
 
 #...
@@ -226,19 +227,19 @@ sdm <- "low"
 
 #B low commercial - ACTUAL 
 #Year t-1 model to predict weight using using Year t-1 commercial size
-growth.YYYY$MW.Actual[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Commercial"] <- predict(model.object.Yminus1, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHactual.Com[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == 2019]) - mean(test.data.Yminus1$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.b))-mean(test.data.Yminus1$Log.DEPTH)), re.form=~0, type="response")
+growth.YYYY$MW.Actual[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Commercial"] <- predict(model.object.Yminus1, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHactual.Com[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == year-1]) - mean(test.data.Yminus1$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.b))-mean(test.data.Yminus1$Log.DEPTH)), re.form=~0, type="response")
 
 #B low commercial - PREDICT 
 #Year t model to predict weight using Year t-1 SH grown up 1 year (i.e. grown to year t) (SHpredict.com)
-growth.YYYY$MW.Predict[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Commercial"] <- predict(model.object.Y, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHpredict.Com[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == 2019]) - mean(test.data.Y$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.b))-mean(test.data.Y$Log.DEPTH)), re.form=~0, type="response")
+growth.YYYY$MW.Predict[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Commercial"] <- predict(model.object.Y, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHpredict.Com[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == year-1]) - mean(test.data.Y$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.b))-mean(test.data.Y$Log.DEPTH)), re.form=~0, type="response")
 
 
 #B low Recruit - ACTUAL
 #Year t-1 model to predict weight using using Year t-1 recruit size
-growth.YYYY$MW.Actual[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Recruit"] <- predict(model.object.Yminus1, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHactual.Rec[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == 2019]) - mean(test.data.Yminus1$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.b))-mean(test.data.Yminus1$Log.DEPTH)), re.form=~0,type="response")
+growth.YYYY$MW.Actual[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Recruit"] <- predict(model.object.Yminus1, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHactual.Rec[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == year-1]) - mean(test.data.Yminus1$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.b))-mean(test.data.Yminus1$Log.DEPTH)), re.form=~0,type="response")
 
 #B low Recruit - PREDICT
-growth.YYYY$MW.Predict[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Recruit"] <- predict(model.object.Y, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHpredict.Rec[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == 2019]) - mean(test.data.Y$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.b))-mean(test.data.Y$Log.DEPTH)), re.form=~0,type="response")
+growth.YYYY$MW.Predict[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Recruit"] <- predict(model.object.Y, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHpredict.Rec[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == year-1]) - mean(test.data.Y$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.b))-mean(test.data.Y$Log.DEPTH)), re.form=~0,type="response")
 
 
 
@@ -255,19 +256,19 @@ sdm <- "high"
 
 #C high commercial - ACTUAL 
 #Year t-1 model to predict weight using using Year t-1 commercial size
-growth.YYYY$MW.Actual[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Commercial"] <- predict(model.object.Yminus1, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHactual.Com[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == 2019]) - mean(test.data.Yminus1$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.c))-mean(test.data.Yminus1$Log.DEPTH)), re.form=~0, type="response")
+growth.YYYY$MW.Actual[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Commercial"] <- predict(model.object.Yminus1, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHactual.Com[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == year-1]) - mean(test.data.Yminus1$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.c))-mean(test.data.Yminus1$Log.DEPTH)), re.form=~0, type="response")
 
 #C high commercial - PREDICT 
 #Year t model to predict weight using Year t-1 SH grown up 1 year (i.e. grown to year t) (SHpredict.com)
-growth.YYYY$MW.Predict[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Commercial"] <- predict(model.object.Y, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHpredict.Com[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == 2019]) - mean(test.data.Y$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.c))-mean(test.data.Y$Log.DEPTH)), re.form=~0, type="response")
+growth.YYYY$MW.Predict[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Commercial"] <- predict(model.object.Y, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHpredict.Com[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == year-1]) - mean(test.data.Y$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.c))-mean(test.data.Y$Log.DEPTH)), re.form=~0, type="response")
 
 
 #C high Recruit - ACTUAL
 #Year t-1 model to predict weight using using Year t-1 recruit size
-growth.YYYY$MW.Actual[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Recruit"] <- predict(model.object.Yminus1, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHactual.Rec[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == 2019]) - mean(test.data.Yminus1$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.c))-mean(test.data.Yminus1$Log.DEPTH)), re.form=~0,type="response")
+growth.YYYY$MW.Actual[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Recruit"] <- predict(model.object.Yminus1, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHactual.Rec[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == year-1]) - mean(test.data.Yminus1$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.c))-mean(test.data.Yminus1$Log.DEPTH)), re.form=~0,type="response")
 
 #C high Recruit - PREDICT
-growth.YYYY$MW.Predict[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Recruit"] <- predict(model.object.Y, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHpredict.Rec[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == 2019]) - mean(test.data.Y$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.c))-mean(test.data.Y$Log.DEPTH)), re.form=~0,type="response")
+growth.YYYY$MW.Predict[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Recruit"] <- predict(model.object.Y, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHpredict.Rec[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == year-1]) - mean(test.data.Y$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.c))-mean(test.data.Y$Log.DEPTH)), re.form=~0,type="response")
 
 
 #...
@@ -277,19 +278,19 @@ sdm <- "med"
 
 #C medium commercial - ACTUAL 
 #Year t-1 model to predict weight using using Year t-1 commercial size
-growth.YYYY$MW.Actual[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Commercial"] <- predict(model.object.Yminus1, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHactual.Com[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == 2019]) - mean(test.data.Yminus1$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.c))-mean(test.data.Yminus1$Log.DEPTH)), re.form=~0, type="response")
+growth.YYYY$MW.Actual[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Commercial"] <- predict(model.object.Yminus1, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHactual.Com[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == year-1]) - mean(test.data.Yminus1$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.c))-mean(test.data.Yminus1$Log.DEPTH)), re.form=~0, type="response")
 
 #C medium commercial - PREDICT 
 #Year t model to predict weight using Year t-1 SH grown up 1 year (i.e. grown to year t) (SHpredict.com)
-growth.YYYY$MW.Predict[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Commercial"] <- predict(model.object.Y, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHpredict.Com[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == 2019]) - mean(test.data.Y$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.c))-mean(test.data.Y$Log.DEPTH)), re.form=~0, type="response")
+growth.YYYY$MW.Predict[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Commercial"] <- predict(model.object.Y, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHpredict.Com[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == year-1]) - mean(test.data.Y$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.c))-mean(test.data.Y$Log.DEPTH)), re.form=~0, type="response")
 
 
 #C medium Recruit - ACTUAL
 #Year t-1 model to predict weight using using Year t-1 recruit size
-growth.YYYY$MW.Actual[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Recruit"] <- predict(model.object.Yminus1, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHactual.Rec[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == 2019]) - mean(test.data.Yminus1$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.c))-mean(test.data.Yminus1$Log.DEPTH)), re.form=~0,type="response")
+growth.YYYY$MW.Actual[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Recruit"] <- predict(model.object.Yminus1, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHactual.Rec[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == year-1]) - mean(test.data.Yminus1$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.c))-mean(test.data.Yminus1$Log.DEPTH)), re.form=~0,type="response")
 
 #C medium Recruit - PREDICT
-growth.YYYY$MW.Predict[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Recruit"] <- predict(model.object.Y, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHpredict.Rec[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == 2019]) - mean(test.data.Y$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.c))-mean(test.data.Y$Log.DEPTH)), re.form=~0,type="response")
+growth.YYYY$MW.Predict[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Recruit"] <- predict(model.object.Y, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHpredict.Rec[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == year-1]) - mean(test.data.Y$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.c))-mean(test.data.Y$Log.DEPTH)), re.form=~0,type="response")
 
 
 #...
@@ -299,19 +300,19 @@ sdm <- "low"
 
 #C low commercial - ACTUAL 
 #Year t-1 model to predict weight using using Year t-1 commercial size
-growth.YYYY$MW.Actual[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Commercial"] <- predict(model.object.Yminus1, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHactual.Com[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == 2019]) - mean(test.data.Yminus1$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.c))-mean(test.data.Yminus1$Log.DEPTH)), re.form=~0, type="response")
+growth.YYYY$MW.Actual[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Commercial"] <- predict(model.object.Yminus1, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHactual.Com[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == year-1]) - mean(test.data.Yminus1$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.c))-mean(test.data.Yminus1$Log.DEPTH)), re.form=~0, type="response")
 
 #C low commercial - PREDICT 
 #Year t model to predict weight using Year t-1 SH grown up 1 year (i.e. grown to year t) (SHpredict.com)
-growth.YYYY$MW.Predict[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Commercial"] <- predict(model.object.Y, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHpredict.Com[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == 2019]) - mean(test.data.Y$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.c))-mean(test.data.Y$Log.DEPTH)), re.form=~0, type="response")
+growth.YYYY$MW.Predict[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Commercial"] <- predict(model.object.Y, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHpredict.Com[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == year-1]) - mean(test.data.Y$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.c))-mean(test.data.Y$Log.DEPTH)), re.form=~0, type="response")
 
 
 #C low Recruit - ACTUAL
 #Year t-1 model to predict weight using using Year t-1 recruit size
-growth.YYYY$MW.Actual[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Recruit"] <- predict(model.object.Yminus1, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHactual.Rec[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == 2019]) - mean(test.data.Yminus1$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.c))-mean(test.data.Yminus1$Log.DEPTH)), re.form=~0,type="response")
+growth.YYYY$MW.Actual[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Recruit"] <- predict(model.object.Yminus1, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHactual.Rec[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == year-1]) - mean(test.data.Yminus1$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.c))-mean(test.data.Yminus1$Log.DEPTH)), re.form=~0,type="response")
 
 #C low Recruit - PREDICT
-growth.YYYY$MW.Predict[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Recruit"] <- predict(model.object.Y, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHpredict.Rec[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == 2019]) - mean(test.data.Y$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.c))-mean(test.data.Y$Log.DEPTH)), re.form=~0,type="response")
+growth.YYYY$MW.Predict[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Recruit"] <- predict(model.object.Y, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHpredict.Rec[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == year-1]) - mean(test.data.Y$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.c))-mean(test.data.Y$Log.DEPTH)), re.form=~0,type="response")
 
 
 
@@ -328,19 +329,19 @@ sdm <- "high"
 
 #D high commercial - ACTUAL 
 #Year t-1 model to predict weight using using Year t-1 commercial size
-growth.YYYY$MW.Actual[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Commercial"] <- predict(model.object.Yminus1, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHactual.Com[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == 2019]) - mean(test.data.Yminus1$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.d))-mean(test.data.Yminus1$Log.DEPTH)), re.form=~0, type="response")
+growth.YYYY$MW.Actual[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Commercial"] <- predict(model.object.Yminus1, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHactual.Com[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == year-1]) - mean(test.data.Yminus1$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.d))-mean(test.data.Yminus1$Log.DEPTH)), re.form=~0, type="response")
 
 #D high commercial - PREDICT 
 #Year t model to predict weight using Year t-1 SH grown up 1 year (i.e. grown to year t) (SHpredict.com)
-growth.YYYY$MW.Predict[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Commercial"] <- predict(model.object.Y, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHpredict.Com[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == 2019]) - mean(test.data.Y$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.d))-mean(test.data.Y$Log.DEPTH)), re.form=~0, type="response")
+growth.YYYY$MW.Predict[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Commercial"] <- predict(model.object.Y, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHpredict.Com[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == year-1]) - mean(test.data.Y$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.d))-mean(test.data.Y$Log.DEPTH)), re.form=~0, type="response")
 
 
 #D high Recruit - ACTUAL
 #Year t-1 model to predict weight using using Year t-1 recruit size
-growth.YYYY$MW.Actual[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Recruit"] <- predict(model.object.Yminus1, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHactual.Rec[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == 2019]) - mean(test.data.Yminus1$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.d))-mean(test.data.Yminus1$Log.DEPTH)), re.form=~0,type="response")
+growth.YYYY$MW.Actual[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Recruit"] <- predict(model.object.Yminus1, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHactual.Rec[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == year-1]) - mean(test.data.Yminus1$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.d))-mean(test.data.Yminus1$Log.DEPTH)), re.form=~0,type="response")
 
 #D high Recruit - PREDICT
-growth.YYYY$MW.Predict[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Recruit"] <- predict(model.object.Y, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHpredict.Rec[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == 2019]) - mean(test.data.Y$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.d))-mean(test.data.Y$Log.DEPTH)), re.form=~0,type="response")
+growth.YYYY$MW.Predict[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Recruit"] <- predict(model.object.Y, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHpredict.Rec[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == year-1]) - mean(test.data.Y$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.d))-mean(test.data.Y$Log.DEPTH)), re.form=~0,type="response")
 
 
 #...
@@ -350,19 +351,19 @@ sdm <- "med"
 
 #D medium commercial - ACTUAL 
 #Year t-1 model to predict weight using using Year t-1 commercial size
-growth.YYYY$MW.Actual[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Commercial"] <- predict(model.object.Yminus1, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHactual.Com[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == 2019]) - mean(test.data.Yminus1$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.d))-mean(test.data.Yminus1$Log.DEPTH)), re.form=~0, type="response")
+growth.YYYY$MW.Actual[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Commercial"] <- predict(model.object.Yminus1, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHactual.Com[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == year-1]) - mean(test.data.Yminus1$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.d))-mean(test.data.Yminus1$Log.DEPTH)), re.form=~0, type="response")
 
 #D medium commercial - PREDICT 
 #Year t model to predict weight using Year t-1 SH grown up 1 year (i.e. grown to year t) (SHpredict.com)
-growth.YYYY$MW.Predict[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Commercial"] <- predict(model.object.Y, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHpredict.Com[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == 2019]) - mean(test.data.Y$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.d))-mean(test.data.Y$Log.DEPTH)), re.form=~0, type="response")
+growth.YYYY$MW.Predict[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Commercial"] <- predict(model.object.Y, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHpredict.Com[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == year-1]) - mean(test.data.Y$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.d))-mean(test.data.Y$Log.DEPTH)), re.form=~0, type="response")
 
 
 #D medium Recruit - ACTUAL
 #Year t-1 model to predict weight using using Year t-1 recruit size
-growth.YYYY$MW.Actual[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Recruit"] <- predict(model.object.Yminus1, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHactual.Rec[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == 2019]) - mean(test.data.Yminus1$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.d))-mean(test.data.Yminus1$Log.DEPTH)), re.form=~0,type="response")
+growth.YYYY$MW.Actual[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Recruit"] <- predict(model.object.Yminus1, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHactual.Rec[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == year-1]) - mean(test.data.Yminus1$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.d))-mean(test.data.Yminus1$Log.DEPTH)), re.form=~0,type="response")
 
 #D medium Recruit - PREDICT
-growth.YYYY$MW.Predict[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Recruit"] <- predict(model.object.Y, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHpredict.Rec[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == 2019]) - mean(test.data.Y$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.d))-mean(test.data.Y$Log.DEPTH)), re.form=~0,type="response")
+growth.YYYY$MW.Predict[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Recruit"] <- predict(model.object.Y, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHpredict.Rec[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == year-1]) - mean(test.data.Y$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.d))-mean(test.data.Y$Log.DEPTH)), re.form=~0,type="response")
 
 
 #...
@@ -372,19 +373,19 @@ sdm <- "low"
 
 #D low commercial - ACTUAL 
 #Year t-1 model to predict weight using using Year t-1 commercial size
-growth.YYYY$MW.Actual[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Commercial"] <- predict(model.object.Yminus1, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHactual.Com[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == 2019]) - mean(test.data.Yminus1$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.d))-mean(test.data.Yminus1$Log.DEPTH)), re.form=~0, type="response")
+growth.YYYY$MW.Actual[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Commercial"] <- predict(model.object.Yminus1, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHactual.Com[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == year-1]) - mean(test.data.Yminus1$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.d))-mean(test.data.Yminus1$Log.DEPTH)), re.form=~0, type="response")
 
 #D low commercial - PREDICT 
 #Year t model to predict weight using Year t-1 SH grown up 1 year (i.e. grown to year t) (SHpredict.com)
-growth.YYYY$MW.Predict[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Commercial"] <- predict(model.object.Y, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHpredict.Com[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == 2019]) - mean(test.data.Y$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.d))-mean(test.data.Y$Log.DEPTH)), re.form=~0, type="response")
+growth.YYYY$MW.Predict[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Commercial"] <- predict(model.object.Y, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHpredict.Com[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == year-1]) - mean(test.data.Y$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.d))-mean(test.data.Y$Log.DEPTH)), re.form=~0, type="response")
 
 
 #D low Recruit - ACTUAL
 #Year t-1 model to predict weight using using Year t-1 recruit size
-growth.YYYY$MW.Actual[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Recruit"] <- predict(model.object.Yminus1, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHactual.Rec[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == 2019]) - mean(test.data.Yminus1$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.d))-mean(test.data.Yminus1$Log.DEPTH)), re.form=~0,type="response")
+growth.YYYY$MW.Actual[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Recruit"] <- predict(model.object.Yminus1, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHactual.Rec[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == year-1]) - mean(test.data.Yminus1$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.d))-mean(test.data.Yminus1$Log.DEPTH)), re.form=~0,type="response")
 
 #D low Recruit - PREDICT
-growth.YYYY$MW.Predict[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Recruit"] <- predict(model.object.Y, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHpredict.Rec[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == 2019]) - mean(test.data.Y$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.d))-mean(test.data.Y$Log.DEPTH)), re.form=~0,type="response")
+growth.YYYY$MW.Predict[growth.YYYY$strata==strataID & growth.YYYY$sdm== sdm & growth.YYYY$Age == "Recruit"] <- predict(model.object.Y, newdata=data.frame(Log.HEIGHT.CTR=log(SH.object$SHpredict.Rec[SH.object$STRATA==strataID & SH.object$SDM==sdm & SH.object$years == year-1]) - mean(test.data.Y$Log.HEIGHT), Log.DEPTH.CTR=log(abs(depth.d))-mean(test.data.Y$Log.DEPTH)), re.form=~0,type="response")
 
 
 
@@ -404,7 +405,7 @@ head(sfa29.growthrate)
 sfa29.growthrate <- sfa29.growthrate %>% dplyr::select( Year, strata,  sdm, MW.Actual, MW.Predict, rate, Age, GrowthMethod)
 
 #append to all other years and write out 
-xx <- rbind(sfa29.growthrate, growth.YYYY) 
+xx <- rbind(sfa29.growthrate, growth.YYYY) #Note, this gets arranged by strata, sdm and year when read in, so don't need to sort it before saving
 
 write.csv(xx, paste0(path.directory, assessmentyear, "/Assessment/Data/Growth/growth.actual.2001to",year,".csv"), row.names = FALSE) 
 

@@ -31,9 +31,6 @@ for(fun in funcs)
 # Define: 
 uid <- un.sameotoj
 pwd <- pw.sameotoj
-uid <- keyring::key_list("Oracle")[1,2]
-pwd <- keyring::key_get("Oracle", uid)
-
 surveyyear <- 2022  #This is the last survey year 
 assessmentyear <- 2022 #year in which you are conducting the survey 
 area <- "3"  #SPA assessing recall SPA 1A, 1B, and 4 are grouped; options: "1A1B4and5", "3", "6"
@@ -111,8 +108,8 @@ crossref.spa3$CruiseID.current <- paste0(crossref.spa3$CRUISE,".",crossref.spa3$
 
 #Check for potential errors that will break the SPR estimates
 #merge STRATA_ID from BIlivefreq to the crosssref files based on parent/reference tow and find those that don't match for their strata_ID 
-crossref.spa3 <- left_join(crossref.spa3, BIlivefreq.dat %>% dplyr::select(CruiseID, STRATA_ID, TOW_TYPE_ID), by.x=CruiseID)
-crossref.spa3 <- left_join(crossref.spa3, BIlivefreq.dat %>% dplyr::select(CruiseID, STRATA_ID.current = STRATA_ID, TOW_TYPE_ID.current = TOW_TYPE_ID), by=c("CruiseID.current" = "CruiseID"))
+crossref.spa3 <- left_join(crossref.spa3, BIlivefreq.dat %>% select(CruiseID, STRATA_ID, TOW_TYPE_ID), by.x=CruiseID)
+crossref.spa3 <- left_join(crossref.spa3, BIlivefreq.dat %>% select(CruiseID, STRATA_ID.current = STRATA_ID, TOW_TYPE_ID.current = TOW_TYPE_ID), by=c("CruiseID.current" = "CruiseID"))
 crossref.spa3$strata_diff <- crossref.spa3$STRATA_ID -  crossref.spa3$STRATA_ID.current
 #Strata IDs that need fixing 
 crossref.spa3 %>% filter(strata_diff!=0)
@@ -248,7 +245,7 @@ smbrec1<-spr(livefreq2006$TOW_NO[livefreq2006$STRATA_ID==22],apply(livefreq2006[
 livefreq2007$TOW_NO[livefreq2007$STRATA_ID==22],apply(livefreq2007[livefreq2007$STRATA_ID==22,24:26],1,sum),
 crossref.spa3.2007[crossref.spa3.2007$STRATA_ID==22,c("TOW_NO_REF","TOW_NO")]) # 7 repeats in SMB ; TOW_NO_REF TOW_NO
 
-K<-summary(smbrec1)
+K<-summary (smbrec1)
 SMB.rec.spr.est[SMB.rec.spr.est$Year==2007,c(2:3)] <- c(K$Yspr, K$var.Yspr.corrected)
 
 #2007/2008 spr
@@ -373,7 +370,7 @@ smbrec15 <- spr(livefreq2021$TOW_NO[livefreq2021$STRATA_ID==22],apply(livefreq20
               crossref.spa3.2022[crossref.spa3.2022$STRATA_ID==22,c("TOW_NO_REF","TOW_NO")]) # 6 repeats in SMB
 
 K<-summary(smbrec15) 
-#plot (smbrec15) 
+#plot (smbrec13) 
 SMB.rec.spr.est[SMB.rec.spr.est$Year==2022,c(2:3)] <- c(K$Yspr, K$var.Yspr.corrected)
 
 
@@ -2273,8 +2270,8 @@ write.csv(SPA3.Weight, paste0(path.directory, assessmentyear, "/Assessment/Data/
 # model only needs 1996+
 
 # Population Numbers of Commercial size (N)
-spa3.pop.smb <- SPA3.SMB.Comm %>% filter(Year >= 1996) %>% dplyr::select(Year, Pop)
-spa3.pop.inner <- SPA3.Inner.Comm %>% filter(Year >= 1996) %>% dplyr::select(Year, Pop)
+spa3.pop.smb <- SPA3.SMB.Comm %>% filter(Year >= 1996) %>% select(Year, Pop)
+spa3.pop.inner <- SPA3.Inner.Comm %>% filter(Year >= 1996) %>% select(Year, Pop)
 #Ensure year ranges are the same: 
 spa3.pop.smb$Year == spa3.pop.inner$Year
 #Create object for N (population size) for SPA 3 Model area: 
@@ -2282,8 +2279,8 @@ N <- data.frame(Year = spa3.pop.smb$Year, N = spa3.pop.smb$Pop + spa3.pop.inner$
 N 
 
 # Commercial Biomass Index (I)
-spa3.bmass.smb <- SPA3.SMB.CommWt %>% filter(Year >= 1996) %>% dplyr::select(Year, Bmass)
-spa3.bmass.inner <- SPA3.Inner.CommWt %>% filter(Year >= 1996) %>% dplyr::select(Year, Bmass)
+spa3.bmass.smb <- SPA3.SMB.CommWt %>% filter(Year >= 1996) %>% select(Year, Bmass)
+spa3.bmass.inner <- SPA3.Inner.CommWt %>% filter(Year >= 1996) %>% select(Year, Bmass)
 #Ensure year ranges are the same: 
 spa3.bmass.smb$Year == spa3.bmass.inner$Year
 #Create object for I (Commercial biomass) for SPA 3 Model area:
@@ -2291,8 +2288,8 @@ I  <- data.frame(Year = spa3.bmass.smb$Year, Bmass = (spa3.bmass.smb$Bmass + spa
 I
 
 # Recruit Biomass Index (IR)
-spa3.bmass.rec.smb <- SPA3.SMB.RecWt %>% filter(Year >= 1996) %>% dplyr::select(Year, Bmass)
-spa3.bmass.rec.inner <- SPA3.Inner.RecWt %>% filter(Year >= 1996) %>% dplyr::select(Year, Bmass)
+spa3.bmass.rec.smb <- SPA3.SMB.RecWt %>% filter(Year >= 1996) %>% select(Year, Bmass)
+spa3.bmass.rec.inner <- SPA3.Inner.RecWt %>% filter(Year >= 1996) %>% select(Year, Bmass)
 #Ensure year ranges are the same: 
 spa3.bmass.rec.smb$Year == spa3.bmass.rec.inner$Year
 #Create object for I (Commercial biomass) for SPA 3 Model area:
@@ -2354,8 +2351,8 @@ round(se.SPA3$I.cv,4)
 #0.0914 0.1014 0.0974 0.1034 0.0927 0.0872 0.0749 0.0691 0.0678 0.0901 0.0906 0.0741 0.0932 0.0932 0.0899
 
 #combine cv for full year range 
-se.SPA3.1996to2006.cv <- se.SPA3.1996to2006  %>% dplyr::select(Year,  I.cv)
-se.SPA3.cv <- se.SPA3 %>% dplyr::select(Year, I.cv)
+se.SPA3.1996to2006.cv <- se.SPA3.1996to2006  %>% select(Year,  I.cv)
+se.SPA3.cv <- se.SPA3 %>% select(Year, I.cv)
 
 #Create object for I.cv (Commercial biomass cv) for SPA 3 Model area:
 I.cv   <- rbind(se.SPA3.1996to2006.cv, se.SPA3.cv)
@@ -2448,8 +2445,8 @@ se.SPA3.rec
 
 
 #combine cv for full year range 
-se.SPA3.rec.1996to2006.cv <- se.SPA3.rec.1996to2006  %>% dplyr::select(Year,  R.cv)
-se.SPA3.rec.cv <- se.SPA3.rec %>% dplyr::select(Year, R.cv)
+se.SPA3.rec.1996to2006.cv <- se.SPA3.rec.1996to2006  %>% select(Year,  R.cv)
+se.SPA3.rec.cv <- se.SPA3.rec %>% select(Year, R.cv)
 
 #Create object for I.cv (Commercial biomass cv) for SPA 3 Model area:
 IR.cv   <- rbind(se.SPA3.rec.1996to2006.cv, se.SPA3.rec.cv)
@@ -2461,7 +2458,7 @@ IR.cv
 #check all years match up 
 cbind(N, I, IR, I.cv, IR.cv)
 #Bind into object for export 
-SPA3.population.model.input <- cbind(N, I %>% dplyr::select(I = Bmass), IR %>% dplyr::select(IR = Bmass), I.cv %>% dplyr::select(I.cv), IR.cv %>% dplyr::select(IR.cv = R.cv))
+SPA3.population.model.input <- cbind(N, I %>% select(I = Bmass), IR %>% select(IR = Bmass), I.cv %>% select(I.cv), IR.cv %>% select(IR.cv = R.cv))
 
 #export 
 write.csv(SPA3.population.model.input, paste0(path.directory, assessmentyear, "/Assessment/Data/SurveyIndices/SPA",area,"/SPA3.population.model.input.",surveyyear,".csv"))

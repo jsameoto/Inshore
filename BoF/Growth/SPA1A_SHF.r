@@ -31,15 +31,15 @@ for(fun in funcs)
 # ///.... DEFINE THESE ENTRIES ....////
 
 # Define: 
-#uid <- un.sameotoj
-#pwd <- pw.sameotoj
-uid <- keyring::key_list("Oracle")[1,2]
-pwd <- keyring::key_get("Oracle", uid)
+uid <- un.sameotoj
+pwd <- pw.sameotoj
+#uid <- keyring::key_list("Oracle")[1,2]
+#pwd <- keyring::key_get("Oracle", "WILSONBR")
 
-surveyyear <- 2021  #This is the last survey year 
-assessmentyear <- 2021 #year in which you are conducting the survey 
+surveyyear <- 2022  #This is the last survey year 
+assessmentyear <- 2022 #year in which you are conducting the survey 
 area <- "1A1B4and5"  #SPA assessing recall SPA 1A, 1B, and 4 are grouped; options: "1A1B4and5", "3", "6" 
-path.directory <- "Y:/INSHORE SCALLOP/BoF/"
+path.directory <- "Y:/Inshore/BoF/"
 
 #////... END OF DEFINE SECTION ...////
 
@@ -76,7 +76,10 @@ livefreq %>% group_by(YEAR) %>% filter(STRATA_ID %in% c(39)) %>% summarize(n())
 livefreq <- subset(livefreq, YEAR >= 1997)
 
 #1. 2to8
-SPA1A.2to8.SHFmeans <- data.frame(Year=years,Mean.nums=rep(NA,length(years)))
+
+SPA1A.2to8.SHFmeans <- data.frame(bin.mid.pt = seq(2.5,200,by=5), YEAR = NA) 
+
+#SPA1A.2to8.SHFmeans <- data.frame(Year=years,Mean.nums=rep(NA,length(years))) #Changed Sept 2022 
 for(i in 1:length(years)){
   temp.data <- livefreq[livefreq$YEAR== years[i],] #uses only the values in years. i.e. skips 2020
 
@@ -89,7 +92,9 @@ round(SPA1A.2to8.SHFmeans,2)
 
 
 #2. 8to16
-SPA1A.8to16.SHFmeans <- data.frame(Year=years, Mean.nums=rep(NA,length(years)))
+SPA1A.8to16.SHFmeans <- data.frame(bin.mid.pt = seq(2.5,200,by=5), YEAR = NA) 
+
+#SPA1A.8to16.SHFmeans <- data.frame(Year=years, Mean.nums=rep(NA,length(years))) #Changed Sept 2022 
 for(i in 1:length(years)){
 temp.data <- livefreq[livefreq$YEAR== years[i],]
 for(j in 1:40){
@@ -321,7 +326,6 @@ SPA1A.SHpredict.Rec <- data.frame((t(rbind(years.predict, SPA1A.SHpredict.Rec)))
 
 sh.predict <- data.frame(SPA1A.SHactual.Com %>% dplyr::select(years), SPA1A.SHpredict.Com, SPA1A.SHpredict.Rec %>% dplyr::select(SPA1A.SHpredict.Rec)) #years = current year, years.predict = prediction year. (i.e. at year = 1999 acutal sh = X, year.predict = 2000, predicted sh = Y)
 
-
 # Export the objects to use in predicting mean weight/growth
 dump (c('sh.actual','sh.predict'), paste0(path.directory,assessmentyear, "/Assessment/Data/Growth/SPA",area,"/SPA1A",surveyyear,".SHobj.R"))
 
@@ -393,7 +397,7 @@ spa1a.56$YEAR <- as.numeric(substr(spa1a.56$CRUISE,3,6))
 spa1a.56.SHFmeans <- sapply(split(spa1a.56[c(11:50)], spa1a.56$YEAR), function(x){apply(x,2,mean)})
 round(spa1a.56.SHFmeans,2)
 
-# PLOT OF SHF for strata 56
+# PLOT OF SHF for strata 56  
 
 spa1a.56.data.for.plot <- data.frame(bin.label = row.names(spa1a.56.SHFmeans), spa1a.56.SHFmeans)
 spa1a.56.data.for.plot$X2020 <- NA # add 2020 column.
@@ -401,11 +405,11 @@ head(spa1a.56.data.for.plot)
 spa1a.56.data.for.plot$bin.mid.pt <- seq(2.5,200,by=5)
 
 spa1a.56.data.for.plot <- pivot_longer(spa1a.56.data.for.plot, 
-                                       cols = starts_with("X"),
-                                       names_to = "year",
-                                       names_prefix = "X",
-                                       values_to = "SH",
-                                       values_drop_na = FALSE)
+                                         cols = starts_with("X"),
+                                         names_to = "year",
+                                         names_prefix = "X",
+                                         values_to = "SH",
+                                         values_drop_na = FALSE)
 spa1a.56.data.for.plot$year <- as.numeric(spa1a.56.data.for.plot$year)
 
 spa1a.56.data.for.plot <- spa1a.56.data.for.plot %>% filter(year > surveyyear-7)
