@@ -20,10 +20,10 @@ pwd <- pw.sameotoj
 uid <- keyring::key_list("Oracle")[1,2]
 pwd <- keyring::key_get("Oracle", uid)
 
-surveyyear <- 2022  #This is the last survey year for which you want to include  - not should match year of cruise below 
-cruise <- "BI2022"  #note should match year for surveyyear set above 
+surveyyear <- 2023  #This is the last survey year for which you want to include  - note: should match year of cruise below 
+cruise <- "BI2023"  #note should match year for surveyyear set above 
 
-assessmentyear <- 2022 #year in which you are conducting the survey 
+assessmentyear <- 2023 #year in which you are conducting the survey 
 area <- "3"  #SPA assessing recall SPA 1A, 1B, and 4 are grouped; options: "1A1B4and5", "3", "6" 
 path.directory <- "Y:/Inshore/BoF/"
 
@@ -174,7 +174,7 @@ rand.effect.year.tow <- test$TOW.NO
 rand.effect.year.tow$year.tow.no <- rownames(rand.effect.year.tow)
 #need field to match on to data - so can look at tow attributes e.g. depth 
 BIdetail.vonB$year.tow.no <- paste0(BIdetail.vonB$YEAR,"/",BIdetail.vonB$TOW.NO)
-tow.attributes <- BIdetail.vonB %>% select(year.tow.no, DEPTH, BOTTOM_TEMP, YEAR)
+tow.attributes <- BIdetail.vonB %>% dplyr::select(year.tow.no, DEPTH, BOTTOM_TEMP, YEAR)
 rand.effect.year.tow.attributes <- merge(rand.effect.year.tow,tow.attributes,by=c("year.tow.no") )
 #Above is just example, obviously depth used here is not good since it's not tide corrected, but this is just an example, and plots below, just example of what could try and do with vonB random effect so see if potential explanatory environmental variables in a future study; note depth/temperature, and fishing pressure likely all confounded 
 
@@ -218,11 +218,11 @@ predict.age <- expand.grid(AGE =0:20 , Year.fac = 1996:2015,TOW.NO = 1:1000)
 p.curve <- predict(VONBIYYYY.nlme, predict.age, level=0:2)
 head(p.curve)
 tail(p.curve)
-p.curve <- cbind(p.curve, (predict.age %>% select(AGE)))  #Note this merge assumes it's all in the right order
+p.curve <- cbind(p.curve, (predict.age %>% dplyr::select(AGE)))  #Note this merge assumes it's all in the right order
 
 #only need one year of predict.fixed for plot since all fixed effects predictions are the same 
 p.curve.fixed <- p.curve %>% filter(Year.fac=="1996")
-p.curve.fixed.Year.fac <- unique(p.curve %>% select(Year.fac, predict.Year.fac, AGE))
+p.curve.fixed.Year.fac <- unique(p.curve %>% dplyr::select(Year.fac, predict.Year.fac, AGE))
 
 #CIs: 
 upper <- VONBIYYYY.nlme.CI$fixed[7]* (1 - exp(-exp(VONBIYYYY.nlme.CI$fixed[8]) * (predict.age$AGE  - VONBIYYYY.nlme.CI$fixed[3]))) 
