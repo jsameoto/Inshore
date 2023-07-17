@@ -34,10 +34,10 @@ uid <- keyring::key_list("Oracle")[1,2]
 pwd <- keyring::key_get("Oracle", uid)
 #uid <- un.sameotoj
 #pwd <- pw.sameotoj
-surveyyear <- 2022  #This is the last survey year 
-assessmentyear <- 2022 #year in which you are conducting the survey 
+surveyyear <- 2023  #This is the last survey year 
+assessmentyear <- 2023 #year in which you are conducting the survey 
 area <- "3"  #SPA assessing recall SPA 1A, 1B, and 4 are grouped; options: "1A1B4and5", "3", "6" 
-cruise <- "'BI2022'"
+cruise <- "'BI2023'"
 path.directory <- "Y:/Inshore/BoF/"
 
 #polygon to for assingning new strata to data #To bring in sf object from Github eventually - will need to identify in and out VMS data points.
@@ -586,7 +586,7 @@ out.aftermeans<-sapply(split(out.after[c(11:50)], out.after$YEAR), function(x){a
 y.lim <-c(0,50)
 data.ref<-out.beforemeans #In.beforemeans  ,  SMB.beforemeans   , out.beforemeans
 data.year<-out.aftermeans #In.aftermeans, SMB.aftermeans, out.aftermeans
-year <- 2021 #Update year t-1
+year <- 2022 #Update year t-1
 tows <- length(after) 
 
 windows()
