@@ -15,9 +15,9 @@ options(stringsAsFactors = FALSE)
 # ///.... DEFINE THESE ENTRIES ....////
 
 #DEFINE: year, area
-year <- 2022  #this is the survey year
+year <- 2023  #this is the survey year
 area <- "3"  #SPAs 1A, 1B and 4 and 5 all modelled together, therefore choice entry here is "1A1B4and5", "3", "6"
-assessmentyear <- 2022 #this is the year you are running your assessment in -- corresponds to the assessment folder year name e.g. INSHORE SCALLOP/2020/Assessment..
+assessmentyear <- 2023 #this is the year you are running your assessment in -- corresponds to the assessment folder year name e.g. INSHORE SCALLOP/2020/Assessment..
 
 
 # DEFINE: load required workspace with model objects (set for year YYYY)
@@ -68,12 +68,12 @@ data$Log.DEPTH <- log(abs(data$ADJ_DEPTH)) #take abs to keep value positive
 summary(data)
 
 
-# Depth for prediction, for SPA3 VMS IN Modelled Area -47.63	This is mean depth of area corrsponding with full area modelled for SPA 3 -- SMB plus the inside VMS area in Brier Lurcher
+# Depth for prediction, for SPA3 VMS IN Modelled Area -47.63	This is mean depth of area corresponding with full area modelled for SPA 3 -- SMB plus the inside VMS area in Brier Lurcher
 depth <- -47.63
 
 # ---- Actual Growth Rates ----
 
-# Calcuate mean weight of commercial and recruit animals:
+# Calculate mean weight of commercial and recruit animals:
 #1. In year t ("actual") using mean SH in year t and meat weight shell height relationship in year t
 #2. In year t+1 ("pred") using predicted mean SH in year t+1 (predicted from year t) and meat weight shell height relationship in year t+1
 
@@ -215,7 +215,7 @@ write.csv(spa3.growthrate, paste0(path.directory,assessmentyear,"/Assessment/Dat
 png(paste0(path.directory,assessmentyear,"/Assessment/Figures/SPA3_GrowthRate_Com_ActualPredicted.png"), type="cairo", width=20, height=12, units = "cm", res=400)
 
 x<-c(1996,year) 
-y<-c(0.8,1.5)
+y<-c(0.8,2.0)
 
 plot (x,y, type="n",xlab="",ylab="Growth Rate (mm)", cex.axis=1.3, cex.lab=1.5, main="SPA3 Commerical Growth Rate")
 lines(spa3.growthrate.com[,c(1,4)], type="b", pch=1, lty=1, col=1)
