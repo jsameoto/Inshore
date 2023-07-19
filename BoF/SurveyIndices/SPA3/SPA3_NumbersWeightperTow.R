@@ -163,7 +163,7 @@ liveweight2007$STRATA_ID[liveweight2007$TOW_NO %in% c(12,19)] <- 23
 livefreq2008$STRATA_ID[livefreq2008$TOW_NO %in% c(10) ] <- 22
 liveweight2008$STRATA_ID[liveweight2008$TOW_NO %in% c(10) ] <- 22
 
-#3. In 2009, tow 52 (repeat of tow 12 in 2008) was not assinged to 99.; BI2009.52
+#3. In 2009, tow 52 (repeat of tow 12 in 2008) was not assigned to 99.; BI2009.52
 livefreq2009$STRATA_ID[livefreq2009$TOW_NO %in% c(52) ] <- 99
 liveweight2009$STRATA_ID[liveweight2009$TOW_NO %in% c(52) ] <- 99
 
@@ -200,7 +200,7 @@ liveweight2016$STRATA_ID[liveweight2016$TOW_NO%in%c(90)] <- 99
 livefreq2017$STRATA_ID[livefreq2017$TOW_NO%in%c(28,61,75)] <-99
 liveweight2017$STRATA_ID[liveweight2017$TOW_NO%in%c(28,61,75)] <-99
 
-#12. In 2022, Tows 82 and 110 were experimental but repeated in 2023.
+#12. In 2022, Tows 82 and 110 were experimental but repeated in 2023 (Tows 70 and 82 respectively).
 crossref.spa3.2023 <- crossref.spa3.2023[!(crossref.spa3.2023$CRUISE_REF=="BI2022"&crossref.spa3.2023$TOW_NO_REF%in%c(82,110)),]
 
 #write.csv(livefreq2017 %>% select(YEAR, CruiseID, CRUISE, TOW_NO, STRATA_ID), paste0(path.directory, assessmentyear, "/Assessment/Data/SurveyIndices/SPA",area,"/SPA3.Corrected.SPR.STRATA_IDs.csv"))
@@ -2175,7 +2175,7 @@ SPA3.Outer.RecWt<- rbind(SPA3.Outer.RecWt.simple[SPA3.Outer.RecWt.simple$Year<20
 SPA3.Outer.RecWt[SPA3.Outer.RecWt$Year==2019,] <- SPA3.Outer.RecWt.simple[SPA3.Outer.RecWt.simple$Year==2019,] ##Note no recruits found in the repeated tows in 2018 in outer vms area - need to use SIMPLE estimate
 SPA3.Outer.RecWt[SPA3.Outer.RecWt$Year==2020,] <- SPA3.Outer.RecWt.simple[SPA3.Outer.RecWt.simple$Year==2020,] #Bc no estimate in 2019 from SPR - need to use simple mean; must use simple mean for interpolation for 2020 
 SPA3.Outer.RecWt[SPA3.Outer.RecWt$Year==2022,] <- SPA3.Outer.RecWt.simple[SPA3.Outer.RecWt.simple$Year==2022,] 
-SPA3.Outer.RecWt[SPA3.Outer.RecWt$Year==2023,] <- SPA3.Outer.RecWt.simple[SPA3.Outer.RecWt.simple$Year==2023,] #Simple mean used because two repeated tows were Exploratory in 2022.
+SPA3.Outer.RecWt[SPA3.Outer.RecWt$Year==2023,] <- SPA3.Outer.RecWt.simple[SPA3.Outer.RecWt.simple$Year==2023,] #Simple mean used because two repeated tows in 2023 were Exploratory in 2022.
 
 SPA3.Outer.RecWt$cv <- sqrt(SPA3.Outer.RecWt$var.y)/SPA3.Outer.RecWt$Mean.weight
 SPA3.Outer.RecWt$kg<-SPA3.Outer.RecWt$Mean.weight/1000
