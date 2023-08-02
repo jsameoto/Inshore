@@ -16,9 +16,9 @@ options(stringsAsFactors = FALSE)
 # ///.... DEFINE THESE ENTRIES ....////
 
 #DEFINE: year, area
-year <- 2022  #this is the survey year
+year <- 2023  #this is the survey year
 area <- "6"  # choice entry here is "1A1B4and5", "3", "6";  recall SPAs 1A, 1B and 4 and 5 all modelled together
-assessmentyear <- 2022 #this is the year you are running your assessment in -- corresponds to the assessment folder year name e.g. INSHORE SCALLOP/2020/Assessment..
+assessmentyear <- 2023 #this is the year you are running your assessment in -- corresponds to the assessment folder year name e.g. INSHORE SCALLOP/2020/Assessment..
 
 
 # DEFINE: load required workspace with model objects - current year 
@@ -43,7 +43,7 @@ SH.object
 
 # DEFINE: Source previous year meat weight and growth rate object for ACTUAL growth rates:
 # if your year defined above it for YYYY, then you should be bringing in the YYYY-1 growth rate object.
-spa6.growthrate <- read.csv(paste0("Y:/Inshore/BoF/2021/Assessment/Data/Growth/SPA6/spa6.growthrate.",year-1,".csv"))
+spa6.growthrate <- read.csv(paste0("Y:/Inshore/BoF/",year-1,"/Assessment/Data/Growth/SPA6/spa6.growthrate.",year-1,".csv"))
 spa6.growthrate <- spa6.growthrate[,-1]
 spa6.growthrate
 str(spa6.growthrate)
