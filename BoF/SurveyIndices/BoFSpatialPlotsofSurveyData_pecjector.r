@@ -302,7 +302,7 @@ GM.con.dat <- GM.con.dat %>% #Combine the condition data from files that are fou
   mutate(CRUISE = paste0("GM", GM.con.dat$YEAR)) #Add Cruise information
 
 #Now combine the Cruise dataframes together
-con.dat <- rbind(BF.con.dat, if(exists("BI.con.dat")) BI.con.dat, if(exists("GM.con.dat")) GM.con.dat) #Combine SPA condition data together if data is available
+con.dat <- rbind(if(exists("BI.con.dat")) BI.con.dat, if(exists("GM.con.dat")) GM.con.dat) #Combine SPA condition data together if data is available
 
 #check data structure
 head(con.dat)
@@ -894,7 +894,8 @@ com.contours <- contour.gen(con.dat %>% filter(year== cond.year, str_detect(CRUI
                           ticks='define', nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
 
 #lvls=c(5,6,7,8,9,10,11,12) #levels to be color coded
-lvls=c(4,6,8,10,12,14,16, 18) #levels to be color coded
+#lvls=c(4,6,8,10,12,14,16) #levels to be color coded
+lvls=c(4,6,8,10,12,14,16,18,20)
 
 CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
 CP <- convCP(CL)
@@ -912,7 +913,7 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
 #Colour aesthetics and breaks for contours
 #labels <- c("5-6", "6-7", "7-8", "8-9", "9-10", "10-11", "11-12", "12+")
 #labels <- c("4-6", "6-8", "8-10", "10-12", "12-14","14-16", "16+")
-labels <- c("4-6", "6-8", "8-10", "10-12", "12-14","14-16", "16-18", "18+")
+labels <- c("4-6", "6-8", "8-10", "10-12", "12-14","14-16", "16-18", "18-20", "20+")
 col <- brewer.pal(length(lvls),"YlOrBr") #set colours
 cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = "Condition (g)", limits = labels) #set custom fill arguments for pecjector.
 
@@ -937,11 +938,12 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA3_Condition',cond.year,'.png'
 
 cond.year <- survey.year # change year (e.g. cond.year <- "2019") to plot other years (dependent on the files that were loaded in the object con.dat)
 
-com.contours <- contour.gen(con.dat %>% filter(year== cond.year, str_detect(CRUISE, "GM")) %>% #Only SPA6
+com.contours <- contour.gen(con.dat %>% filter(year == cond.year, str_detect(CRUISE, "GM")) %>% #Only SPA6
                             dplyr::select(ID,lon,lat,Condition),
                           ticks='define', nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
 
-lvls=c(5,6,7,8,9,10,11,12) #levels to be color coded
+#lvls=c(5,6,7,8,9,10,11,12) #levels to be color coded
+lvls=c(4,6,8,10,12,14,16,18) #for 2023
 
 CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
 CP <- convCP(CL)
@@ -957,7 +959,8 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   mutate(level = unique(CP$PolyData$level))
 
 #Colour aesthetics and breaks for contours
-labels <- c("5-6", "6-7", "7-8", "8-9", "9-10", "10-11", "11-12", "12+")
+#labels <- c("5-6", "6-7", "7-8", "8-9", "9-10", "10-11", "11-12", "12+")
+labels <- c("4-6", "6-8", "8-10", "10-12", "12-14", "14-16", "16-18", "18+")
 col <- brewer.pal(length(lvls),"YlOrBr") #set colours
 cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = "Condition (g)", limits = labels) #set custom fill arguments for pecjector.
 
@@ -1093,13 +1096,14 @@ mc.contours <- contour.gen(ScallopSurv.mtcnt %>%
                               dplyr::select(ID, lon, lat, meat.count, -STRATA_ID, -year), ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,interp.method='gstat',
                             blank=T,plot=F,subset.poly='square',subset.eff=0,subscale=0.25,res=0.01)
 
+range(mc.contours$contour.dat$Z)
 lvls=seq(10,45,5)
 div=2
 
 CL <- contourLines(mc.contours$image.dat,levels=lvls)
 CP <- convCP(CL)
 totCont.poly  <- CP$PolySet
-Ncol=length(lvls)+div
+col=length(lvls)+div
 cont.data<- data.frame(PID=1:length(lvls),col=brewer.pal(Ncol,"Spectral")[c(Ncol:(div+2),1)],border=NA,stringsAsFactors=FALSE)
 
 ##Convert pbsmapping object to sf
@@ -1115,6 +1119,7 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
 n.breaks <- length(unique(totCont.poly.sf$col)) 
 col <- rev(brewer.pal(length(lvls),"Spectral")) #set colours
 cfd <- scale_fill_manual(values = alpha(col[1:n.breaks], 0.45), name = expression(frac(Meats,"500g"))) #set custom fill arguments for pecjector.
+
 
 p <- pecjector(area = "spa3",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
                add_layer = list(land = "grey", bathy = "ScallopMap", survey = c("inshore", "outline"), scale.bar = c('tl',0.5,-1, -1)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = c(paste(lvls[-length(lvls)],'-',lvls[-1],sep=''),paste(lvls[length(lvls)],'+',sep=''))) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
