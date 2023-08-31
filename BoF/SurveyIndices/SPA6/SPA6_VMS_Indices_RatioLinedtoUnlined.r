@@ -37,8 +37,11 @@ outvms <- read.csv("Y:/Inshore/BoF/2015/SPA6/Survey/SPA6_VMS_OUT_R_final_MOD.csv
 # Define: 
 uid <- un.sameotoj
 pwd <- pw.sameotoj
-surveyyear <- 2022  #This is the last survey year 
-assessmentyear <- 2022 #year in which you are conducting the survey 
+uid <- keyring::key_list("Oracle")[1,2]
+pwd <- keyring::key_get("Oracle", uid)
+
+surveyyear <- 2023  #This is the last survey year 
+assessmentyear <- 2023 #year in which you are conducting the survey 
 area <- "6"  #SPA assessing recall SPA 1A, 1B, and 4 are grouped; options: "1A1B4and5", "3", "6" 
 path.directory <- "Y:/Inshore/BoF/"
 
@@ -146,7 +149,7 @@ names(crossref)[grep("VMSSTRATA", names(crossref))] <- 'VMSAREA' # col 7
 ###
 # ---- correct data-sets for errors ----
 ###
-#some repearted tows will not be assigned to the same strata as the "parent" tow due to where the START LAT and LONG are
+#some repeated tows will not be assigned to the same strata as the "parent" tow due to where the START LAT and LONG are
 #repeated tows should be corrected to match parent tow
 #some experimental tows were used as parent tows for repeats, these should be removed
 
@@ -202,7 +205,7 @@ lined$VMSAREA[lined$TOW_NO==120 & lined$CRUISE == "GM2017"] <- "OUT"
 #8. In 2018 tow 40 (is a repeat of GM2017 tow 56) assigned to IN but needs to be OUT - a repeated repeat
 lined$VMSAREA[lined$TOW_NO==40 & lined$CRUISE == "GM2018"] <-"OUT"
 
-#9. In 2019 tow 95 assogmed to IN but needs to be OUT 
+#9. In 2019 tow 95 assigned to IN but needs to be OUT 
 lined$VMSAREA[lined$TOW_NO==95 & lined$CRUISE == "GM2019"] <-"OUT"
 
 
@@ -431,6 +434,13 @@ test.2017 <- spr(GMlined2016$TOW_NO[GMlined2016$VMSAREA==STRATA.ID],apply(GMline
 	K <- summary(	test.2022 , summary(	test.2021 , summary (test.2019,summary (test.2018, summary (test.2017, summary (test.2016, summary(test.2015, summary(test.2014, summary(test.2013, summary(test.2012, summary(test.2011, summary(test.2010, summary(test.2009, summary (test.2008, summary(test.2007,summary(test.2006))))))))))))))))  
 	spr.est[spr.est$Year==2022,c(2:3)] <- c(K$Yspr, K$var.Yspr.corrected)
 	
+#2022/2023
+	test.2023 <- spr(GMlined2022$TOW_NO[GMlined2022$VMSAREA==STRATA.ID],apply(GMlined2022[GMlined2022$VMSAREA==STRATA.ID,24:50],1,sum),
+	                 GMlined2023$TOW_NO[GMlined2023$VMSAREA==STRATA.ID],apply(GMlined2023[GMlined2023$VMSAREA==STRATA.ID,27:50],1,sum),
+	                 crossref.GM.2023[crossref.GM.2023$VMSAREA==STRATA.ID,c("TOW_NO_REF","TOW_NO")])
+	K <- summary(test.2023,summary(	test.2022 , summary(	test.2021 , summary (test.2019,summary (test.2018, summary (test.2017, summary (test.2016, summary(test.2015, summary(test.2014, summary(test.2013, summary(test.2012, summary(test.2011, summary(test.2010, summary(test.2009, summary (test.2008, summary(test.2007,summary(test.2006)))))))))))))))))
+	spr.est[spr.est$Year==2023,c(2:3)] <- c(K$Yspr, K$var.Yspr.corrected)
+	
 spr.est
 
 #in 2020 had no survey to linear interpolation from SPR estimate (note very different result from simple estimate)
@@ -596,6 +606,13 @@ testunlined.2017 <- spr(GMunlined2016$TOW_NO[GMunlined2016$VMSAREA==STRATA.ID],a
 	                        crossref.GM.2022[crossref.GM.2022$VMSAREA==STRATA.ID,c("TOW_NO_REF","TOW_NO")])
 	K <- summary(testunlined.2022, summary(testunlined.2021, summary (testunlined.2019, summary (testunlined.2018, summary (testunlined.2017, summary (testunlined.2016, summary(testunlined.2015, summary(testunlined.2014, summary(testunlined.2013, summary(testunlined.2012, summary(testunlined.2011, summary(testunlined.2010, summary(testunlined.2009, summary (testunlined.2008, summary(testunlined.2007,summary(testunlined.2006))))))))))))))))  
 	spr.est.unlined[spr.est.unlined$Year==2022,c(2:3)] <- c(K$Yspr, K$var.Yspr.corrected)
+	
+#2022/2023
+	testunlined.2023 <- spr(GMunlined2022$TOW_NO[GMunlined2022$VMSAREA==STRATA.ID],apply(GMunlined2022[GMunlined2022$VMSAREA==STRATA.ID,24:50],1,sum),
+	                        GMunlined2023$TOW_NO[GMunlined2023$VMSAREA==STRATA.ID],apply(GMunlined2023[GMunlined2023$VMSAREA==STRATA.ID,27:50],1,sum),
+	                        crossref.GM.2023[crossref.GM.2023$VMSAREA==STRATA.ID,c("TOW_NO_REF","TOW_NO")])
+	K <- summary(testunlined.2023,summary(testunlined.2022, summary(testunlined.2021, summary (testunlined.2019, summary (testunlined.2018, summary (testunlined.2017, summary (testunlined.2016, summary(testunlined.2015, summary(testunlined.2014, summary(testunlined.2013, summary(testunlined.2012, summary(testunlined.2011, summary(testunlined.2010, summary(testunlined.2009, summary (testunlined.2008, summary(testunlined.2007,summary(testunlined.2006)))))))))))))))))  
+	spr.est.unlined[spr.est.unlined$Year==2023,c(2:3)] <- c(K$Yspr, K$var.Yspr.corrected)
 	
 	
 spr.est.unlined

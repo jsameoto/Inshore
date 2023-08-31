@@ -55,13 +55,13 @@ options(stringsAsFactors = FALSE)
 
 #DEFINE:
 direct <- "Y:/Inshore/BoF"
-assessmentyear <- 2022 #year in which you are conducting the assessment 
-surveyyear <- 2022  #last year of survey data you are using, e.g. if max year of survey is survey from summer 2019, this would be 2019 
+assessmentyear <- 2023 #year in which you are conducting the assessment 
+surveyyear <- 2023  #last year of survey data you are using, e.g. if max year of survey is survey from summer 2019, this would be 2019 
 area <- 6  #this would be the SPA, for entries options are to use: 1A, 1B, 3, 4, or 6  
 
 
 # Set the value for catch next year, assume same catch removals as current year, this is used in SSModel.plot.median() after the model runs; note no interim used for SPA 6 fishery 
-catch.next.year <- 180  
+catch.next.year <- 188  
 
 #reference points - NO BIOMASS ref pts for SPA 6 - are in terms of catch rates 
 #Set reference points 
@@ -78,10 +78,25 @@ library(compareDF)
 library(tidyverse)
 require(openxlsx)
 
-source(paste0(direct, "/", assessmentyear, "/Assessment/Scripts/Model/CreateExcelModelFile_2021.R"))
-source(paste0(direct, "/", assessmentyear, "/Assessment/Scripts/Model/SSModel_plot_median_new.r"))
-source(paste0(direct, "/", assessmentyear, "/Assessment/Scripts/Model/SSModel_predict_summary_median.r"))
-source(paste0(direct, "/", assessmentyear, "/Assessment/Scripts/Model/BoFmodelstats_2021.R"))
+
+#### Import Mar-scal functions 
+funcs <- c("https://raw.githubusercontent.com/Mar-scal/Inshore/master/BoF/Model/CreateExcelModelFile.R",
+           "https://raw.githubusercontent.com/Mar-scal/Inshore/master/BoF/Model/SSModel_plot_median_new.r",
+           "https://raw.githubusercontent.com/Mar-scal/Inshore/master/BoF/Model/SSModel_predict_summary_median.r",
+           "https://raw.githubusercontent.com/Mar-scal/Inshore/master/BoF/Model/BoFmodelstats.R")
+dir <- getwd()
+for(fun in funcs) 
+{
+  temp <- dir
+  download.file(fun,destfile = basename(fun))
+  source(paste0(dir,"/",basename(fun)))
+  file.remove(paste0(dir,"/",basename(fun)))
+}
+
+#source(paste0(direct, "/", assessmentyear, "/Assessment/Scripts/Model/CreateExcelModelFile_2021.R"))
+#source(paste0(direct, "/", assessmentyear, "/Assessment/Scripts/Model/SSModel_plot_median_new.r"))
+#source(paste0(direct, "/", assessmentyear, "/Assessment/Scripts/Model/SSModel_predict_summary_median.r"))
+#source(paste0(direct, "/", assessmentyear, "/Assessment/Scripts/Model/BoFmodelstats_2021.R"))
 
 SPA6.landings <- read.xlsx(paste0(direct, "/", assessmentyear, "/Assessment/Data/CommercialData/SPA6_TACandLandings_",assessmentyear,".xlsx"))
 
@@ -99,8 +114,8 @@ SPA6.landings <- read.xlsx(paste0(direct, "/", assessmentyear, "/Assessment/Data
 # 9) when satisfied with the table, re-name it to remove the date. E.g. SPAxx_ModelData_R.xlsx 
 
 CreateExcelModelFile(direct = direct, 
-                     assessmentyear=2022, surveyyear = 2022, 
-                     area = 6, LastYearsModelRData = "SPA6_Model_2021", 
+                     assessmentyear=2023, surveyyear = 2023, 
+                     area = 6, LastYearsModelRData = "SPA6_Model_2022", 
                      savefile = T)
 
 # for testing only (using FK private repo): 
@@ -124,7 +139,7 @@ parm = c("B","R","q","K","P","sigma","S","m","kappa.tau","r", "Fmort","mu","Irep
 
 # Read in the data...  Note that in 2018 SPA6 is the one area which wasn't updated with the new _R Data file system as some work remains to get 
 # all the data organized
-raw.dat <- read.xlsx(paste0(direct,"/",assessmentyear, "/Assessment/Data/Model/SPA",area,"/SPA6_ModelData_R_2022-10-31.xlsx"),sheet = "AlignedForModel",
+raw.dat <- read.xlsx(paste0(direct,"/",assessmentyear, "/Assessment/Data/Model/SPA",area,"/SPA6_ModelData_R_2023-08-22.xlsx"),sheet = "AlignedForModel",
                      cols=1:13)
 str(raw.dat)
 raw.dat$C <- as.numeric(raw.dat$C)
@@ -155,7 +170,7 @@ BoFSPA6.priors <- BoFSPA4.priors
 
 # ---- Run the model ----
 Spa6.model <- SSModel(SPA6.dat,BoFSPA6.priors,SPA6.inits(NY),model.file=BoFmodel,Years=yrs, parms = parm,
-                     nchains=nchains,niter=niter,nburnin=nburnin,nthin=nthin,debug=F) #increased inter and used higher thin to combat autocorrelation (as evidenced by low n.eff)
+                     nchains=nchains,niter=niter,nburnin=nburnin,nthin=nthin,debug=T) #increased inter and used higher thin to combat autocorrelation (as evidenced by low n.eff)
 
 #need to save model as year defined object for prediction evaluations 
 assign(paste0("Spa6.", max(yrs)), Spa6.model)   
@@ -169,7 +184,7 @@ save(list = paste0("Spa6.", max(yrs)), file=paste0(direct,"/",assessmentyear, "/
 
 # This just saves you wasting time copy/pasting an updated name everywhere below.
 mod.res <- Spa6.model
-#mod.res <- Spa6.2022
+#mod.res <- Spa6.2023
 
 
 #This gives a print to screen of model results and allows you to save it
@@ -213,7 +228,7 @@ dev.off()
 ##NEW APRIL 2022
 # This is our biomass time series with EXAMPLE reference points, box plot contains 80% of the data when pred.lim = 0.2 (i.e. 80% of the data is located between the whiskers)
 #windows()
-png(paste0(direct,"/",assessmentyear,"/Assessment/Figures/Model/SPA",area,"/Model_biomass_figure_MOCK_RefPts_",area,".png"),width=8,height=11,units = "in",res=920)
+png(paste0(direct,"/",assessmentyear,"/Assessment/Figures/Model/SPA",area,"/Model_biomass_figure_RefPts_",area,".png"),width=8,height=11,units = "in",res=920)
 
 RP.labels <- data.frame(region = c("Healthy","Cautious","Critical"),x.pos = c(2017,2017,2017),size = c(1.4,1.4,1.4))
 
@@ -223,7 +238,7 @@ SSModel.plot.median(mod.res, ref.pts=c(LRP,USR), Catch.next.year=catch.next.year
 dev.off()
 
 #Just commercial biomass time series (for presentation)
-png(paste0(direct,"/",assessmentyear,"/Assessment/Figures/Model/SPA",area,"/Model_biomass_figure_MOCK_ComRefPts_",area,".png"),width=9,height=8,units = "in",res=920)
+png(paste0(direct,"/",assessmentyear,"/Assessment/Figures/Model/SPA",area,"/Model_biomass_figure_ComRefPts_",area,".png"),width=9,height=8,units = "in",res=920)
 
 RP.labels <- data.frame(region = c("Healthy","Cautious","Critical"),x.pos = c(2017,2017,2017),size = c(1.4,1.4,1.4))
 
@@ -233,7 +248,7 @@ SSModel.plot.median(mod.res, ref.pts=c(LRP,USR), Catch.next.year=catch.next.year
 dev.off()
 
 # This is our FRENCH biomass time series with reference points, box plot contains 80% of the data when pred.lim = 0.2 (i.e. 80% of the data is located between the whiskers)
-png(paste0(direct,"/",assessmentyear,"/Assessment/Figures/Model/SPA",area,"/Model_biomass_figure_MOCK_RefPts_",area,"_FR.png"),width=8,height=11,units = "in",res=920)
+png(paste0(direct,"/",assessmentyear,"/Assessment/Figures/Model/SPA",area,"/Model_biomass_figure_RefPts_",area,"_FR.png"),width=8,height=11,units = "in",res=920)
 
 RP.labels <- data.frame(region = c("Healthy","Cautious","Critical"),x.pos = c(2017,2017,2017),size = c(1.4,1.4,1.4))
 
@@ -385,8 +400,8 @@ eval.predict(Combined.runs.actual, Year=str.yr.pe, pred.lim=0.2)
 dev.off()
 
 # DECISION TABLE ---- 
-#generally for documentation don't exceed e=0.18 TO 0.2 on table (NOTE no formal RR exists yet for SPA6, rest of SPA RR is 0.15)
-#Finally here we have the decsion table.  This plots the decision table for all catch rates between 0 and 500 increments of 10 tonnes of catch (seq(0,500,10)).
+#generally for documentation don't exceed e=0.18 TO 0.2 on table (NOTE: formal RR was decided for SPA6 in 2022 during AC meeting and first implemented in 2023, rest of SPA RR is 0.15)
+#Finally here we have the decision table.  This plots the decision table for all catch rates between 0 and 500 increments of 10 tonnes of catch (seq(0,500,10)).
 decision <- predict(mod.res, Catch=c(seq(100, 250, 10)),g.parm=mod.res$data$g[mod.res$data$NY],gr.parm=mod.res$data$gR[mod.res$data$NY]) #g.parm and gr now updated automaticaly
 decision.table <- SSModel_predict_summary_median(decision, RRP=0.18)
 decision.table
@@ -395,7 +410,7 @@ decision.table
 
 
 #decision table with reference points 
-decision  <- predict (mod.res, Catch=c(seq(100, 250, 10)), g.parm=mod.res$data$g[mod.res$data$NY],gr.parm=mod.res$data$gR[mod.res$data$NY]) 
+decision  <- predict (mod.res, Catch=c(seq(200, 370, 10)), g.parm=mod.res$data$g[mod.res$data$NY],gr.parm=mod.res$data$gR[mod.res$data$NY]) 
 decision.table <- SSModel_predict_summary_median(decision, LRP=LRP, USR=USR, RRP=0.18)
 decision.table
 
@@ -412,7 +427,7 @@ write.csv(decision.table, paste0(direct,"/",assessmentyear,"/Assessment/Data/Mod
 
 # Finally, use the BoF Model stats function to produce a nice summary of model info that we need for assessment docs text 
 # Be sure to set assessmentyear and surveyyear and RDatafile appropriately !!
-stats.output <- BoF.model.stats(area = "6", assessmentyear=2022, surveyyear=2022, direct = "Y:/Inshore/BoF/", RDatafile = "SPA6_Model_2022")
+stats.output <- BoF.model.stats(area = "6", assessmentyear=2023, surveyyear=2023, direct = "Y:/Inshore/BoF/", RDatafile = "SPA6_Model_2023")
 #Produces files: summary stats temporal_6_2019.csv ; summary stats_6_2019.csv
 
 
