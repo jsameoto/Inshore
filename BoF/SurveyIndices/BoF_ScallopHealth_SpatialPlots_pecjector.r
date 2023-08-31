@@ -45,8 +45,8 @@ uid <- keyring::key_list("Oracle")[1,2]
 pwd <- keyring::key_get("Oracle", uid)
 
 #set year 
-survey.year <- 2022  #removed maxyear in script and changed to survey year
-assessmentyear <- 2022 #year in which you are providing advice for- determines where to save files to
+survey.year <- 2023  #removed maxyear in script and changed to survey year
+assessmentyear <- 2023 #year in which you are providing advice for- determines where to save files to
 path.directory <- "Y:/Inshore/BoF/"
 
 #set up directory to save plot
@@ -63,7 +63,7 @@ chan <- dbConnect(dbDriver("Oracle"),username=uid, password=pwd,'ptran')
 #### Import Mar-scal functions 
 funcs <- c("https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Maps/pectinid_projector_sf.R",
            "https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Survey_and_OSAC/convert.dd.dddd.r",
-           "https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/archive/2016/contour.gen.r") 
+           "https://raw.githubusercontent.com/Mar-scal/Inshore/master/contour.gen.r") 
 # Note: uses older contour.gen.r version (working on alternative to contour.gen altogether).
 dir <- getwd()
 for(fun in funcs) 
@@ -167,7 +167,7 @@ myco.datw <- merge(myco.datw, tow.dat, by = "ID", all.x = TRUE) %>%
 #  write.csv(myco.datw %>% filter(year == survey.year & CRUISE == i), paste0("Y:/Inshore/BoF/",survey.year,"/Assessment/Data/SurveyIndices/",i,"towsdd_MYCOprop.csv"))
 #}
 
-#write.csv(myco.datw, "Y:/Inshore/BoF/",survey.year,"/Assessment/Data/SurveyIndices/BF2021towsdd_MYCOprop.csv")
+#write.csv(myco.datw, "Y:/Inshore/BoF/",survey.year,"/Assessment/Data/SurveyIndices/BF2023towsdd_MYCOprop.csv")
 
 # -------------------------------Format for Grey meats plots-----------------------------------------
 
@@ -192,9 +192,9 @@ greymeat.datw <- merge(greymeat.datw, tow.dat, by = "ID", all.x = TRUE) %>%
   rename(tow = tow.x)
 
 #Saves files by cruise
-#for(i in unique(greymeat.datw$CRUISE)){
-#  write.csv(greymeat.datw %>% filter(year == survey.year & CRUISE == i), paste0("Y:/Inshore/BoF/",survey.year,"/Assessment/Data/SurveyIndices/",i,"towsdd_QUALITYprop.csv"))
-#}
+for(i in unique(greymeat.datw$CRUISE)){
+  write.csv(greymeat.datw %>% filter(year == survey.year & CRUISE == i), paste0("Y:/Inshore/BoF/",survey.year,"/Assessment/Data/SurveyIndices/",i,"towsdd_QUALITYprop.csv"))
+}
 
 #write.csv(greymeat.datw, "Y:/Inshore/BoF/",survey.year,"/Assessment/Data/SurveyIndices/BI2021towsdd_QUALITY.csv")
 
