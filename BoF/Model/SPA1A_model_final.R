@@ -48,8 +48,8 @@ options(stringsAsFactors = FALSE)
 
 #DEFINE:
 direct <- "Y:/Inshore/BoF"
-assessmentyear <- 2022 #year in which you are conducting the assessment 
-surveyyear <- 2022  #last year of survey data you are using, e.g. if max year of survey is survey from summer 2019, this would be 2019 
+assessmentyear <- 2023 #year in which you are conducting the assessment 
+surveyyear <- 2023  #last year of survey data you are using, e.g. if max year of survey is survey from summer 2019, this would be 2019 
 area <- "1A"  #this would be the SPA, for entries options are to use: 1A, 1B, 3, 4, or 6 
 
 #Reference Points 
@@ -68,10 +68,24 @@ library(compareDF)
 library(tidyverse)
 library(rosettafish)
 
-source(paste0(direct, "/", assessmentyear, "/Assessment/Scripts/Model/CreateExcelModelFile_2021.R"))
-source(paste0(direct, "/", assessmentyear, "/Assessment/Scripts/Model/SSModel_plot_median_new.r"))
-source(paste0(direct, "/", assessmentyear, "/Assessment/Scripts/Model/SSModel_predict_summary_median.r"))
-source(paste0(direct, "/", assessmentyear, "/Assessment/Scripts/Model/BoFmodelstats_2021.R"))
+#### Import Mar-scal functions 
+funcs <- c("https://raw.githubusercontent.com/Mar-scal/Inshore/master/BoF/Model/CreateExcelModelFile.R",
+           "https://raw.githubusercontent.com/Mar-scal/Inshore/master/BoF/Model/SSModel_plot_median_new.r",
+           "https://raw.githubusercontent.com/Mar-scal/Inshore/master/BoF/Model/SSModel_predict_summary_median.r",
+           "https://raw.githubusercontent.com/Mar-scal/Inshore/master/BoF/Model/BoFmodelstats.R")
+dir <- getwd()
+for(fun in funcs) 
+{
+  temp <- dir
+  download.file(fun,destfile = basename(fun))
+  source(paste0(dir,"/",basename(fun)))
+  file.remove(paste0(dir,"/",basename(fun)))
+}
+
+#source(paste0(direct, "/", assessmentyear, "/Assessment/Scripts/Model/CreateExcelModelFile_2021.R"))
+#source(paste0(direct, "/", assessmentyear, "/Assessment/Scripts/Model/SSModel_plot_median_new.r"))
+#source(paste0(direct, "/", assessmentyear, "/Assessment/Scripts/Model/SSModel_predict_summary_median.r"))
+#source(paste0(direct, "/", assessmentyear, "/Assessment/Scripts/Model/BoFmodelstats_2021.R"))
 
 #################################################################
 #### Build and check the model input file
@@ -88,8 +102,8 @@ source(paste0(direct, "/", assessmentyear, "/Assessment/Scripts/Model/BoFmodelst
 # 9) when satisfied with the table, re-name it to remove the date. E.g. SPAxx_ModelData_R.xlsx 
 
 CreateExcelModelFile(direct = direct, 
-                     assessmentyear=2022, surveyyear = 2022, 
-                     area = "1A", LastYearsModelRData = "SPA1A_Model_2021", 
+                     assessmentyear=2023, surveyyear = 2023, 
+                     area = "1A", LastYearsModelRData = "SPA1A_Model_2022", 
                      savefile = T)
 
 # for testing only (using FK private repo): 
@@ -110,7 +124,7 @@ parm = c("B","R","q","K","P","sigma","S","m","kappa.tau","r", "Fmort","mu","Irep
 #parm = c("B","R","q","K","P","sigma","S","m","kappa.tau","r", "Fmort","mu","Irep","IRrep")
 
 # Bring in the data, you will need to update this with the latest numbers!
-raw.dat <- read.xlsx(paste0(direct,"/",assessmentyear,"/Assessment/Data/Model/SPA",area,"/SPA1A_ModelData_R_2022-10-31.xlsx"),sheet = "AlignedForModel",cols=1:13)
+raw.dat <- read.xlsx(paste0(direct,"/",assessmentyear,"/Assessment/Data/Model/SPA",area,"/SPA1A_ModelData_R_2023-09-08.xlsx"),sheet = "AlignedForModel",cols=1:13)
 
 str(raw.dat)
 raw.dat$C <- as.numeric(raw.dat$C)
@@ -406,7 +420,7 @@ write.csv(decision.table, paste0(direct,"/",assessmentyear,"/Assessment/Data/Mod
 
 # Use the BoF Model stats function to produce a nice summary of model info that we need for assessment docs text 
 # Be sure to set assessmentyear and surveyyear and RDatafile appropriately !!
-stats.output <- BoF.model.stats(area = "1A", assessmentyear=2022, surveyyear=2022, direct = "Y:/Inshore/BoF/", RDatafile = "SPA1A_Model_2022")
+stats.output <- BoF.model.stats(area = "1A", assessmentyear=2023, surveyyear=2023, direct = "Y:/Inshore/BoF/", RDatafile = "SPA1A_Model_2023")
 #Produces files: summary stats temporal_1A_2019.csv ; summary stats_1A_2019.csv
 #output from  summary stats_1A_2019.csv is what is needed to stay as a R object so it can be sourced for Rmarkdown 
 
