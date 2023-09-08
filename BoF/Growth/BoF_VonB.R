@@ -21,10 +21,10 @@ pwd <- pw.sameotoj
 uid <- keyring::key_list("Oracle")[1,2]
 pwd <- keyring::key_get("Oracle", uid)
 
-surveyyear <- 2022  #This is the last survey year for which you want to include  - not should match year of cruise below 
-cruise <- "BI2022"  #note should match year for surveyyear set above 
+surveyyear <- 2023  #This is the last survey year for which you want to include  - not should match year of cruise below 
+cruise <- "BF2023"  #note should match year for surveyyear set above 
 
-assessmentyear <- 2022 #year in which you are conducting the survey 
+assessmentyear <- 2023 #year in which you are conducting the survey 
 area <- "1A1B4and5"  #SPA assessing recall SPA 1A, 1B, and 4 are grouped; options: "1A1B4and5", "3", "6" 
 path.directory <- "Y:/Inshore/BoF/"
 
@@ -233,11 +233,11 @@ predict.age <- expand.grid(AGE =0:20 , Year.fac = 1996:2015,TOW.NO = 1:1000)
 p.curve <- predict(VONBFYYYY.nlme, predict.age, level=0:2)
 head(p.curve)
 tail(p.curve)
-p.curve <- cbind(p.curve, (predict.age %>% select(AGE)))  #Note this merge assumes it's all in the right order
+p.curve <- cbind(p.curve, (predict.age %>% dplyr::select(AGE)))  #Note this merge assumes it's all in the right order
 
 #only need one year of predict.fixed for plot since all fixed effects predictions are the same 
 p.curve.fixed <- p.curve %>% filter(Year.fac=="1996")
-p.curve.fixed.Year.fac <- unique(p.curve %>% select(Year.fac, predict.Year.fac, AGE))
+p.curve.fixed.Year.fac <- unique(p.curve %>% dplyr::select(Year.fac, predict.Year.fac, AGE))
 
 #CIs: 
 upper <- VONBFYYYY.nlme.CI$fixed[7]* (1 - exp(-exp(VONBFYYYY.nlme.CI$fixed[8]) * (predict.age$AGE  - VONBFYYYY.nlme.CI$fixed[3]))) 

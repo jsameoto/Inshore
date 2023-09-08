@@ -30,8 +30,8 @@ sh.actual
 sh.predict
 
 cbind(sh.actual, sh.predict) #check - assumes ordered correctly; check order of column names for renaming columns 
-SH.object <- cbind(sh.actual %>% select(years, SHactual.Com = SPA3.SHactual.Com, SHactual.Rec = SPA3.SHactual.Rec), 
-                   sh.predict %>% select(SHpredict.Com = SPA3.SHpredict.Com, SHpredict.Rec = SPA3.SHpredict.Rec))
+SH.object <- cbind(sh.actual %>% dplyr::select(years, SHactual.Com = SPA3.SHactual.Com, SHactual.Rec = SPA3.SHactual.Rec), 
+                   sh.predict %>% dplyr::select(SHpredict.Com = SPA3.SHpredict.Com, SHpredict.Rec = SPA3.SHpredict.Rec))
 
 # DEFINE: Source previous year meat weight and growth rate object for ACTUAL growth rates:
 # if your year defined above it for YYYY, then you should be bringing in the YYYY-1 growth rate object.

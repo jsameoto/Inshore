@@ -17,9 +17,9 @@ options(stringsAsFactors = FALSE)
 # ///.... DEFINE THESE ENTRIES ....////
 
 #DEFINE: year, area
-year <- 2022  #this is the survey year
+year <- 2023  #this is the survey year
 area <- "1A1B4and5"  #SPAs 1A, 1B and 4 and 5 all modelled together, therefore choice entry here is "1A1B4and5", "3", "6"
-assessmentyear <- 2022 #this is the year you are running your assessment in -- corresponds to the assessment folder year name e.g. INSHORE SCALLOP/2020/Assessment..
+assessmentyear <- 2023 #this is the year you are running your assessment in -- corresponds to the assessment folder year name e.g. INSHORE SCALLOP/2020/Assessment..
 
 # DEFINE: load required workspace with model objects -- should be from current year of assessment, eg. if survey from 2021 and running assessment in 2021 this is in 2021 assessment folder 
 load(paste0("Y:/Inshore/BoF/",year,"/Assessment/Data/Growth/SPA1A1B4and5/BFgrowth",year,".RData"))
@@ -230,13 +230,13 @@ write.csv(spa4.growthrate, paste0(path.directory,assessmentyear,"/Assessment/Dat
 png(paste0(path.directory,assessmentyear,"/Assessment/Figures/SPA4_GrowthRate_Com_ActualPredicted.png"), type="cairo", width=20, height=12, units = "cm", res=400)
 
 x <- c(1996,year) 
-y <- c(0.8,1.5)
+y <- c(0.8,2.0)
 
 plot (x,y, type="n",xlab="",ylab="Growth Rate (mm)", cex.axis=1.3, cex.lab=1.5, main="SPA4 Commercial Growth Rate")
 lines(spa4.growthrate.com$rate ~ spa4.growthrate.com$Year, type="b", pch=1, lty=1, col=1)
 lines(spa4.predictedgr.com$rate ~ spa4.predictedgr.com$Year, type="b", pch=17, lty=1, col=1) 
 abline(h=1, lty=3)
-legend (2015, 1.5, bty="n", legend=c("Actual", "Predicted"), pch=c(1,17), col=c(1,1))
+legend (2015, 2.0, bty="n", legend=c("Actual", "Predicted"), pch=c(1,17), col=c(1,1))
 
 dev.off()
 
