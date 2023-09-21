@@ -156,7 +156,7 @@ actual.growth.plot.title <- "SPA4 Actual Growth Rate"
 x <- c(1996, year) #update year
 y <- c(0.8,2.5)
 
-plot (x,y, type="n",xlab="",ylab="Growth Rate (mm)", cex.axis=1.3, cex.lab=1.5, main=actual.growth.plot.title)
+plot (x,y, type="n",xlab="",ylab="Growth Rate", cex.axis=1.3, cex.lab=1.5, main=actual.growth.plot.title)
 lines(spa4.growthrate.com$rate ~ spa4.growthrate.com$Year , type="b", pch=1, lty=1, col=1)
 lines(spa4.growthrate.rec$rate ~ spa4.growthrate.rec$Year , type="b", pch=2, lty=2, col=2)
 abline(h=1, lty=3)
@@ -232,7 +232,7 @@ png(paste0(path.directory,assessmentyear,"/Assessment/Figures/SPA4_GrowthRate_Co
 x <- c(1996,year) 
 y <- c(0.8,2.0)
 
-plot (x,y, type="n",xlab="",ylab="Growth Rate (mm)", cex.axis=1.3, cex.lab=1.5, main="SPA4 Commercial Growth Rate")
+plot (x,y, type="n",xlab="",ylab="Growth Rate", cex.axis=1.3, cex.lab=1.5, main="SPA4 Commercial Growth Rate")
 lines(spa4.growthrate.com$rate ~ spa4.growthrate.com$Year, type="b", pch=1, lty=1, col=1)
 lines(spa4.predictedgr.com$rate ~ spa4.predictedgr.com$Year, type="b", pch=17, lty=1, col=1) 
 abline(h=1, lty=3)
@@ -247,7 +247,7 @@ png(paste0(path.directory,assessmentyear,"/Assessment/Figures/SPA4_GrowthRate_Re
 x <- c(1996,year)
 y <- c(0.8,2.5)
 
-plot (x,y, type="n",xlab="",ylab="Growth Rate (mm)", cex.axis=1.3, cex.lab=1.5, main="SPA4 Recruit Growth Rate")
+plot (x,y, type="n",xlab="",ylab="Growth Rate", cex.axis=1.3, cex.lab=1.5, main="SPA4 Recruit Growth Rate")
 lines(spa4.growthrate.rec$rate ~ spa4.growthrate.rec$Year, type="b", pch=1, lty=1, col=1)
 lines(spa4.predictedgr.rec$rate ~ spa4.predictedgr.rec$Year, type="b", pch=17, lty=1, col=1) 
 abline(h=1, lty=3)
