@@ -812,7 +812,7 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
 #labels <- c("4-6", "6-8", "8-10", "10-12", "12-14", "14-16","16+") #for higher conditions
 labels <- c("4-6", "6-8", "8-10", "10-12", "12-14","14-16", "16-18", "18-20", "20+")
 col <- brewer.pal(length(lvls),"YlOrBr") #set colours
-cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = "Condition (g)", limits = labels) #set custom fill arguments for pecjector.
+cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = "Condition (g)", limits = labels) # set custom fill arguments for pecjector.
 
 # ----FULL BAY -----
 
@@ -826,7 +826,7 @@ p + #Plot survey data and format figure.
                      aes(lon, lat), size = 0.5) +
   labs(title = paste(cond.year, "", "BoF Condition"), x = "Longitude",
        y = "Latitude") +
-  guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  guides(fill = guide_legend(override.aes= list(alpha = .75))) + #Legend transparency
   coord_sf(xlim = c(-66.50,-64.30), ylim = c(44.25,45.80), expand = FALSE)+
   plot.theme
 
@@ -844,7 +844,7 @@ p + #Plot survey data and format figure.
                      aes(lon, lat), size = 0.5) +
   labs(title = paste(cond.year, "", "SPA1A Condition"), x = "Longitude",
        y = "Latitude") +
-  guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  guides(fill = guide_legend(override.aes= list(alpha = .75))) + #Legend transparency
   coord_sf(xlim = c(-66.40,-64.80), ylim = c(44.37,45.30), expand = FALSE)+
   plot.theme
 
@@ -862,7 +862,7 @@ p + #Plot survey data and format figure.
                      aes(lon, lat), size = 0.5) +
   labs(title = paste(cond.year, "", "SPA1B Condition"), x = "Longitude",
        y = "Latitude") +
-  guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  guides(fill = guide_legend(override.aes= list(alpha = .75))) + #Legend transparency
   coord_sf(xlim = c(-66.20,-64.30), ylim = c(44.80,45.70), expand = FALSE)+
   plot.theme.1b
 
@@ -880,7 +880,7 @@ p + #Plot survey data and format figure.
                      aes(lon, lat), size = 0.5) +
   labs(title = paste(cond.year, "", "SPA4 Condition"), x = "Longitude",
        y = "Latitude") + 
-  guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  guides(fill = guide_legend(override.aes= list(alpha = .75))) + #Legend transparency
   coord_sf(xlim = c(-66.20,-65.51), ylim = c(44.43,44.96), expand = FALSE)+
   plot.theme.4
 
@@ -929,7 +929,7 @@ p + #Plot survey data and format figure.
                      aes(lon, lat), size = 0.5) +
   geom_sf(data = spa3.poly, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
   labs(title = paste(cond.year, "", "SPA3 Condition"), x = "Longitude", y = "Latitude") +
-  guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  guides(fill = guide_legend(override.aes= list(alpha = .75))) + #Legend transparency
   coord_sf(xlim = c(-66.82,-65.80), ylim = c(43.62,44.60), expand = FALSE)+
   plot.theme.3
 
@@ -980,7 +980,7 @@ p + #Plot survey data and format figure.
   #geom_sf(data = outVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
   #geom_sf(data = inVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
   labs(title = paste(cond.year, "", "SPA6 Condition"), x = "Longitude", y = "Latitude")+
-  guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  guides(fill = guide_legend(override.aes= list(alpha = .75))) + #Legend transparency
   coord_sf(xlim = c(-67.5, -66.4), ylim = c(44.4, 45.2), expand = FALSE)+
   plot.theme.6
 
