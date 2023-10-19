@@ -124,7 +124,7 @@ parm = c("B","R","q","K","P","sigma","S","m","kappa.tau","r", "Fmort","mu","Irep
 #parm = c("B","R","q","K","P","sigma","S","m","kappa.tau","r", "Fmort","mu","Irep","IRrep")
 
 # Bring in the data, you will need to update this with the latest numbers!
-raw.dat <- read.xlsx(paste0(direct,"/",assessmentyear,"/Assessment/Data/Model/SPA",area,"/SPA1A_ModelData_R_2023-09-08.xlsx"),sheet = "AlignedForModel",cols=1:13)
+raw.dat <- read.xlsx(paste0(direct,"/",assessmentyear,"/Assessment/Data/Model/SPA",area,"/SPA1A_ModelData_R_2023-10-19.xlsx"),sheet = "AlignedForModel",cols=1:13)
 
 str(raw.dat)
 raw.dat$C <- as.numeric(raw.dat$C)
@@ -161,7 +161,7 @@ SPA1A.inits <- function(NY)
 
 # ---- Run the model ----
 Spa1A.model <- SSModel(SPA1A.dat,BoFSPA4.priors,SPA1A.inits(NY),model.file=BoFmodel,Years=yrs, parms = parm,
-                    nchains=nchains,niter=niter,nburnin=nburnin,nthin=nthin,debug=F)
+                    nchains=nchains,niter=niter,nburnin=nburnin,nthin=nthin,debug=T)
 
 #need to save model as year defined object for prediction evaluations 
 assign(paste0("Spa1A.", max(yrs)), Spa1A.model)   
@@ -173,7 +173,9 @@ save(list = paste0("Spa1A.", max(yrs)), file=paste0(direct,"/",assessmentyear, "
 #load(paste0(direct,"/",assessmentyear, "/Assessment/Data/Model/SPA",area,"/SPA1A_Model_",max(yrs),".RData"))
 
 #This is just to save you from wasting time changing the names of a bunch of lines below...
+#mod.res <- Spa1A.2023
 mod.res <- Spa1A.model
+
 
 #This gives a print to screen of model results and allows you to save it
 temp <- print(mod.res)
@@ -411,7 +413,7 @@ dev.off()
 
 
 #Finally here we have the decision table.  This plots the decision table for all catch rates between 0 and 500 increments of 10 tonnes of catch (seq(0,500,10)).
-decision <- predict(mod.res, Catch=c(seq(200,500,20)), g.parm=mod.res$data$g[mod.res$data$NY],gr.parm=mod.res$data$gR[mod.res$data$NY])
+decision <- predict(mod.res, Catch=c(seq(400,680,40)), g.parm=mod.res$data$g[mod.res$data$NY],gr.parm=mod.res$data$gR[mod.res$data$NY])
 decision.table <- SSModel_predict_summary_median(decision, LRP=LRP, USR=USR, RRP=0.15)
 decision.table
 
@@ -446,4 +448,61 @@ save(LRP, USR, catch.next.year, min.neff, Rhat, temp, stats.output, summ.Spa1A, 
      file=paste0(direct,"/",assessmentyear,"/Assessment/Data/Model/SPA",area,"/Model_results_and_diagnostics_",max(yrs),"_",area,".RData"))
 tt - Sys.time()
 
-# ... END ... 
+# ... END OF MODEL PLOTS...
+############################################################################
+
+## NEW INDICES PLOTS - BIOMASS (scaled to area) BY POPULATION NUMBER ###
+
+raw.dat$wgt.num <- (raw.dat$I*1000000)/raw.dat$N #convert I in tonnes to grams
+coeff <- 10^7
+options(scipen = 999)
+raw.dat.forplot <- raw.dat |> filter(YearCatch != 2024)
+
+raw.dat.forplot <- raw.dat.forplot |> 
+  rename("Biomass (tonnes)" = I) |> 
+  rename("Numbers" = N) |> 
+  rename("Average Weight per Scallop (g)" = wgt.num)
+
+raw.dat.forplot.2 <- pivot_longer(raw.dat.forplot, 
+                                  cols = c("Average Weight per Scallop (g)", "Numbers", "Biomass (tonnes)"),
+                                  names_to = "Indices",
+                                  #names_prefix = "X",
+                                  values_to = "value",
+                                  values_drop_na = FALSE)
+
+
+I.N.plot.2 <- ggplot(data = raw.dat.forplot.2, aes (x = YearCatch)) + 
+  geom_line(data = raw.dat.forplot.2, aes(y = value), colour = "black") +
+  scale_x_continuous(breaks=seq(min(raw.dat.forplot$YearCatch),max(raw.dat.forplot$YearCatch), 2))+
+  theme_bw()+
+  theme(axis.title.y.right = element_text(color = "grey"))+
+  xlab("Year")+
+  facet_wrap(Indices~., dir = "v", scales = "free")
+I.N.plot.2
+
+png(paste0(direct,"/",assessmentyear,"/Assessment/Figures/SPA1A_population_number_index",surveyyear,".png"), type="cairo", width=30, height=15, units = "cm", res=300)
+I.N.plot.2
+dev.off() 
+
+#Alternative plot:
+
+#raw.dat$wgt.num <- (raw.dat$I*1000000)/raw.dat$N #convert I in tonnes to grams
+#coeff <- 10^7
+#options(scipen = 999)
+#raw.dat.forplot <- raw.dat |> filter(YearCatch != 2024)
+
+
+#I.N.plot <- ggplot(data = raw.dat.forplot, aes (x = YearCatch)) + 
+#  geom_line(data = raw.dat.forplot, aes(y = wgt.num), colour = "black") +
+#  geom_line(data = raw.dat.forplot, aes(y = N/coeff), colour = "grey", linetype = "dashed") +
+#  scale_y_continuous(name = "Average weight per scallop (grams)",
+#                     sec.axis = sec_axis(~.*coeff, name = "Numbers of scallops"))+
+#  scale_x_continuous(breaks=seq(min(raw.dat.forplot$YearCatch),max(raw.dat.forplot$YearCatch), 2))+
+#  theme_bw()+
+#  theme(axis.title.y.right = element_text(color = "grey"))+
+#  xlab("Year")
+#I.N.plot
+
+#png(paste0(direct,"/",assessmentyear,"/Assessment/Figures/SPA1A_population_number_index",surveyyear,".png"), type="cairo", width=30, height=15, units = "cm", res=300)
+#I.N.plot
+#dev.off() 
