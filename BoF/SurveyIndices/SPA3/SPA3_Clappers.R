@@ -28,10 +28,13 @@ for(fun in funcs)
 }
 
 # Define: 
-uid <- un.sameotoj
-pwd <- pw.sameotoj
-surveyyear <- 2022  #This is the last survey year 
-assessmentyear <- 2022 #year in which you are conducting the survey 
+uid <- keyring::key_list("Oracle")[1,2]
+pwd <- keyring::key_get("Oracle", uid)
+
+#uid <- un.sameotoj
+#pwd <- pw.sameotoj
+surveyyear <- 2023  #This is the last survey year 
+assessmentyear <- 2023 #year in which you are conducting the survey 
 area <- "3"  #SPA assessing recall SPA 1A, 1B, and 4 are grouped; options: "1A1B4and5", "3", "6"
 path.directory <- "Y:/Inshore/BoF/"
 
@@ -51,7 +54,7 @@ deadfreq$CruiseID <- paste(deadfreq$CRUISE,deadfreq$TOW_NO,sep='.') #will be use
 
 #
 # ---- post-stratify SPA3 for VMS strata ----
-#polygon to for assingning new strata to data
+#polygon to for assignning new strata to data
 #spa3area<-read.csv("Y:/Offshore scallop/Assessment/Data/Maps/approved/Other_Borders/SPA3_VMSpoly.csv")
 spa3area <- read.csv("Y:/Inshore/Databases/Scallsur/SPA3/SPA3_VMSpoly.csv")
 
@@ -236,8 +239,8 @@ write.csv(SPA3.ClapNumbers, paste0(path.directory, assessmentyear, "/Assessment/
 ###
 #model only needs 1996+, ONLY inside VMS and SMB
 
-clappers.SPA3.SMB.DeadComm.simple <- SPA3.SMB.DeadComm.simple %>% filter(Year >= 1996) %>% select(Year, Pop)
-clappers.SPA3.Inner.DeadComm.simple <- SPA3.Inner.DeadComm.simple %>% filter(Year >= 1996) %>% select(Year, Pop)
+clappers.SPA3.SMB.DeadComm.simple <- SPA3.SMB.DeadComm.simple %>% filter(Year >= 1996) %>% dplyr::select(Year, Pop)
+clappers.SPA3.Inner.DeadComm.simple <- SPA3.Inner.DeadComm.simple %>% filter(Year >= 1996) %>% dplyr::select(Year, Pop)
 #Ensure year ranges are the same: 
 clappers.SPA3.SMB.DeadComm.simple$Year == clappers.SPA3.Inner.DeadComm.simple$Year
 #Create object for N (population size) for SPA 3 Model area: 

@@ -25,10 +25,10 @@ pwd <- pw.sameotoj
 #uid <- keyring::key_list("Oracle")[1,2]
 #pwd <- keyring::key_get("Oracle", uid)
 
-surveyyear <- 2022  #This is the last survey year for which you want to include  - not should match year of cruise below 
-cruise <- "BF2022"  #note should match year for surveyyear set above 
+surveyyear <- 2023  #This is the last survey year for which you want to include  - not should match year of cruise below 
+cruise <- "BF2023"  #note should match year for surveyyear set above 
 
-assessmentyear <- 2022 #year in which you are conducting the survey 
+assessmentyear <- 2023 #year in which you are conducting the survey 
 area <- "1A1B4and5"  #SPA assessing recall SPA 1A, 1B, and 4 are grouped; options: "1A1B4and5", "3", "6" 
 path.directory <- "Y:/Inshore/BoF/"
 
@@ -316,8 +316,8 @@ SPA1A.condition.ts.plot <- ggplot(BF.con.ts %>% filter(STRATA %in% c("MidBaySout
        aes(x=YEAR, y=CONDITION,group_by(strata.name), color=strata.name)) +  
   geom_line(aes(linetype=strata.name)) + geom_point( size = 3, aes(shape=strata.name)) +
   xlab("Year") + ylab("Condition (meat weight, g)") + theme_bw() +
-  coord_cartesian(ylim=c(8, 16)) +
-  scale_y_continuous(breaks=seq(5, 20, 5))+
+  coord_cartesian(ylim=c(8, 25)) +
+  scale_y_continuous(breaks=seq(5, 25, 5))+
   theme(axis.title = element_text(size = 15),
         axis.text = element_text(size = 12),
         legend.position = c(.01, .93),
@@ -342,11 +342,11 @@ SPA1B.condition.ts.plot <- ggplot(BF.con.ts %>% filter(STRATA %in% c("CapeSpence
                                   aes(x=YEAR, y=CONDITION,group_by(strata.name), color=strata.name)) +  
   geom_line(aes(linetype=strata.name)) + geom_point( size = 3, aes(shape=strata.name)) +
   xlab("Year") + ylab("Condition (meat weight, g)") + theme_bw() +
-  coord_cartesian(ylim=c(8, 16)) +
-  scale_y_continuous(breaks=seq(5, 20, 5))+
+  coord_cartesian(ylim=c(8, 25)) +
+  scale_y_continuous(breaks=seq(5, 25, 5))+
   theme(axis.title = element_text(size =15),
         axis.text = element_text(size = 12),
-        legend.position = c(.01, .29),
+        legend.position = c(.01, .93),
         legend.justification = c("left", "top"),
         legend.box.just = "left",
         legend.margin = margin(6, 6, 6, 6),
@@ -368,8 +368,8 @@ SPA4.condition.ts.plot <- ggplot(BF.con.ts %>% filter(STRATA =="SPA4"),
                                  aes(x=YEAR, y=CONDITION,group_by(strata.name), color=strata.name)) +  
   geom_line(aes(linetype=strata.name)) + geom_point( size = 3, aes(shape=strata.name)) +
   xlab("Year") + ylab("Condition (meat weight, g)") + theme_bw() +
-  coord_cartesian(ylim=c(8, 16)) +
-  scale_y_continuous(breaks=seq(5, 20, 5))+
+  coord_cartesian(ylim=c(8, 25)) +
+  scale_y_continuous(breaks=seq(5, 25, 5))+
   theme(axis.title = element_text(size = 15),
         axis.text = element_text(size = 12),
         legend.position = c(.01, .9),

@@ -16,11 +16,16 @@ options(stringsAsFactors = FALSE)
 
 # ///.... DEFINE THESE ENTRIES ....////
 
+#DEFINE: year, area
+year <- 2023  #this is the survey year
+area <- "1A1B4and5"  #SPAs 1A, 1B and 4 and 5 all modelled together, therefore choice entry here is "1A1B4and5", "3", "6"
+assessmentyear <- 2023 #this is the year you are running your assessment in -- corresponds to the assessment folder year name e.g. INSHORE SCALLOP/2020/Assessment..
+
 # DEFINE: load required workspace with model objects -- should be from current year of assessment, eg. if survey from 2021 and running assessment in 2021 this is in 2021 assessment folder 
-load("Y:/Inshore/BoF/2022/Assessment/Data/Growth/SPA1A1B4and5/BFgrowth2022.RData")
+load(paste0("Y:/Inshore/BoF/",year,"/Assessment/Data/Growth/SPA1A1B4and5/BFgrowth",year,".RData"))
 
 # DEFINE: load shell height objects #for SPA 1A start at 1996 -- again should be current year of assessment, e.g. if survey from 2021 and running assessment in 2021 this is in 2021 assessment folder 
-source("Y:/Inshore/BoF/2022/Assessment/Data/Growth/SPA1A1B4and5/SPA1A2022.SHobj.R")
+source(paste0("Y:/Inshore/BoF/",year,"/Assessment/Data/Growth/SPA1A1B4and5/SPA1A",year,".SHobj.R"))
 #Check that you have correctly identified all required Shell Height objects and they are within the workspace (this should have been loaded via the shell height object above)
 sh.actual
 sh.predict 
@@ -31,14 +36,9 @@ SH.object <- cbind(sh.actual %>% select(years, SHactual.Com = SPA1A.SHactual.Com
 SH.object
 
 
-#DEFINE: year, area
-year <- 2022  #this is the survey year
-area <- "1A1B4and5"  #SPAs 1A, 1B and 4 and 5 all modelled together, therefore choice entry here is "1A1B4and5", "3", "6"
-assessmentyear <- 2022 #this is the year you are running your assessment in -- corresponds to the assessment folder year name e.g. INSHORE SCALLOP/2020/Assessment..
-
 # DEFINE: Source previous year meat weight and growth rate object for ACTUAL & PREDITED growth rates:
 # if your year defined above it 2019, then you should be bringing in the 2018 growth rate object.
-spa1a.growthrate <- read.csv("Y:/Inshore/BoF/2021/Assessment/Data/Growth/SPA1A1B4and5/spa1a.growthrate.2021.csv")
+spa1a.growthrate <- read.csv(paste0("Y:/Inshore/BoF/",year-1,"/Assessment/Data/Growth/SPA1A1B4and5/spa1a.growthrate.",year-1,".csv"))
 spa1a.growthrate <- spa1a.growthrate[,-1]
 spa1a.growthrate
 

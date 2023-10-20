@@ -34,8 +34,11 @@ for(fun in funcs)
 # Define: 
 uid <- un.sameotoj
 pwd <- pw.sameotoj
-surveyyear <- 2022  #This is the last survey year 
-assessmentyear <- 2022 #year in which you are conducting the survey 
+#uid <- keyring::key_list("Oracle")[1,2]
+#pwd <- keyring::key_get("Oracle", uid)
+
+surveyyear <- 2023  #This is the last survey year 
+assessmentyear <- 2023 #year in which you are conducting the survey 
 area <- "1A1B4and5"  #SPA assessing recall SPA 1A, 1B, and 4 are grouped; options: "1A1B4and5", "3", "6" 
 path.directory <- "Y:/Inshore/BoF/"
 
@@ -919,7 +922,7 @@ SPA1B.AH.SHFdead.for.plot <- SPA1B.AH.SHFdead %>% filter(year > surveyyear-7)
 SPA1B.AH.SHFdead.for.plot$SH <- round(SPA1B.AH.SHFdead.for.plot$SH,3)
 
 
-ylimits <- c(0,10)
+ylimits <- c(0,15)
 xlimits <- c(0,200)
 recruitlimits <- c(65,80)
 
