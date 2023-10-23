@@ -456,7 +456,7 @@ tt - Sys.time()
 raw.dat$wgt.num <- (raw.dat$I*1000000)/raw.dat$N #convert I in tonnes to grams
 coeff <- 10^7
 options(scipen = 999)
-raw.dat.forplot <- raw.dat |> filter(YearCatch != 2024)
+raw.dat.forplot <- raw.dat #|> filter(YearCatch != 2024)
 
 raw.dat.forplot <- raw.dat.forplot |> 
   rename("Biomass (tonnes)" = I) |> 
@@ -471,9 +471,9 @@ raw.dat.forplot.2 <- pivot_longer(raw.dat.forplot,
                                   values_drop_na = FALSE)
 
 
-I.N.plot.2 <- ggplot(data = raw.dat.forplot.2, aes (x = YearCatch)) + 
+I.N.plot.2 <- ggplot(data = raw.dat.forplot.2, aes (x = YearSurvey)) + 
   geom_line(data = raw.dat.forplot.2, aes(y = value), colour = "black") +
-  scale_x_continuous(breaks=seq(min(raw.dat.forplot$YearCatch),max(raw.dat.forplot$YearCatch), 2))+
+  scale_x_continuous(breaks=seq(min(raw.dat.forplot$YearSurvey),max(raw.dat.forplot$YearSurvey), 2))+
   theme_bw()+
   theme(axis.title.y.right = element_text(color = "grey"))+
   xlab("Year")+
@@ -489,15 +489,15 @@ dev.off()
 #raw.dat$wgt.num <- (raw.dat$I*1000000)/raw.dat$N #convert I in tonnes to grams
 #coeff <- 10^7
 #options(scipen = 999)
-#raw.dat.forplot <- raw.dat |> filter(YearCatch != 2024)
+#raw.dat.forplot <- raw.dat #|> filter(YearSurvey != 2024)
 
 
-#I.N.plot <- ggplot(data = raw.dat.forplot, aes (x = YearCatch)) + 
+#I.N.plot <- ggplot(data = raw.dat.forplot, aes (x = YearSurvey)) + 
 #  geom_line(data = raw.dat.forplot, aes(y = wgt.num), colour = "black") +
 #  geom_line(data = raw.dat.forplot, aes(y = N/coeff), colour = "grey", linetype = "dashed") +
 #  scale_y_continuous(name = "Average weight per scallop (grams)",
 #                     sec.axis = sec_axis(~.*coeff, name = "Numbers of scallops"))+
-#  scale_x_continuous(breaks=seq(min(raw.dat.forplot$YearCatch),max(raw.dat.forplot$YearCatch), 2))+
+#  scale_x_continuous(breaks=seq(min(raw.dat.forplot$YearSurvey),max(raw.dat.forplot$YearSurvey), 2))+
 #  theme_bw()+
 #  theme(axis.title.y.right = element_text(color = "grey"))+
 #  xlab("Year")
