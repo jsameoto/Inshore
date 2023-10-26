@@ -61,9 +61,9 @@ area <- 6  #this would be the SPA, for entries options are to use: 1A, 1B, 3, 4,
 
 
 # Set the value for catch next year, assume same catch removals as current year, this is used in SSModel.plot.median() after the model runs; note no interim used for SPA 6 fishery 
-catch.next.year <- 188  
+catch.next.year <- 204 #0.59*346 = 204.14
 
-#reference points - NO BIOMASS ref pts for SPA 6 - are in terms of catch rates 
+#reference points - **NEW BIOMASS ref pts for SPA 6**
 #Set reference points 
 USR <- 471
 LRP <- 236
@@ -139,7 +139,7 @@ parm = c("B","R","q","K","P","sigma","S","m","kappa.tau","r", "Fmort","mu","Irep
 
 # Read in the data...  Note that in 2018 SPA6 is the one area which wasn't updated with the new _R Data file system as some work remains to get 
 # all the data organized
-raw.dat <- read.xlsx(paste0(direct,"/",assessmentyear, "/Assessment/Data/Model/SPA",area,"/SPA6_ModelData_R_2023-08-22.xlsx"),sheet = "AlignedForModel",
+raw.dat <- read.xlsx(paste0(direct,"/",assessmentyear, "/Assessment/Data/Model/SPA",area,"/SPA6_ModelData_R_2023-10-20.xlsx"),sheet = "AlignedForModel",
                      cols=1:13)
 str(raw.dat)
 raw.dat$C <- as.numeric(raw.dat$C)
@@ -402,15 +402,15 @@ dev.off()
 # DECISION TABLE ---- 
 #generally for documentation don't exceed e=0.18 TO 0.2 on table (NOTE: formal RR was decided for SPA6 in 2022 during AC meeting and first implemented in 2023, rest of SPA RR is 0.15)
 #Finally here we have the decision table.  This plots the decision table for all catch rates between 0 and 500 increments of 10 tonnes of catch (seq(0,500,10)).
-decision <- predict(mod.res, Catch=c(seq(100, 250, 10)),g.parm=mod.res$data$g[mod.res$data$NY],gr.parm=mod.res$data$gR[mod.res$data$NY]) #g.parm and gr now updated automaticaly
-decision.table <- SSModel_predict_summary_median(decision, RRP=0.18)
-decision.table
 
+#decision <- predict(mod.res, Catch=c(seq(100, 250, 10)),g.parm=mod.res$data$g[mod.res$data$NY],gr.parm=mod.res$data$gR[mod.res$data$NY]) #g.parm and gr now updated automaticaly
+#decision.table <- SSModel_predict_summary_median(decision, RRP=0.18)
+#decision.table
 #write.csv(decision.table, paste0(direct,"/",assessmentyear,"/Assessment/Data/Model/SPA",area,"/decisiontable",max(yrs),"_",area,".csv"),row.names = F)
 
 
 #decision table with reference points 
-decision  <- predict (mod.res, Catch=c(seq(200, 370, 10)), g.parm=mod.res$data$g[mod.res$data$NY],gr.parm=mod.res$data$gR[mod.res$data$NY]) 
+decision  <- predict (mod.res, Catch=c(seq(240, 330, 10)), g.parm=mod.res$data$g[mod.res$data$NY],gr.parm=mod.res$data$gR[mod.res$data$NY]) 
 decision.table <- SSModel_predict_summary_median(decision, LRP=LRP, USR=USR, RRP=0.18)
 decision.table
 
@@ -421,7 +421,7 @@ prop.catch.in <- round(SPA6.landings %>% filter(Year == "Prop_IN") %>%
 #Add Catch.all column and calculate equivalent catch for total area
 decision.table$Next.year <- decision.table$Next.year %>% 
   mutate(Catch.all = round(Catch/prop.catch.in,0))
-
+decision.table
 #write.csv(decision.table, paste0(direct,"/",assessmentyear,"/Assessment/Data/Model/SPA",area,"/decisiontable.MOCK.Ref.Pts.",max(yrs),"_",area,".csv"),row.names = F)
 write.csv(decision.table, paste0(direct,"/",assessmentyear,"/Assessment/Data/Model/SPA",area,"/decisiontable",max(yrs),"_",area,".csv"),row.names = F)
 
@@ -451,3 +451,63 @@ tt <- Sys.time()
 save(LRP, USR, catch.next.year, min.neff, Rhat, temp, stats.output, summ.Spa6, decision, decision.table, prob.above.USR, prob.above.LRP, 
      file=paste0(direct,"/",assessmentyear,"/Assessment/Data/Model/SPA",area,"/Model_results_and_diagnostics_",max(yrs),"_",area,".RData"))
 tt - Sys.time()
+
+# ... END OF MODEL PLOTS...
+
+############################################################################
+
+## NEW INDICES PLOTS - BIOMASS (scaled to area) BY POPULATION NUMBER ###
+
+raw.dat$wgt.num <- (raw.dat$I*1000000)/raw.dat$N #convert I in tonnes to grams
+#coeff <- 10^7
+options(scipen = 999)
+raw.dat.forplot <- raw.dat #|> filter(YearCatch != 2024)
+
+raw.dat.forplot <- raw.dat.forplot |> 
+  rename("Biomass (tonnes)" = I) |> 
+  rename("Numbers" = N) |> 
+  rename("Average Weight per Scallop (g)" = wgt.num)
+
+raw.dat.forplot.2 <- pivot_longer(raw.dat.forplot, 
+                                  cols = c("Average Weight per Scallop (g)", "Numbers", "Biomass (tonnes)"),
+                                  names_to = "Indices",
+                                  #names_prefix = "X",
+                                  values_to = "value",
+                                  values_drop_na = FALSE)
+
+
+I.N.plot.2 <- ggplot(data = raw.dat.forplot.2, aes (x = YearSurvey)) + 
+  geom_line(data = raw.dat.forplot.2, aes(y = value), colour = "black") +
+  scale_x_continuous(breaks=seq(min(raw.dat.forplot$YearSurvey),max(raw.dat.forplot$YearSurvey), 2))+
+  theme_bw()+
+  theme(axis.title.y.right = element_text(color = "grey"))+
+  xlab("Year")+
+  facet_wrap(Indices~., dir = "v", scales = "free")
+I.N.plot.2
+
+png(paste0(direct,"/",assessmentyear,"/Assessment/Figures/SPA6_population_number_index",surveyyear,".png"), type="cairo", width=30, height=15, units = "cm", res=300)
+I.N.plot.2
+dev.off() 
+
+#Alternative plot:
+
+#raw.dat$wgt.num <- (raw.dat$I*1000000)/raw.dat$N #convert I in tonnes to grams
+#coeff <- 10^7
+#options(scipen = 999)
+#raw.dat.forplot <- raw.dat #|> filter(YearSurvey != 2024)
+
+
+#I.N.plot <- ggplot(data = raw.dat.forplot, aes (x = YearSurvey)) + 
+#  geom_line(data = raw.dat.forplot, aes(y = wgt.num), colour = "black") +
+#  geom_line(data = raw.dat.forplot, aes(y = N/coeff), colour = "grey", linetype = "dashed") +
+#  scale_y_continuous(name = "Average weight per scallop (grams)",
+#                     sec.axis = sec_axis(~.*coeff, name = "Numbers of scallops"))+
+#  scale_x_continuous(breaks=seq(min(raw.dat.forplot$YearSurvey),max(raw.dat.forplot$YearSurvey), 2))+
+#  theme_bw()+
+#  theme(axis.title.y.right = element_text(color = "grey"))+
+#  xlab("Year")
+#I.N.plot
+
+#png(paste0(direct,"/",assessmentyear,"/Assessment/Figures/SPA4_population_number_index",surveyyear,".png"), type="cairo", width=30, height=15, units = "cm", res=300)
+#I.N.plot
+#dev.off() 

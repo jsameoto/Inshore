@@ -167,7 +167,7 @@ png(paste0(path.directory,assessmentyear,"/Assessment/Figures/SPA6_GrowthRate_Co
 x<-c(1996,year) 
 y<-c(0.8,3)
 
-plot (x,y, type="n",xlab="",ylab="Growth Rate (mm)", cex.axis=1.3, cex.lab=1.5, main="SPA6 Actual Growth Rate")
+plot (x,y, type="n",xlab="",ylab="Growth Rate", cex.axis=1.3, cex.lab=1.5, main="SPA6 Actual Growth Rate")
 lines(spa6.growthrate.com[,c(1,4)], type="b", pch=1, lty=1, col=1)
 lines(spa6.growthrate.rec[,c(1,4)], type="b", pch=2, lty=2, col=2)
 abline(h=1, lty=3)
@@ -237,13 +237,13 @@ write.csv(spa6.growthrate, paste0(path.directory,assessmentyear,"/Assessment/Dat
 png(paste0(path.directory,assessmentyear,"/Assessment/Figures/SPA6_GrowthRate_Com_ActualPredicted.png"), type="cairo", width=20, height=12, units = "cm", res=400)
 
 x <- c(1996,year) 
-y <- c(0.8,2.0)
+y <- c(0.7,2.0)
 
-plot (x,y, type="n",xlab="",ylab="Growth Rate (mm)", cex.axis=1.3, cex.lab=1.5, main="SPA6 Commerical Growth Rate")
+plot (x,y, type="n",xlab="",ylab="Growth Rate", cex.axis=1.3, cex.lab=1.5, main="SPA6 Commerical Growth Rate")
 lines(spa6.growthrate.com[,c(1,4)], type="b", pch=1, lty=1, col=1)
 lines(spa6.predictedgr.com[,c(1,4)], type="b", pch=17, lty=1, col=1) # predicted value for 2015 to 2016
 abline(h=1, lty=3)
-legend (2015, 1.5, bty="n", legend=c("Actual", "Predicted"), pch=c(1,17), col=c(1,1))
+legend (2015, 2.0, bty="n", legend=c("Actual", "Predicted"), pch=c(1,17), col=c(1,1))
 
 dev.off()
 
@@ -254,7 +254,7 @@ png(paste0(path.directory,assessmentyear,"/Assessment/Figures/SPA6_GrowthRate_Re
 x<-c(1996,year) 
 y<-c(0.8,3)
 
-plot (x,y, type="n",xlab="",ylab="Growth Rate (mm)", cex.axis=1.3, cex.lab=1.5, main="SPA6 Recruit Growth Rate")
+plot (x,y, type="n",xlab="",ylab="Growth Rate", cex.axis=1.3, cex.lab=1.5, main="SPA6 Recruit Growth Rate")
 lines(spa6.growthrate.rec[,c(1,4)], type="b", pch=1, lty=1, col=1)
 lines(spa6.predictedgr.rec[,c(1,4)], type="b", pch=17, lty=1, col=1) 
 abline(h=1, lty=3)
