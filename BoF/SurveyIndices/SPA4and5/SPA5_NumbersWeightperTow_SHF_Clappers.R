@@ -154,7 +154,7 @@ survtow <- aggregate(TOW_NO~YEAR, data=spa5freq, length)
 survtow
 
 #Save out to input number of tows into Update document:
-write.csv(survtow, paste0("Y:/Inshore/BoF/2022/Assessment/Data/SurveyIndices/SPA1A1B4and5/SPA5.Numtows.per.survey",assessmentyear,".csv"), row.names = FALSE)
+write.csv(survtow, paste0("Y:/Inshore/BoF/,"surveyyear",/Assessment/Data/SurveyIndices/SPA1A1B4and5/SPA5.Numtows.per.survey",assessmentyear,".csv"), row.names = FALSE)
 
 # SPA5detail<-subset(BFliveweight, STRATA_ID==21)
 # detailtow<-tapply(SPA5detail$TOW_NO, SPA5detail$CRUISE, FUN = function(x) length(unique(x)))
