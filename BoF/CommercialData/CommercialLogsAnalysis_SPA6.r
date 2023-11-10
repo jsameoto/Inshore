@@ -46,16 +46,16 @@
 #### DEFINE ####
 	
 	direct <- "Y:/Inshore/BoF"
-	fishingyear <- 2022 #most recent year of commercial fishing data to be used (e.g. if fishing season is 2019/2020, use 2020)
-	assessmentyear <- 2022 #year in which you are conducting the assessment
+	fishingyear <- 2023 #most recent year of commercial fishing data to be used (e.g. if fishing season is 2019/2020, use 2020)
+	assessmentyear <- 2023 #year in which you are conducting the assessment
 #	un.ID <- un.raperj #ptran username
 #	pwd.ID <- pw.raperj #ptran password
 	un.ID=un.sameotoj #ptran username
 	pwd.ID=pw.sameotoj#ptran password
 	
 #Date range for logs to be selected 
-	start.date.logs <- "2021-10-01"  #YYYY-MM-DD use Oct 1 
-	ends.date.logs <- "2022-10-01"  #YYYY-MM-DD use Oct 1 
+	start.date.logs <- "2022-10-01"  #YYYY-MM-DD use Oct 1 
+	ends.date.logs <- "2023-10-01"  #YYYY-MM-DD use Oct 1 
 	
 #### Read files ####
 	
@@ -179,7 +179,7 @@
   #Append current year data to CPUE_spa6
   comm.dat.subarea <- rbind(CPUE_spa6_subarea, cpue.subarea[,c("year", "area", "fleet", "effort.dat.1000h", "catch.dat.mt", "cpue.kgh")])
   
-  #Save to current asssessment folder
+  #Save to current assessment folder
   write.csv(comm.dat.subarea, paste0(direct,"/",assessmentyear,"/Assessment/Data/CommercialData/CPUE_spa6_subarea_", fishingyear, ".csv"), row.names = FALSE)
   
   
@@ -203,7 +203,7 @@
   cpue.fleet$cpue.kgh <- ifelse(cpue.fleet$n > 5, cpue.fleet$catch.dat.kg/cpue.fleet$effort.dat.hr, NA)
   
   #Landings by fleet:
-  landings <- as.data.frame(t(tacq[c(1,2,4),-1]))
+  landings <- as.data.frame(t(tacq[c(1,2,3,5),-1]))
   names(landings) <- c("FB","MB","TAC")
   landings$year <- as.numeric(rownames(landings))
   
@@ -225,7 +225,7 @@
   #Append current year data to CPUE_spa6_fleet
   comm.dat.fleet <- rbind(CPUE_spa6_fleet, cpue.fleet[,c("fleet", "year", "effort.dat.hr", "catch.dat.kg", "cpue.kgh", "catch.fleet.mt", "effort.fleet.1000h")])
   
-  #Save to current asssessment folder
+  #Save to current assessment folder
   write.csv(comm.dat.fleet, paste0(direct,"/",assessmentyear,"/Assessment/Data/CommercialData/CPUE_spa6_fleet_", fishingyear, ".csv"), row.names = FALSE)    
 
   
