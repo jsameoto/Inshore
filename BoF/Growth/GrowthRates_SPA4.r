@@ -16,11 +16,16 @@ options(stringsAsFactors = FALSE)
 
 # ///.... DEFINE THESE ENTRIES ....////
 
+#DEFINE: year, area
+year <- 2023  #this is the survey year
+area <- "1A1B4and5"  #SPAs 1A, 1B and 4 and 5 all modelled together, therefore choice entry here is "1A1B4and5", "3", "6"
+assessmentyear <- 2023 #this is the year you are running your assessment in -- corresponds to the assessment folder year name e.g. INSHORE SCALLOP/2020/Assessment..
+
 # DEFINE: load required workspace with model objects -- should be from current year of assessment, eg. if survey from 2021 and running assessment in 2021 this is in 2021 assessment folder 
-load("Y:/Inshore/BoF/2022/Assessment/Data/Growth/SPA1A1B4and5/BFgrowth2022.RData")
+load(paste0("Y:/Inshore/BoF/",year,"/Assessment/Data/Growth/SPA1A1B4and5/BFgrowth",year,".RData"))
 
 # DEFINE: load shell height objects - again should be current year of assessment, e.g. if survey from 2021 and running assessment in 2021 this is in 2021 assessment folder 
-source("Y:/Inshore/BoF/2022/Assessment/Data/Growth/SPA1A1B4and5/SPA4.SHobj.2022.R")#start at 1996
+source(paste0("Y:/Inshore/BoF/",year,"/Assessment/Data/Growth/SPA1A1B4and5/SPA4.SHobj.",year,".R"))#start at 1996
 #Check that you have correctly identified all required Shell Height objects and they are within the workspace (should have been loaded via the shell height object above)
 sh.actual
 sh.predict 
@@ -30,14 +35,10 @@ SH.object <- cbind(sh.actual %>% select(years, SHactual.Com = SPA4.SHactual.Com.
                    sh.predict %>% select(SHpredict.Com = SPA4.SHpredict.Com, SHpredict.Rec = SPA4.SHpredict.Rec))
 SH.object
 
-#DEFINE: year, area
-year <- 2022  #this is the survey year
-area <- "1A1B4and5"  #SPAs 1A, 1B and 4 and 5 all modelled together, therefore choice entry here is "1A1B4and5", "3", "6"
-assessmentyear <- 2022 #this is the year you are running your assessment in -- corresponds to the assessment folder year name e.g. INSHORE SCALLOP/2020/Assessment..
 
 # DEFINE: Source previous year meat weight and growth rate object for ACTUAL & PREDITED growth rates:
 # if your year defined above it 2019, then you should be bringing in the 2018 growth rate object.
-spa4.growthrate <- read.csv("Y:/Inshore/BoF/2021/Assessment/Data/Growth/SPA1A1B4and5/spa4.growthrate.2021.csv")
+spa4.growthrate <- read.csv(paste0("Y:/Inshore/BoF/",year-1,"/Assessment/Data/Growth/SPA1A1B4and5/spa4.growthrate.",year-1,".csv"))
 spa4.growthrate <- spa4.growthrate[,-1]
 
 #break out data to object: 
@@ -155,7 +156,7 @@ actual.growth.plot.title <- "SPA4 Actual Growth Rate"
 x <- c(1996, year) #update year
 y <- c(0.8,2.5)
 
-plot (x,y, type="n",xlab="",ylab="Growth Rate (mm)", cex.axis=1.3, cex.lab=1.5, main=actual.growth.plot.title)
+plot (x,y, type="n",xlab="",ylab="Growth Rate", cex.axis=1.3, cex.lab=1.5, main=actual.growth.plot.title)
 lines(spa4.growthrate.com$rate ~ spa4.growthrate.com$Year , type="b", pch=1, lty=1, col=1)
 lines(spa4.growthrate.rec$rate ~ spa4.growthrate.rec$Year , type="b", pch=2, lty=2, col=2)
 abline(h=1, lty=3)
@@ -229,13 +230,13 @@ write.csv(spa4.growthrate, paste0(path.directory,assessmentyear,"/Assessment/Dat
 png(paste0(path.directory,assessmentyear,"/Assessment/Figures/SPA4_GrowthRate_Com_ActualPredicted.png"), type="cairo", width=20, height=12, units = "cm", res=400)
 
 x <- c(1996,year) 
-y <- c(0.8,1.5)
+y <- c(0.8,2.0)
 
-plot (x,y, type="n",xlab="",ylab="Growth Rate (mm)", cex.axis=1.3, cex.lab=1.5, main="SPA4 Commercial Growth Rate")
+plot (x,y, type="n",xlab="",ylab="Growth Rate", cex.axis=1.3, cex.lab=1.5, main="SPA4 Commercial Growth Rate")
 lines(spa4.growthrate.com$rate ~ spa4.growthrate.com$Year, type="b", pch=1, lty=1, col=1)
 lines(spa4.predictedgr.com$rate ~ spa4.predictedgr.com$Year, type="b", pch=17, lty=1, col=1) 
 abline(h=1, lty=3)
-legend (2015, 1.5, bty="n", legend=c("Actual", "Predicted"), pch=c(1,17), col=c(1,1))
+legend (2015, 2.0, bty="n", legend=c("Actual", "Predicted"), pch=c(1,17), col=c(1,1))
 
 dev.off()
 
@@ -246,7 +247,7 @@ png(paste0(path.directory,assessmentyear,"/Assessment/Figures/SPA4_GrowthRate_Re
 x <- c(1996,year)
 y <- c(0.8,2.5)
 
-plot (x,y, type="n",xlab="",ylab="Growth Rate (mm)", cex.axis=1.3, cex.lab=1.5, main="SPA4 Recruit Growth Rate")
+plot (x,y, type="n",xlab="",ylab="Growth Rate", cex.axis=1.3, cex.lab=1.5, main="SPA4 Recruit Growth Rate")
 lines(spa4.growthrate.rec$rate ~ spa4.growthrate.rec$Year, type="b", pch=1, lty=1, col=1)
 lines(spa4.predictedgr.rec$rate ~ spa4.predictedgr.rec$Year, type="b", pch=17, lty=1, col=1) 
 abline(h=1, lty=3)

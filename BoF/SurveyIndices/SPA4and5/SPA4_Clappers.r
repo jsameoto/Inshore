@@ -25,8 +25,8 @@ pwd <- pw.sameotoj
 uid <- keyring::key_list("Oracle")[1,2]
 pwd <- keyring::key_get("Oracle", uid)
 
-surveyyear <- 2022  #This is the last survey year 
-assessmentyear <- 2022 #year in which you are conducting the survey 
+surveyyear <- 2023  #This is the last survey year 
+assessmentyear <- 2023 #year in which you are conducting the survey 
 area <- "1A1B4and5"  #SPA assessing recall SPA 1A, 1B, and 4 are grouped; options: "1A1B4and5", "3", "6" 
 path.directory <- "Y:/Inshore/BoF/"
 
@@ -129,7 +129,7 @@ clappers <- SPA4.DeadComm[SPA4.DeadComm$Year>1982,]$Pop
 clappers
 #[1]   892059   899411   477504   669072  1292933  1808124 48430384 81036938 13845252  2043756   813981   613533  1141230   866322   773407  1008580   723040
 #[18]  1099560  2327338  2578780  3420790  2095318   748552  1471109   532701   573789   478229   286895   341813   547138   772835   927518  1132741  1063309
-#[35]  1049360  1164372   969389  1082675  1195973  1361058
+#[35]  1049360  1164372   969389  1082675  1195973  1361058  1691054
 
 ###
 ### ---- Plot Clapper No/tow ---- 
@@ -165,29 +165,49 @@ dev.off()
 ### ---- CALCULATE SHF FOR EACH YEAR BY STRATA   (use yrs:1998+ for all areas) ----
 ###
 
-#remember - no data in 2020 so filling in with NAs 
-years <- 1983:surveyyear 
-X <- length(years)
-
-SPA4.SHFdead <- data.frame(rep(NA,X))
-for(i in 1:X){
-  if (years[i] != 2020) {
-temp.data<-deadfreq[deadfreq$YEAR==1982+i,]
-for(j in 1:40){
-SPA4.SHFdead[j,i]<-summary(PEDstrata(temp.data,strata.SPA4.new,"STRATA_ID",catch=temp.data[,10+j], Subset=temp.data$TOW_TYPE_ID==1))$yst
-}}
-  if (years[i] == 2020) {
-    SPA4.SHFdead[,i] <- NA }
-}
-
+years <- c(1983:2019, 2021:surveyyear) # Runs to the most recent year by default, skips 2020.
+#X <- length(years)
+SPA4.SHFdead <- data.frame(bin.mid.pt = seq(2.5,200,by=5), YEAR = NA) 
+#SPA4.SHFdead <- data.frame(rep(NA,X)) ## Code previous like this but was wrong orientation and gave too many rows - fixed in 2023
+for(i in 1:length(years)){
+  temp.data <- deadfreq[deadfreq$YEAR==years[i],]
+  for(j in 1:40){
+    SPA4.SHFdead[j,i] <- summary(PEDstrata(temp.data,strata.SPA4.new,"STRATA_ID",catch=temp.data[,10+j], Subset=temp.data$TOW_TYPE_ID==1))$yst
+  }}
 SPA4.SHFdead
+colnames(SPA4.SHFdead) <- c(paste0("X",years))
+SPA4.SHFdead
+dim(SPA4.SHFdead)[1] == 40 
+View(SPA4.SHFdead)  
 
-names(SPA4.SHFdead) #remember code above skips 2020 since no data for 2020
-names(SPA4.SHFdead)[1:dim(SPA4.SHFdead)[2]] <- c(paste0("X",c(seq(1983,surveyyear))))
-SPA4.SHFdead$bin.label <- row.names(SPA4.SHFdead)
-
-head(SPA4.SHFdead)
+SPA4.SHFdead <- data.frame(bin.label = row.names(SPA4.SHFdead), SPA4.SHFdead)
+SPA4.SHFdead$X2020 <- NA # add 2020 column.
 SPA4.SHFdead$bin.mid.pt <- seq(2.5,200,by=5)
+head(SPA4.SHFdead)
+
+## Code previous like this but gave too many rows - fixed above in 2023
+#years <- 1983:surveyyear 
+#X <- length(years)
+
+#SPA4.SHFdead <- data.frame(rep(NA,X))
+#for(i in 1:X){
+#  if (years[i] != 2020) {
+#temp.data<-deadfreq[deadfreq$YEAR==1982+i,]
+#for(j in 1:40){
+#SPA4.SHFdead[j,i]<-summary(PEDstrata(temp.data,strata.SPA4.new,"STRATA_ID",catch=temp.data[,10+j], Subset=temp.data$TOW_TYPE_ID==1))$yst
+#}}
+#  if (years[i] == 2020) {
+#    SPA4.SHFdead[,i] <- NA }
+#}
+
+#SPA4.SHFdead
+
+#names(SPA4.SHFdead)
+#names(SPA4.SHFdead)[1:dim(SPA4.SHFdead)[2]] <- c(paste0("X",c(seq(1983,surveyyear))))
+#SPA4.SHFdead$bin.label <- row.names(SPA4.SHFdead)
+
+#head(SPA4.SHFdead)
+#SPA4.SHFdead$bin.mid.pt <- seq(2.5,200,by=5)
 
 SPA4.SHFdead.for.plot <- pivot_longer(SPA4.SHFdead, 
                                     cols = starts_with("X"),

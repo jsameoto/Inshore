@@ -28,8 +28,8 @@ pwd <- pw.sameotoj
 uid <- keyring::key_list("Oracle")[1,2]
 pwd <- keyring::key_get("Oracle", uid)
 
-surveyyear <- 2022  #This is the last survey year 
-assessmentyear <- 2022 #year in which you are conducting the survey 
+surveyyear <- 2023  #This is the last survey year 
+assessmentyear <- 2023 #year in which you are conducting the survey 
 area <- "1A1B4and5"  #SPA assessing recall SPA 1A, 1B, and 4 are grouped; options: "1A1B4and5", "3", "6" 
 path.directory <- "Y:/Inshore/BoF/"
 
@@ -255,7 +255,7 @@ wt.per.tow.recent.ts <- ggplot(data = SPA4.Weight[SPA4.Weight$Year>=2004,], aes(
   geom_point() + 
   geom_line(aes(linetype = Size)) + 
   theme_bw() + ylab("Mean kg/tow") + xlab("Year") + 
-  theme(legend.position = c(0.9, 0.9)) + 
+  theme(legend.position = c(0.1, 0.9)) + 
   scale_linetype_manual(values=c("solid", "dotted"))+
   scale_color_manual( values=c('black','red'))
 wt.per.tow.recent.ts

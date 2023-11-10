@@ -34,8 +34,8 @@ pwd <- pw.sameotoj
 uid <- keyring::key_list("Oracle")[1,2]
 pwd <- keyring::key_get("Oracle", uid)
 
-surveyyear <- 2022  #This is the last survey year 
-assessmentyear <- 2022 #year in which you are conducting the survey 
+surveyyear <- 2023  #This is the last survey year 
+assessmentyear <- 2023 #year in which you are conducting the survey 
 area <- "6"  #SPA assessing recall SPA 1A, 1B, and 4 are grouped; options: "1A1B4and5", "3", "6" 
 path.directory <- "Y:/Inshore/BoF/"
 
@@ -82,25 +82,13 @@ livefreq.all$lat <- convert.dd.dddd(livefreq.all$START_LAT)
 livefreq.all$lon <- convert.dd.dddd(livefreq.all$START_LONG)
 livefreq.all$ID <- 1:nrow(livefreq.all)
 
-#livefreq.all$Longitude_sf <- livefreq$lon #duplicate so the lon column is maintained after converting to sf
-#livefreq.all$Latitude_sf <- livefreq$lat #duplicate so the lat column is maintained after converting to sf
-#use Longitude_sf, Latitude_sf to convert to sf
-#livefreq.all <- st_as_sf(livefreq.all, coords = c("Longitude_sf", "Latitude_sf"), crs = 4326)
-#livefreq.match <- st_intersection(livefreq.all, vms %>% dplyr::select(VMSAREA))
-#drop the geometry:
-#livefreq.match <- st_drop_geometry(livefreq.match)
-#livefreq.all <- st_drop_geometry(livefreq.all)
-#livefreq <- merge(livefreq.match, livefreq.all, by = "CruiseID")
-
-#mapview::mapview(livefreq.all)+
-#  mapview::mapview(vms)
-
-#identify tows "inside" the VMS strata and call them "IN"
+#identify tows "inside" the VMS strata and call them "IN" and tows "outside", "OUT".
 livefreq.all$VMSSTRATA <- ""
 events <- subset(livefreq.all,STRATA_ID%in%30:32,c("ID","lon","lat"))
 names(events) <- c("EID","X","Y")
 livefreq.all$VMSSTRATA[livefreq.all$ID%in%findPolys(events,inVMS)$EID] <- "IN"
 livefreq.all$VMSSTRATA[livefreq.all$ID%in%findPolys(events,outvms)$EID] <- "OUT"
+
 livefreq <- livefreq.all
 livefreq$CruiseID <- paste0(livefreq$CRUISE,"." ,livefreq$TOW_NO)
 
@@ -154,7 +142,6 @@ livefreq$VMSSTRATA[livefreq$TOW_NO==40 & livefreq$CRUISE == "GM2018"] <-"OUT"
 #9. In 2019 tow 95 assigned to IN but needs to be OUT 
 livefreq$VMSSTRATA[livefreq$TOW_NO==95 & livefreq$CRUISE == "GM2019"] <-"OUT"
 
-
 table(livefreq$VMSSTRATA)
 
 #Check current years VMSSTRATA Assignment.
@@ -167,10 +154,10 @@ check.in.YYYY <- livefreq %>% filter(CRUISE == paste0("GM", surveyyear))%>%
   filter(VMSSTRATA == "IN")
 
 require(mapview)
-mapview::mapview(check.out.2022) +
+mapview::mapview(check.out.YYYY) +
   mapview(outvms.sf, col.regions = "red")
 
-mapview::mapview(check.in.2022) +
+mapview::mapview(check.in.YYYY) +
   mapview(inVMS.sf, col.regions = "green")
 #  mapview::mapview(check.2019)
 

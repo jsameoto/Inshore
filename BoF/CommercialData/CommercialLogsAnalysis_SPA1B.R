@@ -54,16 +54,16 @@ for(fun in funcs)
 #### DEFINE ####
 
 direct <- "Y:/Inshore/BoF"
-fishingyear <- 2022 #most recent year of commercial fishing data to be used (e.g. if fishing season is 2019/2020, use 2020)
-assessmentyear <- 2022 #year in which you are conducting the assessment
+fishingyear <- 2023 #most recent year of commercial fishing data to be used (e.g. if fishing season is 2019/2020, use 2020)
+assessmentyear <- 2023 #year in which you are conducting the assessment
 #un.ID=un.raperj #ptran username
 #pwd.ID=pw.raperj #ptran password
 un.ID=un.sameotoj #ptran username
 pwd.ID=pw.sameotoj#ptran password
 
 #Date range for logs to be selected 
-start.date.logs <- "2021-10-01"  #YYYY-MM-DD use Oct 1 
-ends.date.logs <- "2022-10-01"  #YYYY-MM-DD use Oct 1 
+start.date.logs <- "2022-10-01"  #YYYY-MM-DD use Oct 1 
+ends.date.logs <- "2023-10-01"  #YYYY-MM-DD use Oct 1 
 
 
 #### Read files ####
@@ -84,7 +84,6 @@ poly.strata <-  st_read("Z:/People/Amy/2012 survey prep/AmyArc", layer = "SCSTRA
 
 #### Select data #### 
 
-#UPDATE date range
 quer2 <- paste(
   "SELECT * 			                             ",
   "FROM scallop.scallop_log_marfis s		         ",
