@@ -41,13 +41,27 @@ for(fun in funcs)
 # -----Land Shapefile and bathy contours --------------------------------------------------------------------
 sf::sf_use_s2(FALSE)
 
-land.sf <- st_read("C:/Users/WILSONB/Documents/1_GISdata/Shapefiles/AtlCan_EasternUSA_land.shp") 
+#Read in land shapefile - used for filtering out points on land.
+temp <- tempfile()
+# Download this to the temp directory
+download.file("https://raw.githubusercontent.com/Mar-scal/GIS_layers/master/other_boundaries/other_boundaries.zip", temp)
+# Figure out what this file was saved as
+temp2 <- tempfile()
+# Unzip it
+unzip(zipfile=temp, exdir=temp2)
 
-bathy <- getNOAA.bathy(-68.3, -54.9, 39.9, 47.9, resolution = 1, keep=TRUE)
+land.sf <- st_read(paste0(temp2, "/Atl_region_land.shp"), crs = 4326) %>% 
+  st_transform(crs = 32620) %>%
+  filter(PROVINCE %in% c("Nova Scotia", "New Brunswick", "Prince Edward Island", "Newfoundland and Labrador")) %>% 
+  st_make_valid() %>%  #shapefile contains invalid geometry
+  dplyr::select(PROVINCE) 
+
+#bathy <- getNOAA.bathy(-68.3, -54.9, 39.9, 47.9, resolution = 1, keep=TRUE) #Used R 4.2.2
+bathy <- getNOAA.bathy(-69.3, -62.9, 42.7, 46.4, resolution = 1, keep=TRUE) #Used R 4.2.2
 bathy <- marmap::as.raster(bathy)
 bathy.cont <- rasterToContour(bathy)
 bathy.sf <- bathy.cont %>% st_as_sf()
-#plot(bathy.sf)
+plot(bathy.sf)
 #autoplot.bathy(bathy, geom=c("tile","contour")) +
 #  scale_fill_gradient2(low="dodgerblue4", mid="gainsboro", high="darkgreen")
 
