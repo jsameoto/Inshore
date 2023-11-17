@@ -13,6 +13,7 @@ library(stringr)
 direct <- "Y:/Inshore/BoF"
 assessmentyear <- 2023 #year in which you are conducting the assessment 
 surveyyear <- 2023  #last year of survey data you are using, e.g. if max year of survey is survey from summer 2019, this would be 2019 
+fishing.years <- "2022/2023"
 
 #sources landings data by area 
 dat.1A <- read.xlsx(paste0(direct,"/",assessmentyear,"/Assessment/Data/CommercialData/SPA1A_TACandLandings_",surveyyear,".xlsx"),sheet = "TACandLandings")
@@ -22,13 +23,33 @@ dat.4and5 <- read.xlsx(paste0(direct,"/",assessmentyear,"/Assessment/Data/Commer
 dat.6 <- read.xlsx(paste0(direct,"/",assessmentyear,"/Assessment/Data/CommercialData/SPA6_TACandLandings_",surveyyear,".xlsx"),sheet = "TACandLandings")
 
 ##ADD FSC to the filter for any areas that have FSC rows, if not, they won't be included. We will deal with this further down.
-dat.1A$Year[dat.1A$Year == "Full Bay"] <- c("Landings", "FSC")
-dat.1B <- dat.1B %>% filter(Year %in% c("Total", "TAC", "FSC"))  
-dat.1B$Year[dat.1B$Year == "Total"] <- c("Landings", "FSC")
+dat.1A$Year[dat.1A$Year == "Full Bay"] <- c("Landings", "FSC") #if no FSC, will give warning: number of items to replace is not a multiple of replacement length
+
+#1B - need to combine landings:
+dat.1B.com.land <- dat.1B |> filter(Year %in% c("Full Bay","Mid Bay", "Upper Bay")) |> 
+  dplyr::select(where(is.numeric)) |> 
+  summarise(across(where(is.numeric), ~ sum(.x, na.rm = TRUE))) |> 
+  mutate(Year = "Landings", .before="2002/2003") #add first column back in
+#filter rows for total (Commercial and FSC landings) and FSC (if available)
+dat.1B <- dat.1B |> filter(Year %in% c("FSC", "TAC"))
+#now combine rows of commercial landings, total (commercial landings plus FSC landings if available) and FSC landings if available)
+dat.1B <- rbind(dat.1B,dat.1B.com.land)
+dat.1B <- dat.1B |> slice(match(c("Landings","TAC","FSC"), Year))
+
 dat.3 #all rows incl. FSC if added to .xlsx
 dat.4and5 #all rows incl. FSC if added to .xlsx
-dat.6 <- dat.6 %>% filter(Year %in% c("Total", "TAC", "FSC"))  #FSC in 2023
-dat.6$Year[dat.6$Year == "Total"] <-  c("Landings", "FSC")
+
+#SPA6
+dat.6.com.land <- dat.6 |> filter(Year %in% c("Full Bay","Mid-Bay")) |> 
+  select(where(is.numeric)) |> 
+  summarise(across(where(is.numeric), ~ sum(.x, na.rm = TRUE))) |> 
+  mutate(Year = "Landings", .before="1976") #add first column back in
+#filter rows for and FSC (if available) and TAC
+dat.6 <- dat.6 |> filter(Year %in% c("FSC", "TAC"))
+#now combine rows of commercial landings, total (commercial landings plus FSC landings if available) and FSC landings if available)
+dat.6 <- rbind(dat.6,dat.6.com.land)
+dat.6 <- dat.6 |> slice(match(c("Landings","TAC","FSC"), Year))
+
 
 #flip to long format, create year column, and tidy up 
 #.1A. 
