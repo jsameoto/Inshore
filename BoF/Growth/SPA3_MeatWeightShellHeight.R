@@ -297,7 +297,7 @@ condition.ts.plot <- ggplot(BI.con.ts %>% filter(STRATA %in% c("SMB", "InVMS", "
   xlab("Year") + ylab("Condition (meat weight, g)") + theme_bw() +
   coord_cartesian(ylim=c(5, 20)) +
   scale_y_continuous(breaks=seq(5, 20, 5))+
-  scale_x_continuous(breaks=seq(1995,2023, 2))+
+  #scale_x_continuous(breaks=seq(1995,2023, 2))+
   theme(axis.title = element_text(size = 15),
         axis.text = element_text(size = 12),
         legend.position = c(.008, .20),
