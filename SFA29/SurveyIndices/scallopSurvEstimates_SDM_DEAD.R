@@ -36,9 +36,9 @@ pwd <- pw.sameotoj
 uid <- keyring::key_list("Oracle")[1,2]
 pwd <- keyring::key_get("Oracle", uid)
 
-surveyyear <- 2022  #This is the last survey year for which you want to include  - not should match year of cruise below 
-cruise <- "SFA292022"  #note should match year for surveyyear set above 
-assessmentyear <- 2023 #year in which you are conducting the survey 
+surveyyear <- 2023  #This is the last survey year for which you want to include  - not should match year of cruise below 
+cruise <- "SFA292023"  #note should match year for surveyyear set above 
+assessmentyear <- 2024 #year in which you are conducting the survey 
 path.directory <- "Y:/Inshore/SFA29/"
 years <- c(2001:surveyyear) #when have 2021 data ready with SDM value then can use line of code below 
 #yr.crnt <- surveyyear-1

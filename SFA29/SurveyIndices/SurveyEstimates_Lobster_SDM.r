@@ -29,8 +29,8 @@ names(SFA292005to2007sediment ) <- c("uid","Start.Bottom")
 
 #DEFINE:
 path.directory <- "Y:/Inshore/SFA29/"
-assessmentyear <- 2023 #year in which you are conducting the assessment 
-surveyyear <- 2022  #last year of survey data you are using, e.g. if max year of survey is survey from summer 2019, this would be 2019 
+assessmentyear <- 2024 #year in which you are conducting the assessment 
+surveyyear <- 2023  #last year of survey data you are using, e.g. if max year of survey is survey from summer 2019, this would be 2019 
 uid <- un.sameotoj
 pwd <- pw.sameotoj
 uid <- keyring::key_list("Oracle")[1,2]

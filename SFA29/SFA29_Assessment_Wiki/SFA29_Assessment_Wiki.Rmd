@@ -348,9 +348,6 @@ file.show(paste0("Y:/Inshore/SFA29/",year,"/Assessment/Scripts/Growth/SFA29_SHF_
     -   Query shell height bin data from database (scallsur.scliveres)
         for specified Subareas.
 
-    -   Calculate shell height frequency for each year.
-        <mark>**NOTE - Look into using sf to stratify**</mark>
-
     -   Calculate stratified shell height frequency by year
 
     -   Plot shell height frequencies for each year (last 7 years)
@@ -367,178 +364,31 @@ file.show(paste0("Y:/Inshore/SFA29/",year,"/Assessment/Scripts/Growth/SFA29_SHF_
 
     -   Calculate $\bar{L}$ for each subarea for plotting
 
-    -   Repeat Tow plots (SPA1B - query from scallsur.sccomparisontows)
-
-See Y:/Inshore/BoF/SurveyDesignTables/Areas for BoF Assessment
-modelling_Notes.docx for more details on substrata areas.
-
-![](C:/Users/WILSONB/Documents/GitHub/BayofFundy/InshoreAssessmentWorkflow/images/SurveyStrataMap.png)
-
-1.  SPA1A:
-
-    -   2 to 8 mile = Strata 6 and 7
-
-    -   8 to 16 mile = Strata 12, 13, 14, 15, 16, 17, 18, 19, 20
-
-    -   Mid-Bay South = Strata 39
-
-2.  SPA1B:
-
-    -   Mid-Bay North = Strata 38 (Gets separated into East and West
-        strata) <mark>**NOTE** Check east and west in script - The
-        object names are reversed (i.e. West should be East) </mark>
-
-    -   Cape Spencer = Strata 37
-
-    -   Upper Bay 28C = Strata 53
-
-    -   Advocate Harbour = Strata 35
-
-    -   28D Outer = Strata 49
-
-    -   Spencers Island = Strata 52
-
-    -   Scotts Bay = Strata 51
-
-![](C:/Users/WILSONB/Documents/GitHub/BayofFundy/InshoreAssessmentWorkflow/images/SPA1B_MidBayN.png)
-
-3.  SPA3:
-
-    -   St. Mary's Bay = Strata 22
-
-    -   Outside VMS strata = Strata 23, 24 (Brier Island, Lurcher)
-
-    -   Within VMS strata = Strata 99 (created using VMS strata
-        shapefile - github)
-
-![](C:/Users/WILSONB/Documents/GitHub/BayofFundy/InshoreAssessmentWorkflow/images/SPA3_Strata.png)
-
-4.  SPA4:
-
-    -   SPA4 (Modelled area) = Strata 1, 2, 3, 4, 5, 8, 9, 10
-
-    -   0-2 mile = Strata 47
-
-5.  SPA6:
-
-    -   VMS IN STRATA
-
-    -   VMS OUT STRATA
-
-![](C:/Users/WILSONB/Documents/GitHub/BayofFundy/InshoreAssessmentWorkflow/images/SPA6_StrataInOut.png)
 
 -   **Script Directory:** To be your forked Marscal Inshore repository
-    path (e.g. `r paste0(dir, "/BoF/Growth")`)
+    path (e.g. `r paste0(dir, "/SFA29/Growth")`)
 
 -   **Output(s):** - Shell Height Frequency plots for each year by
-    strata
+    subarea
 
-    -   SPA1A
+    -   SHF_SFA29SUBAREA.png
 
-        -   2 to 8 mile - SPA1A_SHF_2to8.png
+    -   Plot of Commercial mean SH by year ($\bar{L}$) -
+            SFA29.lbar.comm.png
+            
+    -   Plot of Recruit mean SH by year ($\bar{L}$) -
+            SFA29.lbar.rec.png
 
-        -   8 to 16 mile - SPA1A_SHF_8to16.png
 
-        -   Mid-Bay South - SPA1A_SHF_MBS.png
+    -   Saved objects for predicting mean weight -
+            SFA28.SHobj.YYYY.csv
 
-        -   All SPA1A Area - SPA1A_SHF_all.png
-
-        -   Plot of Commercial mean SH by year ($\bar{L}$) -
-            SPA1A_lbar.png
-
-        -   Commercial mean SH by year ($\bar{L}$) -
-            SPA1A.lbar.to.YYYY.csv & SPA1A.lbar.by.strata.YYYY.csv
-
-        -   Saved objects for predicting mean weight -
-            SPA1A.YYYY.SHobj.R
-
-    -   SPA1B
-
-        -   Mid-Bay North - SPA1B_SHF_MBN.png
-
-        -   Cape Spencer - SPA1B_SHF_CS.png
-
-        -   Upper Bay 28C - SPA1B_SHF_28C.png
-
-        -   Advocate Harbour - SPA1B_SHF_AH.png
-
-        -   28D Outer - SPA1B_SHF_Out.png
-
-        -   Spencers Island - SPA1B_SHF_SI.png
-
-        -   Scotts Bay - SPA1B_SHF_SB.png
-
-        -   All SPA1B Area - SPA1B_SHF_all.png
-
-        -   Repeated Tows - SPA1B_SHF_MBN_RepeatTows.png,
-            SPA1B_SHF_AH_RepeatTows.png, SPA1B_SHF_28C_RepeatTows.png,
-            SPA1B_SHF_Out_RepeatTows.png
-
-        -   Plot of Commercial mean SH by year ($\bar{L}$) -
-            SPA1B_lbar.png
-
-        -   Commercial mean SH by year ($\bar{L}$) -
-            SPA1B.lbar.to.YYYY.csv
-
-        -   Saved objects for predicting mean weight -
-            SPA1B.YYYY.SHobj.R, SPA1BYYYY.lbarbyStrataGroup.R
-
-    -   SPA3
-
-        -   Inner VMS - SPA3_SHF_InVMS.png
-
-        -   Saint Mary's Bay - SPA3_SHF_SMB.png
-
-        -   Outer VMS - SPA3_SHF_OutVMS.png
-
-        -   Modelled Area - SPA3_SHF_ModelledArea.png
-
-        -   Plot of Commercial mean SH by year ($\bar{L}$) -
-            SPA3_lbar.png, SPA3_strata_lbar.png
-
-        -   Commercial mean SH by year ($\bar{L}$) -
-            SPA3.SHF.modelled.area.means.to.YYYY.csv,
-            SPA3.lbar.toYYYY.csv
-
-        -   Saved objects for predicting mean weight - SPA3.SHobj.YYYY.R
-
-        -   Repeat Tows - <mark>**NOTE** Needs to be updated to ggplot
-            </mark>
-
-    -   SPA4
-
-        -   SPA4_SHF.png
-
-        -   SPA4_SHF_0to2mile.png
-
-        -   Plot of Commercial mean SH by year ($\bar{L}$) -
-            SPA4_lbar.png
-
-        -   Commercial mean SH by year ($\bar{L}$) -
-            SPA4.SHFmeans.toYYYY.csv, SPA4.lbar.toYYYY.csv
-
-        -   Saved objects for predicting mean weight - SPA4.SHobj.YYYY.R
-
-    -   SPA6
-
-        -   Inner VMS Strata - SPA6_SHF_InVMS.png
-
-        -   Outer VMS Strata - SPA6_SHF_OutVMS.png
-
-        -   Plot of Commercial mean SH by year ($\bar{L}$) -
-            SPA6_lbar.png
-
-        -   Commercial mean SH by year ($\bar{L}$) -
-            SPA6.lbar.by.strata.YYYY.csv
-
-        -   Saved objects for predicting mean weight -
-            SPA6.SHobj.IN.YYYY.R, SPA6.SHobj.OUT.YYYY.R
 
 -   **Output Directory(s):**
 
-    -   Y:/Inshore/BoF/Figures (.png)
+    -   Y:/Inshore/SFA29/YEAR/Assessment/Figures (.png)
 
-    -   Y:/Inshore/BoF/Assessment/Data/SurveyIndices/AREA (.csv)
+    -   Y:/Inshore/SFA29/YEAR/Assessment/Data/Growth (.csv)
 
 ------------------------------------------------------------------------
 
@@ -551,59 +401,12 @@ to Marscal Inshore repository before continuing!
 
 ------------------------------------------------------------------------
 
-## 6. SPA5 Numbers Weight per Tow, SHF and Clappers
 
-```{r Open SPA5 survey indices script, eval = FALSE, include = FALSE}
-file.show(paste0("Y:/Inshore/BoF/",year,"/Assessment/Scripts/SurveyIndices/SPA4and5/SPA5_NumbersWeightperTow_SHF_Clappers_",year,".R"))
-```
+## 6. Growth Rates (Growth)
 
--   **Purpose:** Calculates numbers per tow and weight per tow, plots
-    shell height frequency, clappers per tow, clapper shell height
-    frequency.
+```{r Open GrowthRates_Actual.R, eval =  FALSE, include = FALSE}
 
--   **Overview:**
-
-    -   Calculates numbers per tow and weight per tow using simple mean.
-
-    -   Calculates weights per tow and weight per tow using simple mean
-
-    -   Calculates numbers of clappers per tow and weight per tow using
-        simple mean.
-
--   **Script Directory:** To be your forked Marscal Inshore repository
-    path (e.g. `r paste0(dir, "/BoF/SurveyIndices")`)
-
--   **Output(s):**
-
-    -   SPA5.Index.NumbersYYYY.csv
-
-    -   SPA5.Index.WeightYYYY.csv
-
-    -   SPA5_NumberWeightPerTowYYYY.png
-
-    -   SPA5_SHF_YYYY.png
-
-    -   Clappers - SPA5.Index.ClappersYYYY.csv
-
-    -   SPA5_ClappersPerTowYYYY.png
-
-    -   SPA5_dead_SHF_YYYY.png
-
--   **Output Directory(s):**
-
-    -   Y:/Inshore/BoF/Figures (.png)
-
-    -   Y:/Inshore/BoF/Assessment/Data/SurveyIndices/SPA1A1B4and5 (.csv)
-
-## 7. Growth Rates (Growth)
-
-```{r Open GrowthRates_AREA_new_2020.R, eval =  FALSE, include = FALSE}
-
-file.show(paste0("Y:/Inshore/BoF/",year,"/Assessment/Scripts/Growth/GrowthRates_SPA1A_",year,".R"))
-file.show(paste0("Y:/Inshore/BoF/",year,"/Assessment/Scripts/Growth/GrowthRates_SPA1B_",year,".R"))
-file.show(paste0("Y:/Inshore/BoF/",year,"/Assessment/Scripts/Growth/GrowthRates_SPA3_",year,".r"))
-file.show(paste0("Y:/Inshore/BoF/",year,"/Assessment/Scripts/Growth/GrowthRates_SPA4_",year,".r"))
-file.show(paste0("Y:/Inshore/BoF/",year,"/Assessment/Scripts/Growth/GrowthRates_SPA6_",year,".R"))
+file.show(paste0("Y:/Inshore/SFA29/",year,"/Assessment/Scripts/Growth/GrowthRate_Actual.R"))
 
 ```
 
@@ -617,10 +420,9 @@ Height and Condition modeling
 
 -   **Overview:**
 
-    -   Import outputs from previous scripts in respective areas (SPA1A,
-        SPA1B, SPA3, SPA4and5, and SPA6) e.g. AREAgrowth2019.RData,
-        AREA2019.SHobj.R, AREA.ActualGrowthRateObj.YYYY.R,
-        AREAPredictedGrowthRateObj.YYYY.R
+    -   Import outputs from previous scripts e.g.SFA29.SHobj.YYYY.R, 
+        SFA29growthYYYY.RData, growth.actual.2001toYYYY.csv
+        
 
     -   Imports predicted and actual shell height, MWSH.YYYY model, and
         meat weight shell height data from samples.
@@ -660,133 +462,107 @@ Height and Condition modeling
     </center>
 
 -   **Script Directory:** To be your forked Marscal Inshore repository
-    path (e.g. `r paste0(dir, "/BoF/Growth")`)
+    path (e.g. `r paste0(dir, "/SFA29/Growth")`)
 
 -   **Output(s):**
 
-    -   SPA1A
+        -   growth.actual.2001toYYYY.csv
 
-        -   spa1A.growthrate.YYYY.csv
+        -   SFA29W.GrowthRate.Commercial.Actual.png
 
-        -   SPA1A_GrowthRate_ComRec_Actual.png
+        -   SFA29W.GrowthRate.Recruit.Actual.png
 
-        -   SPA1A_GrowthRate_Com_ActualPredicted.png
-
-        -   SPA1A_GrowthRate_Rec_ActualPredicted.png
-
-    -   SPA1B
-
-        -   spa1B.growthrate.YYYY.csv
-
-        -   SPA1B_GrowthRate_ComRec_Actual.png
-
-        -   SPA1B_GrowthRate_Com_ActualPredicted.png
-
-        -   SPA1B_GrowthRate_Rec_ActualPredicted.png
-
-    -   SPA3
-
-        -   spa3.growthrate.YYYY.csv
-
-        -   SPA3_GrowthRate_ComRec_Actual.png
-
-        -   SPA3_GrowthRate_Com_ActualPredicted.png
-
-        -   SPA3_GrowthRate_Rec_ActualPredicted.png
-
-    -   SPA4
-
-        -   spa4.growthrate.YYYY.csv
-
-        -   SPA4_GrowthRate_ComRec_Actual.png
-
-        -   SPA4_GrowthRate_Com_ActualPredicted.png
-
-        -   SPA4_GrowthRate_Rec_ActualPredicted.png
-
-
-    -   SPA6
-
-        -   spa6.growthrate.YYYY.csv
-
-        -   SPA6_GrowthRate_ComRec_Actual.png
-
-        -   SPA6_GrowthRate_Com_ActualPredicted.png
-
-        -   SPA6_GrowthRate_Rec_ActualPredicted.png
 
 -   **Output Directory(s):**
 
-    -   Y:/Inshore/BoF/Figures (.png)
+    -   Y:/Inshore/SFA29/Figures (.png)
 
-    -   Y:/Inshore/BoF/Assessment/Data/Growth/AREA (.csv)
+    -   Y:/Inshore/SFA29/Assessment/Data/Growth (.csv)
 
 ------------------------------------------------------------------------
 
 ::: {.infobox .caution data-latex="{caution}"}
 **COMMIT CHANGES**
 
-Ensure that all changes made to GrowthRates_AREA.R scripts have been
+Ensure that all changes made to GrowthRate_Actual.R scripts have been
 saved and pushed to Marscal Inshore repository before continuing!
 :::
 
 ------------------------------------------------------------------------
 
-## 8. Number Weights per Tow (Survey Indices)
+## 8. Numbers per tow - Survey Estimates - LIVE/DEAD (Survey Indices)
 
-```{r Open AREA_NumbersWeightperTow_YYYY.R, eval =  FALSE, include = FALSE}
+```{r Open scallopSurvEstimates_SDM_LIVEYYYY.R, eval =  FALSE, include = FALSE}
 
-file.show(paste0("Y:/Inshore/BoF/",year,"/Assessment/Scripts/SurveyIndices/SPA1A/SPA1A_NumbersWeightperTow_",year,".R"))
-file.show(paste0("Y:/Inshore/BoF/",year,"/Assessment/Scripts/SurveyIndices/SPA1B/SPA1B_NumbersWeightperTow_",year,".R"))
-file.show(paste0("Y:/Inshore/BoF/",year,"/Assessment/Scripts/SurveyIndices/SPA3/SPA3_NumbersWeightperTow_",year,".R"))
-file.show(paste0("Y:/Inshore/BoF/",year,"/Assessment/Scripts/SurveyIndices/SPA4and5/SPA4_NumbersWeightperTow_",year,".R"))
+file.show(paste0("Y:/Inshore/SFA29/",year,"/Assessment/Scripts/SurveyIndices/scallopSurvEstimates_SDM_LIVE.R"))
+file.show(paste0("Y:/Inshore/SFA29/",year,"/Assessment/Scripts/SurveyIndices/scallopSurvEstimates_SDM_DEAD.R"))
 
 ```
 
 -   **Purpose:** Calculates population numbers (numbers scaled to total
     area) and biomass indices.
 
-**NOTE:** This script requires inputs from [2. Meat Weight - Shell
-Height and Condition modeling
-(Growth)](#meat-weight---shell-height-and-condition-modeling-growth)
-(AREAliveweightYYYY.csv) and data from Scallsur database (scliveres and
-sccomparisontows).
+**NOTE:** This script requires inputs from SFA29Tows_SDM.csv, SFA29_SDM_LWM.R and SFA29W_model_areas_towable_units.csv 
+(saved under Scripts/model directory). 
 
 -   **Overview:**
 
-    -   Checks for potential errors that will break the SPR estimates
-        (i.e. miss-matches in StrataIDs, or if one repeat has 0s
-        recorded for recruit or commercial sizes), and correct for any
-        errors from previous years.
+    -   
 
-    -   Calculates numbers per tow and population numbers for Recruit
-        and Commercial size scallops:
+        -   
 
-        -   Runs simple means and SPR for each area.
+    -   
 
-    -   Calculates weights per tow and population biomass for Recruit
-        and Commercial size scallops:
-
-        -   Runs simple means and SPR for each area.
+        -   
+        
+        "rh" - recruit numbers scaled to respective SDM strata in millions 
+        "obs.nu" recruit numbers per tow CV
+        "L" commercial number scaled to respective SDM strata in millions
 
 -   **Script Directory:** To be your forked Marscal Inshore repository
-    path (e.g. `r paste0(dir, "/BoF/SurveyIndices")`)
+    path (e.g. `r paste0(dir, "/SFA29/SurveyIndices")`)
 
 -   **Output(s):**
 
-    -   AREA.Index.Numbers.YYYY.csv - contains $Npt$, $N$
+    -   SDM.HighMedLow.2001toYYYY.Numbers.csv/ SDM.HighMedLow.2001toYYYY.Clappers.csv / SDM.HighMedLow.2001toYYYY.Clapper.Proportion.csv
 
-    -   AREA.Index.WeightYYYY.csv - contains $I$, $IR$, $Icv$, $IRcv$
+    -   SDM.StratifiedEstimates.2001toYYYY.Numbers.csv/ SDM.StratifiedEstimates.2001toYYYY.Clappers.csv
 
-    -   AREA_NumberpertowYYYY.png
+    -   rh.obs.nu.2001toYYYY.csv 
 
-    -   AREA_WeightpertowYYYY.png
+    -   L.2001toYYYY.csv
+    
+    -   SFA29SUBAREA.Numberspertow.YYYY.png
+    
+    -   SFA29AtoD.Numberspertow.Prerecruit.YYYY.png
+    
+     -   SFA29AtoD.Numberspertow.Recruit.YYYY.png
+     
+    -   SFA29AtoD.Numberspertow.Commercial.YYYY.png
+    
+    -   SubareaE.ExploratoryMeanbyTow.Numbers.YYYY.csv
+    
+    -   SFA29E.Numberspertow.YYYY.png
+    
+    -   SDM_SampleSize.YYYY.csv
+    
+    -   SFA29.SDM.SampleSize.YYYY.png
+    
+    -   SFA29.AtoD.stratified.YYYY.png
+    
+    -   SFA29AtoD.Clappers.Prop.Commercial.YYYY.png
+    
+    -   SFA29AtoD.Clappers.Prop.Recruit.YYYY.png
+    
+    -   SFA29AtoD.Clappers.Prop.Prerecruit.YYYY.png
+    
+    -   SFA29.all.tows.2001toYYYY.Proportion.Dead.csv
 
 -   **Output Directory(s):**
 
-    -   Y:/Inshore/BoF/Figures (.png)
+    -   Y:/Inshore/SFA29/Figures (.png)
 
-    -   Y:/Inshore/BoF/Assessment/Data/Growth/AREA (.csv)
+    -   Y:/Inshore/SFA29/Assessment/Data/SurveyIndices (.csv)
 
 ------------------------------------------------------------------------
 
@@ -800,118 +576,107 @@ continuing!
 
 ------------------------------------------------------------------------
 
-## 9. Clappers (Survey Indices)
+## 8. Weight per tow - Survey Estimates (Survey Indices)
 
-```{r Open AREA_Clapper_YYYY.R,  eval =  FALSE, include = FALSE}
+```{r Open scallopSurvEstimates_WeightPerTow.R,  eval =  FALSE, include = FALSE}
 
-file.show(paste0("Y:/Inshore/BoF/",year,"/Assessment/Scripts/SurveyIndices/SPA1A/SPA1A_Clapper_",year,".R"))
-file.show(paste0("Y:/Inshore/BoF/",year,"/Assessment/Scripts/SurveyIndices/SPA1B/SPA1B_Clapper_",year,".R"))
-file.show(paste0("Y:/Inshore/BoF/",year,"/Assessment/Scripts/SurveyIndices/SPA1B/SPA3_Clappers_",year,".R"))
-file.show(paste0("Y:/Inshore/BoF/",year,"/Assessment/Scripts/SurveyIndices/SPA4and5/SPA4_Clappers_",year,".R"))
-file.show(paste0("Y:/Inshore/BoF/",year,"/Assessment/Scripts/SurveyIndices/SPA6/SPA6_Clapper_simpleMeans_",year,".R"))
+file.show(paste0("Y:/Inshore/SFA29/",year,"/Assessment/Scripts/SurveyIndices/scallopSurvEstimates_WeightPerTow.R"))
 
 ```
 
 -   **Purpose:**
 
-    -   Calculates clapper numbers per tow, clapper population numbers
-        and clapper shell height frequencies
+    -   
+        
+  **NOTE:** This script requires inputs from SFA29W_model_areas_towable_units.csv 
+        (saved under Scripts/model directory).
+        
+        <mark>Need to move files from previous year over:
+
+Y:/Inshore/SFA29/YYYY/Assessment/Data/SurveyIndices/SurveymeanwgttowSFA29_2001toYYYY.csv
 
 -   **Overview:**
 
-    -   Clapper numbers per tow clapper population numbers for
-        commercial and recruit sizes are calculated using simple means.
+    -   
 
-    -   plots shell height frequencies for clappers for each area
+    -   
 
 -   **Script Directory:** To be your forked Marscal Inshore repository
-    path (e.g. `r paste0(dir, "/BoF/SurveyIndices")`)
+    path (e.g. `r paste0(dir, "/SFA29/SurveyIndices")`)
 
-    <mark>**NOTE** Drop the 's' in file name for SPA3 and 4 OR add them
-    for the others for consistency </mark>
+    
 
 -   **Output(s):**
 
-    -   AREA.Index.Clappers.YYYY.csv
+    -   
 
-    -   AREA.Clappers.N.formodel.YYYY.csv
+    -   
 
-    -   AREA_clapper_NumberpertowYYYY.png
+    -   
 
-    -   AREA_clapper_SHF.png (1 for each for each substrata)
+    -   
 
 -   **Output Directory(s):**
 
-    -   Y:/Inshore/BoF/Figures (.png)
+    -   
 
-    -   Y:/Inshore/BoF/Assessment/Data/Growth/AREA (.csv)
+    -   
 
 ------------------------------------------------------------------------
 
 ::: {.infobox .caution data-latex="{caution}"}
 **COMMIT CHANGES**
 
-Ensure that all changes made to Clapper_AREA.r scripts have been saved
+Ensure that all changes made to scallopSurvEstimates_WeightPerTow.R scripts have been saved
 and pushed to Marscal Inshore repository before continuing!
 :::
 
 ------------------------------------------------------------------------
 
-## 10. Ratio Lined-Unlined (Survey Indices)
+## 10. Lobster Survey Estimates (Survey Indices)
 
-```{r Open AREA_SPA1A_ratioLinedtoUnlinedYYYY.R, eval =  FALSE, include = FALSE}
+```{r Open SurveyEstimates_Lobster_SDM.r, eval =  FALSE, include = FALSE}
 
-file.show(paste0("Y:/Inshore/BoF/",year,"/Assessment/Scripts/SurveyIndices/SPA1A/SPA1A_RatioLinedUnlined_",year,".R"))
-file.show(paste0("Y:/Inshore/BoF/",year,"/Assessment/Scripts/SurveyIndices/SPA1B/SPA1B_RatioLinedUnlined_",year,".R"))
-file.show(paste0("Y:/Inshore/BoF/",year,"/Assessment/Scripts/SurveyIndices/SPA1B/SPA3_RatioLinedUnlined_",year,".R"))
-file.show(paste0("Y:/Inshore/BoF/",year,"/Assessment/Scripts/SurveyIndices/SPA4and5/SPA4_RatioLinedUnlined_",year,".R"))
-file.show(paste0("Y:/Inshore/BoF/",year,"/Assessment/Scripts/SurveyIndices/SPA6/SPA6_VMS_Indices_RatioLinedtoUnlined_",year,".r"))
+file.show(paste0("Y:/Inshore/SFA29/",year,"/Assessment/Scripts/SurveyIndices/SurveyEstimates_Lobster_SDM.r"))
 
 ```
 
--   **Purpose:** Calculates ratio of unlined and lined numbers per tow.
+-   **Purpose:** 
 
-**NOTE:** This script requires inputs from Scallsur database
-(sclinedlive_std, scunlinedlive_std and sccomparisontows).
 
 -   **Overview:**
 
-    -   Errors that will break the SPR estimates (i.e. miss-matches in
-        StrataIDs, or if one repeat has 0s recorded for recruit or
-        commercial sizes) are corrected.
+    -   
 
-    -   Calculates estimates for lined gear (scaled to total area) for
-        commercial size scallops for each year in each area
+    -  
 
-        -   Runs simple means and SPR.
+        -   
 
-    -   Calculates estimates for unlined gear (scaled to total area) for
-        commercial size scallops for each year in each area
+    -   
 
-        -   Runs simple means and SPR.
+        -  
         
-    -   Calculates ratio of lined and unlined estimates (mean numbers
-        per tow).
+    -   
         
-    -   Plots time series Lined and Unlined mean numbers per tow.
+    -   
     
 
 -   **Script Directory:** To be your forked Marscal Inshore repository
-    path (e.g. `r paste0(dir, "/BoF/SurveyIndices")`)
+    path (e.g. `r paste0(dir, "/SFA29/SurveyIndices")`)
 
 -   **Output(s):**
 
-    -   AREA_lined.vs.unlinedYYYY.png
+    -   
 
-    -   AREA_ratioYYYY.png
+    -   
 
-    -   AREA_ratioLinedtoUnlinedYYYY.csv
+    -   
 
 -   **Output Directory(s):**
 
-    -   Y:/Inshore/BoF/Figures (.png)
+    -  
 
-    -   Y:/Inshore/BoF/Assessment/Data/SurveyIndices/AREA (.csv)
+    -   
 
 ------------------------------------------------------------------------
 
