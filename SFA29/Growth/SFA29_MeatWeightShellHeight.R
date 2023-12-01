@@ -25,10 +25,10 @@ pwd <- pw.sameotoj
 uid <- keyring::key_list("Oracle")[1,2]
 pwd <- keyring::key_get("Oracle", uid)
 
-surveyyear <- 2022  #This is the last survey year for which you want to include  - not should match year of cruise below 
-cruise <- "SFA292022"  #note should match year for surveyyear set above 
+surveyyear <- 2023  #This is the last survey year for which you want to include  - not should match year of cruise below 
+cruise <- "SFA292023"  #note should match year for surveyyear set above 
 
-assessmentyear <- 2023 #year in which you are conducting the survey 
+assessmentyear <- 2024 #year in which you are conducting the assessment (surveyyear+1)
 path.directory <- "Y:/Inshore/SFA29/"
 
 weight.by.tow.previous.yrs <- read.csv(paste0("Y:/Inshore/SFA29/",assessmentyear-1,"/Assessment/Data/SurveyIndices/SFA29liveweight2014to",assessmentyear-2,".csv"))
@@ -131,6 +131,9 @@ test.data$Log.HEIGHT.CTR <- test.data$Log.HEIGHT - mean(test.data$Log.HEIGHT)
 test.data$Log.DEPTH <- log(abs(test.data$ADJ_DEPTH)) #take abs to keep value positive
 test.data$Log.DEPTH.CTR <- test.data$Log.DEPTH - mean(test.data$Log.DEPTH)
 summary(test.data)
+#plot(x = test.data$Log.HEIGHT.CTR, y = test.data$WET_MEAT_WGT)
+#test.data <- test.data |> filter(TOW_NO != 15)
+#test.data |> filter(TOW_NO == 15)
 
 #plot depths by tow
 png(paste0(path.directory, assessmentyear, "/Assessment/Figures/Growth/SFA29towdepth",surveyyear,".png")) 
@@ -138,10 +141,19 @@ plot(ADJ_DEPTH~TOW_NO, data=test.data)
 dev.off()
 
 #run model
-MWTSHSFA29.YYYY <- glmer(WET_MEAT_WGT~Log.HEIGHT.CTR+Log.DEPTH.CTR+(Log.HEIGHT.CTR|TOW_NO),data=test.data,     
-                      family=Gamma(link=log), na.action = na.omit)
 
-summary(MWTSHSFA29.YYYY)  
+#NOTE: Model did not converge in 2023, so the 2023 MWSH model uses a different optimizer - optimizer="bobyqa" to produce a model that converges.
+
+#MWTSHSFA29.YYYY <- glmer(WET_MEAT_WGT~Log.HEIGHT.CTR+Log.DEPTH.CTR+(Log.HEIGHT.CTR|TOW_NO),data=test.data, family=Gamma(link=log), na.action = na.omit)
+
+MWTSHSFA29.YYYY <- glmer(WET_MEAT_WGT~Log.HEIGHT.CTR+Log.DEPTH.CTR+(Log.HEIGHT.CTR|TOW_NO),data=test.data,     
+              family=Gamma(link=log), na.action = na.omit, control=glmerControl(optimizer="bobyqa", optCtrl=list(maxfun=100000)))
+
+summary(MWTSHSFA29.YYYY) 
+
+#lm.test <- lm(log(WET_MEAT_WGT)~log(HEIGHT), data = test.data) 
+#summary(lm.test)
+#plot(lm.test)
 
 #Save summary to txt file
 sink(paste0(path.directory, assessmentyear, "/Assessment/Data/Growth/MWTSHSFA29_ModelSummary.txt"))
@@ -278,7 +290,7 @@ for (i in 1:length(mean.depth.29$AREA)){
 mean.depth.29
 
 #Import previous year condition file: 
-SFA29.con.ts <- read.csv(paste0(path.directory, assessmentyear,"/Assessment/Data/SurveyIndices/SFA29W_ConditionTimeseries2001to",surveyyear-1,".csv"))
+SFA29.con.ts <- read.csv(paste0(path.directory, assessmentyear-1,"/Assessment/Data/SurveyIndices/SFA29W_ConditionTimeseries2001to",surveyyear-1,".csv"))
 SFA29.con.ts
 unique(SFA29.con.ts$STRATA)
 #note NA for 2020 since no survey in 2020 

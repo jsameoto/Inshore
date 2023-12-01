@@ -45,9 +45,9 @@ library(ROracle)
 uid <- keyring::key_list("Oracle")[1,2]
 pwd <- keyring::key_get("Oracle", uid)
 
-survey.year <- 2022  #This is the last survey year 
-assessmentyear <- 2023 #year in which you are providing advice for - (e.g. 2017 survey is 2018 assessment) - Save to folder year
-cruise <- "'SFA292022'"
+survey.year <- 2023  #This is the last survey year 
+assessmentyear <- 2024 #year in which you are providing advice for - (e.g. 2017 survey is 2018 assessment) - Save to folder year
+cruise <- "'SFA292023'"
 
 #for multiple cruises:
 #cruise <- c('SFA292018','SFA292019') 
@@ -292,7 +292,7 @@ plot.theme <-   theme(legend.key.size = unit(6,"mm"),
                       legend.position = c(.90,.77), #legend position
                       legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.8)), #Legend bkg colour and transparency
                       legend.box.margin = margin(2, 3, 2, 3),
-                      panel.border = element_rect(colour = "black", fill=NA, size=1))
+                      panel.border = element_rect(colour = "black", fill=NA, linewidth=1))
 
 plot.theme.2 <-   theme(legend.key.size = unit(6,"mm"),
                       plot.title = element_text(size = 14, hjust = 0.5), #plot title size and position
@@ -303,7 +303,7 @@ plot.theme.2 <-   theme(legend.key.size = unit(6,"mm"),
                       legend.position = c(.88,.77), #legend position
                       legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.8)), #Legend bkg colour and transparency
                       legend.box.margin = margin(2, 3, 2, 3),
-                      panel.border = element_rect(colour = "black", fill=NA, size=1))
+                      panel.border = element_rect(colour = "black", fill=NA, linewidth=1))
 
 		
 # ------------------------------COMMERCIAL SCALLOP - SURVEY DISTRIBUTION PLOTS -------------------------------------------
@@ -378,9 +378,9 @@ p2 + #Plot survey data and format figure.
   guides(fill = guide_legend(title="Nombre par trait", override.aes= list(alpha = .7))) + #Legend transparency
   coord_sf(xlim = c(-66.50,-65.45), ylim = c(43.10,43.80), expand = FALSE)+
   plot.theme.2
+
 #save
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_ComDensity',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
-
 
 # ----BIOMASS PLOTS -----
 
@@ -389,6 +389,8 @@ com.contours<-contour.gen(ScallopSurv.kg %>% filter(year==survey.year) %>%
                           ticks='define', nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
 
 lvls=c(0.01,0.05,0.1,1,2,3,4,5) #levels to be color coded
+#lvls=c(0.01,0.05,0.1,2,6,10,14,18)
+#lvls=c(0.01,0.05,0.1,5,10,15,20,25)
 
 CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
 CP <- convCP(CL)
@@ -406,6 +408,9 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
 
 #Set aesthetics for plot
 labels <- c("0.01-0.05", "0.05-0.1", "0.1-1", "1-2", "2-3", "3-4", "4-5", "5+")
+#labels <- c("0.01-0.05", "0.05-0.1", "0.1-2", "2-6", "6-10", "10-14", "14-18", "18+")
+#labels <- c("0.01-0.05", "0.05-0.1", "0.1-5", "5-10", "10-15", "15-20", "20-25", "25+")
+
 col <- brewer.pal(length(lvls),"YlGn") #set colours
 cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = expression(frac(kg,tow)), limits = labels) #set custom fill arguments for pecjector.
 #Plot with Pecjector
@@ -436,9 +441,9 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_ComBiomass',survey.year,'.
 com.contours <- contour.gen(con.dat %>% filter(year==survey.year) %>% dplyr::select(ID, lon, lat, Condition),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
 
 #lvls=c(5,6,7,8,9,10,11,12) #levels to be color coded
-#lvls=c(4,6,8,10,12,14,16) # large scale
-lvls=c(4,5,6,7,8,9,10,11,12) # good condition scale # update based on values observed
-
+lvls=c(4,6,8,10,12,14,16) # large scale
+#lvls=c(4,5,6,7,8,9,10,11,12) # good condition scale # update based on values observed
+#lvls=c(4,6,8,10,12,14,16,18,20)
 
 CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
 CP <- convCP(CL)
@@ -455,8 +460,9 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   mutate(level = unique(CP$PolyData$level))
 
 #Colour aesthetics and breaks for contours
-labels <- c("4-5", "5-6", "6-7", "7-8", "8-9", "9-10", "10-11", "11-12", "12+")
-#labels <- c("4-6", "6-8", "8-10", "10-12", "12-14", "14-16", "16+")
+#labels <- c("4-5", "5-6", "6-7", "7-8", "8-9", "9-10", "10-11", "11-12", "12+")
+labels <- c("4-6", "6-8", "8-10", "10-12", "12-14", "14-16", "16+")
+#labels <- c("4-6", "6-8", "8-10", "10-12", "12-14","14-16", "16-18", "18-20", "20+")
 col <- brewer.pal(length(lvls),"YlOrBr") #set colours
 cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = "Condition (g)", limits = labels) #set custom fill arguments for pecjector.
 
@@ -1026,7 +1032,7 @@ p + #Plot survey data and format figure.
         legend.position = c(.86,.82), #legend position
         legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.8)),
         legend.box.margin = margin(2, 3, 2, 3),
-        panel.border = element_rect(colour = "black", fill=NA, size=1))
+        panel.border = element_rect(colour = "black", fill=NA, linewidth=1))
 
 ggsave(filename = paste0(saveplot.dir,'LobsterSpatialPlot_SFA29',survey.year,'.png'), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 

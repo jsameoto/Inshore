@@ -50,8 +50,8 @@ sdm <- raster("Y:/Inshore/Databases/Scallsur/SFA29BottomTypes/SDM/sdm_sfa29/w001
 chan <- dbConnect(dbDriver("Oracle"),username=uid, password=pwd,'ptran')
 
 #set survey.year and cruise - *Note: requires single quotations within double quotations*
-survey.year <- "'2022'"
-cruise <- "'SFA292022'"
+survey.year <- "'2023'"
+cruise <- "'SFA292023'"
 
 #Db Query:
 quer2 <- paste(
@@ -154,7 +154,7 @@ p + geom_boxplot()+
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
 #Plot to check any tows if needed
-check <- ScallopSurv.sf %>% filter(TOW_NO == 37)
+check <- ScallopSurv.sf %>% filter(TOW_NO == 51)
 mapview::mapview(check)+ #Change TOW_NO
   mapview::mapview(sdm)
 
