@@ -14,6 +14,7 @@ library(ROracle)
 library (lme4)
 library(lattice)
 require(data.table)
+library(lubridate)
 
 # Define: 
 #uid <- un.sameotoj
@@ -287,8 +288,8 @@ BI.con.ts$strata.name[BI.con.ts$STRATA=="InVMS"] <- "Inside VMS"
 BI.con.ts$strata.name[BI.con.ts$STRATA=="OutVMS"] <- "Outside VMS"
 BI.con.ts$strata.name[BI.con.ts$STRATA=="InVMS_SMB"] <- "Inside VMS (St. Mary's Bay)"
 
-BI.con.ts <- BI.con.ts |> 
-  mutate(YEAR == lubridate::year(BI.con.ts$YEAR))
+#BI.con.ts <- BI.con.ts |> 
+#  mutate(YEAR = lubridate::year(BI.con.ts$YEAR))
 
 condition.ts.plot <- ggplot(BI.con.ts %>% filter(STRATA %in% c("SMB", "InVMS", "OutVMS")),
                             aes(x=YEAR, y=CONDITION,group_by(strata.name), color=strata.name)) +  
@@ -296,7 +297,7 @@ condition.ts.plot <- ggplot(BI.con.ts %>% filter(STRATA %in% c("SMB", "InVMS", "
   xlab("Year") + ylab("Condition (meat weight, g)") + theme_bw() +
   coord_cartesian(ylim=c(5, 20)) +
   scale_y_continuous(breaks=seq(5, 20, 5))+
-  scale_x_continuous(breaks=seq(1995,2023, 2))+
+  #scale_x_continuous(breaks=seq(1995,2023, 2))+
   theme(axis.title = element_text(size = 15),
         axis.text = element_text(size = 12),
         legend.position = c(.008, .20),

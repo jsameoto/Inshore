@@ -22,8 +22,11 @@ source("Y:/Inshore/BoF/SurveyDesignTables/BoFstratadef.R")
 # Define: 
 uid <- un.sameotoj
 pwd <- pw.sameotoj
-surveyyear <- 2022  #This is the last survey year 
-assessmentyear <- 2022 #year in which you are conducting the survey 
+#uid <- keyring::key_list("Oracle")[1,2]
+#pwd <- keyring::key_get("Oracle", uid)
+
+surveyyear <- 2023  #This is the last survey year 
+assessmentyear <- 2023 #year in which you are conducting the survey 
 area <- "1A1B4and5"  #SPA assessing recall SPA 1A, 1B, and 4 are grouped; options: "1A1B4and5", "3", "6" 
 path.directory <- "Y:/Inshore/BoF/"
 
@@ -516,7 +519,7 @@ se.SPA1A <- data.frame(Year=(years), var.2to8=SPA1A.2to8.CommWt$var, var.8to16=S
 se.SPA1A$sum.var <- se.SPA1A$var.2to8*(51945^2) + se.SPA1A$var.8to16*(199441^2)+ (se.SPA1A$var.MBS*(201138.52^2)/se.SPA1A$MBS.tow)
 se.SPA1A$se <- sqrt(se.SPA1A$sum.var)
 se.SPA1A$I.cv <- se.SPA1A$se/(I$Bmass*1000000)
-I.cv <- se.SPA1A %>% select (Year, cv = I.cv) 
+I.cv <- se.SPA1A %>% dplyr::select (Year, cv = I.cv) 
 I.cv
 
 ########## RECRUIT
@@ -529,7 +532,7 @@ se.rec.SPA1A <- data.frame(Year=(years), var.2to8=SPA1A.2to8.RecWt$var, var.8to1
 se.rec.SPA1A$sum.var <- se.rec.SPA1A$var.2to8*(51945^2) + se.rec.SPA1A$var.8to16*(199441^2)+ (se.rec.SPA1A$var.MBS*(201138.52^2)/se.rec.SPA1A$MBS.tow)
 se.rec.SPA1A$se <- sqrt(se.rec.SPA1A$sum.var)
 se.rec.SPA1A$IR.cv <- se.rec.SPA1A$se/(IR$Bmass*1000000)
-IR.cv <- se.rec.SPA1A %>% select (Year, cv = IR.cv) 
+IR.cv <- se.rec.SPA1A %>% dplyr::select (Year, cv = IR.cv) 
 IR.cv
 
 #round cvs
@@ -540,7 +543,7 @@ IR.cv$cv <- round(IR.cv$cv, 4)
 #check all years match up 
 cbind(N, I, IR, I.cv, IR.cv)
 #Bind into object for export 
-SPA1A.population.model.input <- cbind(N %>% select(Year, N), I %>% select(I = Bmass), IR %>% select(IR = Bmass), I.cv %>% select(I.cv = cv), IR.cv %>% select(IR.cv = cv))
+SPA1A.population.model.input <- cbind(N %>% dplyr::select(Year, N), I %>% dplyr::select(I = Bmass), IR %>% dplyr::select(IR = Bmass), I.cv %>% dplyr::select(I.cv = cv), IR.cv %>% dplyr::select(IR.cv = cv))
 
 #export 
 write.csv(SPA1A.population.model.input, paste0(path.directory, assessmentyear, "/Assessment/Data/SurveyIndices/SPA",area,"/SPA1A.population.model.input.",surveyyear,".csv"))
@@ -581,7 +584,7 @@ wt.per.tow.full.ts <- ggplot(data = data.kg, aes(x=Year, y= kg, col=Size, pch=Si
   geom_point() + 
   geom_line(aes(linetype = Size)) + facet_wrap(~Area, ncol=1) + 
   theme_bw() + ylab("Mean kg/tow") + xlab("Year") + 
-  theme(legend.position = c(0.9, 0.9)) + 
+  theme(legend.position = c(0.15, 0.9)) + 
   scale_linetype_manual(values=c("solid", "dotted"))+
   scale_color_manual( values=c('black','red'))
 wt.per.tow.full.ts
@@ -629,7 +632,7 @@ survey.biomass <- ggplot(data = B.for.plot, aes(x=Year, y=value, col=Size, pch=S
   geom_point() + 
   geom_line(aes(linetype = Size)) + 
   theme_bw() + ylab("Survey biomass (mt)") + xlab("Year") + 
-  theme(legend.position = c(0.9, 0.9)) + 
+  theme(legend.position = c(0.15, 0.9)) + 
   scale_linetype_manual(values=c("solid", "dotted"))+
   scale_color_manual( values=c('black','red'))
 survey.biomass

@@ -30,8 +30,8 @@ sh.actual
 sh.predict
 
 cbind(sh.actual, sh.predict) #check - assumes ordered correctly; check order of column names for renaming columns 
-SH.object <- cbind(sh.actual %>% select(years, SHactual.Com = SPA3.SHactual.Com, SHactual.Rec = SPA3.SHactual.Rec), 
-                   sh.predict %>% select(SHpredict.Com = SPA3.SHpredict.Com, SHpredict.Rec = SPA3.SHpredict.Rec))
+SH.object <- cbind(sh.actual %>% dplyr::select(years, SHactual.Com = SPA3.SHactual.Com, SHactual.Rec = SPA3.SHactual.Rec), 
+                   sh.predict %>% dplyr::select(SHpredict.Com = SPA3.SHpredict.Com, SHpredict.Rec = SPA3.SHpredict.Rec))
 
 # DEFINE: Source previous year meat weight and growth rate object for ACTUAL growth rates:
 # if your year defined above it for YYYY, then you should be bringing in the YYYY-1 growth rate object.
@@ -143,7 +143,7 @@ actual.growth.plot.title <- "SPA3 Actual Growth Rate"
 x<-c(1996,year) #update year
 y<-c(0.8,max(spa3.growthrate.rec$rate, na.rm = T))
 
-plot(x,y, type="n",xlab="",ylab="Growth Rate (mm)", cex.axis=1.3, cex.lab=1.5, main=actual.growth.plot.title)
+plot(x,y, type="n",xlab="",ylab="Growth Rate", cex.axis=1.3, cex.lab=1.5, main=actual.growth.plot.title)
 lines(spa3.growthrate.com[,c(1,4)], type="b", pch=1, lty=1, col=1)
 lines(spa3.growthrate.rec[,c(1,4)], type="b", pch=2, lty=2, col=2)
 abline(h=1, lty=3)
@@ -217,7 +217,7 @@ png(paste0(path.directory,assessmentyear,"/Assessment/Figures/SPA3_GrowthRate_Co
 x<-c(1996,year) 
 y<-c(0.8,2.0)
 
-plot (x,y, type="n",xlab="",ylab="Growth Rate (mm)", cex.axis=1.3, cex.lab=1.5, main="SPA3 Commerical Growth Rate")
+plot (x,y, type="n",xlab="",ylab="Growth Rate", cex.axis=1.3, cex.lab=1.5, main="SPA3 Commerical Growth Rate")
 lines(spa3.growthrate.com[,c(1,4)], type="b", pch=1, lty=1, col=1)
 lines(spa3.predictedgr.com[,c(1,4)], type="b", pch=17, lty=1, col=1) # predicted value for 2015 to 2016
 abline(h=1, lty=3)
@@ -232,7 +232,7 @@ png(paste0(path.directory,assessmentyear,"/Assessment/Figures/SPA3_GrowthRate_Re
 x<-c(1996,year)
 y<-c(0.8,max(spa3.growthrate.rec$rate, na.rm = T))
 
-plot (x,y, type="n",xlab="",ylab="Growth Rate (mm)", cex.axis=1.3, cex.lab=1.5, main="SPA3 Recruit Growth Rate")
+plot (x,y, type="n",xlab="",ylab="Growth Rate", cex.axis=1.3, cex.lab=1.5, main="SPA3 Recruit Growth Rate")
 lines(spa3.growthrate.rec[,c(1,4)], type="b", pch=1, lty=1, col=1)
 lines(spa3.predictedgr.rec[,c(1,4)], type="b", pch=17, lty=1, col=1) 
 abline(h=1, lty=3)

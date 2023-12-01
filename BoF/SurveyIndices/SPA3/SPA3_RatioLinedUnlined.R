@@ -92,7 +92,7 @@ crossref.spa3$CruiseID.current <- paste0(crossref.spa3$CRUISE,".",crossref.spa3$
 #Check for potential errors that will break the SPR estimates
 #merge STRATA_ID from BIlivefreq to the crosssref files based on parent/reference tow and find those that don't match for their strata_ID 
 crossref.spa3 <- left_join(crossref.spa3, lined %>% dplyr::select(CruiseID, STRATA_ID, TOW_TYPE_ID), by="CruiseID")
-crossref.spa3 <- left_join(crossref.spa3, lined %>% select(CruiseID, STRATA_ID.current = STRATA_ID, TOW_TYPE_ID.current = TOW_TYPE_ID), by=c("CruiseID.current" = "CruiseID"))
+crossref.spa3 <- left_join(crossref.spa3, lined %>% dplyr::select(CruiseID, STRATA_ID.current = STRATA_ID, TOW_TYPE_ID.current = TOW_TYPE_ID), by=c("CruiseID.current" = "CruiseID"))
 crossref.spa3$strata_diff <- crossref.spa3$STRATA_ID -  crossref.spa3$STRATA_ID.current
 #Strata IDs that need fixing 
 crossref.spa3 %>% filter(strata_diff!=0)

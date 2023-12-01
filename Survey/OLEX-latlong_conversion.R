@@ -108,7 +108,7 @@ strata <- st_read(paste0(temp2, "/PolygonSCSTRATAINFO_rm46-26-57.shp"))
 #Garnstopp - stop
 #Brunsirkel - brown circle (points along trackline?)
 
-zz <- read.csv(gzfile('Y:/INSHORE SCALLOP/Survey/OLEX tow tracks/2021/sep212021.gz'))
+zz <- read.csv(gzfile('Y:/Inshore/Survey/OLEX tow tracks/2023/20230829.gz'))
 
 str(zz)
 zz$Ferdig.forenklet <- as.character(zz$Ferdig.forenklet)
@@ -131,7 +131,7 @@ zz <- zz %>% filter(Ferdig.forenklet_4 %in% c("Garnstart", "Garnstopp", "Grønnra
 View(zz)
 
 #Select the row where the track data starts (i.e. the first "Garnstart"). Check for "Grønnramme".
-zz <- zz[120:nrow(zz)] #[Row# where "Garnstart" first occurs: to end of data]  #Most likely its however many stations there are, but could be more if observations were added.
+zz <- zz[35:nrow(zz)] #[Row# where "Garnstart" first occurs: to end of data]  #Most likely its however many stations there are, but could be more if observations were added.
 
 #Convert decimal degrees to decimal minutes seconds.
 zz$Latitude.deg <- convert.dd.dddd(zz$Latitude, format = 'deg.min')
@@ -203,7 +203,7 @@ mapview::mapview(coords.sf) + #%>% filter(ID %in% c(96,98)) #option to filter ou
 coords.sf <- coords.sf%>% 
   st_drop_geometry()
 
-write.csv(coords.sf, "Y:/INSHORE SCALLOP/Survey/OLEX tow tracks/Olex-latlong_conversion/SFA292021_coords_check.csv")
+write.csv(coords.sf, "Y:/Inshore/Survey/OLEX tow tracks/Olex-latlong_conversion/SFA292023_coords_check.csv")
 
 ###########################################################################################################
 

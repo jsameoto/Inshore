@@ -46,16 +46,16 @@
 #### DEFINE ####
 	
 	direct <- "Y:/Inshore/BoF"
-	fishingyear <- 2022 #most recent year of commercial fishing data to be used (e.g. if fishing season is 2019/2020, use 2020)
-	assessmentyear <- 2022 #year in which you are conducting the assessment
+	fishingyear <- 2023 #most recent year of commercial fishing data to be used (e.g. if fishing season is 2019/2020, use 2020)
+	assessmentyear <- 2023 #year in which you are conducting the assessment
 #	un.ID <- un.raperj #ptran username
 #	pwd.ID <- pw.raperj #ptran password
 	un.ID=un.sameotoj #ptran username
 	pwd.ID=pw.sameotoj#ptran password
 	
 #Date range for logs to be selected 
-	start.date.logs <- "2021-10-01"  #YYYY-MM-DD use Oct 1 
-	ends.date.logs <- "2022-10-01"  #YYYY-MM-DD use Oct 1 
+	start.date.logs <- "2022-10-01"  #YYYY-MM-DD use Oct 1 
+	ends.date.logs <- "2023-10-01"  #YYYY-MM-DD use Oct 1 
 	
 #### Read files ####
 	
@@ -179,7 +179,7 @@
   #Append current year data to CPUE_spa6
   comm.dat.subarea <- rbind(CPUE_spa6_subarea, cpue.subarea[,c("year", "area", "fleet", "effort.dat.1000h", "catch.dat.mt", "cpue.kgh")])
   
-  #Save to current asssessment folder
+  #Save to current assessment folder
   write.csv(comm.dat.subarea, paste0(direct,"/",assessmentyear,"/Assessment/Data/CommercialData/CPUE_spa6_subarea_", fishingyear, ".csv"), row.names = FALSE)
   
   
@@ -203,8 +203,8 @@
   cpue.fleet$cpue.kgh <- ifelse(cpue.fleet$n > 5, cpue.fleet$catch.dat.kg/cpue.fleet$effort.dat.hr, NA)
   
   #Landings by fleet:
-  landings <- as.data.frame(t(tacq[c(1,2,4),-1]))
-  names(landings) <- c("FB","MB","TAC")
+  landings <- as.data.frame(t(tacq[c(1,2,3,5),-1]))
+  names(landings) <- c("FB","MB","FSC", "TAC")
   landings$year <- as.numeric(rownames(landings))
   
   #Convert landings data to long format
@@ -212,7 +212,7 @@
   
   #Combine landings with cpue
   catch.fishery.fleet <- landings[which(landings$year == fishingyear),]
-  catch.fishery.fleet <- catch.fishery.fleet[-3,]
+  catch.fishery.fleet <- catch.fishery.fleet[-c(3,4),]
   cpue.fleet <- cbind(cpue.fleet, catch.fishery.fleet)
   print(cpue.fleet)
   
@@ -366,13 +366,13 @@
   #TAC and Landings
   ggplot() +
     theme_bw(base_size = 16) + theme(panel.grid=element_blank()) + # white background, no gridlines
-    geom_bar(data=landings[landings$variable%in%c('FB','MB'),], aes(year, catch.fleet.mt, fill=factor(variable, levels = c('FB', 'MB'))), colour="black", stat="identity") + 
+    geom_bar(data=landings[landings$variable%in%c('FSC','FB','MB'),], aes(year, catch.fleet.mt, fill=factor(variable, levels = c('FSC', 'FB','MB'))), colour="black", stat="identity") + 
     geom_line(data=landings[landings$variable == 'TAC',], aes(x = year, y = catch.fleet.mt), lwd = 1) +
     scale_y_continuous("Landings (meats, t)", breaks=seq(0,1200,200)) + # 
     scale_x_continuous("Year", breaks=seq(1976,fishingyear,4)) +
-    scale_fill_manual(values=c("white", "grey"), labels=c("Full Bay", "Mid-Bay"), name=NULL) +
+    scale_fill_manual(values=c("black","white", "grey"), labels=c("Food, Social, and Ceremonial","Full Bay", "Mid-Bay"), name=NULL) +
     annotate(geom="text",label="TAC", x=2003.4, y= 210) +
-    theme(legend.position=c(0.85, 0.85)) # play with the location if you want it inside the plotting panel
+    theme(legend.position=c(0.75, 0.85)) # play with the location if you want it inside the plotting panel
   ggsave(filename = paste0(direct, "/",assessmentyear,"/Assessment/Figures/CommercialData/SPA6_TACandLandings",fishingyear, ".png"), width = 24, height = 20, dpi = 400,units='cm')
   
   #PA Reference Point PLOT

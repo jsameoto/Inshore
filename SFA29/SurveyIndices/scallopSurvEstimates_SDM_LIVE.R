@@ -39,9 +39,9 @@ pwd <- pw.sameotoj
 uid <- keyring::key_list("Oracle")[1,2]
 pwd <- keyring::key_get("Oracle", uid)
 
-surveyyear <- 2022  #This is the last survey year for which you want to include  - not should match year of cruise below 
-cruise <- "SFA292022"  #note should match year for surveyyear set above 
-assessmentyear <- 2023 #year in which you are conducting the survey 
+surveyyear <- 2023  #This is the last survey year for which you want to include  - not should match year of cruise below 
+cruise <- "SFA292023"  #note should match year for surveyyear set above 
+assessmentyear <- 2024 #year in which you are conducting the survey 
 path.directory <- "Y:/Inshore/SFA29/"
 years <- c(2001:surveyyear) #when have 2021 data ready with SDM value then can use line of code below 
 #yr.crnt <- surveyyear-1
@@ -1537,10 +1537,10 @@ AtoD.number.per.tow.prerec.fr <- ggplot(data = sdm.levels %>% filter(!(SUBAREA =
   geom_point() + 
   geom_line(aes(linetype = Strata)) + 
   facet_wrap(~SUBAREA_FR, ncol=2) +
-  scale_color_manual(values=c('firebrick2', 'darkgrey', 'darkblue'), breaks = c("high", "med", "low"),labels = c("high"="Élevée", "med"="Moyenne", "low"="Faible"))+
-  scale_linetype_manual(values = c(1,2,3),breaks = c("high", "med", "low"),labels = c("high"="Élevée", "med"="Moyenne", "low"="Faible"))+
-  scale_shape_manual(values = c(15:17),breaks = c("high", "med", "low"),labels = c("high"="Élevée", "med"="Moyenne", "low"="Faible"))+
-  theme_bw() + ylab("Nombre moyen par trait") + xlab("Année") + 
+  scale_color_manual(values=c('firebrick2', 'darkgrey', 'darkblue'), breaks = c("high", "med", "low"),labels = c("high"="Ã‰levÃ©e", "med"="Moyenne", "low"="Faible"))+
+  scale_linetype_manual(values = c(1,2,3),breaks = c("high", "med", "low"),labels = c("high"="Ã‰levÃ©e", "med"="Moyenne", "low"="Faible"))+
+  scale_shape_manual(values = c(15:17),breaks = c("high", "med", "low"),labels = c("high"="Ã‰levÃ©e", "med"="Moyenne", "low"="Faible"))+
+  theme_bw() + ylab("Nombre moyen par trait") + xlab("AnnÃ©e") + 
   theme(legend.position = c(0.1, 0.85),panel.grid.minor.x = element_blank(),legend.title = element_blank())
 
 AtoD.number.per.tow.prerec.fr
@@ -1569,10 +1569,10 @@ AtoD.number.per.tow.rec.fr <- ggplot(data = sdm.levels %>% filter(!(SUBAREA == "
   geom_point() + 
   geom_line(aes(linetype = Strata)) + 
   facet_wrap(~SUBAREA_FR, ncol=2) +
-  scale_color_manual(values=c('firebrick2', 'darkgrey', 'darkblue'), breaks = c("high", "med", "low"),labels = c("high"="Élevée", "med"="Moyenne", "low"="Faible"))+
-  scale_linetype_manual(values = c(1,2,3),breaks = c("high", "med", "low"),labels = c("high"="Élevée", "med"="Moyenne", "low"="Faible"))+
-  scale_shape_manual(values = c(15:17),breaks = c("high", "med", "low"),labels = c("high"="Élevée", "med"="Moyenne", "low"="Faible"))+
-  theme_bw() + ylab("Nombre moyen par trait") + xlab("Année") + 
+  scale_color_manual(values=c('firebrick2', 'darkgrey', 'darkblue'), breaks = c("high", "med", "low"),labels = c("high"="Ã‰levÃ©e", "med"="Moyenne", "low"="Faible"))+
+  scale_linetype_manual(values = c(1,2,3),breaks = c("high", "med", "low"),labels = c("high"="Ã‰levÃ©e", "med"="Moyenne", "low"="Faible"))+
+  scale_shape_manual(values = c(15:17),breaks = c("high", "med", "low"),labels = c("high"="Ã‰levÃ©e", "med"="Moyenne", "low"="Faible"))+
+  theme_bw() + ylab("Nombre moyen par trait") + xlab("AnnÃ©e") + 
   theme(legend.position = c(0.1, 0.85),panel.grid.minor.x = element_blank(),legend.title = element_blank()) 
 
 AtoD.number.per.tow.rec.fr
@@ -1600,10 +1600,10 @@ AtoD.number.per.tow.comm.fr <- ggplot(data = sdm.levels %>% filter(!(SUBAREA == 
   geom_point() + 
   geom_line(aes(linetype = Strata)) + 
   facet_wrap(~SUBAREA_FR, ncol=2) +
-  scale_color_manual(values=c('firebrick2', 'darkgrey', 'darkblue'), breaks = c("high", "med", "low"),labels = c("high"="Élevée", "med"="Moyenne", "low"="Faible"))+
-  scale_linetype_manual(values = c(1,2,3),breaks = c("high", "med", "low"),labels = c("high"="Élevée", "med"="Moyenne", "low"="Faible"))+
-  scale_shape_manual(values = c(15:17),breaks = c("high", "med", "low"),labels = c("high"="Élevée", "med"="Moyenne", "low"="Faible"))+
-  theme_bw() + ylab("Nombre moyen par trait") + xlab("Année") +
+  scale_color_manual(values=c('firebrick2', 'darkgrey', 'darkblue'), breaks = c("high", "med", "low"),labels = c("high"="Ã‰levÃ©e", "med"="Moyenne", "low"="Faible"))+
+  scale_linetype_manual(values = c(1,2,3),breaks = c("high", "med", "low"),labels = c("high"="Ã‰levÃ©e", "med"="Moyenne", "low"="Faible"))+
+  scale_shape_manual(values = c(15:17),breaks = c("high", "med", "low"),labels = c("high"="Ã‰levÃ©e", "med"="Moyenne", "low"="Faible"))+
+  theme_bw() + ylab("Nombre moyen par trait") + xlab("AnnÃ©e") +
   theme(legend.position = c(0.1, 0.85),panel.grid.minor.x = element_blank(),legend.title = element_blank())
 
 AtoD.number.per.tow.comm.fr

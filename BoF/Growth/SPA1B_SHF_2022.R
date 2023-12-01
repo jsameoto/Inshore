@@ -36,10 +36,10 @@ for(fun in funcs)
 uid <- un.sameotoj
 pwd <- pw.sameotoj
 #uid <- keyring::key_list("Oracle")[1,2]
-#pwd <- keyring::key_get("Oracle", "WILSONBR")
+#pwd <- keyring::key_get("Oracle", uid)
 
-surveyyear <- 2022  #This is the last survey year 
-assessmentyear <- 2022 #year in which you are conducting the survey 
+surveyyear <- 2023  #This is the last survey year 
+assessmentyear <- 2023 #year in which you are conducting the survey 
 area <- "1A1B4and5"  #SPA assessing recall SPA 1A, 1B, and 4 are grouped; options: "1A1B4and5", "3", "6" 
 path.directory <- "Y:/Inshore/BoF/"
 
@@ -630,7 +630,7 @@ MBN.lbar.strata <- rbind(data.frame(Year=1997, lbar.MBN=NaN) , MBN.lbar.strata)
 C28.lbar.strata <- rbind(data.frame(Year=1997, lbar.28C=NaN) , C28.lbar.strata)
 D28.lbar.strata <- rbind(data.frame(Year=1997, lbar.28D=NaN) , D28.lbar.strata)
 
-SPA1B.lbar.strata.groups <- cbind(CS.lbar.strata, select(MBN.lbar.strata, "lbar.MBN") ,select(C28.lbar.strata, "lbar.28C"), select(D28.lbar.strata, "lbar.28D"))
+SPA1B.lbar.strata.groups <- cbind(CS.lbar.strata, dplyr::select(MBN.lbar.strata, "lbar.MBN") ,dplyr::select(C28.lbar.strata, "lbar.28C"), dplyr::select(D28.lbar.strata, "lbar.28D"))
 
 # Save out data - mean Commercial SHell Height by Strata Group 
 dump(c("SPA1B.lbar.strata.groups"), paste0(path.directory,assessmentyear, "/Assessment/Data/Growth/SPA",area,"/SPA1B",surveyyear,".lbarbyStrataGroup.R"))

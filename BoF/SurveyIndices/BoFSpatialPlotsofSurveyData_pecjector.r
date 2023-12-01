@@ -302,7 +302,7 @@ GM.con.dat <- GM.con.dat %>% #Combine the condition data from files that are fou
   mutate(CRUISE = paste0("GM", GM.con.dat$YEAR)) #Add Cruise information
 
 #Now combine the Cruise dataframes together
-con.dat <- rbind(if(exists("BI.con.dat")) BI.con.dat, if(exists("GM.con.dat")) GM.con.dat) #Combine SPA condition data together if data is available
+con.dat <- rbind(BF.con.dat, if(exists("BI.con.dat")) BI.con.dat, if(exists("GM.con.dat")) GM.con.dat) #Combine SPA condition data together if data is available
 
 #check data structure
 head(con.dat)
@@ -791,7 +791,8 @@ cond.year <- survey.year # change year (e.g. cond.year <- "2019") to plot other 
 com.contours <- contour.gen(con.dat %>% filter(year== cond.year, str_detect(CRUISE, "BF")) %>% dplyr::select(ID, lon, lat, Condition),ticks='define',nstrata=7,str.min=0,place=2,id.par=5,interp.method='gstat',key='strata',blank=T,plot=F,res=0.01,blank.dist = 0.1)
 
 #lvls=c(5,6,7,8,9,10,11,12) #levels to be color coded
-lvls=c(4,6,8,10,12,14,16) #for higher conditions
+#lvls=c(4,6,8,10,12,14,16) #for higher conditions
+lvls=c(4,6,8,10,12,14,16,18,20)
 
 CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
 CP <- convCP(CL)
@@ -808,9 +809,10 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
 
 #Colour aesthetics and breaks for contours
 #labels <- c("5-6", "6-7", "7-8", "8-9", "9-10", "10-11", "11-12", "12+")
-labels <- c("4-6", "6-8", "8-10", "10-12", "12-14", "14-16","16+") #for higher conditions
+#labels <- c("4-6", "6-8", "8-10", "10-12", "12-14", "14-16","16+") #for higher conditions
+labels <- c("4-6", "6-8", "8-10", "10-12", "12-14","14-16", "16-18", "18-20", "20+")
 col <- brewer.pal(length(lvls),"YlOrBr") #set colours
-cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = "Condition (g)", limits = labels) #set custom fill arguments for pecjector.
+cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = "Condition (g)", limits = labels) # set custom fill arguments for pecjector.
 
 # ----FULL BAY -----
 
@@ -824,7 +826,7 @@ p + #Plot survey data and format figure.
                      aes(lon, lat), size = 0.5) +
   labs(title = paste(cond.year, "", "BoF Condition"), x = "Longitude",
        y = "Latitude") +
-  guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  guides(fill = guide_legend(override.aes= list(alpha = .75))) + #Legend transparency
   coord_sf(xlim = c(-66.50,-64.30), ylim = c(44.25,45.80), expand = FALSE)+
   plot.theme
 
@@ -842,7 +844,7 @@ p + #Plot survey data and format figure.
                      aes(lon, lat), size = 0.5) +
   labs(title = paste(cond.year, "", "SPA1A Condition"), x = "Longitude",
        y = "Latitude") +
-  guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  guides(fill = guide_legend(override.aes= list(alpha = .75))) + #Legend transparency
   coord_sf(xlim = c(-66.40,-64.80), ylim = c(44.37,45.30), expand = FALSE)+
   plot.theme
 
@@ -860,7 +862,7 @@ p + #Plot survey data and format figure.
                      aes(lon, lat), size = 0.5) +
   labs(title = paste(cond.year, "", "SPA1B Condition"), x = "Longitude",
        y = "Latitude") +
-  guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  guides(fill = guide_legend(override.aes= list(alpha = .75))) + #Legend transparency
   coord_sf(xlim = c(-66.20,-64.30), ylim = c(44.80,45.70), expand = FALSE)+
   plot.theme.1b
 
@@ -878,7 +880,7 @@ p + #Plot survey data and format figure.
                      aes(lon, lat), size = 0.5) +
   labs(title = paste(cond.year, "", "SPA4 Condition"), x = "Longitude",
        y = "Latitude") + 
-  guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  guides(fill = guide_legend(override.aes= list(alpha = .75))) + #Legend transparency
   coord_sf(xlim = c(-66.20,-65.51), ylim = c(44.43,44.96), expand = FALSE)+
   plot.theme.4
 
@@ -927,7 +929,7 @@ p + #Plot survey data and format figure.
                      aes(lon, lat), size = 0.5) +
   geom_sf(data = spa3.poly, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
   labs(title = paste(cond.year, "", "SPA3 Condition"), x = "Longitude", y = "Latitude") +
-  guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  guides(fill = guide_legend(override.aes= list(alpha = .75))) + #Legend transparency
   coord_sf(xlim = c(-66.82,-65.80), ylim = c(43.62,44.60), expand = FALSE)+
   plot.theme.3
 
@@ -978,7 +980,7 @@ p + #Plot survey data and format figure.
   #geom_sf(data = outVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
   #geom_sf(data = inVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
   labs(title = paste(cond.year, "", "SPA6 Condition"), x = "Longitude", y = "Latitude")+
-  guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
+  guides(fill = guide_legend(override.aes= list(alpha = .75))) + #Legend transparency
   coord_sf(xlim = c(-67.5, -66.4), ylim = c(44.4, 45.2), expand = FALSE)+
   plot.theme.6
 
@@ -3148,7 +3150,8 @@ com.contours<-contour.gen(con.dat %>% filter(year==cond.year) %>%
                           ticks='define', nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
 
 #lvls=c(5,6,7,8,9,10,11,12) #levels to be color coded
-lvls=c(4,6,8,10,12,14,16) #for higher conditions
+#lvls=c(4,6,8,10,12,14,16) #for higher conditions
+lvls=c(4,6,8,10,12,14,16,18,20) #for higher conditions
 
 CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
 CP <- convCP(CL)
@@ -3165,7 +3168,8 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
 
 #Set aesthetics for plot
 #labels <- c("5-6", "6-7", "7-8", "8-9", "9-10", "10-11", "11-12", "12+")
-labels <- c("4-6", "6-8", "8-10", "10-12", "12-14", "14-16","16+") #for higher conditions
+#labels <- c("4-6", "6-8", "8-10", "10-12", "12-14", "14-16","16+") #for higher conditions
+labels <- c("4-6", "6-8", "8-10", "10-12", "12-14","14-16", "16-18", "18-20", "20+")
 col <- brewer.pal(length(lvls),"YlOrBr") #set colours
 cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = "Condition (g)", limits = labels) #set custom fill arguments for pecjector.
 

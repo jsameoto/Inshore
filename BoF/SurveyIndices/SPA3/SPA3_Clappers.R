@@ -239,8 +239,8 @@ write.csv(SPA3.ClapNumbers, paste0(path.directory, assessmentyear, "/Assessment/
 ###
 #model only needs 1996+, ONLY inside VMS and SMB
 
-clappers.SPA3.SMB.DeadComm.simple <- SPA3.SMB.DeadComm.simple %>% filter(Year >= 1996) %>% select(Year, Pop)
-clappers.SPA3.Inner.DeadComm.simple <- SPA3.Inner.DeadComm.simple %>% filter(Year >= 1996) %>% select(Year, Pop)
+clappers.SPA3.SMB.DeadComm.simple <- SPA3.SMB.DeadComm.simple %>% filter(Year >= 1996) %>% dplyr::select(Year, Pop)
+clappers.SPA3.Inner.DeadComm.simple <- SPA3.Inner.DeadComm.simple %>% filter(Year >= 1996) %>% dplyr::select(Year, Pop)
 #Ensure year ranges are the same: 
 clappers.SPA3.SMB.DeadComm.simple$Year == clappers.SPA3.Inner.DeadComm.simple$Year
 #Create object for N (population size) for SPA 3 Model area: 
