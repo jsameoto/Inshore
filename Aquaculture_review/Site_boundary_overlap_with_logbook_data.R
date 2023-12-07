@@ -26,15 +26,6 @@ start.year <- last.fishing.yr - 20 #Get data from latest year back 5 years (6 ye
 cruise <- "SPA1A" #Set Cruise parameters based on where site is located
 
 
-#Read in the inshore boundaries shapefile
-temp <- tempfile()
-# Download this to the temp directory
-download.file("https://raw.githubusercontent.com/Mar-scal/GIS_layers/master/inshore_boundaries/inshore_boundaries.zip", temp)
-# Figure out what this file was saved as
-temp2 <- tempfile()
-# Unzip it
-unzip(zipfile=temp, exdir=temp2)
-
 # ----Import Source functions----------------------------------------------
 
 funcs <- c("https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Maps/pectinid_projector_sf.R",
