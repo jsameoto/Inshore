@@ -36,6 +36,7 @@ library(openxlsx)
 library(PBSmapping)
 library(data.table)
 library(sf)
+library(dplyr)
 
 source("Y:/Inshore/BoF/Assessment_fns/convert.dd.dddd.r")
 
@@ -43,16 +44,16 @@ source("Y:/Inshore/BoF/Assessment_fns/convert.dd.dddd.r")
 #### DEFINE ####
 
 direct <- "Y:/Inshore/BoF"
-fishingyear <- 2022 #most recent year of commercial fishing data to be used (e.g. if fishing season is 2019/2020, use 2020)
-assessmentyear <- 2022 #year in which you are conducting the assessment
+fishingyear <- 2023 #most recent year of commercial fishing data to be used (e.g. if fishing season is 2019/2020, use 2020)
+assessmentyear <- 2023 #year in which you are conducting the assessment
 #un.ID=un.raperj #ptran username
 #pwd.ID=pw.raperj #ptran password
 un.ID=un.sameotoj #ptran username
 pwd.ID=pw.sameotoj#ptran password
 
 #Date range for logs to be selected 
-start.date.logs <- "2021-10-01"  #YYYY-MM-DD use Oct 1 
-ends.date.logs <- "2022-10-01"  #YYYY-MM-DD use Oct 1 
+start.date.logs <- "2022-10-01"  #YYYY-MM-DD use Oct 1 
+ends.date.logs <- "2023-10-01"  #YYYY-MM-DD use Oct 1 
 
 
 #### Read files ####
@@ -66,7 +67,7 @@ CPUE_spa3_subarea <- read.csv(paste0(direct,"/",(assessmentyear-1),"/Assessment/
 CPUE_spa3_combined <- read.csv(paste0(direct,"/",(assessmentyear-1),"/Assessment/Data/CommercialData/CPUE_spa3_combined_", fishingyear-1, ".csv"))
 
 #Polygon to separate catch between BILU and St Mary's Bay
-BILU.poly<-read.csv("Y:/Offshore scallop/Assessment/Data/Maps/approved/Other_Borders/BILUpoly.csv")
+BILU.poly<-read.csv("Y:/Inshore/BoFBoundaries/SPABoundaries_Redrawn2014/SPA New Polys/csv_NAD83/BILUpoly.csv")
 
 #Polygons for spatial plots
 poly.sf <- st_read("Y:/Inshore/BoFBoundaries/SPABoundaries_Redrawn2014/SPA New Polys/shp polygons", layer = "SPA3_polygon_NAD83")
@@ -92,7 +93,6 @@ for(fun in funcs)
 
 #### Select data ####
 
-#UPDATE date range
 quer2 <- paste(
   "SELECT * 			                             ",
   "FROM scallop.scallop_log_marfis s		         ",
@@ -141,7 +141,7 @@ logs$area[logs$ID%in%findPolys(events,BILU.poly)$EID]<-"BILU"
 
 #Assign fishing season (June/Oct)
 logs$season <- "June" 
-logs$season[logs$DATE_FISHED %between% c("2021-10-01", "2021-11-15")] <- "Oct" #Update date range to current season
+logs$season[logs$DATE_FISHED %between% c("2022-10-01", "2022-11-15")] <- "Oct" #Update date range to current season
 #check date ranges to make sure none fall outside fishing season
 
 table(logs$season, logs$area) #check no of records for rule of <5
