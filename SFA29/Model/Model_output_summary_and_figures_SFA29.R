@@ -7,8 +7,8 @@ library(tidyverse)
 library(lubridate)
 
 #define 
-yr <- 2023 # This should be set to the year after the year of the last survey.  e.g. if 2018 that means you are using the 2017 survey.
-survey.year <- 2022
+yr <- 2024 # This should be set to the year after the year of the last survey.  e.g. if 2018 that means you are using the 2017 survey.
+survey.year <- 2023
 
 path.directory <- paste0("Y:/Inshore/SFA29/")
 
@@ -200,19 +200,19 @@ ggsave(filename = paste0(path.directory,"/",yr,"/Assessment/Figures/Model/Commer
 
 # EN FRANCAIS!!! - Check translation for DMSY LRP, USR
 #MSY = RMD - un rendement maximal durable
-#LRP = PRI - les points de référence inférieurs
-#USR = PRS - les points de référence supérieurs
+#LRP = PRI - les points de r?f?rence inf?rieurs
+#USR = PRS - les points de r?f?rence sup?rieurs
 
 ggplot(dat.all,aes(Year,BM.dens,colour = Habitat)) + 
   geom_hline(aes(yintercept = ref.pt),ref.points.2,linetype=c(rep("solid",3), rep("dashed",3), rep("dotdash",3)), colour = c(rep("red",3),rep("black",3),rep("blue",3))) +
   geom_line(aes(Year,BM.dens,colour = Habitat,linetype=Habitat)) + 
   geom_point(aes(Year,BM.dens,colour = Habitat,shape=Habitat))+
   facet_wrap(~area_FR,nrow=1) +
-  xlab("Année") + ylab(expression (paste("Densité de la biomasse (chairs, t/ ", km^{2}, ")"))) + #ggtitle("SFA29 Modelled Biomass Density") +
+  xlab("AnnÃ©e") + ylab(expression (paste("DensitÃ© de la biomasse (chairs, t/ ", km^{2}, ")"))) + #ggtitle("SFA29 Modelled Biomass Density") +
   theme_bw() + theme(panel.grid=element_blank()) +
-  scale_color_manual(values=colr, breaks = c("High", "Med", "Low"),labels = c("High"="Elevé", "Med"="Moyen", "low"="Faible")) +
-  scale_linetype_manual(values = line.type, breaks = c("High", "Med", "Low"),labels = c("High"="Elevé", "Med"="Moyen", "low"="Faible")) +
-  scale_shape_manual(values = symbs, breaks = c("High", "Med", "Low"),labels = c("High"="Elevé", "Med"="Moyen", "low"="Faible"))+
+  scale_color_manual(values=colr, breaks = c("High", "Med", "Low"),labels = c("High"="ElevÃ©", "Med"="Moyen", "low"="Faible")) +
+  scale_linetype_manual(values = line.type, breaks = c("High", "Med", "Low"),labels = c("High"="ElevÃ©", "Med"="Moyen", "low"="Faible")) +
+  scale_shape_manual(values = symbs, breaks = c("High", "Med", "Low"),labels = c("High"="ElevÃ©", "Med"="Moyen", "low"="Faible"))+
   theme_bw()+
   theme(legend.position="none", aspect.ratio=1.25) + 
   geom_text(data = anno,parse = TRUE, vjust = c(0.05, 0.7, 0.7), label = c(as.character(expression("D"["RMD"])),"PRS","PRI"), col=c('blue','black','red'))
@@ -277,7 +277,7 @@ ggsave(filename = paste0(path.directory,"/",yr,"/Assessment/Figures/Model/Model_
 #mod.summary.FR$area <- factor(mod.summary.FR$area,levels=c("SFA29A","SFA29B","SFA29C","SFA29D"),
 #                       labels=c("ZPP29A","ZPP29B","ZPP29C","ZPP29D"))
 #mod.summary.FR$Habitat <- factor(mod.summary.FR$Habitat,levels=c("Low","Med","High"),
-#                             labels=c("Faible","Moyen","Elevé"))
+#                             labels=c("Faible","Moyen","Elev?"))
 
 mod.summary <- mod.summary %>% 
   mutate(area_FR = case_when(area == "SFA29A" ~ "ZPP29A",
@@ -289,10 +289,10 @@ explot.data.plot <- rbind(mod.summary[mod.summary$area%in%c('SFA29A')&mod.summar
 windows(6,5)
 ggplot(explot.data.plot[explot.data.plot$Year > 2001,],aes(Year,mu,colour = Habitat)) + geom_line(aes(group=Habitat, linetype = Habitat, color = Habitat), size = 0.75) + 
   geom_point(aes(group=Habitat, shape = Habitat, color = Habitat)) + facet_wrap(~area_FR, nrow=1) +
-  scale_color_manual(values=colr, breaks = c("High", "Med", "Low"),labels = c("High"="Elevé", "Med"="Moyen", "low"="Faible")) +
-  scale_linetype_manual(values = line.type, breaks = c("High", "Med", "Low"),labels = c("High"="Elevé", "Med"="Moyen", "low"="Faible")) +
-  scale_shape_manual(values = symbs, breaks = c("High", "Med", "Low"),labels = c("High"="Elevé", "Med"="Moyen", "low"="Faible"))+
-  xlab("Année") + ylab("Exploitation") + 
+  scale_color_manual(values=colr, breaks = c("High", "Med", "Low"),labels = c("High"="ElevÃ©", "Med"="Moyen", "low"="Faible")) +
+  scale_linetype_manual(values = line.type, breaks = c("High", "Med", "Low"),labels = c("High"="ElevÃ©", "Med"="Moyen", "low"="Faible")) +
+  scale_shape_manual(values = symbs, breaks = c("High", "Med", "Low"),labels = c("High"="ElevÃ©", "Med"="Moyen", "low"="Faible"))+
+  xlab("AnnÃ©e") + ylab("Exploitation") + 
   theme_bw() +
   theme(legend.position="none", aspect.ratio = 1.25)
   #theme(legend.title = element_blank(),legend.text = element_text(size=11), panel.grid=element_blank(), legend.position = c(0.9, 0.86))
@@ -395,7 +395,7 @@ ggplot(dat.all,aes(Year,nat.m,colour = Habitat, linetype = Habitat))  + geom_lin
   scale_color_manual(values=colr, breaks = c("High", "Med", "Low")) +
   scale_linetype_manual(values = line.type, breaks = c("High", "Med", "Low")) +
   scale_shape_manual(values = symbs, breaks = c("High", "Med", "Low"))+
-  xlab("Année") + ylab("Mortalité naturelle (instantantané)") + #ggtitle("SFA29 Natural mortality") + 
+  xlab("AnnÃ©e") + ylab("MortalitÃ© naturelle (instantantanÃ©)") + #ggtitle("SFA29 Natural mortality") + 
   theme_bw() + theme(legend.position = "none", aspect.ratio=1.25) + 
   geom_segment(aes(x=min(dat.all$Year), xend=max(dat.all$Year)-1,y=ltmed,yend=ltmed),data=lt_median.instm,linetype=c("solid"), colour = c("black")) +
   geom_segment(aes(x=max(dat.all$Year)-4, xend=max(dat.all$Year), y= mean,yend= mean),data = fyr_mean.instm,linetype=c("dashed"), colour = c("black"))
@@ -409,7 +409,7 @@ ggplot(dat.all,aes(Year,nat.m.prop,colour = Habitat, linetype = Habitat))  + geo
   scale_color_manual(values=colr, breaks = c("High", "Med", "Low")) +
   scale_linetype_manual(values = line.type, breaks = c("High", "Med", "Low")) +
   scale_shape_manual(values = symbs, breaks = c("High", "Med", "Low"))+
-  xlab("Année") + ylab("Mortalité naturelle (proportionnel)") + #ggtitle("SFA29 Natural mortality") + 
+  xlab("AnnÃ©e") + ylab("MortalitÃ© naturelle (proportionnel)") + #ggtitle("SFA29 Natural mortality") + 
   theme_bw() + theme(legend.position = "none", aspect.ratio=1.25) + 
   geom_segment(aes(x=min(dat.all$Year), xend=max(dat.all$Year)-1,y=ltmed,yend=ltmed),data=lt_median.propm,linetype=c("solid"), colour = c("black")) +
   geom_segment(aes(x=max(dat.all$Year)-4, xend=max(dat.all$Year), y= mean,yend= mean),data = fyr_mean.propm,linetype=c("dashed"), colour = c("black"))
