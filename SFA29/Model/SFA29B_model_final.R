@@ -37,8 +37,8 @@ source("Y:/Inshore/SFA29/2017/model/SFA29model9-2015.R") #contains the SFA29mode
 
 #DEFINE:
 path.directory <- "Y:/Inshore/SFA29/"
-assessmentyear <- 2023 #year in which you are conducting the assessment 
-surveyyear <- 2022  #last year of survey data you are using, e.g. if max year of survey is survey from summer 2019, this would be 2019 
+assessmentyear <- 2024 #year in which you are conducting the assessment 
+surveyyear <- 2023  #last year of survey data you are using, e.g. if max year of survey is survey from summer 2019, this would be 2019 
 area <- "SFA29B"  
 
 #last year survey in model 
@@ -130,7 +130,7 @@ SFA29Bdata <- list(
 ### run model
 B.mod.res <- SSModel(SFA29Bdata,SFA29.priors,inits.29B,parms=SFA29.parms,model.file=SFA29model,Years=yrs,
                     nchains=nchains,niter=niter,nburnin=nburnin,nthin=nthin,Area="SFA29W",e.parms=e.parms.29B,debug=F)
-
+#load(paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29B/SFA29B.",surveyyear,".RData"))
 mod.res <- B.mod.res
 # You want this to be a minimum of 400, if less than this you should increase your chain length
 min.neff <- min(mod.res$summary[,9])
@@ -356,7 +356,6 @@ Dec.tab
 
 write.csv(Dec.tab, paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29B/SFA29.B.mod.Decision.table.",surveyyear,".csv"), row.names = FALSE) 
 
-
 # ---- EXTRA - Decision table to predict max level exploitation risk ----
 #Decision.table <- NULL
 #for(i in 1:20){
@@ -493,7 +492,7 @@ class(pe.all) <- "SFA29"
 #windows(11,11)
 par(mfrow=c(3,1))
 SSModeltest::eval.predict.SFA29(pe.all,Year=2012,pred.lim=0.2)
-#dev.off()
+dev.off()
 
 #Save out plot 
 png(paste0(path.directory,assessmentyear,"/Assessment/Figures/Model/SFA29B/SFA29.B.predict.evaluation.",surveyyear,".png"),width=9,height=9,units = "in", res=400)
@@ -546,7 +545,7 @@ summary <- cbind(parameters, data.frame(summary, row.names=NULL))
 
 n <- 3
 years <- rep(2001:surveyyear, each=n)
-Habitat <- rep(c("Low", "Med", "High"), 22) #Need to fix this so new years are added.
+Habitat <- rep(c("Low", "Med", "High"), 23) #Need to fix this so new years are added.
 
 summary.Bh <- summary |>  filter(str_detect(summary$parameters, "^Bh"))
 summary.Bh$Year <- years

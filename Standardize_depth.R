@@ -1,9 +1,10 @@
 
 #R standardize depth workflow (used from 2021 on wards). Prior to 2021, ArcGIS workflow was used.
+#modified in 2023 to us Terra package instead of Raster package (depreciated).
 
 library(ROracle)
 require(sf)
-require(raster)
+require(terra)
 require(dplyr)
 
 options(stringsAsFactors = FALSE)
@@ -69,34 +70,39 @@ ScallopSurv$DDSlon <- ScallopSurv$lon
 #ScallopSurv$mid.lat <- convert.dd.dddd(ScallopSurv$mid.lat)
 #ScallopSurv$mid.lon <- convert.dd.dddd(ScallopSurv$mid.lon)
 
-#Convert dataframe to sf:
-ScallopSurv.sf <- st_as_sf(ScallopSurv, coords = c("lon", "lat"), crs = 4326)
 
-#Read in Bathy (with raster):  #Former process involved importing raster (UTM zone 20 into Arcmap, and extracting imported points from database. ArcMap converts data points to UTM zone 20 in order to extract.)  *DO NOT TRANSFORM THE RASTER OR DATA*. raster::extract() gives warning "Transforming SpatialPoints to the CRS of the Raster".
+#Read in Bathy (with Terra):  #Former process involved importing raster (UTM zone 20 into Arcmap, and extracting imported points from database. ArcMap converts data points to UTM zone 20 in order to extract).
 
 if(grepl('SFA29',cruise)){
-  bathy <- raster("Y:/Inshore/StandardDepth/SFA29_mbDEM/sfa29_utm/w001001.adf")
+  bathy <- rast("Y:/Inshore/StandardDepth/SFA29_mbDEM/sfa29_utm/w001001.adf")
+  crs(bathy)<- "epsg:32619"
+  ScallopSurv.sf <- st_as_sf(ScallopSurv, coords = c("lon", "lat"), crs = 4326) |> 
+    st_transform(crs = 32619) #Convert to utm zone 20 to match bathy.
+  #extract olex depth values
+  olex.depth <- terra::extract(bathy, vect(ScallopSurv.sf))
+  #Append depth to survey data
+  ScallopSurv.dpth <- cbind(ScallopSurv.sf, olex.depth) %>% 
+    mutate(FID = row_number()) |>  dplyr::select(FID, CRUISE, TOW_NO, ID, START_LAT, START_LONG, DDSlat, DDSlon, RASTERVALU = sfa29_utm) %>%  #sort to match towsdd_Std column formatting
+    st_set_geometry(NULL) #removes geometry
 }else
   {
-    bathy <- raster("Y:/Inshore/StandardDepth/ScotianShelfDEM_Olex/mdem_olex/w001001.adf")
+    bathy <- rast("Y:/Inshore/StandardDepth/ScotianShelfDEM_Olex/mdem_olex/w001001.adf")
+    crs(bathy)<- "epsg:32620"
+    ScallopSurv.sf <- st_as_sf(ScallopSurv, coords = c("lon", "lat"), crs = 4326) |> 
+      st_transform(crs = 32620) #Convert to utm zone 20 to match bathy.
+    #extract olex depth values
+    olex.depth <- terra::extract(bathy, vect(ScallopSurv.sf))
+    #Append depth to survey data
+    ScallopSurv.dpth <- cbind(ScallopSurv.sf, olex.depth) %>% 
+      mutate(FID = row_number()) |>  dplyr::select(FID, CRUISE, TOW_NO, ID, START_LAT, START_LONG, DDSlat, DDSlon, RASTERVALU = mdem_olex) %>%  #sort to match towsdd_Std column formatting
+      st_set_geometry(NULL) #removes geometry
 }
 
-#mapview::mapview(bathy)
-
-olex.depth <- raster::extract(bathy, ScallopSurv.sf) #extract bathy data from ScallopSurv.sf point locations.
-#warning given: Transforming SpatialPoints to the CRS of the Raster - THIS IS OKAY.
-
-#Append depth to survey data
-ScallopSurv.dpth <-cbind(ScallopSurv.sf, olex.depth) %>% 
-  mutate(FID = row_number()) %>%
-  dplyr::select(FID, CRUISE, TOW_NO, ID, START_LAT, START_LONG, DDSlat, DDSlon, RASTERVALU = olex.depth) %>%  #sort to match towsdd_Std column formatting
-  st_set_geometry(NULL) #removes geometry
-  
 #Load previous towsdd_stdDepth.csv file to append to.
 towsdd <- read.csv(paste0("Y:/Inshore/StandardDepth/towsdd_StdDepth.csv"))
 
 #Appending to towsdd
-towsdd.updt <- rbind(towsdd, ScallopSurv.dpth )
+towsdd.updt <- rbind(towsdd, ScallopSurv.dpth)
 
 #Check values and plot if necessary
 summary(towsdd.updt)

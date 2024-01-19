@@ -8,9 +8,9 @@ library(ggplot2)
 library(openxlsx)
 library(compareDF)
 
-surveyyear <- 2022  #This is the last survey year for which you want to include  - note should match year of cruise below 
-cruise <- "SFA292022"  #note should match year for surveyyear set above 
-assessmentyear <- 2023 #year in which you are conducting the survey 
+surveyyear <- 2023  #This is the last survey year for which you want to include  - note should match year of cruise below 
+cruise <- "SFA292023"  #note should match year for surveyyear set above 
+assessmentyear <- 2024 #year in which you are conducting the survey 
 path.directory <- "Y:/Inshore/SFA29/"
 years <- c(2001:surveyyear)
 
@@ -219,17 +219,6 @@ create_output_table(output, output_type = "xlsx", file_name=paste0(path.director
 #join so have right number of rows for years - keeps all old data but adds the row for the current year 
 revised <- left_join(dplyr::select(model.data.for.subarea, SUBAREA, Strata, Year), old)
 
-#In Dec 2022, corrections were made to SFA292019 database to NUM_UNLINED_FREQ for tows #96, 87 and 64. This caused discrepancies between previous model data files in the rh, obs.nu, clappers,obs.phi and L columns for 2019 and 2020 Subarea B - high habitat and Subarea D - medium habitat and Subarea E (not modeled). So we will now adjust 2019 (and 2020) values to the corrected numbers. These tows corresponded to Subarea B, D and E only (tow 96 = B, tow 64 = D, tow 87 = E).Note, the wk for 2019 did not change so we keep the wk from the "revised" object for 2019 and 2020.
-
-#Note: This should not need to be re-run next year (2024 assessment). Delete out lines 224-232 in 2024.
-#add 2019 and 2020 year data from the model.data.Subarea object.
-#Only need to run For high strata - note only high strata have "Catch.actual", "wk"
-revised[revised$Year==2019 & revised$Strata == "high", c("Ih", "obs.tau", "rh", "obs.nu", "clappers", "obs.phi", "L", "gh")] <- 
-  model.data.for.subarea[model.data.for.subarea$Year==2019 & revised$Strata == "high", c("Ih", "obs.tau", "rh", "obs.nu", "clappers", "obs.phi", "L", "gh")] #Keep old Catch.actual and VMSEffort values
-
-revised[revised$Year==2020 & revised$Strata == "high", c("Ih", "obs.tau", "rh", "obs.nu", "clappers", "obs.phi", "L")] <- 
-  model.data.for.subarea[model.data.for.subarea$Year==2020 & revised$Strata == "high", c("Ih", "obs.tau", "rh", "obs.nu", "clappers", "obs.phi", "L")] #Keep old Catch.actual and VMSEffort values and leave out gh to keep value from old file, otherwise it replaces with NA.
-
 
 #add current year data 
 #For high strata - note only high strata have "Catch.actual", "wk"
@@ -248,7 +237,6 @@ revised[revised$Year==surveyyear & revised$Strata == "low", c("Catch.actual", "w
 revised$VMSEffort[revised$Year == surveyyear-1 & revised$Strata == "low"] <- model.data.for.subarea$VMSEffort[model.data.for.subarea$Year == surveyyear-1 & model.data.for.subarea$Strata == "low"]
 revised$VMSEffort[revised$Year == surveyyear-1 & revised$Strata == "med"] <- model.data.for.subarea$VMSEffort[model.data.for.subarea$Year == surveyyear-1 & model.data.for.subarea$Strata == "med"]
 revised$VMSEffort[revised$Year == surveyyear-1 & revised$Strata == "high"] <- model.data.for.subarea$VMSEffort[model.data.for.subarea$Year == surveyyear-1 & model.data.for.subarea$Strata == "high"]
-
 
 
 #Note: For 2022 - 0 recruits for low in B -- as per process for this situation (since can't have 0 in model or NA for obs.nu) set rh = 0.001	obs.nu = 0.009950331 (note this often happens in subarea A). Rh gets set to 0.001 in model_final.R script.
@@ -359,9 +347,13 @@ revised$VMSEffort[revised$Year == surveyyear-1 & revised$Strata == "high"] <- mo
 
 revised
 
-#Note: For 2022 - 0 recruits and clappers for low in C -- as per process for this situation (since can't have 0 in model or NA for obs.nu) set rh = 0.001	obs.nu = 0.009950331, clappers = 0.001 and obs.phi = 0.009950331 (note this often happens in subarea A). Rh and clappers gets set to 0.001 in model_final.R script.
+#Note: For 2023 - 0 commercial and recruits and clappers for low in C  -- as per process for this situation (since can't have 0 in model or NA for obs.nu) set rh = 0.001	obs.nu = 0.009950331, clappers = 0.001 and obs.phi = 0.009950331 (note this often happens in subarea A). Rh and clappers gets set to 0.001 in model_final.R script.
 #revised$obs.nu[revised$Year == 2022 & revised$Strata == "low"] <- 0.009950331
 #revised$obs.phi[revised$Year == 2022 & revised$Strata == "low"] <- 0.009950331
+
+revised$obs.tau[revised$Year == 2023 & revised$Strata == "low"] <- 0.009950331
+revised$obs.nu[revised$Year == 2023 & revised$Strata == "low"] <- 0.009950331
+revised$obs.phi[revised$Year == 2023 & revised$Strata == "low"] <- 0.009950331
 
 #write out data for model 
 revised <- revised %>%  select(SUBAREA, Year , Catch.actual, wk, Strata, Ih, obs.tau, rh, obs.nu, clappers,  obs.phi, L, VMSEffort, gh)  
@@ -446,19 +438,6 @@ create_output_table(output, output_type = "xlsx", file_name=paste0(path.director
 #join so have right number of rows for years - keeps all old data but adds the row for the current year 
 revised <- left_join(dplyr::select(model.data.for.subarea, SUBAREA, Strata, Year), old)
 
-#In Dec 2022, corrections were made to SFA292019 database to NUM_UNLINED_FREQ for tows #96, 87 and 64. This caused discrepancies between previous model data files in the rh, obs.nu, clappers,obs.phi and L columns for 2019 and 2020 Subarea B - high habitat and Subarea D - medium habitat and Subarea E. So we will now adjust 2019 (and 2020) values to the corrected numbers. These tows corresponded to Subarea B, D and E only (tow 96 = B, tow 64 = D, tow 87 = E).Note, the wk for 2019 did not change so we keep the wk from the "revised" object for 2019 and 2020. We also want to keep gh from the model.data.Subarea for 2020.
-
-#Note: This should not need to be re-run next year (2024 assessment)
-
-#add 2019 and 2020 year data from the model.data.Subarea object.
-#Only need to run for med strata 
-revised[revised$Year==2019 & revised$Strata == "med", c("wk","Ih", "obs.tau", "rh", "obs.nu", "clappers", "obs.phi", "L", "gh")] <- 
-  model.data.for.subarea[model.data.for.subarea$Year==2019 & revised$Strata == "med", c("wk","Ih", "obs.tau", "rh", "obs.nu", "clappers", "obs.phi", "L", "gh")] #keep old Catch.actual and VMSEffort values
-
-revised[revised$Year==2020 & revised$Strata == "med", c("wk","Ih", "obs.tau", "rh", "obs.nu", "clappers", "obs.phi", "L")] <- 
-  model.data.for.subarea[model.data.for.subarea$Year==2020 & revised$Strata == "med", c("wk","Ih", "obs.tau", "rh", "obs.nu", "clappers", "obs.phi", "L")] #keep old Catch.actual and VMSEffort values, and leave out gh - otherwise it replaces with an NA.
-
-
 #add current year data 
 #For high strata - note only high strata have "Catch.actual", "wk"
 revised[revised$Year==surveyyear & revised$Strata == "high", c("Catch.actual", "wk", "Ih", "obs.tau", "rh", "obs.nu", "clappers", "obs.phi", "L", "VMSEffort", "gh")] <- 
@@ -471,7 +450,6 @@ revised[revised$Year==surveyyear & revised$Strata == "low", c("Catch.actual", "w
   model.data.for.subarea[model.data.for.subarea$Year==surveyyear & revised$Strata == "low", c("Catch.actual", "wk", "Ih", "obs.tau", "rh", "obs.nu", "clappers", "obs.phi", "L", "VMSEffort", "gh")]
 
 
-
 #for vms effort - it's offset a year so want to keep previous years values - and for 2022 assessment - put in 2 year worth of values 
 revised$VMSEffort[revised$Year == surveyyear-1 & revised$Strata == "low"] <- model.data.for.subarea$VMSEffort[model.data.for.subarea$Year == surveyyear-1 & model.data.for.subarea$Strata == "low"]
 revised$VMSEffort[revised$Year == surveyyear-1 & revised$Strata == "med"] <- model.data.for.subarea$VMSEffort[model.data.for.subarea$Year == surveyyear-1 & model.data.for.subarea$Strata == "med"]
@@ -480,46 +458,48 @@ revised$VMSEffort[revised$Year == surveyyear-1 & revised$Strata == "high"] <- mo
 
 revised
 
-#Note: For 2022 - 0 recruits for low in D -- as per process for this situation (since can't have 0 in model or NA for obs.nu) set rh = 0.001	obs.nu = 0.009950331, (note this often happens in subarea A). Rh get set to 0.001 in model_final.R script.
-revised$obs.nu[revised$Year == 2022 & revised$Strata == "low"] <- 0.009950331
+#Note: For 2023 - 0 recruits for low in D -- as per process for this situation (since can't have 0 in model or NA for obs.nu) set rh = 0.001	obs.nu = 0.009950331, (note this often happens in subarea A). Rh get set to 0.001 in model_final.R script.
+#revised$obs.nu[revised$Year == 2022 & revised$Strata == "low"] <- 0.009950331
+revised$obs.nu[revised$Year == 2023 & revised$Strata == "low"] <- 0.009950331
 
 #write out data for model 
 revised <- revised %>%  select(SUBAREA, Year , Catch.actual, wk, Strata, Ih, obs.tau, rh, obs.nu, clappers,  obs.phi, L, VMSEffort, gh)  
 write.csv(revised, paste0(path.directory, assessmentyear,"/Assessment/Data/Model/",area,"_ModelData.",surveyyear,".csv"), row.names = FALSE) 
 
+#############################################################################
 
 #Won't need after 2023 assessment:
 #Run a final comparison on old model data and new (after changes in 2019 NUM_UNLINED_FREQ #s)
 #SFA29A
 ## Compare to last years data and create final model file 
-old <- read.csv("Y:/Inshore/SFA29/2022/Assessment/Data/Model/SFA29A/SFA29A_ModelData.2021.csv")
-new <- read.csv("Y:/Inshore/SFA29/2023/Assessment/Data/Model/SFA29A_ModelData.2022.csv")
+#old <- read.csv("Y:/Inshore/SFA29/2022/Assessment/Data/Model/SFA29A/SFA29A_ModelData.2021.csv")
+#new <- read.csv("Y:/Inshore/SFA29/2023/Assessment/Data/Model/SFA29A_ModelData.2022.csv")
 # do the comparisons and save out the table
-output <- compare_df(df_new = new, df_old=old, group_col = c("Year", "Strata")) 
-create_output_table(output, output_type = "xlsx", file_name="Y:/Inshore/SFA29/2023/Assessment/Data/Model/archive/SFA29AModelData_FinalComparison.xlsx")
+#output <- compare_df(df_new = new, df_old=old, group_col = c("Year", "Strata")) 
+#create_output_table(output, output_type = "xlsx", file_name="Y:/Inshore/SFA29/2023/Assessment/Data/Model/archive/SFA29AModelData_FinalComparison.xlsx")
 
 
 #SFA29B
 ## Compare to last years data and create final model file 
-old <- read.csv("Y:/Inshore/SFA29/2022/Assessment/Data/Model/SFA29B/SFA29B_ModelData.2021.csv")
-new <- read.csv("Y:/Inshore/SFA29/2023/Assessment/Data/Model/SFA29B_ModelData.2022.csv")
+#old <- read.csv("Y:/Inshore/SFA29/2022/Assessment/Data/Model/SFA29B/SFA29B_ModelData.2021.csv")
+#new <- read.csv("Y:/Inshore/SFA29/2023/Assessment/Data/Model/SFA29B_ModelData.2022.csv")
 # do the comparisons and save out the table
-output <- compare_df(df_new = new, df_old=old, group_col = c("Year", "Strata")) 
-create_output_table(output, output_type = "xlsx", file_name="Y:/Inshore/SFA29/2023/Assessment/Data/Model/archive/SFA29BModelData_FinalComparison.xlsx")
+#output <- compare_df(df_new = new, df_old=old, group_col = c("Year", "Strata")) 
+#create_output_table(output, output_type = "xlsx", file_name="Y:/Inshore/SFA29/2023/Assessment/Data/Model/archive/SFA29BModelData_FinalComparison.xlsx")
 
 
 #SFA29C
 ## Compare to last years data and create final model file 
-old <- read.csv("Y:/Inshore/SFA29/2022/Assessment/Data/Model/SFA29C/SFA29C_ModelData.2021.csv")
-new <- read.csv("Y:/Inshore/SFA29/2023/Assessment/Data/Model/SFA29C_ModelData.2022.csv")
+#old <- read.csv("Y:/Inshore/SFA29/2022/Assessment/Data/Model/SFA29C/SFA29C_ModelData.2021.csv")
+#new <- read.csv("Y:/Inshore/SFA29/2023/Assessment/Data/Model/SFA29C_ModelData.2022.csv")
 # do the comparisons and save out the table
-output <- compare_df(df_new = new, df_old=old, group_col = c("Year", "Strata")) 
-create_output_table(output, output_type = "xlsx", file_name="Y:/Inshore/SFA29/2023/Assessment/Data/Model/archive/SFA29CModelData_FinalComparison.xlsx")
+#output <- compare_df(df_new = new, df_old=old, group_col = c("Year", "Strata")) 
+#create_output_table(output, output_type = "xlsx", file_name="Y:/Inshore/SFA29/2023/Assessment/Data/Model/archive/SFA29CModelData_FinalComparison.xlsx")
 
 #SFA29D
 ## Compare to last years data and create final model file 
-old <- read.csv("Y:/Inshore/SFA29/2022/Assessment/Data/Model/SFA29D/SFA29D_ModelData.2021.csv")
-new <- read.csv("Y:/Inshore/SFA29/2023/Assessment/Data/Model/SFA29D_ModelData.2022.csv")
+#old <- read.csv("Y:/Inshore/SFA29/2022/Assessment/Data/Model/SFA29D/SFA29D_ModelData.2021.csv")
+#new <- read.csv("Y:/Inshore/SFA29/2023/Assessment/Data/Model/SFA29D_ModelData.2022.csv")
 # do the comparisons and save out the table
-output <- compare_df(df_new = new, df_old=old, group_col = c("Year", "Strata")) 
-create_output_table(output, output_type = "xlsx", file_name="Y:/Inshore/SFA29/2023/Assessment/Data/Model/archive/SFA29DModelData_FinalComparison.xlsx")
+#output <- compare_df(df_new = new, df_old=old, group_col = c("Year", "Strata")) 
+#create_output_table(output, output_type = "xlsx", file_name="Y:/Inshore/SFA29/2023/Assessment/Data/Model/archive/SFA29DModelData_FinalComparison.xlsx")

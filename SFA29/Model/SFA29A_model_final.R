@@ -36,8 +36,8 @@ source("Y:/Inshore/SFA29/2017/model/SFA29model9-2015.R") #contains the SFA29mode
 
 #DEFINE:
 path.directory <- "Y:/Inshore/SFA29/"
-assessmentyear <- 2023 #year in which you are conducting the assessment 
-surveyyear <- 2022  #last year of survey data you are using, e.g. if max year of survey is survey from summer 2019, this would be 2019 
+assessmentyear <- 2024 #year in which you are conducting the assessment 
+surveyyear <- 2023  #last year of survey data you are using, e.g. if max year of survey is survey from summer 2019, this would be 2019 
 area <- "SFA29A"  
 
 #yr <- year(Sys.Date()) # This should be set to the year after the year of the last survey.  e.g. if 2018 that means you are using the 2017 survey. This assumes you're running assessment in surveyyear + 1
@@ -130,7 +130,7 @@ VMS.Effort = dat.wrap(mod.dat,"VMSEffort",yrs[-length(yrs)],strata)) # There won
 # now run the model and save the results.  This is taking ball park 1 hour to run 
 A.mod.res <- SSModel(SFA29Adata,SFA29.priors,inits.29A,parms=SFA29.parms,model.file=SFA29model,
                 Years=yrs, nchains=nchains,niter=niter,nburnin=nburnin,nthin=nthin,Area="SFA29W",e.parms=e.parms.29A,debug=F)
-
+#load(paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29A/SFA29A.",surveyyear,".RData"))
 mod.res <- A.mod.res
 # You want this to be a minimum of 400, if less than this you should increase your chain length
 min.neff <- min(mod.res$summary[,9])
@@ -316,7 +316,6 @@ Decision.table
 #Write out decision table 
 write.csv(Decision.table, paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29A/SFA29.A.mod.Decision.table.",surveyyear,".csv"), row.names = FALSE) 
 
-
 ############  Finally we can do prediction evaluations for each year....
 ## --- THE PREDICTION EVALUATION ----
 ## Now we can just run this through a loop rather than keep re-running these...
@@ -364,7 +363,7 @@ pe.pred[[as.character(pe.years[i]+1)]] <- predict(pe.res[[as.character(pe.years[
 #save(pe.pred,file = "Y:/INSHORE SCALLOP/SFA29/Model_results_2014_2016/SFA29A/prediction_evaluation_results_2011_2016.RData")
 #save(pe.pred,file = paste0(getwd(),"/SFA29A_results/prediction_evaluation_results_",pe.years,".RData"))
 save(pe.pred,file=paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29A/SFA29A.prediction.evaluation.results.",max(yrs),".RData")) 
-
+#load(paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29A/SFA29A.prediction.evaluation.results.",max(yrs),".RData"))
 
 
 # Now to make the historic plot below
@@ -421,9 +420,6 @@ par(mfrow=c(2,1))
 SSModeltest::eval.predict.SFA29(pe.all,Year=2012,pred.lim=0.2)
 dev.off()
 
-
-
-
 ################
 #use 1 year natural mortality to see effect on decision tables 
 
@@ -460,7 +456,7 @@ summary <- cbind(parameters, data.frame(summary, row.names=NULL))
 
 n <- 2
 years <- rep(2001:surveyyear, each=n)
-Habitat <- rep(c("Low", "Med"), 22) #Need to fix this so new years are added.
+Habitat <- rep(c("Low", "Med"), 23) #Need to fix this so new years are added.
 
 summary.Bh <- summary |>  filter(str_detect(summary$parameters, "^Bh"))
 summary.Bh$Year <- years
