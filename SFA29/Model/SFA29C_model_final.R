@@ -37,8 +37,8 @@ source("Y:/Inshore/SFA29/2017/model/SFA29model9-2015.R") #contains the SFA29mode
 
 #DEFINE:
 path.directory <- "Y:/Inshore/SFA29/"
-assessmentyear <- 2023 #year in which you are conducting the assessment 
-surveyyear <- 2022  #last year of survey data you are using, e.g. if max year of survey is survey from summer 2019, this would be 2019 
+assessmentyear <- 2024 #year in which you are conducting the assessment 
+surveyyear <- 2023  #last year of survey data you are using, e.g. if max year of survey is survey from summer 2019, this would be 2019 
 area <- "SFA29C"  
 
 #yr <- year(Sys.Date()) # This should be set to the year after the year of the last survey.  e.g. if 2018 that means you are using the 2017 survey. This assumes you're running assessment in surveyyear + 1
@@ -128,7 +128,7 @@ inits.29C <- SFA29.inits(NY)
 C.mod.res <- SSModel(SFA29Cdata,SFA29.priors,inits.29C,parms=SFA29.parms,model.file=SFA29model,Years=yrs,
                 nchains=nchains,niter=niter,nburnin=nburnin,nthin=nthin,Area="SFA29W",e.parms=e.parms.29C,debug=F)
 
-
+#load(paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29C/SFA29C.",surveyyear,".RData"))
 mod.res <- C.mod.res
 # You want this to be a minimum of 400, if less than this you should increase your chain length
 min.neff <- min(mod.res$summary[,9])
@@ -384,7 +384,6 @@ Dec.tab
 # Save the decision table.
 write.csv(Dec.tab, paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29C/SFA29.C.mod.Decision.table.",surveyyear,".csv"), row.names = FALSE) 
 
-
 # ---- OPTIONAL Decision table to predict max level exploitation risk - Not used for Update ---- 
 #Decision.table<-NULL
 #for(i in 1:20){
@@ -470,7 +469,7 @@ for(i in 1:num.pe.years)
 #save(pe.pred,file="Y:/INSHORE SCALLOP/SFA29/Model_results_2014_2016/SFA29C/prediction_evaluation_results_2011_2016.RData")
 #save(pe.pred,file = paste0(getwd(),"/SFA29C_results/prediction_evaluation_results_",pe.years,".RData"))
 save(pe.pred,file=paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29C/SFA29C.prediction.evaluation.results.",surveyyear,".RData"))
-
+#load(paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29C/SFA29C.prediction.evaluation.results.",surveyyear,".RData"))
 
 
 # Now to make the historic plot below
@@ -520,7 +519,7 @@ class(pe.all) <- "SFA29"
 #windows(11,11)
 par(mfrow=c(3,1))
 SSModeltest::eval.predict.SFA29(pe.all,Year=2012,pred.lim=0.2)
-#dev.off()
+dev.off()
 
 #Save out plot 
 png(paste0(path.directory,assessmentyear,"/Assessment/Figures/Model/SFA29C/SFA29.C.predict.evaluation.",surveyyear,".png"),width=9,height=9,units = "in", res=400)
@@ -568,7 +567,7 @@ summary <- cbind(parameters, data.frame(summary, row.names=NULL))
 
 n <- 3
 years <- rep(2001:surveyyear, each=n)
-Habitat <- rep(c("Low", "Med", "High"), 22) #Need to fix this so new years are added.
+Habitat <- rep(c("Low", "Med", "High"), 23) #Need to fix this so new years are added.
 
 summary.Bh <- summary |>  filter(str_detect(summary$parameters, "^Bh"))
 summary.Bh$Year <- years
