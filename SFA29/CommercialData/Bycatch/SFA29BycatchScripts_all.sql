@@ -231,7 +231,7 @@ AND x.fishset_id = f.fishset_id
 AND f.pntcd_id = 2
 AND y.tripcd_id = 4320
 AND y.trip in ('J21-0131')
---AND comarea_id = 'SF29D' /*include only for split trips*/
+AND comarea_id = 'SF29B' /*include only for split trips*/
 order by y.trip, b.set_no)
 );
 
@@ -288,7 +288,7 @@ AND trip_id = 508523
 SELECT SUM(NUM_OF_TOWS)
 FROM scallop.scallop_log_marfis
 WHERE trip_id = 552910
---AND assigned_area = '29C' /*include only for split trips*/
+AND assigned_area = '29B' /*include only for split trips*/
 
 
 --SCRIPT 10--/*to get bycatch discard sums - save as csv.*/
@@ -330,7 +330,7 @@ AND b.fishset_id = f.fishset_id
 AND x.fishset_id = f.fishset_id
 AND f.pntcd_id = 2
 AND y.tripcd_id = 4320
-AND y.trip in ('J20-0118', 'J20-0119', 'J20-0120', 'J20-0121', 'J20-0126', 'J20-0127', 'J20-0130', 'J20-0133')
+AND y.trip in ('J21-0144', 'J21-0119', 'J21-0133', 'J21-0118', 'J21-0131')
 order by y.trip, b.set_no)
 group by trip, common, comarea_id, source
 
@@ -374,4 +374,4 @@ AND x.fishset_id = f.fishset_id
 /*AND f.pntcd_id = 2  /*can set to 2 or 3*/
 /*AND y.board_date BETWEEN '2016-10-01' AND '2017-09-30'
 AND g.cfv  NOT IN ('152320', '106881', '105736','105912','105457','106604','106605','4062','102056','1579','102056','4055','101965','4031','1516','1518','1548','4050') /*list of offshore scallop vrns that have been observed trips*/
-AND y.trip IN ('J20-0119')
+AND y.trip IN ('J21-0144', 'J21-0119', 'J21-0133', 'J21-0118', 'J21-0131')

@@ -108,7 +108,7 @@ strata <- st_read(paste0(temp2, "/PolygonSCSTRATAINFO_rm46-26-57.shp"))
 #Garnstopp - stop
 #Brunsirkel - brown circle (points along trackline?)
 
-zz <- read.csv(gzfile('Y:/Inshore/Survey/OLEX tow tracks/2023/20230829.gz'))
+zz <- read.csv(gzfile('Y:/Inshore/Survey/OLEX tow tracks/2023/20230711.gz'))
 
 str(zz)
 zz$Ferdig.forenklet <- as.character(zz$Ferdig.forenklet)
@@ -131,7 +131,7 @@ zz <- zz %>% filter(Ferdig.forenklet_4 %in% c("Garnstart", "Garnstopp", "Grønnra
 View(zz)
 
 #Select the row where the track data starts (i.e. the first "Garnstart"). Check for "Grønnramme".
-zz <- zz[35:nrow(zz)] #[Row# where "Garnstart" first occurs: to end of data]  #Most likely its however many stations there are, but could be more if observations were added.
+zz <- zz[120:nrow(zz)] #[Row# where "Garnstart" first occurs: to end of data]  #Most likely its however many stations there are, but could be more if observations were added.
 
 #Convert decimal degrees to decimal minutes seconds.
 zz$Latitude.deg <- convert.dd.dddd(zz$Latitude, format = 'deg.min')
@@ -171,7 +171,7 @@ strata.match <- strata.match %>% dplyr::select(STRATA_ID, ID)
 spa.match <- st_intersection(SPA_BoF , coords.sf)
 spa.match <- spa.match %>% dplyr::select(ET_ID, ID)
 
-#BOF - All points should have strata, and spa matches. If there are discrepincies - check 
+#BOF - All points should have strata, and spa matches. If there are discrepancies - check 
 coords.sf <- coords.sf %>% 
   st_join(spa.match, by = "ID", suffix = c("", ".y")) %>% 
   st_join(strata.match,by = "ID", suffix = c("", ".y")) %>% 
@@ -203,12 +203,12 @@ mapview::mapview(coords.sf) + #%>% filter(ID %in% c(96,98)) #option to filter ou
 coords.sf <- coords.sf%>% 
   st_drop_geometry()
 
-write.csv(coords.sf, "Y:/Inshore/Survey/OLEX tow tracks/Olex-latlong_conversion/SFA292023_coords_check.csv")
+write.csv(coords.sf, "Y:/Inshore/Survey/OLEX tow tracks/Olex-latlong_conversion/GM2023_coords_check.csv")
 
 ###########################################################################################################
 
 #check file
-tow <- read.csv("Y:/INSHORE SCALLOP/Survey/2021/data entry templates and examples/GM2021/GM2021tow_CONVERTED.csv")
+tow <- read.csv("Y:/Inshore/Survey/2023/DataEntry/GM2023/GM2023tow_CONVERTED.csv")
 
 #Convert decimal degrees to decimal minutes seconds.
 tow$Start_Latitude <- convert.dd.dddd(tow$Start_lat, format = 'dec.deg')
