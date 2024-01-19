@@ -1,8 +1,8 @@
-## 29 Bycatch calculations 2021 (for 2019-2020 fishery)
+## 29 Bycatch calculations 2023 (for 2020-2021 fishery)
 
-direct <- "Y:/INSHORE SCALLOP/SFA29/2021/Assessment/Bycatch/Fishery/"
+direct <- "Y:/Inshore/SFA29/2023/Assessment/Bycatch/Fishery/"
 
-discards <- read.csv(paste0(direct, "discard sums from sql_2020.csv"))
+discards <- read.csv(paste0(direct, "discard sums from sql_2021.csv"))
 names(discards)
 
 groups <- read.csv(paste0(direct, "bycatch species groups.csv"))
@@ -46,13 +46,14 @@ joined[is.na(joined$GROUP),]
 # sums for all species
 groupedsums <- ddply(.data=joined, .(GROUP, COMAREA_ID),
                      summarize,
-                     total=sum(Prorated.discards, na.rm=T))
+                     total=sum(Prorated_discards, na.rm=T))
 
 #incl. NAs for excel
 groupedsums_allareas <- ddply(.data=groupedsums, .(GROUP),
                               summarize,
                               total=sum(total, na.rm=T))
 
+write.csv(groupedsums_allareas, "groupedsums_allareas_2021.csv")
 
 #The below is not required for basic bycatch analysis
 ### compare rates over time series
