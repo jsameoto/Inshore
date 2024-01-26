@@ -56,6 +56,12 @@ towable.units <- read.csv(paste0(path.directory,assessmentyear,"/Assessment/Scri
 
 # Get meat weight data - cannot calculate weight per tow prior to 2014 since cannot reproduce the mw-sh models. Stephen did the models for pre 2014 and don't have the weight-SHF data - using his values of the summarized data 
 weight.per.tow.previous <- read.csv(paste0("Y:/Inshore/SFA29/",assessmentyear-1,"/Assessment/Data/SurveyIndices/SDM.HighMedLow.2001to",surveyyear-1,".Commercial.Weight.csv"))
+#only want up to 2013 since this script will calculate 2014  on 
+weight.per.tow.previous <- weight.per.tow.previous %>% filter(YEAR < 2014)
+
+#Summary check of previous year data 
+weight.per.tow.previous %>% group_by(YEAR, SUBAREA, Strata) %>% summarize(count = n()) %>% print(n=Inf)
+
 
 # sfa29shw.dat <- read.csv("dataoutput/SFA29liveweight2014_JS.csv") #note 2014 data from Jessica's MTWT-SH model - will be slightly different than values from Stephen
 sfa29shw.dat <- read.csv(paste0("Y:/Inshore/SFA29/",assessmentyear,"/Assessment/Data/SurveyIndices/SFA29liveweight2014to",surveyyear,".csv"))
@@ -70,13 +76,16 @@ data.obj <- sfa29shw.dat
 	dim(data.obj)
 	data.obj[is.na(rowSums(data.obj[,c(grep("BIN_ID_0",names(sfa29shw.dat)):grep("BIN_ID_195",names(sfa29shw.dat)))])),]
 	#data.obj <- data.obj[!is.na(rowSums(data.obj[,c(grep("BIN_ID_0",names(sfa29shw.dat)):grep("BIN_ID_195",names(sfa29shw.dat)))])),]
-	#dim(data.obj)
+	dim(data.obj)
 
 #Bring in survey tow data with SDM value (note - SFA29_SDM_LWM.R script must be run to get updated survey tows with SDM values prior to runnint this script)
 	sdmtows <- read.csv("Y:/Inshore/SFA29/ScalSurv_SDM/SFA29Tows_SDM.csv")
 	table(sdmtows$CRUISE)
 	sdmtows$uid <- paste(sdmtows$CRUISE, sdmtows$TOW_NO, sep=".")
 	sdmtows <- sdmtows[,c("uid","SDM")]
+#make sure unique tow
+	length(unique(sdmtows$uid))
+	dim(sdmtows)
 	
 # Assign subarea names
 	strata.names <- paste0("SFA29",LETTERS[1:5])
@@ -89,6 +98,9 @@ data.obj <- sfa29shw.dat
 	
 # Calc unique id
 	data.obj$uid <- paste(data.obj$CRUISE, data.obj$TOW_NO, sep=".")
+	length(unique(	data.obj$uid ))
+	table(	data.obj$YEAR)
+	
 	
 #Pre-recruits per tow 0 to 89 mm SH;   note for Prerecruits for 2013 assessment - just used 20-60mm#
 	data.obj$pre.bm <-  data.obj %>% dplyr::select(grep("BIN_ID_0",names(data.obj)):grep("BIN_ID_85",names(data.obj))) %>%  rowSums(na.rm=TRUE)
@@ -98,10 +110,11 @@ data.obj <- sfa29shw.dat
 	
 #commercial	per tow >= 100 mm SH 
 	data.obj$com.bm <- data.obj %>% dplyr::select(grep("BIN_ID_100",names(data.obj)):grep("BIN_ID_195",names(data.obj))) %>%  rowSums(na.rm=TRUE)
-	
 
+	dim(data.obj)
 # Left join survey tows to surficial substrate tows on uid
 	data.obj <- merge(data.obj, surf.all, by.x='uid', by.y='uid', all.x=TRUE)
+	dim(data.obj)
 	
 # Left join survey tows to SDM level on uid
 	data.obj <- merge(data.obj, sdmtows, by.x='uid', by.y='uid', all.x=TRUE)
@@ -136,7 +149,7 @@ data.obj <- sfa29shw.dat
 	year <- c(2014:2019,2021:surveyyear) 
 	out <- data.frame(YEAR=rep(NA,(length(year)*length(ab))),SUBAREA=rep(NA,(length(year)*length(ab))),yst=rep(NA,(length(year)*length(ab))),se.yst=rep(NA,(length(year)*length(ab))),Yst=rep(NA,(length(year)*length(ab))),df.yst=rep(NA,(length(year)*length(ab))),alpha=rep(NA,(length(year)*length(ab))),effic.alloc=rep(NA,(length(year)*length(ab))),effic.str=rep(NA,(length(year)*length(ab))),var.ran=rep(NA,(length(year)*length(ab))),max.eff=rep(NA,(length(year)*length(ab))),descrip=rep(NA,(length(year)*length(ab))))
 
-	descrip=rep(NA,(length(year)*length(ab)))
+
 	m <- 0 #index
 	for (i in 1:length(year)) {
 		temp.data <- data.obj[data.obj$YEAR==year[i],]
@@ -154,7 +167,10 @@ data.obj <- sfa29shw.dat
 	}
 	out
 	out.strat.2014toYYYY <- out
-
+#check unique row for areas
+	out.strat.2014toYYYY %>% group_by(YEAR, SUBAREA) %>% summarise(count = n()) %>% print(n = Inf)
+	
+	
 	#Calculate mean and variance within each SDM strata (High, Medium, Low)
 	#NOTE: could also obtain this if added scall.levels <- PEDstrata(data.obj.i, strata.group.i,'SDM',catch=data.obj.i$STDTOTALCAUGHT) in the above loop and then assigned all outputs within each loop to a list
 	sdmlevels <- na.omit(unique(data.obj$SDM))
@@ -180,7 +196,9 @@ data.obj <- sfa29shw.dat
 	}
 	out
 	scall.levels.2014toYYYY <- out
-
+	#check unique row for areas
+	scall.levels.2014toYYYY %>% group_by(YEAR, SUBAREA, Strata) %>% summarise(count = n()) %>% print(n = Inf)
+	
 
 ### ... Merge data for all years into 1 dataframe ... ###
 	# Data by Strata: High, Medium, Low; by subare by year
@@ -217,6 +235,7 @@ sdm.levels.est.all
 		
 		
 		
+		
 		#Subarea C - low 
 		sdm.levels.est.all[sdm.levels.est.all$YEAR==2020 & sdm.levels.est.all$SUBAREA=="SFA29C" & sdm.levels.est.all$Strata=="low", c("Mean","Std.Err","var.est", "CV")] <- c(approx(sdm.levels.est.all$YEAR[sdm.levels.est.all$SUBAREA=="SFA29C"&sdm.levels.est.all$Strata=="low"], sdm.levels.est.all$Mean[sdm.levels.est.all$SUBAREA=="SFA29C"&sdm.levels.est.all$Strata=="low"], xout=2020)$y, sdm.levels.est.all$Std.Err[sdm.levels.est.all$SUBAREA=="SFA29C"&sdm.levels.est.all$Strata=="low"& sdm.levels.est.all$YEAR==2019], sdm.levels.est.all$var.est[sdm.levels.est.all$SUBAREA=="SFA29C"&sdm.levels.est.all$Strata=="low"& sdm.levels.est.all$YEAR==2019], sdm.levels.est.all$CV[sdm.levels.est.all$SUBAREA=="SFA29C"&sdm.levels.est.all$Strata=="low"& sdm.levels.est.all$YEAR==2019]) #assume var & se from 2019
 		
@@ -240,6 +259,8 @@ sdm.levels.est.all
 		
 		sdm.levels.prerec <- sdm.levels.est.all
 		sdm.levels.prerec
+		#check unique row for areas
+		sdm.levels.prerec %>% group_by(YEAR, SUBAREA, Strata) %>% summarise(count = n()) %>% print(n = Inf)
 		
 		
 ### Stratified estimates (one estimate for each subarea by year)
@@ -267,8 +288,12 @@ sdm.levels.est.all
 		
 		sdm.strat.est.all.prerec <- sdm.strat.est.all
 		sdm.strat.est.all.prerec
+		#check unique row for areas
+		sdm.strat.est.all.prerec %>% group_by(YEAR, SUBAREA) %>% summarise(count = n()) %>% print(n = Inf)
 		
-	
+		
+		
+		
 # ---- RECRUITS ----		
 	# NOTE this section of code is run once for each size (comm, rec, precec). Define below
 	strata.group <- SDMareas
@@ -290,7 +315,7 @@ sdm.levels.est.all
 	year <- c(2014:2019,2021:surveyyear) 
 	out <- data.frame(YEAR=rep(NA,(length(year)*length(ab))),SUBAREA=rep(NA,(length(year)*length(ab))),yst=rep(NA,(length(year)*length(ab))),se.yst=rep(NA,(length(year)*length(ab))),Yst=rep(NA,(length(year)*length(ab))),df.yst=rep(NA,(length(year)*length(ab))),alpha=rep(NA,(length(year)*length(ab))),effic.alloc=rep(NA,(length(year)*length(ab))),effic.str=rep(NA,(length(year)*length(ab))),var.ran=rep(NA,(length(year)*length(ab))),max.eff=rep(NA,(length(year)*length(ab))),descrip=rep(NA,(length(year)*length(ab))))
 	
-	descrip=rep(NA,(length(year)*length(ab)))
+
 	m <- 0 #index
 	for (i in 1:length(year)) {
 	  temp.data <- data.obj[data.obj$YEAR==year[i],]
@@ -308,6 +333,10 @@ sdm.levels.est.all
 	}
 	out
 	out.strat.2014toYYYY <- out
+	#check unique row for areas
+	out.strat.2014toYYYY %>% group_by(YEAR, SUBAREA) %>% summarise(count = n()) %>% print(n = Inf)
+	
+	
 	
 	#Calculate mean and variance within each SDM strata (High, Medium, Low)
 	#NOTE: could also obtain this if added scall.levels <- PEDstrata(data.obj.i, strata.group.i,'SDM',catch=data.obj.i$STDTOTALCAUGHT) in the above loop and then assigned all outputs within each loop to a list
@@ -334,6 +363,9 @@ sdm.levels.est.all
 	}
 	out
 	scall.levels.2014toYYYY <- out
+	#check unique row for areas
+	scall.levels.2014toYYYY %>% group_by(YEAR, SUBAREA, Strata) %>% summarise(count = n()) %>% print(n = Inf)
+	
 	
 	
 	### ... Merge data for all years into 1 dataframe ... ###
@@ -401,6 +433,10 @@ sdm.levels.est.all
 	
 	sdm.levels.rec <- sdm.levels.est.all
 	sdm.levels.rec
+	#check unique row for areas
+	sdm.levels.rec %>% group_by(YEAR, SUBAREA, Strata) %>% summarise(count = n()) %>% print(n = Inf)
+	
+	
 	
 	
 ### Stratified estimates (one estimate for each subarea by year)
@@ -428,6 +464,8 @@ sdm.levels.est.all
 	
 	sdm.strat.est.all.rec <- sdm.strat.est.all
 	sdm.strat.est.all.rec
+	#check unique row for areas
+	sdm.strat.est.all.rec %>% group_by(YEAR, SUBAREA) %>% summarise(count = n()) %>% print(n = Inf)
 	
 
 # ---- COMMERCIAL ----		
@@ -451,7 +489,7 @@ sdm.levels.est.all
 	year <- c(2014:2019,2021:surveyyear) 
 	out <- data.frame(YEAR=rep(NA,(length(year)*length(ab))),SUBAREA=rep(NA,(length(year)*length(ab))),yst=rep(NA,(length(year)*length(ab))),se.yst=rep(NA,(length(year)*length(ab))),Yst=rep(NA,(length(year)*length(ab))),df.yst=rep(NA,(length(year)*length(ab))),alpha=rep(NA,(length(year)*length(ab))),effic.alloc=rep(NA,(length(year)*length(ab))),effic.str=rep(NA,(length(year)*length(ab))),var.ran=rep(NA,(length(year)*length(ab))),max.eff=rep(NA,(length(year)*length(ab))),descrip=rep(NA,(length(year)*length(ab))))
 	
-	descrip=rep(NA,(length(year)*length(ab)))
+	
 	m <- 0 #index
 	for (i in 1:length(year)) {
 	  temp.data <- data.obj[data.obj$YEAR==year[i],]
@@ -469,7 +507,11 @@ sdm.levels.est.all
 	}
 	out
 	out.strat.2014toYYYY <- out
+	#check unique row for areas
+	out.strat.2014toYYYY %>% group_by(YEAR, SUBAREA) %>% summarise(count = n()) %>% print(n = Inf)
 	
+
+
 	#Calculate mean and variance within each SDM strata (High, Medium, Low)
 	#NOTE: could also obtain this if added scall.levels <- PEDstrata(data.obj.i, strata.group.i,'SDM',catch=data.obj.i$STDTOTALCAUGHT) in the above loop and then assigned all outputs within each loop to a list
 	sdmlevels <- na.omit(unique(data.obj$SDM))
@@ -495,6 +537,50 @@ sdm.levels.est.all
 	}
 	out
 	scall.levels.2014toYYYY <- out
+	#check unique row for areas
+	scall.levels.2014toYYYY %>% group_by(YEAR, SUBAREA, Strata) %>% summarise(count = n()) %>% print(n = Inf)
+	
+	#for 2023, what if used median ? 
+	out <- data.frame(YEAR=rep(NA,(length(year)*length(ab)*length(sdmlevels))),SUBAREA=rep(NA,(length(year)*length(ab)*length(sdmlevels))),Strata=rep(NA,(length(year)*length(ab)*length(sdmlevels))),yst=rep(NA,(length(year)*length(ab)*length(sdmlevels))),se.yst=rep(NA,(length(year)*length(ab)*length(sdmlevels))),var.est=rep(NA,(length(year)*length(ab)*length(sdmlevels))),descrip=rep("simple",(length(year)*length(ab)*length(sdmlevels))))
+	m <- 0 #index
+	for (i in 1:length(year)) {
+	  temp.data <- data.obj[data.obj$YEAR==year[i],]
+	  for(j in 1:length(ab)) {
+	    data.obj.i <- temp.data[temp.data$STRATA==ab[j],]
+	    for (k in 1:length(sdmlevels)){
+	      data.obj.k <- data.obj.i[data.obj.i$SDM==sdmlevels[k],]
+	      m=m+1
+	      if(dim(data.obj.k)[1]!=0){
+	        out[m,"yst"] <- median(data.obj.k$STDTOTALCAUGHT)
+	        out[m,"se.yst"] <- sqrt(var(data.obj.k$STDTOTALCAUGHT))/sqrt(dim(data.obj.k)[1])
+	        out[m,"var.est"]<- var(data.obj.k$STDTOTALCAUGHT)/dim(data.obj.k)[1] #var.est is calculated as variance of the estimator
+	      }
+	      out$Strata[m] <- sdmlevels[k]
+	      out$YEAR[m] <- year[i]
+	      out$SUBAREA[m] <- as.character(ab[j])
+	    }
+	  }
+	}
+	out
+	scall.levels.2014toYYYY.median <- out
+	#check unique row for areas
+	scall.levels.2014toYYYY.median %>% group_by(YEAR, SUBAREA, Strata) %>% summarise(count = n()) %>% print(n = Inf)
+	#tow  SFA292023.88 in low a problem 
+	#not an issue if use median for D in 2023 
+	#use medians for D in 2023
+	
+	
+	scall.levels.2014toYYYY
+	#sub in median values for D in 2023
+	D.2023.medians <- scall.levels.2014toYYYY.median %>% filter(SUBAREA == "SFA29D" & YEAR == 2023) %>% select(YEAR, SUBAREA, Strata, yst)
+	#sub in median for high 
+	scall.levels.2014toYYYY$yst[scall.levels.2014toYYYY$SUBAREA == "SFA29D" &  scall.levels.2014toYYYY$YEAR == 2023 & scall.levels.2014toYYYY$Strata == "high"] <- D.2023.medians$yst[D.2023.medians$SUBAREA == "SFA29D" &  D.2023.medians$YEAR == 2023 & D.2023.medians$Strata == "high"]
+	#sub in median for medium  
+	scall.levels.2014toYYYY$yst[scall.levels.2014toYYYY$SUBAREA == "SFA29D" &  scall.levels.2014toYYYY$YEAR == 2023 & scall.levels.2014toYYYY$Strata == "med"] <- D.2023.medians$yst[D.2023.medians$SUBAREA == "SFA29D" &  D.2023.medians$YEAR == 2023 & D.2023.medians$Strata == "med"]
+	#sub in median for low  
+	scall.levels.2014toYYYY$yst[scall.levels.2014toYYYY$SUBAREA == "SFA29D" &  scall.levels.2014toYYYY$YEAR == 2023 & scall.levels.2014toYYYY$Strata == "low"] <- D.2023.medians$yst[D.2023.medians$SUBAREA == "SFA29D" &  D.2023.medians$YEAR == 2023 & D.2023.medians$Strata == "low"]
+	scall.levels.2014toYYYY
+	
 	
 	
 	### ... Merge data for all years into 1 dataframe ... ###
@@ -562,7 +648,9 @@ sdm.levels.est.all
 	
 	sdm.levels.comm <- sdm.levels.est.all
 	sdm.levels.comm
-
+	#check unique row for areas
+	sdm.levels.comm %>% group_by(YEAR, SUBAREA, Strata) %>% summarise(count = n()) %>% print(n = Inf)
+	
 
 ### Stratified estimates (one estimate for each subarea by year)
 	sdm.strat.est.all <- out.strat.2014toYYYY[,c("YEAR","SUBAREA","yst","se.yst","descrip")] 
@@ -589,17 +677,39 @@ sdm.levels.est.all
 	
 	sdm.strat.est.all.comm <- sdm.strat.est.all
 	sdm.strat.est.all.comm
+	#check unique row for areas
+	sdm.strat.est.all.comm %>% group_by(YEAR, SUBAREA) %>% summarise(count = n()) %>% print(n = Inf)
 	
 	
 # ---- Merge dataframes A-D & calculate inputs for model ---- 
+	sdm.levels.prerec %>% group_by(YEAR, SUBAREA) %>% summarise(count = n()) %>% print(n = Inf)
+	sdm.levels.rec %>% group_by(YEAR, SUBAREA) %>% summarise(count = n()) %>% print(n = Inf)
+	sdm.levels.comm %>% group_by(YEAR, SUBAREA) %>% summarise(count = n()) %>% print(n = Inf)
+	
 	
 	#estimates by SDM strata 
 	sdm.levels <- rbind(sdm.levels.prerec, sdm.levels.rec, sdm.levels.comm) 
-
+	#check unique row for areas
+	sdm.levels %>% group_by(YEAR, SUBAREA) %>% summarise(count = n()) %>% print(n = Inf)
+	sdm.levels %>% group_by(YEAR, SUBAREA, Strata) %>% summarise(count = n()) %>% print(n = Inf)
+	
+	#at this point everything is OK.. for 2014 on for rows per subarea per strata 
+	
 	#merge to pre-2014 weight per tow for commerical size  
-	pre.2014 <- weight.per.tow.previous %>% dplyr::select(YEAR, Mean, SUBAREA, Strata)
+	pre.2014 <- weight.per.tow.previous %>% dplyr::select(YEAR, Mean, SUBAREA, Strata) %>% filter(YEAR < 2014)
+	#check unique row for areas
+	pre.2014 %>% group_by(YEAR, SUBAREA, Strata) %>% summarise(count = n()) %>% print(n = Inf)
+	
+	#just commercial size since 2014 
 	since.2014 <- sdm.levels %>% filter(size == "comm") %>% dplyr::select(YEAR, Mean, SUBAREA, Strata)
+	#check unique row for areas
+	since.2014 %>% group_by(YEAR, SUBAREA, Strata) %>% summarise(count = n()) %>% print(n = Inf)
+
+	#combined old pre 2014 data with estimates since 2014 calculated in this script 
 	sdm.levels.2001toYYYY <- rbind(pre.2014, since.2014)
+	
+	#check unique row for areas
+	sdm.levels.2001toYYYY %>% group_by(YEAR, SUBAREA, Strata) %>% summarise(count = n()) %>% print(n = Inf)
 	
 	#writeout data 
 	write.csv(sdm.levels.2001toYYYY, paste0(path.directory, assessmentyear, "/Assessment/Data/SurveyIndices/SDM.HighMedLow.2001to",surveyyear,".Commercial.Weight.csv"), row.names = F)
@@ -607,6 +717,8 @@ sdm.levels.est.all
 	
 	#Stratified estimates 
 	sdm.strat.est <- rbind(sdm.strat.est.all.prerec, sdm.strat.est.all.rec, sdm.strat.est.all.comm)
+	#check unique row for areas
+	sdm.strat.est %>% group_by(YEAR, SUBAREA) %>% summarise(count = n()) %>% print(n = Inf)
 	
 	#writeout data 
 	write.csv(sdm.strat.est, paste0(path.directory, assessmentyear, "/Assessment/Data/SurveyIndices/SDM.StratifiedEstimates.2014to",surveyyear,".Weight.csv"))
@@ -617,9 +729,13 @@ sdm.levels.est.all
 	# "obs.tau" commercial biomass  per tow CV - note only from 2014 on since using Stephen's cv values from the 2014 framework, sorry I named the output file since 2001, not trying to confuse on purpose but can we just leave as is? If change need to update Create.model.files.R.... 
 	Ih.obs.tau <- sdm.levels %>% filter(size == "comm" & !(SUBAREA == "SFA29A" & Strata == "high")) %>% dplyr::select(YEAR, SUBAREA, Strata, Mean, CV, size) 
 	Ih.obs.tau <-  merge(Ih.obs.tau, towable.units, by = c("SUBAREA", "Strata")) 
+	
+	#Scale to area 
 	Ih.obs.tau <- Ih.obs.tau %>% mutate(Ih = round(((Mean*TowableUnits)/1000),digits =4)) #units mt 
 	Ih.obs.tau <- Ih.obs.tau %>% arrange(SUBAREA, Strata, YEAR)
 	head(Ih.obs.tau)
+	Ih.obs.tau %>% arrange(YEAR, SUBAREA, Strata)
+	
 	write.csv(Ih.obs.tau, paste0(path.directory, assessmentyear, "/Assessment/Data/SurveyIndices/Ih.obs.tau.2001to",surveyyear,".csv"))
 	
 	
@@ -674,6 +790,29 @@ ggsave(filename = paste0(path.directory,assessmentyear,"/Assessment/Figures/SFA2
 
 #save
 #ggsave(filename = paste0(path.directory,assessmentyear,"/Assessment/Figures/SFA29AtoD.Weightpertow.Recruit.2014-.",surveyyear,".png"), plot = AtoD.per.tow.rec, scale = 2.5, width =6, height = 6, dpi = 300, units = "cm", limitsize = TRUE)
+
+
+### --- stratified estimate since 2014 ----- 
+unique(sdm.levels.2001toYYYY$Strata)
+
+#For plots - removing 2020 values
+sdm.strat.est <- sdm.strat.est %>% 
+  mutate(Mean = case_when(YEAR == 2020 ~ NA_real_, TRUE ~ yst), se = case_when(YEAR == 2020 ~ NA_real_, TRUE ~ se.yst))
+
+## All Subareas A-D Commercial  stratified estimates 
+strat.comm.plot <- ggplot(data = sdm.strat.est %>% filter(size == "comm"), aes(x=YEAR, y=Mean)) + 
+  geom_point() + 
+  geom_line() + 
+  geom_errorbar( aes(x=YEAR, ymin=yst-se, ymax=yst+se), width=0.4, colour="orange", alpha=0.9, size=1.3) + 
+  facet_wrap(~SUBAREA, ncol=2) + 
+  theme_bw() + ylab("Mean weight/tow (kg)") + xlab("Year") + 
+  theme(legend.position = c(0.1, 0.85),panel.grid.minor = element_blank(),legend.title = element_blank())
+strat.comm.plot
+
+#save
+ggsave(filename = paste0(path.directory,assessmentyear,"/Assessment/Figures/SFA29AtoD.Weightpertow.Commercial.stratifiedestimate.since2014.",surveyyear,".png"), plot = strat.comm.plot, scale = 2.5, width =6, height = 6, dpi = 300, units = "cm", limitsize = TRUE)
+
+
 
 	
 ### ---- SUBAREA E ----  
