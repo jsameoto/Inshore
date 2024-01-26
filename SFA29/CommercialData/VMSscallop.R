@@ -16,9 +16,9 @@
 	library(sp)
 	library(sf)
 	library(raster)      
-	library(devtools)
-	library(Mar.datawrangling)
-  library(Mar.utils)
+	#library(devtools)
+	#library(Mar.datawrangling)
+  #library(Mar.utils)
 	library(rgdal)
 	library(RColorBrewer)
 	library(foreign) 
@@ -63,11 +63,11 @@ poly.sf <- st_transform(poly.sf, crs = sp::CRS(SRS_string = "EPSG:32619"))
 #ORACLE Username and Password
   uid <- un.sameotoj
   pwd <- pw.sameotoj
-  surveyyear <- 2022  #This is the last survey year 
-  assessmentyear <- 2023 #year in which you are conducting the survey 
+  surveyyear <- 2023  #This is the last survey year 
+  assessmentyear <- 2024 #year in which you are conducting the survey 
   path.directory <- paste0(":/Inshore/SFA29/")
-  startdate <- "2022-01-01"   # Start DateTime for VMS 
-  stopdate <- "2022-12-31"    # Stop DateTime for VMS 
+  startdate <- "2023-01-01"   # Start DateTime for VMS 
+  stopdate <- "2023-12-31"    # Stop DateTime for VMS 
  
 #open database connection 
   chan <- dbConnect(dbDriver("Oracle"),username=uid, password=pwd,'ptran')
@@ -120,28 +120,17 @@ poly.sf <- st_transform(poly.sf, crs = sp::CRS(SRS_string = "EPSG:32619"))
 	  print("PROBLEM! You've hit your ceiling for records - edit rowNum in VME_get_rec() to ensure you're getting all rows") 
 	  } else { print("You're good to go -- your records is under the ceiling limit specified")}
  
-# ----- Select VMS OLD WAY direct from VMS database ---- 
+# ----- Select VMS direct from VMS database ---- 
   vrn.list.for.sql <- paste(as.character(as.matrix(vrn.list)),collapse="','")
   
 	begTime <- Sys.time()
 	quer2 <- paste(
-	  "SELECT rownum vesid, p.lon, p.lat, NVL(v.vessel_name,p.vrn) vessel_name, p.vrn, 'V_'||p.vrn vr_number, ",
-	  "TO_CHAR(p.pdate,'YYYY') YEAR, TO_CHAR(p.pdate,'YYYY-MM-DD') vmsdate, p.pdate vmstime, ",
-	  "p.hailout, to_number(TO_CHAR(to_number(TO_CHAR(pdate,'J')) + to_number(TO_CHAR(pdate,'HH24'))/24.,'99999999.999999')) julian_date, ",
-	  "p.speed_knots, 1 obs,",
-	  "v.vessel_name || ' '|| p.vrn || ' (LOA ' || v.loa || ') '|| TO_CHAR(p.pdate,'YYYY/MM/DD HH24:MI')|| ' ' || speed_knots ves_id, ",
-	  "'http://foip.mar.dfo-mpo.ca/pls/foip/foip$lic_vessels.p_vrn:1in_vrn=' || p.vrn licence_href ",
-	  "FROM mfd_obfmi.vms_pos p,                         ",
-	  "	  mfd_obfmi.marfis_vessels_syn v               ",
-	  "WHERE                                             ",
-	  "	  p.vrn = v.vr_number(+)                       ",
-	  "AND  p.vrn IN ('",vrn.list.for.sql,"')                    ",
-	  "AND p.pdate >= to_date('", startdate,"','YYYY-MM-DD')",
-	  "AND p.pdate <= to_date('", stopdate, "','YYYY-MM-DD') ",
-	  "AND p.lon BETWEEN -85 AND 180                     ", 
-	  "AND p.lat < 90                                    ", 
-	  sep=""
-	)   
+	  "SELECT * ",
+    "from MFD_OBFMI.VMS_ALL ",           
+    "WHERE POSITION_UTC_DATE>= to_date('", startdate,"','YYYY-MM-DD') ", 
+    "AND POSITION_UTC_DATE <= to_date('", stopdate, "','YYYY-MM-DD') ", 
+    "AND vr_number IN ('",vrn.list.for.sql,"' ) ", 
+     sep="") 
 
 	dat.sql <- dbGetQuery(chan, quer2)
 	dbDisconnect(chan)
@@ -149,10 +138,18 @@ poly.sf <- st_transform(poly.sf, crs = sp::CRS(SRS_string = "EPSG:32619"))
 	runTime <- Sys.time()-begTime
 	runTime
 	
+	head(dat.sql)
+	dim(dat.sql)
+	
+	dat.sql <- dat.sql %>% mutate( vrn = VR_NUMBER, lat = LATITUDE , lon = LONGITUDE   , vmstime = POSITION_UTC_DATE)
+	dat.sql <- dat.sql %>% dplyr::select(vrn, lat, lon, vmstime, SPEED_KNOTS)
+	dat.sql$vmsdate <- as.Date(dat.sql$vmstime)
+	
 	dat <- dat.sql
 	names(dat) <- tolower(names(dat))
-	dat$vmstime <- as.POSIXct(dat$vmstime)
-	dat$vmsdate <- as.POSIXct(dat$vmsdate)
+	str(dat)
+	#dat$vmstime <- as.POSIXct(dat$vmstime)
+	#dat$vmsdate <- as.POSIXct(dat$vmsdate)
 	dat <- dat[order(dat$vrn, dat$vmstime), ]  # Order dataframe by vrn and DateTime 
 	
 	paste("Number of VMS records for ",surveyyear,": ",dim(dat)[1],sep="")
@@ -161,6 +158,7 @@ poly.sf <- st_transform(poly.sf, crs = sp::CRS(SRS_string = "EPSG:32619"))
 	#In 2020: 736888
 	#in 2021: 734981
 	#in 2022: 183091... something not right with this method for this year - using Mike's method for 2023 assessment 
+	#in 2023 899856      
 	
 # ---- Clean scallop VMS data selected from VMS_pos ---- 
 # Remove duplicates and cross against SCALLOP MONITORING DOCS on VRN and Date to ID Scallop Only trips
@@ -177,6 +175,7 @@ poly.sf <- st_transform(poly.sf, crs = sp::CRS(SRS_string = "EPSG:32619"))
  #In 2020 136 removed 
  #In 2021 904 removed ; 898 Mikes way 
 	#In 2022  753 removed
+	#In 2023 897 removed 
 	
 #
 # ---- Cross against logs to pull out SCALLOP trips ----
@@ -215,7 +214,7 @@ poly.sf <- st_transform(poly.sf, crs = sp::CRS(SRS_string = "EPSG:32619"))
 	# Number of SCALLOP VMS records for 2020: 228368
 	# Number of SCALLOP VMS records for 2021: 228401   (old numbers: 234122; 235841
 	# "Number of SCALLOP VMS records for 2022: 226976"
-	
+	#"Number of SCALLOP VMS records for 2023: 226750"
 	
 	
 	vms.vrn <- unique(vms.dat$vrn) # vessels from vms data
@@ -229,7 +228,7 @@ poly.sf <- st_transform(poly.sf, crs = sp::CRS(SRS_string = "EPSG:32619"))
 	#"Vessels with MonDocs and no matching VMS:26 or 27" #in 2020
 	#"Vessels with MonDocs and no matching VMS:121" #in 2021 with Mike's pull; 21 from JS pull 
 	# "Vessels with MonDocs and no matching VMS:16"
-	
+	#"Vessels with MonDocs and no matching VMS:23"
 	
 	missing.vms <- is.element(el=log.vrn, set=vms.vrn) # log vrn with no matching VMS 
 	length(log.vrn[missing.vms==FALSE]) #check of length; should match print out of vessels with mondocs and no matching vms
@@ -294,6 +293,7 @@ poly.sf <- st_transform(poly.sf, crs = sp::CRS(SRS_string = "EPSG:32619"))
 	# 35613 in 2020 
 	# 35408 in 2021 ; 35529 from JS pull 
 	# 25329 in 2022 
+	# 20700 in 2023
 	
 	unique(vms.29$assigned_area)
 	table(vms.29$assigned_area)
@@ -317,12 +317,12 @@ poly.sf <- st_transform(poly.sf, crs = sp::CRS(SRS_string = "EPSG:32619"))
 	
 	
 ## --- Calculate Speed via R ---- 
-	## UNDER DEVELOPMENT - MODIFY CODE FROM DAVE 
+	## UNDER DEVELOPMENT - MODIFY CODE FROM DAVE not used in 2023 or 2023.. 
 	vms.29 <- vms.29 %>% mutate(LATITUDE = as.numeric(lat), LONGITUDE = as.numeric(lon))
 	str(vms.29)
 	head(vms.29)
 	dim(vms.29)
-	# Now get rid of back to back points within 50 meters of each other, and with more than 4 hours between pooling
+	# Now get rid of back to back points within 50 meters of each other, and with more than 4 hours between polling
 	# I'm not actually gonna do this...
 	vms.29.cln <- VMS_clean_recs(df = vms.29,  lat.field = "LATITUDE",
 	                             lon.field = "LONGITUDE",
@@ -347,11 +347,23 @@ poly.sf <- st_transform(poly.sf, crs = sp::CRS(SRS_string = "EPSG:32619"))
 #
 	#ONLY NEED TO DO IF VMS IS FROM DIRECT DATABASE PULL - NOT Mar.Util and are running Perl 	
 	# reorder columns and Format for PERL #
-	vms.29 <- vms.29[c( "vesid", "lon", "lat", "vessel_name", "vrn", "year", "vmsdate", "vmstime", "hailout", "julian_date", "inst_speed", "obs", "ves_id", "licence_href","assigned_area","uid")]
+	
+	vms.29$vesid <- vms.29$vrn
+	vms.29$vessel_name <- vms.29$vrn
+	vms.29$year <- year(vms.29$vmsdate)
+	head(vms.29)
+	dim(vms.29)
+	dim(vms.29[vms.29$inst_speed >0,])
+	hist(vms.29$inst_speed, breaks = 200)
+	
+	vms.29 <- vms.29[c( "vesid", "lon", "lat", "vessel_name", "vrn", "year", "vmsdate", "vmstime", "assigned_area", "uid")]
+	
+	
+#	vms.29 <- vms.29[c( "vesid", "lon", "lat", "vessel_name", "vrn", "year", "vmsdate", "vmstime", "hailout", "julian_date", "inst_speed", "obs", "ves_id", "licence_href","assigned_area","uid")]
 	
 #If from Mikes data VMS pull
-	vms.29$year <- year(vms.29$vmsdate)
-	vms.29 <- vms.29 %>% dplyr::select(vesid = vrn,   lon, lat, vessel_name = vrn, 
+#	vms.29$year <- year(vms.29$vmsdate)
+#	vms.29 <- vms.29 %>% dplyr::select(vesid = vrn,   lon, lat, vessel_name = vrn, 
 	                                 vrn = vrn, year, vmsdate,   vmstime, assigned_area, uid)
 	head(vms.29)
 
@@ -362,9 +374,12 @@ poly.sf <- st_transform(poly.sf, crs = sp::CRS(SRS_string = "EPSG:32619"))
 	setwd("D:/VMS/scripts/perl/")
 	#note: move file: E:\Documents and Settings\VMS\data\vms\vmsFormatted\sfa29\SFA29vms_YYYY.txt  to same folder as perl script. Update line 4 of perl script with file name SFA29vms_YYYY.txt 
 	# In 2022 unable to run Perl via R -- ran perl via command prompt. 
-#	cat(  "perl onehour_add_tripID.pl > SFA29vms_2022out.txt", file="run.bat") #update output file name
+#	cat(  "perl onehour_add_tripID.pl > SFA29vms_2023out.txt", file="run.bat") #update output file name
 #	system( "run.bat",  intern=FALSE, wait=TRUE, show.output.on.console = TRUE)
 
+#if run via window command line, need up have perl installed and then via cmd window: 
+	#D:\VMS\scripts\perl>onehour_add_tripID.pl > SFA29vms_2023out.txt
+	
 	#move output here D:\VMS\scripts\perl\out_60min\sfa29_byYr
 	
 	#vms.29.out <- read.delim2("D:/VMS/scripts/perl/out_60min/sfa29_byYr/SFA29vms_2020out.txt") #read in vms file with speed
@@ -530,6 +545,8 @@ names(vms.sdm.29)[grep("Y", names(vms.sdm.29))] <- 'lat'
 	#[1] 3633   27
 	#  3774   in 2021 
 	#2959   in 2022 
+	#2128   in 2023 
+	
 	
 	#Effort by trip
 	vms.effort <- aggregate(vms29$TIME_DIFF_S, by=list(vms29$TRIP_ID_LOGS, vms29$SUM_SLIP_WEIGHT_LBS), FUN=sum)
@@ -549,25 +566,39 @@ names(vms.sdm.29)[grep("Y", names(vms.sdm.29))] <- 'lat'
   dim(vms29) #2019: 2977 ;  3347 in 2018; 3504 in 2017; 2959 in 2022 
   names(vms29)
 
+  #order for appending with previous year data 
+  
+  vms29.ordered <- vms29 %>% dplyr::select(TRIP_ID, TRIP_ORD, TIME_DIFF_S, DISTANCE_NM, SPEED_KNOTS,  vesid,lon ,lat, vrn, vessel_name, year, vmsdate, vmstime, SUM_SLIP_KG, VMSEFFORT_TOTALHRS, PropEffort, PropCatch_kg,assigned_area, SDM)
+    head(vms29.ordered)
+    
 # Export vms with prorated catch # 
-  write.csv(vms29, paste0(ess, path.directory,assessmentyear,"/Assessment/Data/CommercialData/VMS/VMSproratedCatch/SFA29vms_",surveyyear,"_proratedCatch.csv"), row.names = FALSE)
+  write.csv(vms29.ordered, paste0(ess, path.directory,assessmentyear,"/Assessment/Data/CommercialData/VMS/VMSproratedCatch/SFA29vms_",surveyyear,"_proratedCatch.csv"), row.names = FALSE)
+  
+  
 #read in all data since 2002 and append recent year data to full dataset#
   vms.prorated.catch <- read.csv(paste0(ess, path.directory,assessmentyear,"/Assessment/Data/CommercialData/VMS/VMSproratedCatch/SFA29vms.2002to",(surveyyear-1),".proratedCatch.csv"))
   table(vms.prorated.catch$year)
   head(vms.prorated.catch)
   head(vms29)
   
-  vms29$Subarea <- substr(vms29$assigned_area,3,3)
-  vms29$year <- year(as.Date(vms29$vmsdate))
-  vms29.format <- vms29[,c("TRIP_ID",	"TRIP_ORD",	"TIME_DIFF_S",	"DISTANCE_NM",	"SPEED_KNOTS",	"vesid",	"lon",	"lat", "vrn", "vessel_name", "year", "vmsdate", "vmstime", "SUM_SLIP_KG", "VMSEFFORT_TOTALHRS", "PropEffort", "PropCatch_kg", "Subarea", "SDM")]
+  vms29.ordered$Subarea <- substr(vms29.ordered$assigned_area,3,3)
+  vms29.ordered <-  vms29.ordered %>% dplyr::select(TRIP_ID, TRIP_ORD, TIME_DIFF_S, DISTANCE_NM, SPEED_KNOTS,  vesid,lon ,lat, vrn, vessel_name, year, vmsdate, vmstime, SUM_SLIP_KG, VMSEFFORT_TOTALHRS, PropEffort, PropCatch_kg,Subarea, SDM)
+  #vms29$year <- year(as.Date(vms29$vmsdate))
+  #vms29.format <- vms29[,c("TRIP_ID",	"TRIP_ORD",	"TIME_DIFF_S",	"DISTANCE_NM",	"SPEED_KNOTS",	"vesid",	"lon",	"lat", "vrn", "vessel_name", "year", "vmsdate", "vmstime", "SUM_SLIP_KG", "VMSEFFORT_TOTALHRS", "PropEffort", "PropCatch_kg", "Subarea", "SDM")]
+  names(vms29.ordered) <- tolower(names(vms29.ordered))
   
-  names(vms29.format) <- tolower(names(vms29.format))
-  vms.prorated.catch.all <- rbind(vms.prorated.catch, vms29.format)
+  str(vms.prorated.catch)
+  str(vms29.ordered)
+  
+  unique(vms.prorated.catch$sdm)
+  unique(vms29.ordered$sdm)
+  
+  #Merge together 
+  vms.prorated.catch.all <- rbind(vms.prorated.catch, vms29.ordered)
   table(vms.prorated.catch.all$year)
   
   write.csv(vms.prorated.catch.all, paste0(ess, path.directory,assessmentyear,"/Assessment/Data/CommercialData/VMS/VMSproratedCatch/SFA29vms.2002to",(surveyyear),".proratedCatch.csv"),  row.names = FALSE)
   #note you will used vms.prorated.catch.all for further analysis lower down in the script 
-  
   
 ### Compare VMS trip effort to log trip effort ###
 	par(mfrow=c(1,2))  # all plots on one page
@@ -620,7 +651,7 @@ names(vms.sdm.29)[grep("Y", names(vms.sdm.29))] <- 'lat'
 	
 # NO speed filter - Plot All Years of VMS that fished SFA 29W to check data  
 	#Pecjector basemap #ylim=c(43.1,43.8);	xlim=c(-66.5,-65.45) # is from SFA 29 from scallopmap 
-	p <- pecjector(area =list(x=c(-66.5,-65.45), y=c(43.1,43.8), crs=4326),repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot', add_layer = list(land = "grey", bathy = "ScallopMap", scale.bar = c('bl',0.25,-1,-1)), add_custom = list(obj = all.29vms.sf.IN, size = 1, fill = NA, color = alpha("black", alpha=0.1)))
+	p <- pecjector(area =list(x=c(-66.5,-65.45), y=c(43.1,43.8), crs=4326),repo ='github',c_sys="ll", gis.repo = 'D:/GitHub/GIS_layers/', plot=F,plot_as = 'ggplot', add_layer = list(land = "grey", bathy = "ScallopMap", scale.bar = c('bl',0.25,-1,-1)), add_custom = list(obj = all.29vms.sf.IN, size = 1, fill = NA, color = alpha("black", alpha=0.1)))
 	
 	p +
 	  geom_sf(data = poly.subareas, fill=NA, colour="grey")+
@@ -632,7 +663,7 @@ ggsave(paste0("SFA29vms_2002to",surveyyear,"_all.png"), path=paste0(ess,path.dir
 	
 # NO speed filter - Plot All Years of VMS IN SFA 29W with current year (YR) identified - NO speed filter#
 	xx <- surveyyear 	#Be sure YR is the year you want 
-	p1 <- pecjector(area =list(x=c(-66.5,-65.45), y=c(43.1,43.8), crs=4326),repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot', add_layer = list(land = "grey",  bathy = "ScallopMap", scale.bar = c('bl',0.25,-1,-1)))
+	p1 <- pecjector(area =list(x=c(-66.5,-65.45), y=c(43.1,43.8), crs=4326),repo ='github',c_sys="ll", gis.repo = 'D:/GitHub/GIS_layers/', plot=F,plot_as = 'ggplot', add_layer = list(land = "grey",  bathy = "ScallopMap", scale.bar = c('bl',0.25,-1,-1)))
 	p1 +
 	  geom_sf(data = poly.subareas, fill=NA, colour="grey", size = 1) +
 	  geom_sf(data = subset(all.29vms.sf.IN, year<xx), size = 0.5, colour = alpha("black", alpha=0.2)) + #all years prior to current year 
@@ -646,7 +677,7 @@ ggsave(paste0("SFA29vms_2002to",(surveyyear-1),"v",xx,"_all.png"), path=paste0(e
 # NO speed filter - Plot Current Years of VMS IN SFA 29W vs Previous Year - NO speed filter 
 	xx <- surveyyear 	#Be sure YR is the year you want 
 	yy <- surveyyear - 1
-	p2 <- pecjector(area =list(x=c(-66.5,-65.45), y=c(43.1,43.8), crs=4326),repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot', add_layer = list(land = "grey",  bathy = "ScallopMap", scale.bar = c('bl',0.25,-1,-1)))
+	p2 <- pecjector(area =list(x=c(-66.5,-65.45), y=c(43.1,43.8), crs=4326),repo ='github',c_sys="ll", gis.repo = 'D:/GitHub/GIS_layers/', plot=F,plot_as = 'ggplot', add_layer = list(land = "grey",  bathy = "ScallopMap", scale.bar = c('bl',0.25,-1,-1)))
 	
 	p2 +
 	  geom_sf(data = poly.subareas, fill=NA, colour="grey", size = 1) +
@@ -660,7 +691,7 @@ ggsave(paste0("SFA29vms_",yy,"v",xx,"_all.png"), path=paste0(ess,path.directory,
 	
 # SPEED FILTERED "FISHING" - Plot All Years of VMS that fished SFA 29W to check data 
 	#Pecjector basemap #ylim=c(43.1,43.8);	xlim=c(-66.5,-65.45) # is from SFA 29 from scallopmap 
-p3 <- pecjector(area =list(x=c(-66.5,-65.45), y=c(43.1,43.8), crs=4326),repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot', add_layer = list(land = "grey", bathy = "ScallopMap", scale.bar = c('bl',0.25,-1,-1)), add_custom = list(obj = all.29vms.sf.IN.fishing, size = 1, fill = NA, color = alpha("black", alpha=0.1)))
+p3 <- pecjector(area =list(x=c(-66.5,-65.45), y=c(43.1,43.8), crs=4326),repo ='github',c_sys="ll", gis.repo = 'D:/GitHub/GIS_layers/', plot=F,plot_as = 'ggplot', add_layer = list(land = "grey", bathy = "ScallopMap", scale.bar = c('bl',0.25,-1,-1)), add_custom = list(obj = all.29vms.sf.IN.fishing, size = 1, fill = NA, color = alpha("black", alpha=0.1)))
 	
 p3 +
 	  geom_sf(data = poly.subareas, fill=NA, colour="grey", size = 1)+
@@ -673,7 +704,7 @@ ggsave(paste0("SFA29vms_2002to",surveyyear,"_filtered.png"), path=paste0(ess,pat
 # SPEED FILTERED "FISHING" Plot All Years of VMS IN SFA 29W with current year (YR) identified in red 
 xx <- surveyyear 	#Be sure YR is the year you want 
 
-p4 <- pecjector(area =list(x=c(-66.5,-65.45), y=c(43.1,43.8), crs=4326),repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot', add_layer = list(land = "grey", bathy = "ScallopMap", scale.bar = c('bl',0.25,-1,-1)))
+p4 <- pecjector(area =list(x=c(-66.5,-65.45), y=c(43.1,43.8), crs=4326),repo ='github',c_sys="ll", gis.repo = 'D:/GitHub/GIS_layers/', plot=F,plot_as = 'ggplot', add_layer = list(land = "grey", bathy = "ScallopMap", scale.bar = c('bl',0.25,-1,-1)))
 
 p4 +
 	 geom_sf(data = poly.subareas, fill=NA, colour="grey", size = 1) +
@@ -688,7 +719,7 @@ ggsave(paste0("SFA29vms_2002to",(surveyyear-1),"v",xx,"_filtered.png"), path=pas
 xx <- surveyyear 	#Be sure YR is the year you want 
 yy <- surveyyear - 1
 
-p5 <- pecjector(area =list(x=c(-66.5,-65.45), y=c(43.1,43.8), crs=4326),repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot', add_layer = list(land = "grey", bathy = "ScallopMap", scale.bar = c('bl',0.25,-1,-1)))
+p5 <- pecjector(area =list(x=c(-66.5,-65.45), y=c(43.1,43.8), crs=4326),repo ='github',c_sys="ll", gis.repo = 'D:/GitHub/GIS_layers/', plot=F,plot_as = 'ggplot', add_layer = list(land = "grey", bathy = "ScallopMap", scale.bar = c('bl',0.25,-1,-1)))
 
 	p5 +
 	  geom_sf(data = poly.subareas, fill=NA, colour="grey") +
@@ -746,6 +777,7 @@ ggsave(paste0("SFA29vms_",yy,"v",xx,"_filtered.png"), path=paste0(ess,path.direc
 	vms.prorated.catch.nona <- vms.prorated.catch.nona[!is.na(vms.prorated.catch.nona$sdm),]
 	vms.prorated.catch.nona.noE <- vms.prorated.catch.nona[vms.prorated.catch.nona$subarea!="E",]
 	vms.prorated.catch.nona.noE$sdm <- vms.prorated.catch.nona.noE$sdm/10
+	table(vms.prorated.catch.nona.noE$sdm, useNA = c("always"))
 	
 	eff.area <- aggregate(vms.prorated.catch.nona.noE$effort_hr,by=list(vms.prorated.catch.nona.noE$subarea, vms.prorated.catch.nona.noE$sdm, vms.prorated.catch.nona.noE$year),sum)  #sum vms effort by subarea by sdm by year 
 	names(eff.area) <- c("subarea","sdm","year","totalefforthr")
@@ -883,7 +915,7 @@ ggsave(paste0("SFA29vms_",yy,"v",xx,"_filtered.png"), path=paste0(ess,path.direc
 	    legend.justification = c("right", "top"),
 	    legend.box.just = "right",
 	    legend.margin = margin(6, 6, 6, 6)) 
-	ggsave(paste0("VMSeffortpersqkm.",(surveyyear),".png"), path=paste0(ess,path.directory,assessmentyear,"/Assessment/Figures/CommercialData/"), dpi=300)   
+	ggsave(paste0("VMSeffortpersqkm.",(surveyyear),".png"), path=paste0(ess,path.directory,assessmentyear,"/Assessment/Figures/CommercialData/"), width =12, height = 8, dpi = 300, units = "in",)   
 	
 	
 	
@@ -923,6 +955,7 @@ ggsave(paste0("SFA29vms_",yy,"v",xx,"_filtered.png"), path=paste0(ess,path.direc
 	  geom_line(aes(x=year, y = propcatch)) + facet_wrap(~subarea) + 
 	  labs(x="Year", y="VMS proportion of total catch by subarea")
 	  
-	
-	
+	rm(un.sameotoj)
+	rm(pw.sameotoj)
+save.image(file = "Y:/Inshore/SFA29/2024/Assessment/Data/CommercialData/VMS/vms_temp.RData")	
 	
