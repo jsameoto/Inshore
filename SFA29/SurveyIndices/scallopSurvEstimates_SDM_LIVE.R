@@ -1186,6 +1186,12 @@ scall.levels.2008to2013 <- as.data.frame(do.call(rbind,scall.levels.2008to2013))
 ###... For Years: 2014-YYYY Calculate Stratified Random Survey Estimate - SDM strata ...###
 ### NOTE: entries for Subarea in strata.group and STRATA in data.obj must be equal #
 ### DATA: scall.strat.2014toYYYY(data all - stratified SDM estimate), scall.levels.2014toYYYY (data by low, med, high)
+#in 2023 remove tow 88
+data.obj %>% filter(YEAR == 2023 & TOW_NO == 88)
+data.obj %>% filter(YEAR == 2023 & SDM == "low" & STRATA == "SFA29D")
+dim(data.obj)
+data.obj <- data.obj[data.obj$uid != "SFA292023.88",]
+dim(data.obj)
 
 ab <- unique(strata.group$Subarea)
 year <- c(2014:2019,2021:surveyyear)
@@ -1215,6 +1221,8 @@ out.strat.2014toCRNT <- out
 
 #Calculate mean and variance within each SDM strata (High, Medium, Low)
 #NOTE: could also obtain this if added scall.levels <- PEDstrata(data.obj.i, strata.group.i,'SDM',catch=data.obj.i$STDTOTALCAUGHT) in the above loop and then assigned all outputs within each loop to a list
+
+
 sdmlevels <- na.omit(unique(data.obj$SDM))
 out <- data.frame(YEAR=rep(NA,(length(year)*length(ab)*length(sdmlevels))),SUBAREA=rep(NA,(length(year)*length(ab)*length(sdmlevels))),Strata=rep(NA,(length(year)*length(ab)*length(sdmlevels))),yst=rep(NA,(length(year)*length(ab)*length(sdmlevels))),se.yst=rep(NA,(length(year)*length(ab)*length(sdmlevels))),var.est=rep(NA,(length(year)*length(ab)*length(sdmlevels))),descrip=rep("simple",(length(year)*length(ab)*length(sdmlevels))))
 m <- 0 #index
