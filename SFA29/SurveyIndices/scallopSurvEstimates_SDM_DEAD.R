@@ -115,6 +115,13 @@ data.obj <- dbGetQuery(chan, quer2)
 	dim(data.obj)
 	data.obj.all <- data.obj
 
+#in 2023 remove tow 88
+	data.obj %>% filter(YEAR == 2023 & TOW_NO == 88)
+	data.obj %>% filter(YEAR == 2023 & SDM == "low" & STRATA == "SFA29D")
+	dim(data.obj)
+	data.obj <- data.obj[data.obj$uid != "SFA292023.88",]
+	dim(data.obj)
+	
 ####
 ###  ----   Calculate Stratified Random Survey Estimates ----             
 ###   PEDstrata(data.obj, strata.group, strata.name, catch, Subset)                            ###
@@ -1796,6 +1803,14 @@ data.join$prop.dead.prerec <- data.join$dead.prerec/(data.join$dead.prerec + dat
 data.join$prop.dead.comm[is.na(data.join$prop.dead.comm)] <- 0
 data.join$prop.dead.rec[is.na(data.join$prop.dead.rec)] <- 0
 data.join$prop.dead.prerec[is.na(data.join$prop.dead.prerec)] <- 0
+
+#in 2023 remove tow 88 
+#in 2023 remove tow 88
+data.join %>% filter(YEAR == 2023 & TOW_NO == 88)
+dim(data.join)
+data.join <- data.join[data.join$uid != "SFA292023.88",]
+dim(data.join)
+
 
 #write out data and use this file to spatially plot proportion dead in the spatial plot script 
 write.csv(data.join, paste0(path.directory, assessmentyear, "/Assessment/Data/SurveyIndices/SFA29.all.tows.2001to",surveyyear,".Proportion.Dead.csv"), row.names = FALSE)

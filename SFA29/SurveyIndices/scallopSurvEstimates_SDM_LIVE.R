@@ -115,6 +115,13 @@ data.obj <- merge(data.obj, sdmtows, by.x='uid', by.y='uid', all.x=TRUE)
 dim(data.obj)
 data.obj.all <- data.obj
 
+#in 2023 remove tow 88
+data.obj %>% filter(YEAR == 2023 & TOW_NO == 88)
+data.obj %>% filter(YEAR == 2023 & SDM == "low" & STRATA == "SFA29D")
+dim(data.obj)
+data.obj <- data.obj[data.obj$uid != "SFA292023.88",]
+dim(data.obj)
+
 
 ###
 ###  ----    Calculate Stratified Random Survey Estimates  ---- 
@@ -1186,12 +1193,6 @@ scall.levels.2008to2013 <- as.data.frame(do.call(rbind,scall.levels.2008to2013))
 ###... For Years: 2014-YYYY Calculate Stratified Random Survey Estimate - SDM strata ...###
 ### NOTE: entries for Subarea in strata.group and STRATA in data.obj must be equal #
 ### DATA: scall.strat.2014toYYYY(data all - stratified SDM estimate), scall.levels.2014toYYYY (data by low, med, high)
-#in 2023 remove tow 88
-data.obj %>% filter(YEAR == 2023 & TOW_NO == 88)
-data.obj %>% filter(YEAR == 2023 & SDM == "low" & STRATA == "SFA29D")
-dim(data.obj)
-data.obj <- data.obj[data.obj$uid != "SFA292023.88",]
-dim(data.obj)
 
 ab <- unique(strata.group$Subarea)
 year <- c(2014:2019,2021:surveyyear)
