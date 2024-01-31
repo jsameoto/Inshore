@@ -36,8 +36,8 @@ names(surf.all) <- c("uid","Start.Bottom")
 # Define: 
 uid <- un.sameotoj
 pwd <- pw.sameotoj
-uid <- keyring::key_list("Oracle")[1,2]
-pwd <- keyring::key_get("Oracle", uid)
+#uid <- keyring::key_list("Oracle")[1,2]
+#pwd <- keyring::key_get("Oracle", uid)
 
 surveyyear <- 2023  #This is the last survey year for which you want to include  - not should match year of cruise below 
 cruise <- "SFA292023"  #note should match year for surveyyear set above 
@@ -114,13 +114,6 @@ data.obj <- merge(data.obj, surf.all, by.x='uid', by.y='uid', all.x=TRUE)
 data.obj <- merge(data.obj, sdmtows, by.x='uid', by.y='uid', all.x=TRUE)
 dim(data.obj)
 data.obj.all <- data.obj
-
-#in 2023 remove tow 88
-data.obj %>% filter(YEAR == 2023 & TOW_NO == 88)
-data.obj %>% filter(YEAR == 2023 & SDM == "low" & STRATA == "SFA29D")
-dim(data.obj)
-data.obj <- data.obj[data.obj$uid != "SFA292023.88",]
-dim(data.obj)
 
 
 ###

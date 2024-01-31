@@ -35,8 +35,8 @@ names(surf.all) <- c("uid","Start.Bottom")
 # Define: 
 uid <- un.sameotoj
 pwd <- pw.sameotoj
-uid <- keyring::key_list("Oracle")[1,2]
-pwd <- keyring::key_get("Oracle", uid)
+#uid <- keyring::key_list("Oracle")[1,2]
+#pwd <- keyring::key_get("Oracle", uid)
 
 surveyyear <- 2023  #This is the last survey year for which you want to include  - not should match year of cruise below 
 cruise <- "SFA292023"  #note should match year for surveyyear set above 
@@ -122,13 +122,7 @@ data.obj <- sfa29shw.dat
 	data.obj.all <- data.obj
 	
 	
-#in 2023 remove tow 88
-	data.obj %>% filter(YEAR == 2023 & TOW_NO == 88)
-	data.obj %>% filter(YEAR == 2023 & SDM == "low" & STRATA == "SFA29D")
-	dim(data.obj)
-	data.obj <- data.obj[data.obj$uid != "SFA292023.88",]
-	dim(data.obj)
-	
+
 ###
 ###  ----    Calculate Stratified Random Survey Estimates  ---- 
 ###   PEDstrata(data.obj, strata.group, strata.name, catch, Subset)                            ###
@@ -876,7 +870,7 @@ ggsave(filename = paste0(path.directory,assessmentyear,"/Assessment/Figures/SFA2
 	  facet_wrap(~group, ncol=1, labeller = size_names, scales = "free") + 
 	  theme_bw() + ylab("Mean weight/tow (kg)") + xlab("Year") + 
 	  theme(legend.position = c(0.1, 0.9),panel.grid.minor = element_blank()) + 
-	  geom_pointrange(aes(ymin=out.e$yst-out.e$se.yst, ymax=out.e$yst+out.e$se.yst)) 
+	  geom_pointrange(aes(ymin=yst-se.yst, ymax=yst+se.yst)) 
 	E.weight.per.tow
 	
 	#save
