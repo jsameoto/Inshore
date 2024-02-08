@@ -22,7 +22,7 @@ library(forcats)
 
 #### Import Mar-scal functions 
 funcs <- c("https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Survey_and_OSAC/convert.dd.dddd.r",
-           "https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/archive/2016/contour.gen.r") 
+           "https://raw.githubusercontent.com/Mar-scal/Inshore/master/contour.gen.r") 
 # Note: uses older contour.gen.r version (working on alternative to contour.gen altogether).
 dir <- getwd()
 for(fun in funcs) 
@@ -285,7 +285,7 @@ ScallopSurv <- ScallopSurv %>%
   mutate(pre = dplyr::select(., BIN_ID_0:BIN_ID_60) %>% rowSums(na.rm = TRUE) %>% round(0))# Pre-recruit scallop - BIN_ID_0:BIN_ID_60
 
 
-com.contours <- contour.gen(ScallopSurv %>% #Excludes SPA3 and SFA29
+com.contours <- contour.gen(ScallopSurv %>% 
                               dplyr::select(ID, lon, lat, com),
                             ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
 
@@ -309,7 +309,6 @@ bof.scallop.bounds <- st_union(totCont.poly.sf) %>%
   mutate(Area = "Inshore")
   #st_cast("POLYGON")
 #plot(bof.scallop.bounds)
-
 
 #SFA29 West
 quer2 <- paste(
