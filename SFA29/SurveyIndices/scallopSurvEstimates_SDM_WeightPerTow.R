@@ -35,8 +35,8 @@ names(surf.all) <- c("uid","Start.Bottom")
 # Define: 
 uid <- un.sameotoj
 pwd <- pw.sameotoj
-uid <- keyring::key_list("Oracle")[1,2]
-pwd <- keyring::key_get("Oracle", uid)
+#uid <- keyring::key_list("Oracle")[1,2]
+#pwd <- keyring::key_get("Oracle", uid)
 
 surveyyear <- 2023  #This is the last survey year for which you want to include  - not should match year of cruise below 
 cruise <- "SFA292023"  #note should match year for surveyyear set above 
@@ -121,6 +121,8 @@ data.obj <- sfa29shw.dat
 	dim(data.obj)
 	data.obj.all <- data.obj
 	
+	
+
 ###
 ###  ----    Calculate Stratified Random Survey Estimates  ---- 
 ###   PEDstrata(data.obj, strata.group, strata.name, catch, Subset)                            ###
@@ -539,50 +541,9 @@ sdm.levels.est.all
 	scall.levels.2014toYYYY <- out
 	#check unique row for areas
 	scall.levels.2014toYYYY %>% group_by(YEAR, SUBAREA, Strata) %>% summarise(count = n()) %>% print(n = Inf)
-	
-	#for 2023, what if used median ? 
-	out <- data.frame(YEAR=rep(NA,(length(year)*length(ab)*length(sdmlevels))),SUBAREA=rep(NA,(length(year)*length(ab)*length(sdmlevels))),Strata=rep(NA,(length(year)*length(ab)*length(sdmlevels))),yst=rep(NA,(length(year)*length(ab)*length(sdmlevels))),se.yst=rep(NA,(length(year)*length(ab)*length(sdmlevels))),var.est=rep(NA,(length(year)*length(ab)*length(sdmlevels))),descrip=rep("simple",(length(year)*length(ab)*length(sdmlevels))))
-	m <- 0 #index
-	for (i in 1:length(year)) {
-	  temp.data <- data.obj[data.obj$YEAR==year[i],]
-	  for(j in 1:length(ab)) {
-	    data.obj.i <- temp.data[temp.data$STRATA==ab[j],]
-	    for (k in 1:length(sdmlevels)){
-	      data.obj.k <- data.obj.i[data.obj.i$SDM==sdmlevels[k],]
-	      m=m+1
-	      if(dim(data.obj.k)[1]!=0){
-	        out[m,"yst"] <- median(data.obj.k$STDTOTALCAUGHT)
-	        out[m,"se.yst"] <- sqrt(var(data.obj.k$STDTOTALCAUGHT))/sqrt(dim(data.obj.k)[1])
-	        out[m,"var.est"]<- var(data.obj.k$STDTOTALCAUGHT)/dim(data.obj.k)[1] #var.est is calculated as variance of the estimator
-	      }
-	      out$Strata[m] <- sdmlevels[k]
-	      out$YEAR[m] <- year[i]
-	      out$SUBAREA[m] <- as.character(ab[j])
-	    }
-	  }
-	}
-	out
-	scall.levels.2014toYYYY.median <- out
-	#check unique row for areas
-	scall.levels.2014toYYYY.median %>% group_by(YEAR, SUBAREA, Strata) %>% summarise(count = n()) %>% print(n = Inf)
-	#tow  SFA292023.88 in low a problem 
-	#not an issue if use median for D in 2023 
-	#use medians for D in 2023
-	
-	
 	scall.levels.2014toYYYY
-	#sub in median values for D in 2023
-	D.2023.medians <- scall.levels.2014toYYYY.median %>% filter(SUBAREA == "SFA29D" & YEAR == 2023) %>% select(YEAR, SUBAREA, Strata, yst)
-	#sub in median for high 
-	scall.levels.2014toYYYY$yst[scall.levels.2014toYYYY$SUBAREA == "SFA29D" &  scall.levels.2014toYYYY$YEAR == 2023 & scall.levels.2014toYYYY$Strata == "high"] <- D.2023.medians$yst[D.2023.medians$SUBAREA == "SFA29D" &  D.2023.medians$YEAR == 2023 & D.2023.medians$Strata == "high"]
-	#sub in median for medium  
-	scall.levels.2014toYYYY$yst[scall.levels.2014toYYYY$SUBAREA == "SFA29D" &  scall.levels.2014toYYYY$YEAR == 2023 & scall.levels.2014toYYYY$Strata == "med"] <- D.2023.medians$yst[D.2023.medians$SUBAREA == "SFA29D" &  D.2023.medians$YEAR == 2023 & D.2023.medians$Strata == "med"]
-	#sub in median for low  
-	scall.levels.2014toYYYY$yst[scall.levels.2014toYYYY$SUBAREA == "SFA29D" &  scall.levels.2014toYYYY$YEAR == 2023 & scall.levels.2014toYYYY$Strata == "low"] <- D.2023.medians$yst[D.2023.medians$SUBAREA == "SFA29D" &  D.2023.medians$YEAR == 2023 & D.2023.medians$Strata == "low"]
-	scall.levels.2014toYYYY
-	
-	
-	
+
+
 	### ... Merge data for all years into 1 dataframe ... ###
 	# Data by Strata: High, Medium, Low; by subare by year
 	names(scall.levels.2014toYYYY)[4] <- "Mean"
@@ -909,7 +870,7 @@ ggsave(filename = paste0(path.directory,assessmentyear,"/Assessment/Figures/SFA2
 	  facet_wrap(~group, ncol=1, labeller = size_names, scales = "free") + 
 	  theme_bw() + ylab("Mean weight/tow (kg)") + xlab("Year") + 
 	  theme(legend.position = c(0.1, 0.9),panel.grid.minor = element_blank()) + 
-	  geom_pointrange(aes(ymin=out.e$yst-out.e$se.yst, ymax=out.e$yst+out.e$se.yst)) 
+	  geom_pointrange(aes(ymin=yst-se.yst, ymax=yst+se.yst)) 
 	E.weight.per.tow
 	
 	#save

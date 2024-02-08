@@ -33,8 +33,8 @@ names(surf.all) <- c("uid","Start.Bottom")
 # Define: 
 uid <- un.sameotoj
 pwd <- pw.sameotoj
-uid <- keyring::key_list("Oracle")[1,2]
-pwd <- keyring::key_get("Oracle", uid)
+#uid <- keyring::key_list("Oracle")[1,2]
+#pwd <- keyring::key_get("Oracle", uid)
 
 surveyyear <- 2023  #This is the last survey year for which you want to include  - not should match year of cruise below 
 cruise <- "SFA292023"  #note should match year for surveyyear set above 
@@ -114,6 +114,7 @@ data.obj <- dbGetQuery(chan, quer2)
 	data.obj <- merge(data.obj, sdmtows, by.x='uid', by.y='uid', all.x=TRUE)
 	dim(data.obj)
 	data.obj.all <- data.obj
+
 
 ####
 ###  ----   Calculate Stratified Random Survey Estimates ----             
@@ -1796,6 +1797,9 @@ data.join$prop.dead.prerec <- data.join$dead.prerec/(data.join$dead.prerec + dat
 data.join$prop.dead.comm[is.na(data.join$prop.dead.comm)] <- 0
 data.join$prop.dead.rec[is.na(data.join$prop.dead.rec)] <- 0
 data.join$prop.dead.prerec[is.na(data.join$prop.dead.prerec)] <- 0
+
+
+
 
 #write out data and use this file to spatially plot proportion dead in the spatial plot script 
 write.csv(data.join, paste0(path.directory, assessmentyear, "/Assessment/Data/SurveyIndices/SFA29.all.tows.2001to",surveyyear,".Proportion.Dead.csv"), row.names = FALSE)

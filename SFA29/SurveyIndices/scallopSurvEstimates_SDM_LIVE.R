@@ -36,8 +36,8 @@ names(surf.all) <- c("uid","Start.Bottom")
 # Define: 
 uid <- un.sameotoj
 pwd <- pw.sameotoj
-uid <- keyring::key_list("Oracle")[1,2]
-pwd <- keyring::key_get("Oracle", uid)
+#uid <- keyring::key_list("Oracle")[1,2]
+#pwd <- keyring::key_get("Oracle", uid)
 
 surveyyear <- 2023  #This is the last survey year for which you want to include  - not should match year of cruise below 
 cruise <- "SFA292023"  #note should match year for surveyyear set above 
@@ -1215,6 +1215,8 @@ out.strat.2014toCRNT <- out
 
 #Calculate mean and variance within each SDM strata (High, Medium, Low)
 #NOTE: could also obtain this if added scall.levels <- PEDstrata(data.obj.i, strata.group.i,'SDM',catch=data.obj.i$STDTOTALCAUGHT) in the above loop and then assigned all outputs within each loop to a list
+
+
 sdmlevels <- na.omit(unique(data.obj$SDM))
 out <- data.frame(YEAR=rep(NA,(length(year)*length(ab)*length(sdmlevels))),SUBAREA=rep(NA,(length(year)*length(ab)*length(sdmlevels))),Strata=rep(NA,(length(year)*length(ab)*length(sdmlevels))),yst=rep(NA,(length(year)*length(ab)*length(sdmlevels))),se.yst=rep(NA,(length(year)*length(ab)*length(sdmlevels))),var.est=rep(NA,(length(year)*length(ab)*length(sdmlevels))),descrip=rep("simple",(length(year)*length(ab)*length(sdmlevels))))
 m <- 0 #index
