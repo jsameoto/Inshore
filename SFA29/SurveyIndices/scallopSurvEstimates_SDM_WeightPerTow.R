@@ -706,7 +706,11 @@ sdm.levels.est.all
 	
 	#For plots - removing 2020 values
 	sdm.levels.2001toYYYY <- sdm.levels.2001toYYYY %>% 
-	  mutate(Mean = case_when(YEAR == 2020 ~ NA_real_, TRUE ~ Mean))
+	  mutate(Mean = case_when(YEAR == 2020 ~ NA_real_, TRUE ~ Mean)) |> 
+	  mutate(SUBAREA = case_when(SUBAREA == "SFA29A" ~ "Subarea A",
+	                             SUBAREA == "SFA29B" ~ "Subarea B",
+	                             SUBAREA == "SFA29C" ~ "Subarea C",
+	                             SUBAREA == "SFA29D" ~ "Subarea D"))
 	
 	#sdm.levels.2001toYYYY$Strata.f <- factor(sdm.levels.2001toYYYY$Strata,  levels = c("high", "med",  "low"))
 	#levels(sdm.levels.2001toYYYY$Strata.f)
@@ -715,7 +719,7 @@ sdm.levels.est.all
 	colors.sdm <- c('firebrick2', 'darkgrey', 'darkblue')
 	
 	## All Subareas A-D Commercial  
-	AtoD.per.tow.comm <- ggplot(data = sdm.levels.2001toYYYY %>% filter(!(SUBAREA == "SFA29A" & Strata == "high")), aes(x=YEAR, y=Mean,  col=Strata, pch=Strata)) + 
+	AtoD.per.tow.comm <- ggplot(data = sdm.levels.2001toYYYY %>% filter(!(SUBAREA == "Subarea A" & Strata == "high")), aes(x=YEAR, y=Mean,  col=Strata, pch=Strata)) + 
 	  geom_point() + 
 	  geom_line(aes(linetype = Strata)) + 
 	  facet_wrap(~SUBAREA, ncol=2) + 
@@ -758,7 +762,11 @@ unique(sdm.levels.2001toYYYY$Strata)
 
 #For plots - removing 2020 values
 sdm.strat.est <- sdm.strat.est %>% 
-  mutate(Mean = case_when(YEAR == 2020 ~ NA_real_, TRUE ~ yst), se = case_when(YEAR == 2020 ~ NA_real_, TRUE ~ se.yst))
+  mutate(Mean = case_when(YEAR == 2020 ~ NA_real_, TRUE ~ yst), se = case_when(YEAR == 2020 ~ NA_real_, TRUE ~ se.yst)) |> 
+  mutate(SUBAREA = case_when(SUBAREA == "SFA29A" ~ "Subarea A",
+                             SUBAREA == "SFA29B" ~ "Subarea B",
+                             SUBAREA == "SFA29C" ~ "Subarea C",
+                             SUBAREA == "SFA29D" ~ "Subarea D"))
 
 ## All Subareas A-D Commercial  stratified estimates 
 strat.comm.plot <- ggplot(data = sdm.strat.est %>% filter(size == "comm"), aes(x=YEAR, y=Mean)) + 

@@ -160,8 +160,15 @@ print(levels(SHF_sdm_means_4_plot$SDM))
 #write out SHF data 
 #write.csv(SHF_sdm_means_4_plot, paste0(path.directory,assessmentyear,"/Assessment/Data/SurveyIndices/SHF.SDM.means.",surveyyear,".csv"))
 
+SHF_sdm_means_4_plot <- SHF_sdm_means_4_plot |> 
+  mutate(SUBAREA = case_when(STRATA == "SFA29A" ~ "Subarea A",
+                             STRATA == "SFA29B" ~ "Subarea B",
+                             STRATA == "SFA29C" ~ "Subarea C",
+                             STRATA == "SFA29D" ~ "Subarea D"))#Add column SUBAREA for plot.
+
 # Make the line plots of the SHF
 strata.ids <- unique(SHF_sdm_means_4_plot$STRATA)
+subarea.ids <- unique(SHF_sdm_means_4_plot$SUBAREA)
 yr.max <- surveyyear
 yr.min <- surveyyear-6
 
@@ -174,7 +181,7 @@ p <- ggplot(SHF_sdm_means_4_plot[SHF_sdm_means_4_plot$STRATA == strata.ids[i] & 
   scale_color_manual(values=c('firebrick2', 'darkgrey', 'darkblue'), breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low")) +  #scale_shape_manual(values = 1:3) +
   theme_bw() + theme(panel.grid=element_blank()) + scale_x_continuous(breaks = seq(0,170,20), limits = c (0,170)) +  #xlim(0, 170) + 
   geom_vline(xintercept=90, colour = "grey40") + geom_vline(xintercept=100, colour = "grey40") +
-  xlab("Shell height") + ylab("Survey mean no./tow") + ggtitle(paste(strata.ids[i],"Shell Height Frequency")) +
+  xlab("Shell height") + ylab("Survey mean no./tow") + ggtitle(paste(subarea.ids[i],"Shell Height Frequency")) +
   theme(#plot.title = element_text(size=10,hjust=0.5), 
     legend.title = element_blank(),
     legend.margin = margin(0,0,0,0),
@@ -231,11 +238,19 @@ comm.size$SDM  <- factor(comm.size$SDM, levels = c("low","med","high"))
 #add 2020 as NA 
 rec.size.2020 <- rec.size %>% distinct(SDM, STRATA) %>% mutate(SHF = NA, year = 2020)
 rec.size <- rbind(rec.size, rec.size.2020) 
-rec.size <- rec.size %>% dplyr::arrange(STRATA,SDM,year)  
+rec.size <- rec.size %>% dplyr::arrange(STRATA,SDM,year) |> 
+  mutate(SUBAREA = case_when(STRATA == "SFA29A" ~ "Subarea A",
+                             STRATA == "SFA29B" ~ "Subarea B",
+                             STRATA == "SFA29C" ~ "Subarea C",
+                             STRATA == "SFA29D" ~ "Subarea D")) 
 
 comm.size.2020 <- comm.size %>% distinct(SDM, STRATA) %>% mutate(SHF = NA, year = 2020)
 comm.size <- rbind(comm.size, comm.size.2020) 
-comm.size <- comm.size %>% dplyr::arrange(STRATA,SDM,year)  
+comm.size <- comm.size %>% dplyr::arrange(STRATA,SDM,year) |> 
+  mutate(SUBAREA = case_when(STRATA == "SFA29A" ~ "Subarea A",
+                             STRATA == "SFA29B" ~ "Subarea B",
+                             STRATA == "SFA29C" ~ "Subarea C",
+                             STRATA == "SFA29D" ~ "Subarea D"))
 
 #Remove row headers - they get out mis-matched when adding in 2020.
 row.names(rec.size) <- NULL
@@ -256,7 +271,7 @@ symbs <- 15:17
 # commerical average size 
 y <- c(min(comm.size$SHF,na.rm = TRUE)-10,max(comm.size$SHF,na.rm = TRUE)+10)
 
-lbar.comm <- ggplot(comm.size, aes(year,SHF,colour=SDM)) + geom_point(aes(shape = SDM)) + facet_wrap(~STRATA,scales="fixed") + geom_line(aes(linetype = SDM), size = 0.5) +
+lbar.comm <- ggplot(comm.size, aes(year,SHF,colour=SDM)) + geom_point(aes(shape = SDM)) + facet_wrap(~SUBAREA,scales="fixed") + geom_line(aes(linetype = SDM), size = 0.5) +
   scale_color_manual(values=colr, breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low")) +
   scale_linetype_manual(values = line.type, breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low")) +
   scale_shape_manual(values = symbs, breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low"))+ 
@@ -286,7 +301,7 @@ ggsave(filename = paste0(path.directory,assessmentyear,"/Assessment/Figures/Grow
 # recruit average size 
 y <- c(min(rec.size$SHF,na.rm = TRUE)-5,max(rec.size$SHF,na.rm = TRUE)+5)
 
-lbar.rec <- ggplot(rec.size, aes(year,SHF,colour=SDM)) + geom_point(aes(shape = SDM)) + facet_wrap(~STRATA,scales="fixed") + geom_line(aes(linetype = SDM), size = 0.5) +
+lbar.rec <- ggplot(rec.size, aes(year,SHF,colour=SDM)) + geom_point(aes(shape = SDM)) + facet_wrap(~SUBAREA,scales="fixed") + geom_line(aes(linetype = SDM), size = 0.5) +
   scale_color_manual(values=colr,breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low")) +
   scale_linetype_manual(values = line.type, breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low")) +
   scale_shape_manual(values = symbs, breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low"))+
@@ -331,6 +346,9 @@ comm.size$size <- "commercial"
 rec.size$size <- "recruit"
 
 lbar <- rbind(comm.size, rec.size)
+
+#remove SUBAREA Column to keep consistant with previous years files:
+lbar <- lbar |> dplyr::select(!SUBAREA)
 
 #note lbar is column  "SHF" - curren year average height; column name "SHF.pred" is the predicted average SH in the following year 
 write.csv(lbar, paste0(path.directory,assessmentyear, "/Assessment/Data/Growth/SFA29.SHobj.",surveyyear,".csv"))
@@ -386,7 +404,7 @@ recruitlimits <- c(90,100)
 # plot SHF for 2to8 mile strata
 plot.E.SHF <- ggplot() + geom_col(data = E.SHFmeans.for.plot, aes(x = bin.mid.pt, y = SH)) + 
   facet_wrap(~year, ncol = 1) + 
-  theme_bw() + ylim(ylimits) + xlim(xlimits) + ylab("Survey mean no./tow") + xlab("Shell Height (mm)") + ggtitle("SFA29E Shell Height Frequency")+
+  theme_bw() + ylim(ylimits) + xlim(xlimits) + ylab("Survey mean no./tow") + xlab("Shell Height (mm)") + ggtitle("Subarea E Shell Height Frequency")+
   geom_vline(xintercept = recruitlimits, linetype = "dotted") + scale_x_continuous(breaks = seq(0,max(xlimits),20))
 plot.E.SHF
 
