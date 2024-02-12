@@ -7,8 +7,8 @@ library(tidyverse)
 library(lubridate)
 
 #define 
-yr <- 2023 # This should be set to the year after the year of the last survey.  e.g. if 2018 that means you are using the 2017 survey.
-survey.year <- 2022
+yr <- 2024 # This should be set to the year after the year of the last survey.  e.g. if 2018 that means you are using the 2017 survey.
+survey.year <- 2023
 
 path.directory <- paste0("Y:/Inshore/SFA29/")
 
@@ -156,29 +156,41 @@ dat.all <- dat.all[dat.all$Habitat != "Low",]
 
 #Add French names for Subareas
 dat.all <- dat.all %>% 
-  mutate(area_FR = case_when(area == "SFA29A" ~ "ZPP29A",
-                             area == "SFA29B" ~ "ZPP29B",
-                             area == "SFA29C" ~ "ZPP29C",
-                             area == "SFA29D" ~ "ZPP29D"))
+  mutate(area = case_when(area == "SFA29A" ~ "Subarea A",
+                             area == "SFA29B" ~ "Subarea B",
+                             area == "SFA29C" ~ "Subarea C",
+                             area == "SFA29D" ~ "Subarea D")) |> 
+  mutate(area_FR = case_when(area == "Subarea A" ~ "Sous-zone A",
+                             area == "Subarea B" ~ "Sous-zone B",
+                             area == "Subarea C" ~ "Sous-zone C",
+                             area == "Subarea D" ~ "Sous-zone D"))
 
 ref.points <- ref.points %>% 
-  mutate(area_FR = case_when(area == "SFA29A" ~ "ZPP29A",
-                             area == "SFA29B" ~ "ZPP29B",
-                             area == "SFA29C" ~ "ZPP29C",
-                             area == "SFA29D" ~ "ZPP29D"))
+  mutate(area = case_when(area == "SFA29A" ~ "Subarea A",
+                          area == "SFA29B" ~ "Subarea B",
+                          area == "SFA29C" ~ "Subarea C",
+                          area == "SFA29D" ~ "Subarea D")) |> 
+  mutate(area_FR = case_when(area == "Subarea A" ~ "Sous-zone A",
+                             area == "Subarea B" ~ "Sous-zone B",
+                             area == "Subarea C" ~ "Sous-zone C",
+                             area == "Subarea D" ~ "Sous-zone D"))
 
 ref.points.2 <- ref.points.2 %>% 
-  mutate(area_FR = case_when(area == "SFA29A" ~ "ZPP29A",
-                             area == "SFA29B" ~ "ZPP29B",
-                             area == "SFA29C" ~ "ZPP29C",
-                             area == "SFA29D" ~ "ZPP29D"))
+  mutate(area = case_when(area == "SFA29A" ~ "Subarea A",
+                          area == "SFA29B" ~ "Subarea B",
+                          area == "SFA29C" ~ "Subarea C",
+                          area == "SFA29D" ~ "Subarea D")) |> 
+  mutate(area_FR = case_when(area == "Subarea A" ~ "Sous-zone A",
+                             area == "Subarea B" ~ "Sous-zone B",
+                             area == "Subarea C" ~ "Sous-zone C",
+                             area == "Subarea D" ~ "Sous-zone D"))
 
 #Create for DMSY, USR, LRP labels
 anno <- data.frame(Year = c(2017.1,2017.1,2017.1),
                    BM.dens = c(4.8,2.3,1.0),
                    lab = c("Dmsy","USR","LRP"),
-                   area = c("SFA29D","SFA29D","SFA29D"), 
-                   area_FR = c("ZPP29D","ZPP29D","ZPP29D"),
+                   area = c("Subarea D","Subarea D","Subarea D"), 
+                   area_FR = c("Sous-zone D","Sous-zone D","Sous-zone D"),
                    Habitat = factor(c("High","High","High"),levels = c("Low" , "Med" , "High")))
 
 #PLOT
@@ -200,19 +212,19 @@ ggsave(filename = paste0(path.directory,"/",yr,"/Assessment/Figures/Model/Commer
 
 # EN FRANCAIS!!! - Check translation for DMSY LRP, USR
 #MSY = RMD - un rendement maximal durable
-#LRP = PRI - les points de référence inférieurs
-#USR = PRS - les points de référence supérieurs
+#LRP = PRI - les points de r?f?rence inf?rieurs
+#USR = PRS - les points de r?f?rence sup?rieurs
 
 ggplot(dat.all,aes(Year,BM.dens,colour = Habitat)) + 
   geom_hline(aes(yintercept = ref.pt),ref.points.2,linetype=c(rep("solid",3), rep("dashed",3), rep("dotdash",3)), colour = c(rep("red",3),rep("black",3),rep("blue",3))) +
   geom_line(aes(Year,BM.dens,colour = Habitat,linetype=Habitat)) + 
   geom_point(aes(Year,BM.dens,colour = Habitat,shape=Habitat))+
   facet_wrap(~area_FR,nrow=1) +
-  xlab("Année") + ylab(expression (paste("Densité de la biomasse (chairs, t/ ", km^{2}, ")"))) + #ggtitle("SFA29 Modelled Biomass Density") +
+  xlab("AnnÃ©e") + ylab(expression (paste("DensitÃ© de la biomasse (chairs, t/ ", km^{2}, ")"))) + #ggtitle("SFA29 Modelled Biomass Density") +
   theme_bw() + theme(panel.grid=element_blank()) +
-  scale_color_manual(values=colr, breaks = c("High", "Med", "Low"),labels = c("High"="Elevé", "Med"="Moyen", "low"="Faible")) +
-  scale_linetype_manual(values = line.type, breaks = c("High", "Med", "Low"),labels = c("High"="Elevé", "Med"="Moyen", "low"="Faible")) +
-  scale_shape_manual(values = symbs, breaks = c("High", "Med", "Low"),labels = c("High"="Elevé", "Med"="Moyen", "low"="Faible"))+
+  scale_color_manual(values=colr, breaks = c("High", "Med", "Low"),labels = c("High"="ElevÃ©", "Med"="Moyen", "low"="Faible")) +
+  scale_linetype_manual(values = line.type, breaks = c("High", "Med", "Low"),labels = c("High"="ElevÃ©", "Med"="Moyen", "low"="Faible")) +
+  scale_shape_manual(values = symbs, breaks = c("High", "Med", "Low"),labels = c("High"="ElevÃ©", "Med"="Moyen", "low"="Faible"))+
   theme_bw()+
   theme(legend.position="none", aspect.ratio=1.25) + 
   geom_text(data = anno,parse = TRUE, vjust = c(0.05, 0.7, 0.7), label = c(as.character(expression("D"["RMD"])),"PRS","PRI"), col=c('blue','black','red'))
@@ -256,7 +268,18 @@ ggplot(mod.summary[mod.summary$Year > 2001,],aes(Year,mu,colour = Habitat)) + ge
 
 #exploitation (legend on plot for SSR) A- Med, B,C,D - High only 
 #Saved in 2020 as "Model_ExploitationForDoc_v2CSAS.png"
-explot.data.plot <- rbind(mod.summary[mod.summary$area%in%c('SFA29A')&mod.summary$Habitat=="Med",], mod.summary[mod.summary$area%in%c('SFA29B','SFA29C','SFA29D')&mod.summary$Habita=="High",])
+
+mod.summary <- mod.summary %>% 
+  mutate(area = case_when(area == "SFA29A" ~ "Subarea A",
+                          area == "SFA29B" ~ "Subarea B",
+                          area == "SFA29C" ~ "Subarea C",
+                          area == "SFA29D" ~ "Subarea D")) |> 
+  mutate(area_FR = case_when(area == "Subarea A" ~ "Sous-zone A",
+                             area == "Subarea B" ~ "Sous-zone B",
+                             area == "Subarea C" ~ "Sous-zone C",
+                             area == "Subarea D" ~ "Sous-zone D"))
+
+explot.data.plot <- rbind(mod.summary[mod.summary$area%in%c('Subarea A')&mod.summary$Habitat=="Med",], mod.summary[mod.summary$area%in%c('Subarea B','Subarea C','Subarea D')&mod.summary$Habita=="High",])
 
 windows(6,5)
 ggplot(explot.data.plot[explot.data.plot$Year > 2001,],aes(Year,mu)) + geom_line(aes(group=Habitat, linetype = Habitat, color = Habitat), size = 0.75) + 
@@ -277,22 +300,18 @@ ggsave(filename = paste0(path.directory,"/",yr,"/Assessment/Figures/Model/Model_
 #mod.summary.FR$area <- factor(mod.summary.FR$area,levels=c("SFA29A","SFA29B","SFA29C","SFA29D"),
 #                       labels=c("ZPP29A","ZPP29B","ZPP29C","ZPP29D"))
 #mod.summary.FR$Habitat <- factor(mod.summary.FR$Habitat,levels=c("Low","Med","High"),
-#                             labels=c("Faible","Moyen","Elevé"))
+#                             labels=c("Faible","Moyen","Elev?"))
 
-mod.summary <- mod.summary %>% 
-  mutate(area_FR = case_when(area == "SFA29A" ~ "ZPP29A",
-                             area == "SFA29B" ~ "ZPP29B",
-                             area == "SFA29C" ~ "ZPP29C",
-                             area == "SFA29D" ~ "ZPP29D"))
-explot.data.plot <- rbind(mod.summary[mod.summary$area%in%c('SFA29A')&mod.summary$Habitat=="Med",], mod.summary[mod.summary$area%in%c('SFA29B','SFA29C','SFA29D')&mod.summary$Habita=="High",])
+
+explot.data.plot <- rbind(mod.summary[mod.summary$area%in%c('Subarea A')&mod.summary$Habitat=="Med",], mod.summary[mod.summary$area%in%c('Subarea B','Subarea C','Subarea D')&mod.summary$Habita=="High",])
 
 windows(6,5)
 ggplot(explot.data.plot[explot.data.plot$Year > 2001,],aes(Year,mu,colour = Habitat)) + geom_line(aes(group=Habitat, linetype = Habitat, color = Habitat), size = 0.75) + 
   geom_point(aes(group=Habitat, shape = Habitat, color = Habitat)) + facet_wrap(~area_FR, nrow=1) +
-  scale_color_manual(values=colr, breaks = c("High", "Med", "Low"),labels = c("High"="Elevé", "Med"="Moyen", "low"="Faible")) +
-  scale_linetype_manual(values = line.type, breaks = c("High", "Med", "Low"),labels = c("High"="Elevé", "Med"="Moyen", "low"="Faible")) +
-  scale_shape_manual(values = symbs, breaks = c("High", "Med", "Low"),labels = c("High"="Elevé", "Med"="Moyen", "low"="Faible"))+
-  xlab("Année") + ylab("Exploitation") + 
+  scale_color_manual(values=colr, breaks = c("High", "Med", "Low"),labels = c("High"="ElevÃ©", "Med"="Moyen", "low"="Faible")) +
+  scale_linetype_manual(values = line.type, breaks = c("High", "Med", "Low"),labels = c("High"="ElevÃ©", "Med"="Moyen", "low"="Faible")) +
+  scale_shape_manual(values = symbs, breaks = c("High", "Med", "Low"),labels = c("High"="ElevÃ©", "Med"="Moyen", "low"="Faible"))+
+  xlab("AnnÃ©e") + ylab("Exploitation") + 
   theme_bw() +
   theme(legend.position="none", aspect.ratio = 1.25)
   #theme(legend.title = element_blank(),legend.text = element_text(size=11), panel.grid=element_blank(), legend.position = c(0.9, 0.86))
@@ -332,7 +351,7 @@ ggplot(mod.summary,aes(Year,nat.m.prop,colour = Habitat))  + geom_line(aes(group
 
 
 #m - natural mortality of high (with 5-year mean)
-dat.all <- mod.summary[mod.summary$Habitat=="High" | mod.summary$area == "SFA29A" ,]
+dat.all <- mod.summary[mod.summary$Habitat=="High" | mod.summary$area == "Subarea A" ,]
 dat.all <- dat.all[dat.all$Habitat != "Low",]
 # 5-year mean for each area
 library (plyr)
@@ -374,18 +393,18 @@ ggplot(dat.all,aes(Year,nat.m.prop,colour = Habitat, linetype = Habitat))  + geo
 
 
 # EN FRANCAIS - Instantaneous mortality plot with 5 year mean and long term mean
-dat.all$area.fr <- factor(dat.all$area,levels=c("SFA29A","SFA29B","SFA29C","SFA29D"),
-                       labels=c("ZPP29A","ZPP29B","ZPP29C","ZPP29D"))
+dat.all$area.fr <- factor(dat.all$area,levels=c("Subarea A","Subarea B","Subarea C","Subarea D"),
+                       labels=c("Sous-zone A","Sous-zone B","Sous-zone C","Sous-zone D"))
 
-fyr_mean.instm$area.fr <- factor(fyr_mean.instm$area,levels=c("SFA29A","SFA29B","SFA29C","SFA29D"),
-                       labels=c("ZPP29A","ZPP29B","ZPP29C","ZPP29D"))
-lt_median.instm$area.fr <- factor(lt_median.instm$area,levels=c("SFA29A","SFA29B","SFA29C","SFA29D"),
-                       labels=c("ZPP29A","ZPP29B","ZPP29C","ZPP29D"))
+fyr_mean.instm$area.fr <- factor(fyr_mean.instm$area,levels=c("Subarea A","Subarea B","Subarea C","Subarea D"),
+                       labels=c("Sous-zone A","Sous-zone B","Sous-zone C","Sous-zone D"))
+lt_median.instm$area.fr <- factor(lt_median.instm$area,levels=c("Subarea A","Subarea B","Subarea C","Subarea D"),
+                       labels=c("Sous-zone A","Sous-zone B","Sous-zone C","Sous-zone D"))
 
-fyr_mean.propm$area.fr <- factor(fyr_mean.propm$area,levels=c("SFA29A","SFA29B","SFA29C","SFA29D"),
-                                 labels=c("ZPP29A","ZPP29B","ZPP29C","ZPP29D"))
-lt_median.propm$area.fr <- factor(lt_median.propm$area,levels=c("SFA29A","SFA29B","SFA29C","SFA29D"),
-                                  labels=c("ZPP29A","ZPP29B","ZPP29C","ZPP29D"))
+fyr_mean.propm$area.fr <- factor(fyr_mean.propm$area,levels=c("Subarea A","Subarea B","Subarea C","Subarea D"),
+                                 labels=c("Sous-zone A","Sous-zone B","Sous-zone C","Sous-zone D"))
+lt_median.propm$area.fr <- factor(lt_median.propm$area,levels=c("Subarea A","Subarea B","Subarea C","Subarea D"),
+                                  labels=c("Sous-zone A","Sous-zone B","Sous-zone C","Sous-zone D"))
 
 
 #Instantaneous mortality plot with 5 year mean and long term mean 
@@ -395,7 +414,7 @@ ggplot(dat.all,aes(Year,nat.m,colour = Habitat, linetype = Habitat))  + geom_lin
   scale_color_manual(values=colr, breaks = c("High", "Med", "Low")) +
   scale_linetype_manual(values = line.type, breaks = c("High", "Med", "Low")) +
   scale_shape_manual(values = symbs, breaks = c("High", "Med", "Low"))+
-  xlab("Année") + ylab("Mortalité naturelle (instantantané)") + #ggtitle("SFA29 Natural mortality") + 
+  xlab("AnnÃ©e") + ylab("MortalitÃ© naturelle (instantantanÃ©)") + #ggtitle("SFA29 Natural mortality") + 
   theme_bw() + theme(legend.position = "none", aspect.ratio=1.25) + 
   geom_segment(aes(x=min(dat.all$Year), xend=max(dat.all$Year)-1,y=ltmed,yend=ltmed),data=lt_median.instm,linetype=c("solid"), colour = c("black")) +
   geom_segment(aes(x=max(dat.all$Year)-4, xend=max(dat.all$Year), y= mean,yend= mean),data = fyr_mean.instm,linetype=c("dashed"), colour = c("black"))
@@ -409,7 +428,7 @@ ggplot(dat.all,aes(Year,nat.m.prop,colour = Habitat, linetype = Habitat))  + geo
   scale_color_manual(values=colr, breaks = c("High", "Med", "Low")) +
   scale_linetype_manual(values = line.type, breaks = c("High", "Med", "Low")) +
   scale_shape_manual(values = symbs, breaks = c("High", "Med", "Low"))+
-  xlab("Année") + ylab("Mortalité naturelle (proportionnel)") + #ggtitle("SFA29 Natural mortality") + 
+  xlab("AnnÃ©e") + ylab("MortalitÃ© naturelle (proportionnel)") + #ggtitle("SFA29 Natural mortality") + 
   theme_bw() + theme(legend.position = "none", aspect.ratio=1.25) + 
   geom_segment(aes(x=min(dat.all$Year), xend=max(dat.all$Year)-1,y=ltmed,yend=ltmed),data=lt_median.propm,linetype=c("solid"), colour = c("black")) +
   geom_segment(aes(x=max(dat.all$Year)-4, xend=max(dat.all$Year), y= mean,yend= mean),data = fyr_mean.propm,linetype=c("dashed"), colour = c("black"))

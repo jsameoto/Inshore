@@ -221,7 +221,6 @@ con.dat <- con.dat %>% dplyr::select(-X) %>%  #removes index column X
 	 mutate(lon = convert.dd.dddd(START_LONG)) %>% #Convert to DD
 	 unite(ID, c("CRUISE", "TOW_NO"), sep = ".", remove = FALSE)
 	
-	
 # For Meat Count plot:
 ScallopSurv.mtcnt <- ScallopSurv.kg %>% 
 	 dplyr::select(ID, year, lat, lon, com.bm) %>% 

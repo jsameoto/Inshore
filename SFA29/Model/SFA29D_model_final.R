@@ -38,8 +38,8 @@ source("Y:/Inshore/SFA29/2017/model/SFA29model9-2015.R") #contains the SFA29mode
 
 #DEFINE:
 path.directory <- "Y:/Inshore/SFA29/"
-assessmentyear <- 2023 #year in which you are conducting the assessment 
-surveyyear <- 2022  #last year of survey data you are using, e.g. if max year of survey is survey from summer 2019, this would be 2019 
+assessmentyear <- 2024 #year in which you are conducting the assessment 
+surveyyear <- 2023  #last year of survey data you are using, e.g. if max year of survey is survey from summer 2019, this would be 2019 
 area <- "SFA29D"  
 
 #yr <- year(Sys.Date()) # This should be set to the year after the year of the last survey.  e.g. if 2018 that means you are using the 2017 survey. This assumes you're running assessment in surveyyear + 1
@@ -102,9 +102,6 @@ strata <- c("low","med","high")
 growth.paras <- mod.dat %>% filter(Year == max(yrs) & Strata %in% strata) %>% select(Strata, gh) %>% arrange(match(Strata, c("low", "med", "high"))) %>% select(gh)
 growth.paras 
 
-
-
-
 ##
 #  --- Current year update ----
 ##
@@ -134,9 +131,9 @@ SFA29Ddata <- list(
 #### Run the model 
 
 D.mod.res <- SSModel(SFA29Ddata,SFA29.priors,inits.29D,parms=SFA29.parms,model.file=SFA29model,Years=yrs,
-                nchains=nchains,niter=niter,nburnin=nburnin,nthin=nthin,Area="SFA29W",e.parms=e.parms.29D,debug=F)
+                nchains=nchains,niter=niter,nburnin=nburnin,nthin=nthin,Area="SFA29W",e.parms=e.parms.29D,debug=T)
 
-
+#load(paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29D/SFA29D.",surveyyear,".RData"))
 mod.res <- D.mod.res
 # You want this to be a minimum of 400, if less than this you should increase your chain length
 min.neff <- min(mod.res$summary[,9])
@@ -377,7 +374,7 @@ dimnames(Decision.table)[[2]] <- names(summary(D.next.predict)$Next.year)
 
 # The decision table for next years fishing season...
 Decision.table <- NULL
-for(i in 1:20){
+for(i in 1:22){
   temp <- predict(D.mod.res,exploit=0.01*(i-1), g.parm=growth.paras$gh)
   # Get the Probability of being above the LRP, for Area B is this 1.12, for area C this is 1.41, and D is 1.30
   lrp <- signif(length(which(temp$Bh.next$High/temp$Area[3] >= 1.3))/length(temp$Bh.next$High),digits=2)
@@ -391,7 +388,6 @@ Dec.tab
 
 #Write decision table 
 write.csv(Dec.tab, paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29D/SFA29.D.mod.Decision.table.",surveyyear,".csv"), row.names = FALSE) 
-
 
 ### Optional ###
 # Decision table to predict max level exploitation risk
@@ -571,7 +567,7 @@ summary <- cbind(parameters, data.frame(summary, row.names=NULL))
 
 n <- 3
 years <- rep(2001:surveyyear, each=n)
-Habitat <- rep(c("Low", "Med", "High"), 22) #Need to fix this so new years are added.
+Habitat <- rep(c("Low", "Med", "High"), 23) #Need to fix this so new years are added.
 
 summary.Bh <- summary |>  filter(str_detect(summary$parameters, "^Bh"))
 summary.Bh$Year <- years

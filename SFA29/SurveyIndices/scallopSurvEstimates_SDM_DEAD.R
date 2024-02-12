@@ -1381,11 +1381,15 @@ sdm.levels <- sdm.levels %>%
   mutate(Mean = case_when(YEAR == 2020 ~ NA_real_, TRUE ~ Mean)) %>%
   mutate(Std.Err = case_when(YEAR == 2020 ~ NA_real_, TRUE ~ Std.Err)) %>%
   mutate(var.est = case_when(YEAR == 2020 ~ NA_real_, TRUE ~ var.est)) %>%
-  mutate(CV = case_when(YEAR == 2020 ~ NA_real_, TRUE ~ CV))
+  mutate(CV = case_when(YEAR == 2020 ~ NA_real_, TRUE ~ CV)) %>% 
+  mutate(SUBAREA = case_when(SUBAREA == "SFA29A" ~ "Subarea A",
+                             SUBAREA == "SFA29B" ~ "Subarea B",
+                             SUBAREA == "SFA29C" ~ "Subarea C",
+                             SUBAREA == "SFA29D" ~ "Subarea D"))
 
 
 ## Subarea A 
-A.number.per.tow <- ggplot(data = sdm.levels %>% filter(SUBAREA == "SFA29A" & Strata != "high"), aes(x=YEAR, y=Mean,  col=Strata, pch=Strata)) + 
+A.number.per.tow <- ggplot(data = sdm.levels %>% filter(SUBAREA == "Subarea A" & Strata != "high"), aes(x=YEAR, y=Mean,  col=Strata, pch=Strata)) + 
   geom_point() + 
   geom_line(aes(linetype = Strata)) + 
   facet_wrap(~group, ncol=1, labeller = size_names) +
@@ -1410,7 +1414,7 @@ ggsave(filename = paste0(path.directory, assessmentyear, "/Assessment/Figures/SF
 
 
 ## Subarea B 
-B.number.per.tow <- ggplot(data = sdm.levels %>% filter(SUBAREA == "SFA29B"), aes(x=YEAR, y=Mean,  col=Strata, pch=Strata)) + 
+B.number.per.tow <- ggplot(data = sdm.levels %>% filter(SUBAREA == "Subarea B"), aes(x=YEAR, y=Mean,  col=Strata, pch=Strata)) + 
   geom_point() + 
   geom_line(aes(linetype = Strata)) + 
   facet_wrap(~group, ncol=1, labeller = size_names) + 
@@ -1435,7 +1439,7 @@ ggsave(filename = paste0(path.directory, assessmentyear, "/Assessment/Figures/SF
 
 
 ## Subarea C 
-C.number.per.tow <- ggplot(data = sdm.levels %>% filter(SUBAREA == "SFA29C"), aes(x=YEAR, y=Mean,  col=Strata, pch=Strata)) + 
+C.number.per.tow <- ggplot(data = sdm.levels %>% filter(SUBAREA == "Subarea C"), aes(x=YEAR, y=Mean,  col=Strata, pch=Strata)) + 
   geom_point() + 
   geom_line(aes(linetype = Strata)) + 
   facet_wrap(~group, ncol=1, labeller = size_names) + 
@@ -1459,7 +1463,7 @@ ggsave(filename = paste0(path.directory, assessmentyear, "/Assessment/Figures/SF
 #dev.off()
 
 ## Subarea D 
-D.number.per.tow <- ggplot(data = sdm.levels %>% filter(SUBAREA == "SFA29D"), aes(x=YEAR, y=Mean,  col=Strata, pch=Strata)) + 
+D.number.per.tow <- ggplot(data = sdm.levels %>% filter(SUBAREA == "Subarea D"), aes(x=YEAR, y=Mean,  col=Strata, pch=Strata)) + 
   geom_point() + 
   geom_line(aes(linetype = Strata)) + 
   facet_wrap(~group, ncol=1, labeller = size_names) +
@@ -1483,7 +1487,7 @@ ggsave(filename = paste0(path.directory, assessmentyear, "/Assessment/Figures/SF
 #dev.off()
 
 ## All Subareas A-D Pre-recruits 
-AtoD.number.per.tow.prerec <- ggplot(data = sdm.levels %>% filter(!(SUBAREA == "SFA29A" & Strata == "high") & sdm.levels$size == "prerec"), aes(x=YEAR, y=Mean,  col=Strata, pch=Strata)) + 
+AtoD.number.per.tow.prerec <- ggplot(data = sdm.levels %>% filter(!(SUBAREA == "Subarea A" & Strata == "high") & sdm.levels$size == "prerec"), aes(x=YEAR, y=Mean,  col=Strata, pch=Strata)) + 
   geom_point() + 
   geom_line(aes(linetype = Strata)) +
   scale_color_manual(values=c('firebrick2', 'darkgrey', 'darkblue'), breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low"))+
@@ -1507,7 +1511,7 @@ ggsave(filename = paste0(path.directory, assessmentyear, "/Assessment/Figures/SF
 #dev.off()
 
 ## All Subareas A-D Recruits 
-AtoD.number.per.tow.rec <- ggplot(data = sdm.levels %>% filter(!(SUBAREA == "SFA29A" & Strata == "high") & sdm.levels$size == "rec"), aes(x=YEAR, y=Mean,  col=Strata, pch=Strata)) + 
+AtoD.number.per.tow.rec <- ggplot(data = sdm.levels %>% filter(!(SUBAREA == "Subarea A" & Strata == "high") & sdm.levels$size == "rec"), aes(x=YEAR, y=Mean,  col=Strata, pch=Strata)) + 
   geom_point() + 
   geom_line(aes(linetype = Strata)) +
   facet_wrap(~SUBAREA, ncol=2) + 
@@ -1533,7 +1537,7 @@ ggsave(filename = paste0(path.directory, assessmentyear, "/Assessment/Figures/SF
 
 
 ## All Subareas A-D Commercial  
-AtoD.number.per.tow.comm <- ggplot(data = sdm.levels %>% filter(!(SUBAREA == "SFA29A" & Strata == "high") & sdm.levels$size == "comm"), aes(x=YEAR, y=Mean,  col=Strata, pch=Strata)) + 
+AtoD.number.per.tow.comm <- ggplot(data = sdm.levels %>% filter(!(SUBAREA == "Subarea A" & Strata == "high") & sdm.levels$size == "comm"), aes(x=YEAR, y=Mean,  col=Strata, pch=Strata)) + 
   geom_point() + 
   geom_line(aes(linetype = Strata)) + 
   facet_wrap(~SUBAREA, ncol=2) +
@@ -1690,7 +1694,11 @@ prop.dead <- prop.dead %>%
   mutate(Live.no = case_when(YEAR == 2020 ~ NA_real_, TRUE ~ Live.no)) %>%
   mutate(Dead.no = case_when(YEAR == 2020 ~ NA_real_, TRUE ~ Dead.no)) %>%
   mutate(prop.dead = case_when(YEAR == 2020 ~ NA_real_, TRUE ~ prop.dead)) %>%
-  mutate(prop.dead.no.NAs = case_when(YEAR == 2020 ~ NA_real_, TRUE ~ prop.dead.no.NAs))
+  mutate(prop.dead.no.NAs = case_when(YEAR == 2020 ~ NA_real_, TRUE ~ prop.dead.no.NAs)) %>% 
+  mutate(SUBAREA = case_when(SUBAREA == "SFA29A" ~ "Subarea A",
+                             SUBAREA == "SFA29B" ~ "Subarea B",
+                             SUBAREA == "SFA29C" ~ "Subarea C",
+                             SUBAREA == "SFA29D" ~ "Subarea D"))
 
 #Commercial Size 	
 	XX <- prop.dead %>% filter(size=="comm") %>% 

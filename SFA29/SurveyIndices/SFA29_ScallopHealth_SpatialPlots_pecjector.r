@@ -38,8 +38,8 @@ uid <- keyring::key_list("Oracle")[1,2]
 pwd <- keyring::key_get("Oracle", uid)
 
 #set year 
-survey.year <- 2022  #removed maxyear in script and changed to survey year
-assessmentyear <- 2023 #year in which you are providing advice for- determines where to save files to
+survey.year <- 2023  #removed maxyear in script and changed to survey year
+assessmentyear <- 2024 #year in which you are providing advice for- determines where to save files to
 path.directory <- "Y:/Inshore/SFA29/"
 
 #set up directory to save plot

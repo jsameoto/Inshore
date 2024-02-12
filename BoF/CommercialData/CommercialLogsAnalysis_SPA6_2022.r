@@ -203,12 +203,8 @@
   cpue.fleet$cpue.kgh <- ifelse(cpue.fleet$n > 5, cpue.fleet$catch.dat.kg/cpue.fleet$effort.dat.hr, NA)
   
   #Landings by fleet:
-  landings <- as.data.frame(t(tacq[c(1,2,3,5),-1]))
-<<<<<<< HEAD
+  landings <- as.data.frame(t(tacq[c(1,2,4),-1]))
   names(landings) <- c("FB","MB","TAC")
-=======
-  names(landings) <- c("FB","MB","FSC", "TAC")
->>>>>>> 9c8329358cce6e810b9fbecdd8248e6c76d2dc99
   landings$year <- as.numeric(rownames(landings))
   
   #Convert landings data to long format
@@ -216,7 +212,7 @@
   
   #Combine landings with cpue
   catch.fishery.fleet <- landings[which(landings$year == fishingyear),]
-  catch.fishery.fleet <- catch.fishery.fleet[-c(3,4),]
+  catch.fishery.fleet <- catch.fishery.fleet[-3,]
   cpue.fleet <- cbind(cpue.fleet, catch.fishery.fleet)
   print(cpue.fleet)
   
@@ -229,7 +225,7 @@
   #Append current year data to CPUE_spa6_fleet
   comm.dat.fleet <- rbind(CPUE_spa6_fleet, cpue.fleet[,c("fleet", "year", "effort.dat.hr", "catch.dat.kg", "cpue.kgh", "catch.fleet.mt", "effort.fleet.1000h")])
   
-  #Save to current assessment folder
+  #Save to current asssessment folder
   write.csv(comm.dat.fleet, paste0(direct,"/",assessmentyear,"/Assessment/Data/CommercialData/CPUE_spa6_fleet_", fishingyear, ".csv"), row.names = FALSE)    
 
   
@@ -370,13 +366,13 @@
   #TAC and Landings
   ggplot() +
     theme_bw(base_size = 16) + theme(panel.grid=element_blank()) + # white background, no gridlines
-    geom_bar(data=landings[landings$variable%in%c('FSC','FB','MB'),], aes(year, catch.fleet.mt, fill=factor(variable, levels = c('FSC', 'FB','MB'))), colour="black", stat="identity") + 
+    geom_bar(data=landings[landings$variable%in%c('FB','MB'),], aes(year, catch.fleet.mt, fill=factor(variable, levels = c('FB', 'MB'))), colour="black", stat="identity") + 
     geom_line(data=landings[landings$variable == 'TAC',], aes(x = year, y = catch.fleet.mt), lwd = 1) +
     scale_y_continuous("Landings (meats, t)", breaks=seq(0,1200,200)) + # 
     scale_x_continuous("Year", breaks=seq(1976,fishingyear,4)) +
-    scale_fill_manual(values=c("black","white", "grey"), labels=c("Food, Social, and Ceremonial","Full Bay", "Mid-Bay"), name=NULL) +
+    scale_fill_manual(values=c("white", "grey"), labels=c("Full Bay", "Mid-Bay"), name=NULL) +
     annotate(geom="text",label="TAC", x=2003.4, y= 210) +
-    theme(legend.position=c(0.75, 0.85)) # play with the location if you want it inside the plotting panel
+    theme(legend.position=c(0.85, 0.85)) # play with the location if you want it inside the plotting panel
   ggsave(filename = paste0(direct, "/",assessmentyear,"/Assessment/Figures/CommercialData/SPA6_TACandLandings",fishingyear, ".png"), width = 24, height = 20, dpi = 400,units='cm')
   
   #PA Reference Point PLOT
@@ -404,7 +400,7 @@
     theme_bw(base_size = 20) + theme(panel.grid=element_blank()) + 
     geom_point(aes(x = year, y = cpue.kgh)) +
     geom_line(aes(x = year, y = cpue.kgh)) +
-    scale_y_continuous("Catch rate (kg/h)", limits=c(0,30), breaks=seq(0,30,5)) +
+    scale_y_continuous("Catch rate (kg/h)", limits=c(0,35), breaks=seq(0,35,5)) +
     scale_x_continuous("Year", breaks=seq(2002,fishingyear,2)) # +
    # geom_hline(yintercept = 6.2, linetype = "dashed") +
   #  geom_hline(yintercept = 9.1, linetype = "dashed") +
