@@ -59,13 +59,13 @@ check.tows.spatial <- function(cruise="BF2017", direct="Y:/Inshore/Survey/", pre
   
   # this reads the tow file from the desktop if desktop path is specified, or from Y: if no desktop path provided
   if(desktop=="NULL" & !df=="TRUE"){
-    bftows <- read.csv(paste0(direct, year, "/data entry templates and examples/", cruise, "/", cruise, "tow_CONVERTED.csv"))}
+    bftows <- read.csv(paste0(direct, year, "/DataEntry/", cruise, "/", cruise, "tow_CONVERTED.csv"))}
   if(!desktop=="NULL" & !df=="TRUE")
     bftows <- read.csv(paste0(desktop, cruise, "tow_CONVERTED.csv"))
   
   # this reads the tow file from the desktop if desktop path is specified, or from Y: if no desktop path provided
   if(desktop=="NULL" & df=="TRUE"){
-    bftows <- read.csv(paste0(direct, year, "/data entry templates and examples/", cruise, "/", cruise, "tow_CONVERTED.csv"))
+    bftows <- read.csv(paste0(direct, year, "/DataEntry/", cruise, "/", cruise, "tow_CONVERTED.csv"))
     assign(paste0("tows_", cruise), bftows, env=.GlobalEnv)}
   if(!desktop=="NULL" & df=="TRUE"){
     bftows <- read.csv(paste0(desktop, cruise, "_tow.csv"))
@@ -124,7 +124,7 @@ check.tows.spatial <- function(cruise="BF2017", direct="Y:/Inshore/Survey/", pre
         plot.list[[i]] <- p
       }
       
-      pdf(paste0(direct, year, "/data entry templates and examples/", cruise, "/", cruise, "_strata_check.pdf"),onefile=T,width=22,height=12)
+      pdf(paste0(direct, year, "/DataEntry/", cruise, "/", cruise, "_strata_check.pdf"),onefile=T,width=22,height=12)
       print(plot.list)
       dev.off()
     }
@@ -161,7 +161,7 @@ check.tows.spatial <- function(cruise="BF2017", direct="Y:/Inshore/Survey/", pre
   }
   
   if(desktop=="NULL"){
-    write.csv(flagged.tows, paste0(direct, year, "/data entry templates and examples/", cruise, "/", cruise, "_flagged_tows.csv"))
+    write.csv(flagged.tows, paste0(direct, year, "/DataEntry/", cruise, "/", cruise, "_flagged_tows.csv"))
   }
   if(!desktop=="NULL"){
     write.csv(flagged.tows, paste0(desktop, cruise, "_flagged_tows.csv"))
@@ -224,7 +224,7 @@ check.tows.spatial <- function(cruise="BF2017", direct="Y:/Inshore/Survey/", pre
         plot.list[[i]] <- p
       }
       
-      pdf(paste0(direct, year, "/data entry templates and examples/", cruise, "/", cruise, "_SPA_check.pdf"),onefile=T,width=22,height=12)
+      pdf(paste0(direct, year, "/DataEntry/", cruise, "/", cruise, "_SPA_check.pdf"),onefile=T,width=22,height=12)
       print(plot.list)
       dev.off()
     }
@@ -348,7 +348,7 @@ check.tows.spatial <- function(cruise="BF2017", direct="Y:/Inshore/Survey/", pre
         coord_map() +
         xlim(-67.2, -66.4) +
         ylim(44.4, 45.1)
-      pdf(paste0(direct, year, "/data entry templates and examples/", cruise, "/", cruise, "_VMS_check.pdf"),onefile=T,width=22,height=12)
+      pdf(paste0(direct, year, "/DataEntry/", cruise, "/", cruise, "_VMS_check.pdf"),onefile=T,width=22,height=12)
       print(p)
       dev.off()
     } 
@@ -437,7 +437,7 @@ check.tows.spatial <- function(cruise="BF2017", direct="Y:/Inshore/Survey/", pre
     }
     
     if(desktop=="NULL"){
-      write.csv(VMS.test, paste0(direct, year, "/data entry templates and examples/", cruise, "/", cruise, "VMS_strata.csv"))
+      write.csv(VMS.test, paste0(direct, year, "/DataEntry/", cruise, "/", cruise, "VMS_strata.csv"))
     }
     
     if(!desktop=="NULL"){
@@ -493,7 +493,7 @@ check.tows.spatial <- function(cruise="BF2017", direct="Y:/Inshore/Survey/", pre
         plot.list[[i]] <- p
       }
       
-      pdf(paste0(direct, year, "/data entry templates and examples/", cruise, "/", cruise, "_repeat_check.pdf"),onefile=T,width=22,height=12)
+      pdf(paste0(direct, year, "/DataEntry/", cruise, "/", cruise, "_repeat_check.pdf"),onefile=T,width=22,height=12)
       print(plot.list)
       dev.off()
     }
