@@ -40,7 +40,7 @@ check.tows.spatial <- function(cruise="BF2017", direct="Y:/Inshore/Survey/", pre
   #####
   
   # grab the strata polygons file. this was downloaded from database on August 29, 2017 and saved to Y:
-  strata <<- read.csv(paste0(direct, "/entry check functions/SCSTRATAINFO_August2017.csv"))
+  strata <<- read.csv(paste0(direct, "DataEntry/Data_entry_checks/archive/SCSTRATAINFO_August2017.csv"))
   # this creates strata labels
   strata_lab <- ddply(.data=strata, .(STRATA_ID, DESCRIPTION, AREA),
                       summarize,
@@ -48,7 +48,7 @@ check.tows.spatial <- function(cruise="BF2017", direct="Y:/Inshore/Survey/", pre
                       LATITUDE = mean(LATITUDE))
   
   # grab the Authoritative SPA polygons file. These polygons were created by Leslie Nasmith in 2014 and is saved on the Y drive as a CSV in August 2017.
-  area <<- read.csv(paste0(direct, "/entry check functions/BayofFundyFishingBoundaries_WGS84.csv"))
+  area <<- read.csv(paste0(direct,"DataEntry/Data_entry_checks/archive/BayofFundyFishingBoundaries_WGS84.csv"))
   area$AREA_ID <<- parse_number(area$Area)
   # this creates strata labels
   area_lab <- ddply(.data=area, .(AREA_ID, Area),
