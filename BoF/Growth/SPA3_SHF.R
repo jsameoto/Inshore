@@ -30,14 +30,14 @@ for(fun in funcs)
 # ///.... DEFINE THESE ENTRIES ....////
 
 # Define:
-uid <- keyring::key_list("Oracle")[1,2]
-pwd <- keyring::key_get("Oracle", uid)
-#uid <- un.sameotoj
-#pwd <- pw.sameotoj
-surveyyear <- 2023  #This is the last survey year 
-assessmentyear <- 2023 #year in which you are conducting the survey 
+#uid <- keyring::key_list("Oracle")[1,2]
+#pwd <- keyring::key_get("Oracle", uid)
+uid <- un.sameotoj
+pwd <- pw.sameotoj
+surveyyear <- 2024  #This is the last survey year 
+assessmentyear <- 2024 #year in which you are conducting the survey 
 area <- "3"  #SPA assessing recall SPA 1A, 1B, and 4 are grouped; options: "1A1B4and5", "3", "6" 
-cruise <- "'BI2023'"
+cruise <- "'BI2024'"
 path.directory <- "Y:/Inshore/BoF/"
 
 #polygon to for assingning new strata to data #To bring in sf object from Github eventually - will need to identify in and out VMS data points.
@@ -480,8 +480,8 @@ crossref.spa3<-merge (crossref.spa3, subset (BIlivefreq.dat, select=c("STRATA_ID
 
 #subset for years
 tows<-c(1,5)
-livefreq2021<-subset (BIlivefreq.dat, YEAR==2021 & TOW_TYPE_ID%in%tows)
-livefreq2022<-subset (BIlivefreq.dat, YEAR==2022 & TOW_TYPE_ID%in%tows)
+livefreq.before<-subset (BIlivefreq.dat, YEAR==2023 & TOW_TYPE_ID%in%tows)
+livefreq.after<-subset (BIlivefreq.dat, YEAR==2024 & TOW_TYPE_ID%in%tows)
 
 #....................
 #. SMB TOWS (StrataID 22) crossref.spa3[crossref.spa3$STRATA_ID==22,]
@@ -489,8 +489,8 @@ livefreq2022<-subset (BIlivefreq.dat, YEAR==2022 & TOW_TYPE_ID%in%tows)
 before<-crossref.spa3$TOW_NO_REF[crossref.spa3$STRATA_ID==22] # update  # year t-1 
 after<-crossref.spa3$TOW_NO[crossref.spa3$STRATA_ID==22] # update  # year t 
 
-data.before<-livefreq2021 #update year t-1
-data.after<-livefreq2022  #update year t
+data.before<-livefreq.before #update year t-1
+data.after<-livefreq.after  #update year t
 
 SMB.before<-subset (data.before, TOW_NO%in%before)
 SMB.after<-subset (data.after, TOW_NO%in%after)
@@ -505,7 +505,10 @@ data.year<-SMB.aftermeans #In.aftermeans, SMB.aftermeans, out.aftermeans
 year <- surveyyear-1 #Update year t-1
 tows <- length(after) 
 
-windows()
+
+png(paste0(path.directory,assessmentyear, "/Assessment/Figures/SPA3_smb_repeats_SHF.png"), type="cairo", width=20, height=15, units = "cm", res=400)
+
+#windows()
 par(mfrow=c(2, 1), mar = c(2,2,0,0), omi =  c(0.75, 0.75, 0.1, 0.1), plt=c(0.1,1,0.1,1))
 
 barplot(data.ref[1:35],xaxt="n",ylab="",xlab=" ",ylim=y.lim)
@@ -522,6 +525,8 @@ axis(side=1,at=a[seq(1,35,by=2)],labels=seq(2.5,172.5,by=10),outer=F)
 mtext(side=1,line=2.5,"Shell height (mm)",outer=TRUE)
 mtext("Survey mean no./tow", 2, -1, outer = T)
 
+dev.off()
+
 
 #....................
 #.  Inside VMS (StrataID 99) crossref.spa3[crossref.spa3$STRATA_ID==99,]
@@ -529,8 +534,8 @@ mtext("Survey mean no./tow", 2, -1, outer = T)
 before<-crossref.spa3$TOW_NO_REF[crossref.spa3$STRATA_ID==99] # update  # year t-1 
 after<-crossref.spa3$TOW_NO[crossref.spa3$STRATA_ID==99] # update  # year t 
 
-data.before<-livefreq2021 #update year t-1
-data.after<-livefreq2022  #update year t
+data.before<-livefreq.before #update year t-1
+data.after<-livefreq.after  #update year t
 
 In.Before<-subset (data.before, TOW_NO%in%before)
 In.After<-subset (data.after, TOW_NO%in%after)
@@ -543,10 +548,13 @@ In.aftermeans<-sapply(split(In.After[c(11:50)], In.After$YEAR), function(x){appl
 y.lim <-c(0,50)
 data.ref<-In.beforemeans #In.beforemeans  ,  SMB.beforemeans   , out.beforemeans
 data.year<-In.aftermeans #In.aftermeans, SMB.aftermeans, out.aftermeans
-year <- 2021 #Update as year t-1
+year <- 2023 #Update as year t-1
 tows <- length(after) #Update length(after)
 
-windows()
+
+png(paste0(path.directory,assessmentyear, "/Assessment/Figures/SPA3_InnerVMS_repeats_SHF.png"), type="cairo", width=20, height=15, units = "cm", res=400)
+
+#windows()
 par(mfrow=c(2, 1), mar = c(2,2,0,0), omi =  c(0.75, 0.75, 0.1, 0.1), plt=c(0.1,1,0.1,1))
 
 barplot(data.ref[1:35],xaxt="n",ylab="",xlab=" ",ylim=y.lim)
@@ -563,6 +571,7 @@ axis(side=1,at=a[seq(1,35,by=2)],labels=seq(2.5,172.5,by=10),outer=F)
 mtext(side=1,line=2.5,"Shell height (mm)",outer=TRUE)
 mtext("Survey mean no./tow", 2, -1, outer = T)
 
+dev.off()
 
 #....................
 #.  oUTVMS (StrataID 23 OR 24) crossref.spa3[crossref.spa3$STRATA_ID%in%c(23,24),]
@@ -571,8 +580,8 @@ mtext("Survey mean no./tow", 2, -1, outer = T)
 before<-crossref.spa3$TOW_NO_REF[crossref.spa3$STRATA_ID%in%c(23,24)] # update  # year t-1 
 after<-crossref.spa3$TOW_NO[crossref.spa3$STRATA_ID%in%c(23,24)] # update  # year t 
 
-data.before<-livefreq2021 #update year t-1
-data.after<-livefreq2022  #update yeaer t
+data.before<-livefreq.before #update year t-1
+data.after<-livefreq.after  #update yeaer t
 
 out.before<-subset (data.before, TOW_NO%in%before)
 out.after<-subset (data.after, TOW_NO%in%after)
@@ -586,10 +595,12 @@ out.aftermeans<-sapply(split(out.after[c(11:50)], out.after$YEAR), function(x){a
 y.lim <-c(0,50)
 data.ref<-out.beforemeans #In.beforemeans  ,  SMB.beforemeans   , out.beforemeans
 data.year<-out.aftermeans #In.aftermeans, SMB.aftermeans, out.aftermeans
-year <- 2022 #Update year t-1
+year <- 2023 #Update year t-1
 tows <- length(after) 
 
-windows()
+png(paste0(path.directory,assessmentyear, "/Assessment/Figures/SPA3_OuterVMS_repeats_SHF.png"), type="cairo", width=20, height=15, units = "cm", res=400)
+
+#windows()
 par(mfrow=c(2, 1), mar = c(2,2,0,0), omi =  c(0.75, 0.75, 0.1, 0.1), plt=c(0.1,1,0.1,1))
 
 barplot(data.ref[1:35],xaxt="n",ylab="",xlab=" ",ylim=y.lim)
@@ -605,6 +616,8 @@ text (30, y.lim[2]-3, paste ("N tows", tows, sep=" :"))
 axis(side=1,at=a[seq(1,35,by=2)],labels=seq(2.5,172.5,by=10),outer=F)
 mtext(side=1,line=2.5,"Shell height (mm)",outer=TRUE)
 mtext("Survey mean no./tow", 2, -1, outer = T)
+
+dev.off()
 
 
 #Save out required objects to be saved only 
