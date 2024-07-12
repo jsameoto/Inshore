@@ -11,21 +11,24 @@
 #required packages
 library(tidyverse)
 library(ROracle)
-library (lme4)
+library(lme4)
 library(lattice)
 require(data.table)
 library(lubridate)
 
+##(1) running (e.g.) example(lmer) with a fresh install of Matrix 1.6.4 from source fails with the error above, (2) a fresh install.packages("lme4", type = "source") resolves the problem.
+#install.packages("lme4", type = "source")
+
 # Define: 
-#uid <- un.sameotoj
-#pwd <- pw.sameotoj
-uid <- keyring::key_list("Oracle")[1,2]
-pwd <- keyring::key_get("Oracle", uid)
+uid <- un.sameotoj
+pwd <- pw.sameotoj
+#uid <- keyring::key_list("Oracle")[1,2]
+#pwd <- keyring::key_get("Oracle", uid)
 
-surveyyear <- 2023  #This is the last survey year for which you want to include  - not should match year of cruise below 
-cruise <- "BI2023"  #note should match year for surveyyear set above 
+surveyyear <- 2024  #This is the last survey year for which you want to include  - not should match year of cruise below 
+cruise <- "BI2024"  #note should match year for surveyyear set above 
 
-assessmentyear <- 2023 #year in which you are conducting the survey 
+assessmentyear <- 2024 #year in which you are conducting the survey 
 area <- "3"  #SPA assessing recall SPA 1A, 1B, and 4 are grouped; options: "1A1B4and5", "3", "6" 
 path.directory <- "Y:/Inshore/BoF/"
 
@@ -109,7 +112,7 @@ summary(test.data)
 
 #plot depths by tow
 png(paste0(path.directory, assessmentyear, "/Assessment/Figures/Growth/BItowdepth",surveyyear,".png")) #!!!DEFINE
-plot (ADJ_DEPTH~TOW_NO, data=test.data)
+plot(ADJ_DEPTH~TOW_NO, data=test.data)
 dev.off()
 
 #run model
@@ -186,6 +189,30 @@ rm(pw.sameotoj)
 #NEW - save only the objects we need later
 save(MWTSHBI.YYYY, latt, liveweightYYYY, BIdetailYYYY, BIlivefreq, livefreqYYYY,
      file=paste0(path.directory, assessmentyear, "/Assessment/Data/Growth/SPA",area,"/BIgrowth",surveyyear,".RData"))
+
+# ---- MWSH Figure April 2024 JS 
+Log.height.ctr
+#predict at each SH bin mid point 
+
+pred.log.depth.ctr <- log(abs(-47.63)) - mean(test.data$Log.DEPTH)
+
+
+pred.weight.fixed <- as.vector(predict(MWTSHBI.YYYY,newdata=data.frame(Log.HEIGHT.CTR=Log.height.ctr,Log.DEPTH.CTR=rep(pred.log.depth.ctr,length(Log.height.ctr))),re.form=~0,type="response"))
+
+pred.weight.fixed <- data.frame(height =seq(2.5, 197.5, by = 5) , weight = pred.weight.fixed)
+pred.weight.fixed
+pred.weight.fixed <- pred.weight.fixed[pred.weight.fixed$height < 175,]
+
+library(ggplot2)
+ggplot(data = test.data, aes(x = HEIGHT, y = WET_MEAT_WGT, alpha = 0.5)) + 
+  geom_point() + 
+  geom_line(data =pred.weight.fixed,aes(x = height, y = weight  ), size = 1.5, col='blue')  + 
+  ylab("Meat weight (g)") + 
+  xlab("Shell height (mm)") + 
+  theme_bw()
+
+
+
 
 
 # ----  Condition for Spatial Map ----
@@ -276,7 +303,7 @@ BI.con.ts <- BI.con.ts %>% group_by(STRATA) %>%
   arrange(STRATA, YEAR) %>% 
   ungroup()
 
-BI.con.ts
+BI.con.ts %>% print(n=Inf)
 
 write.csv(BI.con.ts, paste0(path.directory, assessmentyear, "/Assessment/Data/SurveyIndices/SPA",area,"/SPA3_ConditionTimeSeries.csv"))
 
