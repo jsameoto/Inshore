@@ -36,11 +36,11 @@ outvms <- read.csv("Y:/Inshore/BoF/2015/SPA6/Survey/SPA6_VMS_OUT_R_final_MOD.csv
 # Define: 
 uid <- un.sameotoj
 pwd <- pw.sameotoj
-uid <- keyring::key_list("Oracle")[1,2]
-pwd <- keyring::key_get("Oracle", uid)
+#uid <- keyring::key_list("Oracle")[1,2]
+#pwd <- keyring::key_get("Oracle", uid)
 
-surveyyear <- 2023  #This is the last survey year 
-assessmentyear <- 2023 #year in which you are conducting the survey 
+surveyyear <- 2024  #This is the last survey year 
+assessmentyear <- 2024 #year in which you are conducting the survey 
 area <- "6"  #SPA assessing recall SPA 1A, 1B, and 4 are grouped; options: "1A1B4and5", "3", "6" 
 path.directory <- "Y:/Inshore/BoF/"
 
@@ -476,6 +476,16 @@ spr.est[spr.est$Year==2023,c(2:3)] <- c(K$Yspr, K$var.Yspr.corrected)
 
 #plot(test.2023)
 
+
+#2023/2024 
+test.2024 <- spr(GMlivefreq2023$TOW_NO[GMlivefreq2023$VMSAREA==STRATA.ID],apply(GMlivefreq2023[GMlivefreq2023$VMSAREA==STRATA.ID,24:50],1,sum),
+                 GMlivefreq2024$TOW_NO[GMlivefreq2024$VMSAREA==STRATA.ID],apply(GMlivefreq2024[GMlivefreq2024$VMSAREA==STRATA.ID,27:50],1,sum),
+                 crossref.GM.2024[crossref.GM.2024$VMSAREA==STRATA.ID,c("TOW_NO_REF","TOW_NO")])
+K <- summary(test.2024, summary(test.2023, summary(test.2022, summary(test.2021, summary (test.2019,summary (test.2018,summary (test.2017,summary(test.2016,summary(test.2015, summary(test.2014, summary(test.2013, summary(test.2012, summary(test.2011, summary(test.2010, summary(test.2009, summary (test.2008, summary(test.2007,summary(test.2006))))))))))))))))))   #
+spr.est[spr.est$Year==2024,c(2:3)] <- c(K$Yspr, K$var.Yspr.corrected)
+
+#plot(test.2024)
+
 spr.est
 
 #in 2020 had no survey to linear interpolation from SPR estimate (note very different result from simple estimate)
@@ -634,6 +644,15 @@ rec.2023 <- spr(GMlivefreq2022$TOW_NO[GMlivefreq2022$VMSAREA==STRATA.ID],apply(G
                 crossref.GM.2023[crossref.GM.2023$VMSAREA==STRATA.ID,c("TOW_NO_REF","TOW_NO")])
 K <- summary(rec.2023, summary(rec.2022, summary(rec.2021, summary (rec.2019,summary (rec.2018,summary (rec.2017,summary (rec.2016, summary(rec.2015,summary(rec.2014, (summary(rec.2013, summary(rec.2012, summary(rec.2011, summary(rec.2010, summary(rec.2009,summary(rec.2008, summary(rec.2007,summary(rec.2006))))))))))))))))))  #
 spr.est.rec[spr.est.rec$Year==2023,c(2:3)] <- c(K$Yspr, K$var.Yspr.corrected)
+
+#2023/2024
+rec.2024 <- spr(GMlivefreq2023$TOW_NO[GMlivefreq2023$VMSAREA==STRATA.ID],apply(GMlivefreq2023[GMlivefreq2023$VMSAREA==STRATA.ID,21:23],1,sum),
+                GMlivefreq2024$TOW_NO[GMlivefreq2024$VMSAREA==STRATA.ID],apply(GMlivefreq2024[GMlivefreq2024$VMSAREA==STRATA.ID,24:26],1,sum),
+                crossref.GM.2024[crossref.GM.2024$VMSAREA==STRATA.ID,c("TOW_NO_REF","TOW_NO")])
+K <- summary(rec.2024,summary(rec.2023, summary(rec.2022, summary(rec.2021, summary (rec.2019,summary (rec.2018,summary (rec.2017,summary (rec.2016, summary(rec.2015,summary(rec.2014, (summary(rec.2013, summary(rec.2012, summary(rec.2011, summary(rec.2010, summary(rec.2009,summary(rec.2008, summary(rec.2007,summary(rec.2006)))))))))))))))))))  #
+spr.est.rec[spr.est.rec$Year==2024,c(2:3)] <- c(K$Yspr, K$var.Yspr.corrected)
+
+
 
 spr.est.rec
 
@@ -800,6 +819,15 @@ K <-  summary(A6comcf.2023, summary(A6comcf.2022, summary(A6comcf.2021, summary 
 spr.est.wt[spr.est.wt$Year==2023,c(2:3)] <- c(K$Yspr, K$var.Yspr.corrected)
 
 #plot(A6comcf.2023)
+
+#2023/2024
+A6comcf.2024 <- spr(spa6shw2023$TOW_NO[spa6shw2023$VMSAREA==STRATA.ID],apply(spa6shw2023[spa6shw2023$VMSAREA==STRATA.ID,24:50],1,sum),
+                    spa6shw2024$TOW_NO[spa6shw2024$VMSAREA==STRATA.ID],apply(spa6shw2024[spa6shw2024$VMSAREA==STRATA.ID,27:50],1,sum),
+                    crossref.GM.2024[crossref.GM.2024$VMSAREA==STRATA.ID,c("TOW_NO_REF","TOW_NO")])
+K <-  summary(A6comcf.2024,summary(A6comcf.2023, summary(A6comcf.2022, summary(A6comcf.2021, summary (A6comcf.2019,summary (A6comcf.2018,summary (A6comcf.2017,summary (A6comcf.2016, summary(A6comcf.2015 ,summary(A6comcf.2014, summary (A6comcf.2013, summary (A6comcf.2012, summary (A6comcf.2011,summary (A6comcf.2010, summary (A6comcf.2009, summary (A6comcf.2008, summary (A6comcf.2007,summary (A6comcf.2006)))))))))))))))))) 
+spr.est.wt[spr.est.wt$Year==2024,c(2:3)] <- c(K$Yspr, K$var.Yspr.corrected)
+
+#plot(A6comcf.2024)
 
 spr.est.wt
 
@@ -968,6 +996,15 @@ K <- summary(Areccf.2023 ,summary(Areccf.2022 , summary(Areccf.2021 , summary (A
 spr.est.rec.wt[spr.est.rec.wt$Year==2023,c(2:3)] <- c(K$Yspr, K$var.Yspr.corrected)
 
 #plot(Areccf.2022)
+
+#2023/2024 spr  
+Areccf.2024 <- spr(spa6shw2023$TOW_NO[spa6shw2023$VMSAREA==STRATA.ID],apply(spa6shw2023[spa6shw2023$VMSAREA==STRATA.ID,21:23],1,sum),
+                   spa6shw2024$TOW_NO[spa6shw2024$VMSAREA==STRATA.ID],apply(spa6shw2024[spa6shw2024$VMSAREA==STRATA.ID,24:26],1,sum),
+                   crossref.GM.2024[crossref.GM.2024$VMSAREA==STRATA.ID,c("TOW_NO_REF","TOW_NO")])
+K <- summary(Areccf.2024,summary(Areccf.2023, summary(Areccf.2022 , summary(Areccf.2021 , summary (Areccf.2019,summary (Areccf.2018,summary (Areccf.2017, summary (Areccf.2016, summary(Areccf.2015, summary(Areccf.2014 , summary (Areccf.2013, summary (Areccf.2012, summary(Areccf.2011, summary (Areccf.2010, summary (Areccf.2009, summary (Areccf.2008, summary (Areccf.2007,summary (Areccf.2006))))))))))))))))))
+spr.est.rec.wt[spr.est.rec.wt$Year==2024,c(2:3)] <- c(K$Yspr, K$var.Yspr.corrected)
+
+#plot(Areccf.2024)
 
 spr.est.rec.wt
 

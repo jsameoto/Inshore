@@ -16,14 +16,14 @@ library(ROracle)
 # Define: 
 uid <- un.sameotoj
 pwd <- pw.sameotoj
-uid <- keyring::key_list("Oracle")[1,2]
-pwd <- keyring::key_get("Oracle", uid)
+#uid <- keyring::key_list("Oracle")[1,2]
+#pwd <- keyring::key_get("Oracle", uid)
 
 
-surveyyear <- 2023  #This is the last survey year for which you want to include  - not should match year of cruise below 
-cruise <- "GM2023"  #note should match year for surveyyear set above 
+surveyyear <- 2024  #This is the last survey year for which you want to include  - not should match year of cruise below 
+cruise <- "GM2024"  #note should match year for surveyyear set above 
 
-assessmentyear <- 2023 #year in which you are conducting the survey 
+assessmentyear <- 2024 #year in which you are conducting the survey 
 area <- "6"  #SPA assessing recall SPA 1A, 1B, and 4 are grouped; options: "1A1B4and5", "3", "6" 
 path.directory <- "Y:/Inshore/BoF/"
 
@@ -229,7 +229,7 @@ p.curve.fixed <- cbind(p.curve.fixed, age=predict.age$AGE, upper, lwr)
 vonB.GM.95CI <- ggplot() + 
   #geom_point(data=GMdetail.vonB, aes(AGE, HEIGHT), size=1.6, alpha=0.3) +
   geom_jitter(data=GMdetail.vonB, aes(AGE, HEIGHT), size=1.6, alpha=0.1) + 
-  geom_line(data=p.curve.fixed, aes(AGE, predict.fixed), colour="blue", lwd=2, show.legend = F) +
+  geom_line(data=p.curve.fixed, aes(AGE, predict.fixed), colour="blue", linewidth = 2, show.legend = F) +
   geom_ribbon(data=p.curve.fixed,aes(ymin=lwr, ymax=upper, x=AGE), alpha=0.6, fill="blue") + 
   theme(panel.grid = element_blank(), axis.title=element_text(size=15), axis.text=element_text(size=14)) + 
   xlab("Age (years)")+ylab("Shell height (mm)") + theme_bw()
