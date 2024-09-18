@@ -131,7 +131,7 @@ SFA29Ddata <- list(
 #### Run the model 
 
 D.mod.res <- SSModel(SFA29Ddata,SFA29.priors,inits.29D,parms=SFA29.parms,model.file=SFA29model,Years=yrs,
-                nchains=nchains,niter=niter,nburnin=nburnin,nthin=nthin,Area="SFA29W",e.parms=e.parms.29D,debug=F)
+                nchains=nchains,niter=niter,nburnin=nburnin,nthin=nthin,Area="SFA29W",e.parms=e.parms.29D,debug=T)
 
 #load(paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29D/SFA29D.",surveyyear,".RData"))
 mod.res <- D.mod.res

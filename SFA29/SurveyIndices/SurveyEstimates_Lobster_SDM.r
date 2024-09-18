@@ -497,6 +497,13 @@ cruise.list <- paste(cruise.list,collapse="','")
 #... plot ...#
 	# Data by Strata #
 	
+	sdm.levels.est.all <- sdm.levels.est.all |> 
+	  mutate(SUBAREA = case_when(SUBAREA == "SFA29A" ~ "Subarea A",
+	                             SUBAREA == "SFA29B" ~ "Subarea B",
+	                             SUBAREA == "SFA29C" ~ "Subarea C",
+	                             SUBAREA == "SFA29D" ~ "Subarea D"))
+	
+	
 	ggplot(data = sdm.levels.est.all, aes(x=YEAR, y=Mean, color=Strata, shape = Strata,group=Strata)) + 
 	  geom_point() + geom_line(aes(linetype = Strata)) +
 	  scale_color_manual(values=c('firebrick2', 'darkgrey', 'darkblue'), breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low"))+
@@ -529,6 +536,15 @@ cruise.list <- paste(cruise.list,collapse="','")
 	#scall.plot
 	#dev.off()
 	
+	#rename Subarea for figure.
+	out.e <- out.e |>
+	  mutate(SUBAREA = case_when(SUBAREA == "SFA29E" ~ "Subarea E"))
+	
+	sdm.strat.est.all <- sdm.strat.est.all |> 
+	  mutate(SUBAREA = case_when(SUBAREA == "SFA29A" ~ "Subarea A",
+	                             SUBAREA == "SFA29B" ~ "Subarea B",
+	                             SUBAREA == "SFA29C" ~ "Subarea C",
+	                             SUBAREA == "SFA29D" ~ "Subarea D"))
 	
 	# Stratified estimates plot #
 	#this is plot used in survey summary presentation 

@@ -17,7 +17,6 @@ require(sf)
 require(units)
 library(ROracle)
 
-
 #Check tows spatial function and coord convert function:
 
 funcs <- c("https://raw.githubusercontent.com/Mar-scal/Inshore/master/Survey/check.tows.spatial.r",
@@ -41,6 +40,8 @@ CRUISE <- "BF" # "BI", BF", "GM", "SFA29"
 
 uid <- un.sameotoj
 pwd <- pw.sameotoj
+year <- 2023 #For years prior to 2023, the directory name is different! Will need to adjust if running for previous years - year/data entry templates and examples/
+CRUISE <- "BF" # "BI", BF", "GM", "SFA29"
 
 
 #Read in shapefiles if needed
@@ -57,6 +58,18 @@ BF.strata <- st_read(paste0(temp2, "/inshore_survey_strata/PolygonSCSTRATAINFO_r
 
 #polgons with strata for SPA 2
 #BF.strata <- st_read(paste0(temp2, "/inshore_survey_strata/archive/PolygonSCSTRATAINFO_AccessedSept102017.shp")) %>% st_transform(crs = 4326)
+
+SPA1A <- st_read(paste0(temp2, "/SPA1A_polygon_NAD83.shp")) %>% mutate(ET_ID = "1A") %>% st_transform(crs = 4326)
+SPA1B <- st_read(paste0(temp2, "/SPA1B_polygon_NAD83.shp")) %>% mutate(ET_ID = "1B") %>% st_transform(crs = 4326)
+SPA2 <- st_read(paste0(temp2, "/SPA2_polygon_NAD83_revised2023.shp")) %>% mutate(ET_ID = "2") %>% st_transform(crs = 4326)
+SPA3 <- st_read(paste0(temp2, "/SPA3_polygon_NAD83.shp")) %>% mutate(ET_ID = "3") %>% st_transform(crs = 4326)
+SPA4 <- st_read(paste0(temp2, "/SPA4_polygon_NAD83.shp")) %>% mutate(ET_ID = "4") %>% st_transform(crs = 4326)
+SPA5 <- st_read(paste0(temp2, "/SPA5_polygon_NAD83.shp")) %>% mutate(ET_ID = "5") %>% st_transform(crs = 4326)
+SPA6A <- st_read(paste0(temp2, "/SPA6A_polygon_NAD83.shp")) %>% mutate(ET_ID = "6A") %>% st_transform(crs = 4326)
+SPA6B <- st_read(paste0(temp2, "/SPA6B_polygon_NAD83.shp")) %>% mutate(ET_ID = "6B") %>% st_transform(crs = 4326)
+SPA6C <- st_read(paste0(temp2, "/SPA6C_polygon_NAD83.shp")) %>% mutate(ET_ID = "6C") %>% st_transform(crs = 4326)
+SPA6D <- st_read(paste0(temp2, "/SPA6D_polygon_NAD83.shp")) %>% mutate(ET_ID = "6D") %>% st_transform(crs = 4326)
+
 
 SPA1A <- st_read(paste0(temp2, "/SPA1A_polygon_NAD83.shp")) %>% mutate(ET_ID = "1A") %>% st_transform(crs = 4326)
 SPA1B <- st_read(paste0(temp2, "/SPA1B_polygon_NAD83.shp")) %>% mutate(ET_ID = "1B") %>% st_transform(crs = 4326)
@@ -90,6 +103,7 @@ table(is.na(num.tows$Tow_len))
 
 #check for NAs in other columns.
 summary(num.tows)
+
 ##Bottom code missing for GM2024 tow 134
 is.na(num.tows$Bottom_code)
 
@@ -119,14 +133,20 @@ ggplot() + geom_text(data=mwsh[mwsh$Tow>1 & mwsh$Tow<50,]
                      , aes(Height, Weight, colour=as.factor(Tow), label=as.factor(Tow)))
 
 #Plot individual tows (labels are sample numbers)
+
 ggplot() + geom_text(data=mwsh[mwsh$Tow==33,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
 ggplot() + geom_text(data=mwsh[mwsh$Tow==29,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
+
+ggplot() + geom_text(data=mwsh[mwsh$Tow==15,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
+ggplot() + geom_text(data=mwsh[mwsh$Tow==25,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
+
 
 #Plot fewer tows to visualize better - Tows 50-100
 ggplot() + geom_text(data=mwsh[mwsh$Tow>50 & mwsh$Tow<100,]
                      , aes(Height, Weight, colour=as.factor(Tow), label=as.factor(Tow))) 
 
 #Plot individual tows (labels are sample numbers)
+
 ggplot() + geom_text(data=mwsh[mwsh$Tow==99,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
 ggplot() + geom_text(data=mwsh[mwsh$Tow==69,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
 
@@ -136,6 +156,17 @@ ggplot() + geom_text(data=mwsh[mwsh$Tow>300 & max(mwsh$Tow),]
 
 #Plot individual tows (labels are sample numbers)
 ggplot() + geom_text(data=mwsh[mwsh$Tow==273,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
+
+
+ggplot() + geom_text(data=mwsh[mwsh$Tow==72,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
+ggplot() + geom_text(data=mwsh[mwsh$Tow==76,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
+
+#Plot fewer tows to visualize better - Tows 100 max tow number for cruise
+ggplot() + geom_text(data=mwsh[mwsh$Tow>100 & max(mwsh$Tow),]
+                     , aes(Height, Weight, colour=as.factor(Tow), label=as.factor(Tow))) 
+
+#Plot individual tows (labels are sample numbers)
+ggplot() + geom_text(data=mwsh[mwsh$Tow==207,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
 
 
 # bycatch.csv ----------------------------------------------------------------
@@ -263,6 +294,23 @@ View(dhf.dup.check |> filter(TOW == 94)) #enter tow
 
 dhf <-  read.csv(paste0("Y:/Inshore/Survey/", year,"/DataEntry/",CRUISE, year,"/",CRUISE,year,"_dhf.csv"))
 
+#Check for duplicated rows from columns X0 and X95, grouped by tow
+dhf.sh.bins <- dhf |> dplyr::select(TOW,X0:X95)
+#Remove rows that contain all NAs for the shell height bins (excluding TOW column).
+dhf.sh.bins <- filter(dhf.sh.bins, rowSums(is.na(dhf.sh.bins[,-1])) != ncol(dhf.sh.bins[,-1]))
+
+#Checks for duplicate rows within a Tow.
+dhf.dup.check <- data.frame()
+for(i in unique(dhf.sh.bins$TOW)){
+output <- dhf.sh.bins |> filter(TOW == i)
+output$wx <- duplicated(output, fromLast = TRUE)
+dhf.dup.check <- rbind(dhf.dup.check, output)
+}
+###Check these tows for duplicate entries### - These may or may not be errors (e.g. could just have 1s in the same column and NAs in the rest)
+dhf.dup.check |> filter(wx == TRUE) |> select(TOW)
+
+
+#Re-arrange data for plotting:
 dhf <- reshape2::melt(dhf, id.vars=c("CRUISE", "TOW", "GEAR", "DEPTH", "c"))
 dhf <- dplyr::arrange(dhf, TOW)
 dhf$variable <- gsub('X', '', dhf$variable)
@@ -276,6 +324,10 @@ dhf <- dhf |> filter(c %in% c(2,3)) # c(0,1) for Live. and c(2,3)) for Dead
 
 #Plot to look for outliers - will need to adjust for survey tow numbers. Plots frequency (y axis), bin (x axis), by Tow and Gear (unlined/lined)
 dhf1 <- dhf[dhf$TOW>0 & dhf$TOW <= 15,]
+
+#Plot to look for outliers - will need to adjust for survey tow numbers. Plots frequency (y axis), bin (x axis), by Tow and Gear (unlined/lined)
+dhf1 <- dhf[dhf$TOW>0 & dhf$TOW < 15,]
+
 ggplot(dhf1, aes(as.numeric(bin), value)) + geom_bar(fill = "aquamarine3", stat = "identity") + facet_grid(GEAR~TOW, scales="free")
 
 dhf2 <- dhf[dhf$TOW >= 16 & dhf$TOW <= 30,]
@@ -534,6 +586,7 @@ end_long_less6500 <- num.tows %>% filter(End_long < abs(6500))
 min(end_long_less6500$End_long)
 which(end_long_less6500$End_long == min(end_long_less6500$End_long)) #Which row is this?
 
+
  ######## NEW (Added in 2023) ########
  #Can run in place of check.tows.spatial function (check.tows.spatial function kept below)
  
@@ -608,6 +661,9 @@ which(end_long_less6500$End_long == min(end_long_less6500$End_long)) #Which row 
  
  
  #GGPLOT - Plot just the tows to check and save plot
+
+ #Plot and save
+
  ggplot()+
    geom_sf(data = Strata.sf) +
    geom_sf(data = check.tows.sf |> filter(flag == "check"), aes(colour = Oracle.tow..))+
@@ -632,11 +688,20 @@ ggsave(filename = paste0("Y:/Inshore/Survey/", year,"/DataEntry/",CRUISE, year,"
    mapview::mapview(BF.strata)
  
  
+
+ #For interactive map use Mapview to inspect:
+ mapview::mapview(check.tows.sf |> filter(flag == "check"), zcol = "Oracle.tow..")+
+   mapview::mapview(Strata.sf)
+ 
  # ----- REPEAT TOWS - CHECK OVERLAP --------------------------------------------------------------------
 
  if(CRUISE != "SFA29"){
    
+
 repeatslastyear <- read.csv(paste0(direct, as.numeric(year)-1, "/DataEntry/",CRUISE,year-1,"/",CRUISE,year-1,"tow_CONVERTED.csv"))
+
+repeatslastyear <- read.csv(paste0(direct, as.numeric(year)-1, "/data entry templates and examples/",CRUISE,year-1,"/",CRUISE,year-1,"tow_CONVERTED.csv"))
+
 rep.comp.tow <- read.csv(paste0(direct, year, "/DataEntry/",CRUISE,year,"/",CRUISE,year,"_REPCOMPTOW.csv"))
  
 tows.for.comparison <- rep.comp.tow$REF.TOW_NO
@@ -713,7 +778,12 @@ check.strata$flag <- ifelse(check.strata$ET_ID != check.strata$Strata_id, "check
    
    check.strata <- st_intersection(BF.strata,check.strata)
    
+
    check.strata$flag <- ifelse(check.strata$STRATA_ID != check.strata$Strata_id, "check","ok")
+
+   check.strata$flag <- ifelse(check.strata$STRATA_ID != check.strata$Strata_id, "check", 
+                               ifelse(check.strata$STRATA_ID == check.strata$Strata_id, "ok"))
+
 }
   
 

@@ -15,9 +15,9 @@ options(stringsAsFactors = FALSE)
 # ///.... DEFINE THESE ENTRIES ....////
 
 #DEFINE: year, area
-year <- 2023  #this is the survey year
+year <- 2024  #this is the survey year
 area <- "3"  #SPAs 1A, 1B and 4 and 5 all modelled together, therefore choice entry here is "1A1B4and5", "3", "6"
-assessmentyear <- 2023 #this is the year you are running your assessment in -- corresponds to the assessment folder year name e.g. INSHORE SCALLOP/2020/Assessment..
+assessmentyear <- 2024 #this is the year you are running your assessment in -- corresponds to the assessment folder year name e.g. INSHORE SCALLOP/2020/Assessment..
 
 
 # DEFINE: load required workspace with model objects (set for year YYYY)
@@ -141,7 +141,7 @@ png(paste0(path.directory,assessmentyear,"/Assessment/Figures/SPA3_GrowthRate_Co
 actual.growth.plot.title <- "SPA3 Actual Growth Rate"
 
 x<-c(1996,year) #update year
-y<-c(0.8,max(spa3.growthrate.rec$rate, na.rm = T))
+y<-c(0.6,max(spa3.growthrate.rec$rate, na.rm = T))
 
 plot(x,y, type="n",xlab="",ylab="Growth Rate", cex.axis=1.3, cex.lab=1.5, main=actual.growth.plot.title)
 lines(spa3.growthrate.com[,c(1,4)], type="b", pch=1, lty=1, col=1)
@@ -215,7 +215,7 @@ write.csv(spa3.growthrate, paste0(path.directory,assessmentyear,"/Assessment/Dat
 png(paste0(path.directory,assessmentyear,"/Assessment/Figures/SPA3_GrowthRate_Com_ActualPredicted.png"), type="cairo", width=20, height=12, units = "cm", res=400)
 
 x<-c(1996,year) 
-y<-c(0.8,2.0)
+y<-c(0.6,2.0)
 
 plot (x,y, type="n",xlab="",ylab="Growth Rate", cex.axis=1.3, cex.lab=1.5, main="SPA3 Commerical Growth Rate")
 lines(spa3.growthrate.com[,c(1,4)], type="b", pch=1, lty=1, col=1)

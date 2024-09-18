@@ -19,25 +19,25 @@ sfa29.harvest.scen.tab = function(area = area, catch.range = catch.range, type =
   if(area == "SFA29A") {
     catch.range <- SFA29A.decision.table$Catch.All
     decision.table <- SFA29A.decision.table
-    table.caption <- paste0("Table 1. Catch scenario table for SFA 29 West Subarea A to evaluate ",assessment.year," total subarea catch levels in terms of exploitation (\U1D452), expected changes in biomass (%), and probability (Pr.) of biomass increase. Note, Subarea A has no High suitability habitat.")
+    table.caption <- paste0("Table 1. Harvest scenario table for SFA 29 West Subarea A to evaluate ",assessment.year," total subarea catch levels in terms of exploitation (\U1D452), expected changes in biomass (%), and probability (Pr.) of biomass increase. Note, Subarea A has no High suitability habitat.")
   }
   
   if(area == "SFA29B") {
     catch.range <- SFA29B.decision.table$Catch.All
     decision.table <- SFA29B.decision.table
-    table.caption <- paste0("Table 2. Catch scenario table for SFA 29 West Subarea B to evaluate ",assessment.year," total subarea catch levels in terms of exploitation (\U1D452), expected changes in biomass (%), probability (Pr.) of biomass increase, and probability of being above the Lower Reference Point (LRP: 1.12 t/km^2^) and Upper Stock Reference (USR: 2.24 t/km^2^). ")
+    table.caption <- paste0("Table 2. Harvest scenario table for SFA 29 West Subarea B to evaluate ",assessment.year," total subarea catch levels in terms of exploitation (\U1D452), expected changes in biomass (%), probability (Pr.) of biomass increase, and probability of being above the Lower Reference Point (LRP: 1.12 t/km^2^) and Upper Stock Reference (USR: 2.24 t/km^2^). ")
   }
   
   if(area == "SFA29C") {
     catch.range <- SFA29C.decision.table$Catch.All
     decision.table <- SFA29C.decision.table
-    table.caption <- paste0("Table 3. Catch scenario table for SFA 29 West Subarea C to evaluate ",assessment.year," total subarea catch levels in terms of exploitation (\U1D452), expected changes in biomass (%), probability (Pr.) of biomass increase, and probability of being above the lower reference point (LRP: 1.41 t/km^2^) and upper stock reference (USR: 2.82 t/km^2^).  ")
+    table.caption <- paste0("Table 3. Harvest scenario table for SFA 29 West Subarea C to evaluate ",assessment.year," total subarea catch levels in terms of exploitation (\U1D452), expected changes in biomass (%), probability (Pr.) of biomass increase, and probability of being above the lower reference point (LRP: 1.41 t/km^2^) and upper stock reference (USR: 2.82 t/km^2^).  ")
   }
   
   if(area == "SFA29D") {
     catch.range <- SFA29D.decision.table$Catch.All
     decision.table <- SFA29D.decision.table
-    table.caption <- paste0("Table 4. Catch scenario table for SFA 29 West Subarea D to evaluate ",assessment.year," total subarea catch levels in terms of exploitation (\U1D452), expected changes in biomass (%), probability (Pr.) of biomass increase, and probability of being above the lower reference point (LRP: 1.3 t/km^2^) and upper stock reference (USR: 2.6 t/km^2^). ")
+    table.caption <- paste0("Table 4. Harvest scenario table for SFA 29 West Subarea D to evaluate ",assessment.year," total subarea catch levels in terms of exploitation (\U1D452), expected changes in biomass (%), probability (Pr.) of biomass increase, and probability of being above the lower reference point (LRP: 1.3 t/km^2^) and upper stock reference (USR: 2.6 t/km^2^). ")
   }
   
   #FOR SFA29B, C, D create table this way:

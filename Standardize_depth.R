@@ -10,12 +10,12 @@ require(dplyr)
 options(stringsAsFactors = FALSE)
 
 # Define: 
-#uid <- un.sameotoj
-#pwd <- pw.sameotoj
+uid <- un.sameotoj
+pwd <- pw.sameotoj
 #uid <- un.raperj
 #pwd <- un.raperj
-uid <- keyring::key_list("Oracle")[1,2]
-pwd <- keyring::key_get("Oracle", uid)
+#uid <- keyring::key_list("Oracle")[1,2]
+#pwd <- keyring::key_get("Oracle", uid)
 
 #### Import Source functions####
 
@@ -35,8 +35,8 @@ for(fun in funcs)
 chan <- dbConnect(dbDriver("Oracle"),username=uid, password=pwd,'ptran')
 
 #set survey.year and cruise - *Note: requires single quotations within double quotations*
-survey.year <- "'2023'"
-cruise <- "'SFA292023'"
+survey.year <- "'2024'"
+cruise <- "'GM2024'"
 #appendingfile_year <- "2021" # for importing the current spreadsheet to append to.
 #updatefile_year <- "2021" #For saving file
 
@@ -100,9 +100,11 @@ if(grepl('SFA29',cruise)){
 
 #Load previous towsdd_stdDepth.csv file to append to.
 towsdd <- read.csv(paste0("Y:/Inshore/StandardDepth/towsdd_StdDepth.csv"))
+table(towsdd$CRUISE)
 
 #Appending to towsdd
 towsdd.updt <- rbind(towsdd, ScallopSurv.dpth)
+dim(towsdd.updt)
 
 #Check values and plot if necessary
 summary(towsdd.updt)
@@ -113,7 +115,7 @@ summary(towsdd.updt)
 write.csv(towsdd.updt, "Y:/Inshore/StandardDepth/towsdd_StdDepth.csv", row.names = FALSE)
 
 #**make copy manually and add year to name - move file to Archived folder under Y:/Inshore/StandardDepth **
-
+# do at end of survey seaon when year's surveys are complete # 
 
 ###################################################################################################################
 ### Checks - used to run older tows to see if R script workflow generates the same values as ArcGIS workflow     ##

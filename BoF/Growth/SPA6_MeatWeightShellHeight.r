@@ -25,13 +25,13 @@ library(lubridate)
 # Define: 
 uid <- un.sameotoj
 pwd <- pw.sameotoj
-uid <- keyring::key_list("Oracle")[1,2]
-pwd <- keyring::key_get("Oracle", uid)
+#uid <- keyring::key_list("Oracle")[1,2]
+#pwd <- keyring::key_get("Oracle", uid)
 
-surveyyear <- 2023  #This is the last survey year for which you want to include  - not should match year of cruise below 
-cruise <- "GM2023"  #note should match year for surveyyear set above 
+surveyyear <- 2024  #This is the last survey year for which you want to include  - not should match year of cruise below 
+cruise <- "GM2024"  #note should match year for surveyyear set above 
 
-assessmentyear <- 2023 #year in which you are conducting the survey 
+assessmentyear <- 2024 #year in which you are conducting the survey 
 area <- "6"  #SPA assessing recall SPA 1A, 1B, and 4 are grouped; options: "1A1B4and5", "3", "6" 
 path.directory <- "Y:/Inshore/BoF/"
 
@@ -41,6 +41,7 @@ chan <- dbConnect(dbDriver("Oracle"),username=uid, password=pwd,'ptran')
 
 # Set SQL query 
 quer1 <- paste0("SELECT * FROM scallsur.scwgthgt WHERE cruise = '", cruise, "'")
+
 
 # read in shell height and meat weight data from database
 # detailed meat weight/shell height sampling data
@@ -53,6 +54,20 @@ GMlivefreq.dat <- dbGetQuery(chan, quer2)
 #add YEAR column to data
 GMdetail.dat$YEAR <- year(GMdetail.dat$TOW_DATE)
 GMlivefreq.dat$YEAR <- as.numeric(substr(GMlivefreq.dat$CRUISE,3,6))
+
+### FOR 2024 - make sure no samples from SPA 2 are in analysis!!!! 
+GMdetail.dat %>% group_by(STRATA_ID ) %>% summarise(n())
+#Remove  SPA 2 tows which are those in STRATA_ID == 57
+dim(GMdetail.dat)
+GMdetail.dat <- GMdetail.dat[GMdetail.dat$STRATA_ID != 57 ,]
+dim(GMdetail.dat)
+
+dim(GMlivefreq.dat)
+GMlivefreq.dat %>% group_by(MGT_AREA_ID) %>% summarise(n())
+#Remove SPA 2 tows those as MGT_AREA_ID == 2
+GMlivefreq.dat <- GMlivefreq.dat[GMlivefreq.dat$MGT_AREA_ID != 2,]
+dim(GMlivefreq.dat)
+
 
 #check
 table(GMdetail.dat$YEAR)
@@ -117,7 +132,7 @@ MWTSHGM.YYYY <- glmer(WET_MEAT_WGT~Log.HEIGHT.CTR+Log.DEPTH.CTR+(Log.HEIGHT.CTR|
 summary(MWTSHGM.YYYY)
 
 #Save summary to txt file
-sink(paste0(path.directory, assessmentyear, "/Assessment/Data/Growth/SPA",area,"/MWTSHGM2022_ModelSummary.txt"))
+sink(paste0(path.directory, assessmentyear, "/Assessment/Data/Growth/SPA",area,"/MWTSHGM",surveyyear,"_ModelSummary.txt"))
 print(summary(MWTSHGM.YYYY))
 sink()
 
@@ -174,10 +189,10 @@ liveweightYYYY[,grep("BIN_ID_0", colnames(liveweightYYYY)):grep("BIN_ID_195", co
 write.csv(liveweightYYYY, paste0(path.directory, assessmentyear, "/Assessment/Data/SurveyIndices/SPA",area,"/GMliveweight",surveyyear,".csv")) 
 
 
-#rm(uid)
-#rm(pwd)
-#rm(un.sameotoj)
-#rm(pw.sameotoj)
+rm(uid)
+rm(pwd)
+rm(un.sameotoj)
+rm(pw.sameotoj)
 
 #!!!Now save workspace as .RData object: e.g. GMgrowth2019.RData
 #save.image(file = paste0(path.directory, assessmentyear, "/Assessment/Data/Growth/SPA",area,"/GMgrowth",surveyyear,".RData"))

@@ -17,13 +17,13 @@ library(ROracle)
 uid <- un.sameotoj
 pwd <- pw.sameotoj
 
-uid <- keyring::key_list("Oracle")[1,2]
-pwd <- keyring::key_get("Oracle", uid)
+#uid <- keyring::key_list("Oracle")[1,2]
+#pwd <- keyring::key_get("Oracle", uid)
 
-surveyyear <- 2023  #This is the last survey year for which you want to include  - note: should match year of cruise below 
-cruise <- "BI2023"  #note should match year for surveyyear set above 
+surveyyear <- 2024  #This is the last survey year for which you want to include  - note: should match year of cruise below 
+cruise <- "BI2024"  #note should match year for surveyyear set above 
 
-assessmentyear <- 2023 #year in which you are conducting the survey 
+assessmentyear <- 2024 #year in which you are conducting the survey 
 area <- "3"  #SPA assessing recall SPA 1A, 1B, and 4 are grouped; options: "1A1B4and5", "3", "6" 
 path.directory <- "Y:/Inshore/BoF/"
 

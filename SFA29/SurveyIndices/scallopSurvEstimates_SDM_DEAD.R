@@ -33,8 +33,8 @@ names(surf.all) <- c("uid","Start.Bottom")
 # Define: 
 uid <- un.sameotoj
 pwd <- pw.sameotoj
-uid <- keyring::key_list("Oracle")[1,2]
-pwd <- keyring::key_get("Oracle", uid)
+#uid <- keyring::key_list("Oracle")[1,2]
+#pwd <- keyring::key_get("Oracle", uid)
 
 surveyyear <- 2023  #This is the last survey year for which you want to include  - not should match year of cruise below 
 cruise <- "SFA292023"  #note should match year for surveyyear set above 
@@ -114,6 +114,7 @@ data.obj <- dbGetQuery(chan, quer2)
 	data.obj <- merge(data.obj, sdmtows, by.x='uid', by.y='uid', all.x=TRUE)
 	dim(data.obj)
 	data.obj.all <- data.obj
+
 
 ####
 ###  ----   Calculate Stratified Random Survey Estimates ----             
@@ -1380,11 +1381,15 @@ sdm.levels <- sdm.levels %>%
   mutate(Mean = case_when(YEAR == 2020 ~ NA_real_, TRUE ~ Mean)) %>%
   mutate(Std.Err = case_when(YEAR == 2020 ~ NA_real_, TRUE ~ Std.Err)) %>%
   mutate(var.est = case_when(YEAR == 2020 ~ NA_real_, TRUE ~ var.est)) %>%
-  mutate(CV = case_when(YEAR == 2020 ~ NA_real_, TRUE ~ CV))
+  mutate(CV = case_when(YEAR == 2020 ~ NA_real_, TRUE ~ CV)) %>% 
+  mutate(SUBAREA = case_when(SUBAREA == "SFA29A" ~ "Subarea A",
+                             SUBAREA == "SFA29B" ~ "Subarea B",
+                             SUBAREA == "SFA29C" ~ "Subarea C",
+                             SUBAREA == "SFA29D" ~ "Subarea D"))
 
 
 ## Subarea A 
-A.number.per.tow <- ggplot(data = sdm.levels %>% filter(SUBAREA == "SFA29A" & Strata != "high"), aes(x=YEAR, y=Mean,  col=Strata, pch=Strata)) + 
+A.number.per.tow <- ggplot(data = sdm.levels %>% filter(SUBAREA == "Subarea A" & Strata != "high"), aes(x=YEAR, y=Mean,  col=Strata, pch=Strata)) + 
   geom_point() + 
   geom_line(aes(linetype = Strata)) + 
   facet_wrap(~group, ncol=1, labeller = size_names) +
@@ -1409,7 +1414,7 @@ ggsave(filename = paste0(path.directory, assessmentyear, "/Assessment/Figures/SF
 
 
 ## Subarea B 
-B.number.per.tow <- ggplot(data = sdm.levels %>% filter(SUBAREA == "SFA29B"), aes(x=YEAR, y=Mean,  col=Strata, pch=Strata)) + 
+B.number.per.tow <- ggplot(data = sdm.levels %>% filter(SUBAREA == "Subarea B"), aes(x=YEAR, y=Mean,  col=Strata, pch=Strata)) + 
   geom_point() + 
   geom_line(aes(linetype = Strata)) + 
   facet_wrap(~group, ncol=1, labeller = size_names) + 
@@ -1434,7 +1439,7 @@ ggsave(filename = paste0(path.directory, assessmentyear, "/Assessment/Figures/SF
 
 
 ## Subarea C 
-C.number.per.tow <- ggplot(data = sdm.levels %>% filter(SUBAREA == "SFA29C"), aes(x=YEAR, y=Mean,  col=Strata, pch=Strata)) + 
+C.number.per.tow <- ggplot(data = sdm.levels %>% filter(SUBAREA == "Subarea C"), aes(x=YEAR, y=Mean,  col=Strata, pch=Strata)) + 
   geom_point() + 
   geom_line(aes(linetype = Strata)) + 
   facet_wrap(~group, ncol=1, labeller = size_names) + 
@@ -1458,7 +1463,7 @@ ggsave(filename = paste0(path.directory, assessmentyear, "/Assessment/Figures/SF
 #dev.off()
 
 ## Subarea D 
-D.number.per.tow <- ggplot(data = sdm.levels %>% filter(SUBAREA == "SFA29D"), aes(x=YEAR, y=Mean,  col=Strata, pch=Strata)) + 
+D.number.per.tow <- ggplot(data = sdm.levels %>% filter(SUBAREA == "Subarea D"), aes(x=YEAR, y=Mean,  col=Strata, pch=Strata)) + 
   geom_point() + 
   geom_line(aes(linetype = Strata)) + 
   facet_wrap(~group, ncol=1, labeller = size_names) +
@@ -1482,7 +1487,7 @@ ggsave(filename = paste0(path.directory, assessmentyear, "/Assessment/Figures/SF
 #dev.off()
 
 ## All Subareas A-D Pre-recruits 
-AtoD.number.per.tow.prerec <- ggplot(data = sdm.levels %>% filter(!(SUBAREA == "SFA29A" & Strata == "high") & sdm.levels$size == "prerec"), aes(x=YEAR, y=Mean,  col=Strata, pch=Strata)) + 
+AtoD.number.per.tow.prerec <- ggplot(data = sdm.levels %>% filter(!(SUBAREA == "Subarea A" & Strata == "high") & sdm.levels$size == "prerec"), aes(x=YEAR, y=Mean,  col=Strata, pch=Strata)) + 
   geom_point() + 
   geom_line(aes(linetype = Strata)) +
   scale_color_manual(values=c('firebrick2', 'darkgrey', 'darkblue'), breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low"))+
@@ -1506,7 +1511,7 @@ ggsave(filename = paste0(path.directory, assessmentyear, "/Assessment/Figures/SF
 #dev.off()
 
 ## All Subareas A-D Recruits 
-AtoD.number.per.tow.rec <- ggplot(data = sdm.levels %>% filter(!(SUBAREA == "SFA29A" & Strata == "high") & sdm.levels$size == "rec"), aes(x=YEAR, y=Mean,  col=Strata, pch=Strata)) + 
+AtoD.number.per.tow.rec <- ggplot(data = sdm.levels %>% filter(!(SUBAREA == "Subarea A" & Strata == "high") & sdm.levels$size == "rec"), aes(x=YEAR, y=Mean,  col=Strata, pch=Strata)) + 
   geom_point() + 
   geom_line(aes(linetype = Strata)) +
   facet_wrap(~SUBAREA, ncol=2) + 
@@ -1532,7 +1537,7 @@ ggsave(filename = paste0(path.directory, assessmentyear, "/Assessment/Figures/SF
 
 
 ## All Subareas A-D Commercial  
-AtoD.number.per.tow.comm <- ggplot(data = sdm.levels %>% filter(!(SUBAREA == "SFA29A" & Strata == "high") & sdm.levels$size == "comm"), aes(x=YEAR, y=Mean,  col=Strata, pch=Strata)) + 
+AtoD.number.per.tow.comm <- ggplot(data = sdm.levels %>% filter(!(SUBAREA == "Subarea A" & Strata == "high") & sdm.levels$size == "comm"), aes(x=YEAR, y=Mean,  col=Strata, pch=Strata)) + 
   geom_point() + 
   geom_line(aes(linetype = Strata)) + 
   facet_wrap(~SUBAREA, ncol=2) +
@@ -1689,7 +1694,11 @@ prop.dead <- prop.dead %>%
   mutate(Live.no = case_when(YEAR == 2020 ~ NA_real_, TRUE ~ Live.no)) %>%
   mutate(Dead.no = case_when(YEAR == 2020 ~ NA_real_, TRUE ~ Dead.no)) %>%
   mutate(prop.dead = case_when(YEAR == 2020 ~ NA_real_, TRUE ~ prop.dead)) %>%
-  mutate(prop.dead.no.NAs = case_when(YEAR == 2020 ~ NA_real_, TRUE ~ prop.dead.no.NAs))
+  mutate(prop.dead.no.NAs = case_when(YEAR == 2020 ~ NA_real_, TRUE ~ prop.dead.no.NAs)) %>% 
+  mutate(SUBAREA = case_when(SUBAREA == "SFA29A" ~ "Subarea A",
+                             SUBAREA == "SFA29B" ~ "Subarea B",
+                             SUBAREA == "SFA29C" ~ "Subarea C",
+                             SUBAREA == "SFA29D" ~ "Subarea D"))
 
 #Commercial Size 	
 	XX <- prop.dead %>% filter(size=="comm") %>% 
@@ -1796,6 +1805,9 @@ data.join$prop.dead.prerec <- data.join$dead.prerec/(data.join$dead.prerec + dat
 data.join$prop.dead.comm[is.na(data.join$prop.dead.comm)] <- 0
 data.join$prop.dead.rec[is.na(data.join$prop.dead.rec)] <- 0
 data.join$prop.dead.prerec[is.na(data.join$prop.dead.prerec)] <- 0
+
+
+
 
 #write out data and use this file to spatially plot proportion dead in the spatial plot script 
 write.csv(data.join, paste0(path.directory, assessmentyear, "/Assessment/Data/SurveyIndices/SFA29.all.tows.2001to",surveyyear,".Proportion.Dead.csv"), row.names = FALSE)

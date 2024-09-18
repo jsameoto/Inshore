@@ -364,54 +364,54 @@ write.csv(revised, paste0(path.directory, assessmentyear,"/Assessment/Data/Model
 # --- Subarea D ---- 
 area <- "SFA29D"
 
-Ih.obs.tau.Subarea <- Ih.obs.tau %>% filter(SUBAREA == area ) %>% select(SUBAREA, Strata, YEAR, Ih, obs.tau = CV)
+Ih.obs.tau.Subarea <- Ih.obs.tau %>% filter(SUBAREA == area ) %>% dplyr::select(SUBAREA, Strata, YEAR, Ih, obs.tau = CV)
 Ih.obs.tau.Subarea 
 Ih.2001to2013 <- data.frame(SUBAREA = rep(area, 13*3), Strata = c(rep("low",13),rep("med",13),rep("high",13)), YEAR = rep(2001:2013,3), Ih = rep(NA,13*3), obs.tau = rep(NA,13*3)) 
 Ih.Subarea <- rbind(Ih.2001to2013, Ih.obs.tau.Subarea)
 Ih.Subarea <- Ih.Subarea %>% arrange(SUBAREA, Strata, YEAR)
 Ih.Subarea
 
-rh.obs.nu.Subarea <- rh.obs.nu %>% filter(SUBAREA == area ) %>% select(SUBAREA, Strata, YEAR, rh, obs.nu = CV)
+rh.obs.nu.Subarea <- rh.obs.nu %>% filter(SUBAREA == area ) %>% dplyr::select(SUBAREA, Strata, YEAR, rh, obs.nu = CV)
 model.data.Subarea <- merge(Ih.Subarea, rh.obs.nu.Subarea, by = c("YEAR", "SUBAREA", "Strata"))
 model.data.Subarea <- model.data.Subarea %>% arrange(SUBAREA, Strata, YEAR)
 model.data.Subarea
 
-clappers.obs.phi.Subarea <- clappers.obs.phi %>% filter(SUBAREA == area ) %>% select(SUBAREA, Strata, YEAR, clappers, obs.phi = CV)
+clappers.obs.phi.Subarea <- clappers.obs.phi %>% filter(SUBAREA == area ) %>% dplyr::select(SUBAREA, Strata, YEAR, clappers, obs.phi = CV)
 model.data.Subarea <- merge(model.data.Subarea, clappers.obs.phi.Subarea, by = c("YEAR", "SUBAREA", "Strata"))
 model.data.Subarea <- model.data.Subarea %>% arrange(SUBAREA, Strata, YEAR)
 model.data.Subarea
 
 
-L.Subarea <- L %>% filter(SUBAREA == area ) %>% select(SUBAREA, Strata, YEAR, L)
+L.Subarea <- L %>% filter(SUBAREA == area ) %>% dplyr::select(SUBAREA, Strata, YEAR, L)
 model.data.Subarea <- merge(model.data.Subarea, L.Subarea, by = c("YEAR", "SUBAREA", "Strata"))
 model.data.Subarea <- model.data.Subarea %>% arrange(SUBAREA, Strata, YEAR)
 model.data.Subarea
 
 
-gh.Subarea <- growth %>% select(SUBAREA = strata, Strata = sdm, YEAR = Year, gh = rate, Age) %>% filter(Age == "Commercial" & SUBAREA == area & Strata %in% c("low","medium","high") ) ## Change GR script to this is cleaner 
+gh.Subarea <- growth %>% dplyr::select(SUBAREA = strata, Strata = sdm, YEAR = Year, gh = rate, Age) %>% filter(Age == "Commercial" & SUBAREA == area & Strata %in% c("low","medium","high") ) ## Change GR script to this is cleaner 
 gh.Subarea$Strata[gh.Subarea$Strata == "medium"] <- "med"
 
 model.data.Subarea <- merge(model.data.Subarea, gh.Subarea, by = c("YEAR", "SUBAREA", "Strata"))
 model.data.Subarea <- model.data.Subarea %>% arrange(SUBAREA, Strata, YEAR)
-model.data.Subarea <- model.data.Subarea %>% select(!Age)
+model.data.Subarea <- model.data.Subarea %>% dplyr::select(!Age)
 model.data.Subarea
 
 #vms 
-vms.subarea <- vms %>% select(SUBAREA = subarea.name, Strata = sdmstrata, YEAR = YearAlignedforModel, VMSEffort = corr.effort.hr) %>% filter(SUBAREA == area & Strata %in% c("med","low","high")) 
+vms.subarea <- vms %>% dplyr::select(SUBAREA = subarea.name, Strata = sdmstrata, YEAR = YearAlignedforModel, VMSEffort = corr.effort.hr) %>% filter(SUBAREA == area & Strata %in% c("med","low","high")) 
 #model.data.Subarea$VMSEffort <- NA 
 model.data.Subarea <- merge(model.data.Subarea, vms.subarea, by = c("YEAR", "SUBAREA","Strata"), all.x = TRUE)
 model.data.Subarea <- model.data.Subarea %>% arrange(SUBAREA, Strata, YEAR)
 model.data.Subarea
 
 Catch.Subarea <-  Catch %>% filter(Area == substr(area, 4, 6)) %>% mutate(Strata = "high") 
-Catch.Subarea <- Catch.Subarea %>% mutate(Catch.actual = Landingsmt) %>% select(YEAR, Strata, Catch.actual) 
+Catch.Subarea <- Catch.Subarea %>% mutate(Catch.actual = Landingsmt) %>% dplyr::select(YEAR, Strata, Catch.actual) 
 Catch.Subarea <- rbind(data.frame(YEAR = 2001, Strata = "low", Catch.actual = NA), Catch.Subarea)
 model.data.Subarea <- merge(model.data.Subarea, Catch.Subarea, by = c("YEAR", "Strata"), all.x = TRUE)
 model.data.Subarea <- model.data.Subarea %>% arrange(SUBAREA, Strata, YEAR)
 model.data.Subarea
 
 
-wk.Subarea <- wk %>% select(YEAR, SUBAREA = AREA, wk = Condition_105mmSH) %>% filter(SUBAREA == area ) 
+wk.Subarea <- wk %>% dplyr::select(YEAR, SUBAREA = AREA, wk = Condition_105mmSH) %>% filter(SUBAREA == area ) 
 wk.other.years <- data.frame(YEAR = 2001:surveyyear-1, SUBAREA = rep(area,length(2001:surveyyear-1)), wk = rep(NA, length(2001:surveyyear-1)))
 wk.Subarea <- rbind(wk.other.years, wk.Subarea) 
 wk.Subarea <- wk.Subarea %>% arrange(YEAR, SUBAREA)
@@ -424,7 +424,7 @@ model.data.Subarea <- model.data.Subarea %>% arrange(SUBAREA, Strata, YEAR)
 model.data.Subarea
 
 #Reorder 
-model.data.for.subarea <- model.data.Subarea %>%  select(SUBAREA, Year = YEAR, Catch.actual, wk, Strata, Ih, obs.tau, rh, obs.nu, clappers,  obs.phi, L, VMSEffort, gh)  
+model.data.for.subarea <- model.data.Subarea %>%  dplyr::select(SUBAREA, Year = YEAR, Catch.actual, wk, Strata, Ih, obs.tau, rh, obs.nu, clappers,  obs.phi, L, VMSEffort, gh)  
 #write.csv(model.data.for.subarea, paste0(path.directory, assessmentyear,"/Assessment/Data/Model/SFA29A_ModelData.",surveyyear,".csv"), row.names = FALSE ) 
 model.data.for.subarea
 
@@ -463,7 +463,7 @@ revised
 revised$obs.nu[revised$Year == 2023 & revised$Strata == "low"] <- 0.009950331
 
 #write out data for model 
-revised <- revised %>%  select(SUBAREA, Year , Catch.actual, wk, Strata, Ih, obs.tau, rh, obs.nu, clappers,  obs.phi, L, VMSEffort, gh)  
+revised <- revised %>%  dplyr::select(SUBAREA, Year , Catch.actual, wk, Strata, Ih, obs.tau, rh, obs.nu, clappers,  obs.phi, L, VMSEffort, gh)  
 write.csv(revised, paste0(path.directory, assessmentyear,"/Assessment/Data/Model/",area,"_ModelData.",surveyyear,".csv"), row.names = FALSE) 
 
 #############################################################################
