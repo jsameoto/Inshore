@@ -37,11 +37,11 @@ require(shinyWidgets)
 
 #Set working directory to *YOUR FORKED INSHORE REPOSITORY* (Not the Marscal master versions on ESS).
 #dir <- ("https://github.com/Mar-scal/Inshore/tree/main/") #Github
-dir <- "C:/Users/WILSONB/Documents/GitHub/Inshore" #Brittany
+#dir <- "C:/Users/WILSONB/Documents/GitHub/Inshore" #Brittany
 #dir <- () #Jamie
-#dir <- () #Jessica
+dir <- ("D:/GitHub/Inshore") #Jessica
 
-year <- 2022
+year <- 2023
 
 #Remember to follow github workflow (i.e. commiting all changes with details (see commit protocol document (*To be made*)), pushing those changes up to your github forked repository and merging with the master Inshore repo on Marscal.
 ```

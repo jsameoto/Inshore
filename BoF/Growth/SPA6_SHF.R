@@ -31,11 +31,11 @@ for(fun in funcs)
 # Define:
 uid <- un.sameotoj
 pwd <- pw.sameotoj
-uid <- keyring::key_list("Oracle")[1,2]
-pwd <- keyring::key_get("Oracle", uid)
+#uid <- keyring::key_list("Oracle")[1,2]
+#pwd <- keyring::key_get("Oracle", uid)
 
-surveyyear <- 2023  #This is the last survey year 
-assessmentyear <- 2023 #year in which you are conducting the survey 
+surveyyear <- 2024  #This is the last survey year 
+assessmentyear <- 2024 #year in which you are conducting the survey 
 area <- "6"  #SPA assessing recall SPA 1A, 1B, and 4 are grouped; options: "1A1B4and5", "3", "6" 
 path.directory <- "Y:/Inshore/BoF/"
 
@@ -153,7 +153,7 @@ check.in.YYYY <- livefreq %>% filter(CRUISE == paste0("GM", surveyyear))%>%
   st_as_sf(coords = c("lon", "lat"), crs = 4326) %>% 
   filter(VMSSTRATA == "IN")
 
-require(mapview)
+#require(mapview)
 mapview::mapview(check.out.YYYY) +
   mapview(outvms.sf, col.regions = "red")
 

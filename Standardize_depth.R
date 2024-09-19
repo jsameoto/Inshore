@@ -36,7 +36,7 @@ chan <- dbConnect(dbDriver("Oracle"),username=uid, password=pwd,'ptran')
 
 #set survey.year and cruise - *Note: requires single quotations within double quotations*
 survey.year <- "'2024'"
-cruise <- "'BI2024'"
+cruise <- "'BF2024'"
 #appendingfile_year <- "2021" # for importing the current spreadsheet to append to.
 #updatefile_year <- "2021" #For saving file
 
@@ -114,8 +114,8 @@ summary(towsdd.updt)
 #Save
 write.csv(towsdd.updt, "Y:/Inshore/StandardDepth/towsdd_StdDepth.csv", row.names = FALSE)
 
-#**make copy manually and add year to name - move file to Archived folder under Y:/Inshore/StandardDepth **
-# do at end of survey seaon when year's surveys are complete # 
+#*make copy manually and add year to name - move file to Archived folder under Y:/Inshore/StandardDepth **
+# do at end of survey season when year's surveys are complete # 
 
 ###################################################################################################################
 ### Checks - used to run older tows to see if R script workflow generates the same values as ArcGIS workflow     ##
