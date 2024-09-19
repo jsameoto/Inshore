@@ -15,7 +15,7 @@ require(ggplot2)
 require(tidyverse)
 require(sf)
 require(units)
-
+library(ROracle)
 
 #Check tows spatial function and coord convert function:
 
@@ -34,6 +34,12 @@ for(fun in funcs)
 
 #define
 direct <- "Y:/Inshore/Survey/"
+year <- 2024 #For years prior to 2023, the directory name is different! Will need to adjust if running for previous years - year/data entry templates and examples/
+CRUISE <- "BF" # "BI", BF", "GM", "SFA29"
+
+
+uid <- un.sameotoj
+pwd <- pw.sameotoj
 year <- 2023 #For years prior to 2023, the directory name is different! Will need to adjust if running for previous years - year/data entry templates and examples/
 CRUISE <- "BF" # "BI", BF", "GM", "SFA29"
 
@@ -49,6 +55,22 @@ unzip(zipfile=temp, exdir=temp2)
 
 # Now read in the shapefiles
 BF.strata <- st_read(paste0(temp2, "/inshore_survey_strata/PolygonSCSTRATAINFO_rm46-26-57.shp")) %>% st_transform(crs = 4326)
+
+#polgons with strata for SPA 2
+#BF.strata <- st_read(paste0(temp2, "/inshore_survey_strata/archive/PolygonSCSTRATAINFO_AccessedSept102017.shp")) %>% st_transform(crs = 4326)
+
+SPA1A <- st_read(paste0(temp2, "/SPA1A_polygon_NAD83.shp")) %>% mutate(ET_ID = "1A") %>% st_transform(crs = 4326)
+SPA1B <- st_read(paste0(temp2, "/SPA1B_polygon_NAD83.shp")) %>% mutate(ET_ID = "1B") %>% st_transform(crs = 4326)
+SPA2 <- st_read(paste0(temp2, "/SPA2_polygon_NAD83_revised2023.shp")) %>% mutate(ET_ID = "2") %>% st_transform(crs = 4326)
+SPA3 <- st_read(paste0(temp2, "/SPA3_polygon_NAD83.shp")) %>% mutate(ET_ID = "3") %>% st_transform(crs = 4326)
+SPA4 <- st_read(paste0(temp2, "/SPA4_polygon_NAD83.shp")) %>% mutate(ET_ID = "4") %>% st_transform(crs = 4326)
+SPA5 <- st_read(paste0(temp2, "/SPA5_polygon_NAD83.shp")) %>% mutate(ET_ID = "5") %>% st_transform(crs = 4326)
+SPA6A <- st_read(paste0(temp2, "/SPA6A_polygon_NAD83.shp")) %>% mutate(ET_ID = "6A") %>% st_transform(crs = 4326)
+SPA6B <- st_read(paste0(temp2, "/SPA6B_polygon_NAD83.shp")) %>% mutate(ET_ID = "6B") %>% st_transform(crs = 4326)
+SPA6C <- st_read(paste0(temp2, "/SPA6C_polygon_NAD83.shp")) %>% mutate(ET_ID = "6C") %>% st_transform(crs = 4326)
+SPA6D <- st_read(paste0(temp2, "/SPA6D_polygon_NAD83.shp")) %>% mutate(ET_ID = "6D") %>% st_transform(crs = 4326)
+
+
 SPA1A <- st_read(paste0(temp2, "/SPA1A_polygon_NAD83.shp")) %>% mutate(ET_ID = "1A") %>% st_transform(crs = 4326)
 SPA1B <- st_read(paste0(temp2, "/SPA1B_polygon_NAD83.shp")) %>% mutate(ET_ID = "1B") %>% st_transform(crs = 4326)
 SPA2 <- st_read(paste0(temp2, "/SPA2_polygon_NAD83_revised2023.shp")) %>% mutate(ET_ID = "2") %>% st_transform(crs = 4326)
@@ -82,6 +104,10 @@ table(is.na(num.tows$Tow_len))
 #check for NAs in other columns.
 summary(num.tows)
 
+##Bottom code missing for GM2024 tow 134
+is.na(num.tows$Bottom_code)
+
+
 # HGTWGT.csv ----------------------------------------------------------------
 
 mwsh <- read.csv(paste0("Y:/Inshore/Survey/", year,"/DataEntry/",CRUISE, year,"/",CRUISE,year,"_HGTWGT.csv"))
@@ -107,14 +133,31 @@ ggplot() + geom_text(data=mwsh[mwsh$Tow>1 & mwsh$Tow<50,]
                      , aes(Height, Weight, colour=as.factor(Tow), label=as.factor(Tow)))
 
 #Plot individual tows (labels are sample numbers)
+
+ggplot() + geom_text(data=mwsh[mwsh$Tow==33,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
+ggplot() + geom_text(data=mwsh[mwsh$Tow==29,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
+
 ggplot() + geom_text(data=mwsh[mwsh$Tow==15,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
 ggplot() + geom_text(data=mwsh[mwsh$Tow==25,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
+
 
 #Plot fewer tows to visualize better - Tows 50-100
 ggplot() + geom_text(data=mwsh[mwsh$Tow>50 & mwsh$Tow<100,]
                      , aes(Height, Weight, colour=as.factor(Tow), label=as.factor(Tow))) 
 
 #Plot individual tows (labels are sample numbers)
+
+ggplot() + geom_text(data=mwsh[mwsh$Tow==99,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
+ggplot() + geom_text(data=mwsh[mwsh$Tow==69,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
+
+#Plot fewer tows to visualize better - Tows 100 max tow number for cruise
+ggplot() + geom_text(data=mwsh[mwsh$Tow>300 & max(mwsh$Tow),]
+                     , aes(Height, Weight, colour=as.factor(Tow), label=as.factor(Tow))) 
+
+#Plot individual tows (labels are sample numbers)
+ggplot() + geom_text(data=mwsh[mwsh$Tow==273,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
+
+
 ggplot() + geom_text(data=mwsh[mwsh$Tow==72,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
 ggplot() + geom_text(data=mwsh[mwsh$Tow==76,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
 
@@ -125,6 +168,7 @@ ggplot() + geom_text(data=mwsh[mwsh$Tow>100 & max(mwsh$Tow),]
 #Plot individual tows (labels are sample numbers)
 ggplot() + geom_text(data=mwsh[mwsh$Tow==207,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
 
+
 # bycatch.csv ----------------------------------------------------------------
 
 bycatch <- read.csv(paste0("Y:/Inshore/Survey/", year,"/DataEntry/",CRUISE, year,"/",CRUISE,year,"_bycatch.csv"))
@@ -134,7 +178,71 @@ print(bycatch[is.na(bycatch$Species_code) & !is.na(bycatch$Tow_num) |
                 is.na(bycatch$Measure_code) & !is.na(bycatch$Tow_num) |
                 is.na(bycatch$Sex) & !is.na(bycatch$Tow_num),])
 
-ggplot() + geom_point(data=bycatch, aes(Sex, as.factor(Species_code)))
+#Merge bycatch codes onto common name 
+query.bycatch <-("SELECT * FROM scallsur.scspeciescodes")
+
+chan <- dbConnect(dbDriver("Oracle"), username = uid, password = pwd,'ptran')
+bycatch.codes <- dbGetQuery(chan, query.bycatch)
+bycatch.codes <- bycatch.codes %>% select(SPECCD_ID, COMMON)
+
+#left join bycatch on codes to get common name. all.x = TRUE means extra rows will be added to the output, one for each row in x that has no matching row in y
+bycatch.names <- merge(bycatch, bycatch.codes, by.x = c("Species_code"), by.y=c("SPECCD_ID"), all.x = TRUE)
+
+# number of rows should match 
+dim(bycatch.names)[1] == dim(bycatch)[1]
+
+#find if any codes that did not have a match for code in scallsur 
+bycatch.names[is.na(bycatch.names$COMMON),]
+
+
+#Check codes and sex codes make sense 
+ggplot() + geom_point(data=bycatch.names, aes(Sex, as.factor(Species_code)))
+
+#Check codes and sex codes make sense 
+gplot(data=bycatch.names, aes(Sex, COMMON)) + 
+  geom_point() 
+  
+
+
+#CHECK why octopus not sexed
+bycatch[bycatch$Species_code == 4524 & bycatch$Sex == 0,]
+
+#CHECK why lobster not sexed
+bycatch[bycatch$Species_code == 2550 & bycatch$Sex == 0,]
+
+#check by little/winter small skate not sexed 
+bycatch[bycatch$Species_code == 1191 & bycatch$Sex == 0,]
+
+#check why ocean pout sexed 
+bycatch[bycatch$Species_code == 640 & bycatch$Sex != 0,]
+
+#check why windowpane sexed 
+bycatch[bycatch$Species_code == 143 & bycatch$Sex != 0,]
+
+#check why winter flounder sexed 
+bycatch[bycatch$Species_code == 43 & bycatch$Sex != 0,]
+
+#check why winter skate not sexed 
+bycatch[bycatch$Species_code == 204 & bycatch$Sex == 0,]
+
+#check why little skate not sexed 
+bycatch[bycatch$Species_code == 203 & bycatch$Sex == 0,]
+
+
+#check why smooth skate not sexed 
+bycatch[bycatch$Species_code == 202 & bycatch$Sex == 0,]
+
+
+#check why spiny dogfish sexed 
+bycatch[bycatch$Species_code == 220,]
+
+
+
+##confirm different species of sea cucumber 6721
+bycatch[bycatch$Species_code == 6721,]
+
+
+
 # bycatch$Sex[which(bycatch$Species_code==203 & bycatch$Sex==21)] <- 1
 # bycatch[which(bycatch$Species_code==203 & bycatch$Sex==0),]
 # bycatch$Sex[which(bycatch$Species_code==203 & bycatch$Sex==0)] <- 1
@@ -172,6 +280,32 @@ output <- dhf.sh.bins |> filter(TOW == i)
 output$wx <- duplicated(output, fromLast = TRUE)
 dhf.dup.check <- rbind(dhf.dup.check, output)
 }
+###Check these tows for duplicate entries### - Manually inspect all TRUE TOWs (cross reference datasheets) - These may or may not be errors (e.g. could just have 1s in the same column and NAs in the rest).
+dhf.dup.check |> filter(wx == TRUE) |> select(TOW)
+
+#Look at specific Tow number and cross reference with data sheet.
+View(dhf.dup.check |> filter(TOW == 94)) #enter tow
+
+## Check datasheet for tow 128 GM 2024 
+
+#Re-arrange data for plotting:
+
+### REPEAT THIS SECTION FOR LIVE AND THEN FOR DEAD #######
+
+dhf <-  read.csv(paste0("Y:/Inshore/Survey/", year,"/DataEntry/",CRUISE, year,"/",CRUISE,year,"_dhf.csv"))
+
+#Check for duplicated rows from columns X0 and X95, grouped by tow
+dhf.sh.bins <- dhf |> dplyr::select(TOW,X0:X95)
+#Remove rows that contain all NAs for the shell height bins (excluding TOW column).
+dhf.sh.bins <- filter(dhf.sh.bins, rowSums(is.na(dhf.sh.bins[,-1])) != ncol(dhf.sh.bins[,-1]))
+
+#Checks for duplicate rows within a Tow.
+dhf.dup.check <- data.frame()
+for(i in unique(dhf.sh.bins$TOW)){
+output <- dhf.sh.bins |> filter(TOW == i)
+output$wx <- duplicated(output, fromLast = TRUE)
+dhf.dup.check <- rbind(dhf.dup.check, output)
+}
 ###Check these tows for duplicate entries### - These may or may not be errors (e.g. could just have 1s in the same column and NAs in the rest)
 dhf.dup.check |> filter(wx == TRUE) |> select(TOW)
 
@@ -184,73 +318,90 @@ dhf$bin <- ifelse(dhf$c %in% c(0,2), dhf$variable,
                   ifelse(dhf$c %in% c(1,3), as.numeric(dhf$variable)+100, NA))
 dhf <- dplyr::arrange(dhf, TOW, GEAR, c)
 
+#FILTER for live/dead - **!! CHANGE THIS LINE FOR LIVE OR DEAD !!**
+dhf <- dhf |> filter(c %in% c(2,3)) # c(0,1) for Live. and c(2,3)) for Dead
+
+
+#Plot to look for outliers - will need to adjust for survey tow numbers. Plots frequency (y axis), bin (x axis), by Tow and Gear (unlined/lined)
+dhf1 <- dhf[dhf$TOW>0 & dhf$TOW <= 15,]
 
 #Plot to look for outliers - will need to adjust for survey tow numbers. Plots frequency (y axis), bin (x axis), by Tow and Gear (unlined/lined)
 dhf1 <- dhf[dhf$TOW>0 & dhf$TOW < 15,]
+
 ggplot(dhf1, aes(as.numeric(bin), value)) + geom_bar(fill = "aquamarine3", stat = "identity") + facet_grid(GEAR~TOW, scales="free")
 
-dhf2 <- dhf[dhf$TOW>16 & dhf$TOW < 30,]
+dhf2 <- dhf[dhf$TOW >= 16 & dhf$TOW <= 30,]
 #ggplot() + geom_point(data=dhf2, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
 ggplot(dhf2, aes(as.numeric(bin), value)) + geom_bar(fill = "aquamarine3", stat = "identity") + facet_grid(GEAR~TOW, scales="free")
 
-dhf3 <- dhf[dhf$TOW>31 & dhf$TOW < 45,]
+dhf3 <- dhf[dhf$TOW>=31 & dhf$TOW <= 45,]
 #ggplot() + geom_point(data=dhf3, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
 ggplot(dhf3, aes(as.numeric(bin), value)) + geom_bar(fill = "aquamarine3", stat = "identity") + facet_grid(GEAR~TOW, scales="free")
 
-dhf4 <- dhf[dhf$TOW>46 & dhf$TOW < 60,]
-#ggplot() + geom_point(data=dhf4, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
+dhf4 <- dhf[dhf$TOW>=46 & dhf$TOW <= 60,]
 ggplot(dhf4, aes(as.numeric(bin), value)) + geom_bar(fill = "aquamarine3", stat = "identity") + facet_grid(GEAR~TOW, scales="free")
 
-dhf5 <- dhf[dhf$TOW>61 & dhf$TOW < 75,]
-#ggplot() + geom_point(data=dhf5, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
+dhf5 <- dhf[dhf$TOW>=61 & dhf$TOW <= 75,]
 ggplot(dhf5, aes(as.numeric(bin), value)) + geom_bar(fill = "aquamarine3", stat = "identity") + facet_grid(GEAR~TOW, scales="free")
 
-dhf6 <- dhf[dhf$TOW>76 & dhf$TOW < 90,]
-#ggplot() + geom_point(data=dhf5, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
+dhf6 <- dhf[dhf$TOW>=76 & dhf$TOW <= 90,]
 ggplot(dhf6, aes(as.numeric(bin), value)) + geom_bar(fill = "aquamarine3", stat = "identity") + facet_grid(GEAR~TOW, scales="free")
 
-dhf6 <- dhf[dhf$TOW>91 & dhf$TOW < 110,]
-#ggplot() + geom_point(data=dhf6, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
+dhf6 <- dhf[dhf$TOW>=91 & dhf$TOW <= 105,]
 ggplot(dhf6, aes(as.numeric(bin), value)) + geom_bar(fill = "aquamarine3", stat = "identity") + facet_grid(GEAR~TOW, scales="free")
 
-dhf7 <- dhf[dhf$TOW>111 & dhf$TOW < 122,]
-#ggplot() + geom_point(data=dhf7, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
+dhf7 <- dhf[dhf$TOW>=106 & dhf$TOW <= 120,]
 ggplot(dhf7, aes(as.numeric(bin), value)) + geom_bar(fill = "aquamarine3", stat = "identity") + facet_grid(GEAR~TOW, scales="free")
 
-#End of SFA292022 (122 tows)
-
-dhf8 <- dhf[dhf$TOW>241 & dhf$TOW < 252,]
-#ggplot() + geom_point(data=dhf8, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
+dhf8 <- dhf[dhf$TOW>=121 & dhf$TOW <= 135,]
 ggplot(dhf8, aes(as.numeric(bin), value)) + geom_bar(fill = "aquamarine3", stat = "identity") + facet_grid(GEAR~TOW, scales="free")
 
-dhf9 <- dhf[dhf$TOW>251 & dhf$TOW < 262,]
-#ggplot() + geom_point(data=dhf8, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
+dhf9 <- dhf[dhf$TOW>=136 & dhf$TOW <= 150,]
 ggplot(dhf9, aes(as.numeric(bin), value)) + geom_bar(fill = "aquamarine3", stat = "identity") + facet_grid(GEAR~TOW, scales="free")
 
-dhf10 <- dhf[dhf$TOW>261 & dhf$TOW < 272,]
-ggplot() + geom_point(data=dhf10, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
+dhf10 <- dhf[dhf$TOW>=151 & dhf$TOW <= 165,]
+ggplot(dhf10, aes(as.numeric(bin), value)) + geom_bar(fill = "aquamarine3", stat = "identity") + facet_grid(GEAR~TOW, scales="free")
 
-dhf11 <- dhf[dhf$TOW>271 & dhf$TOW < 282,]
-ggplot() + geom_point(data=dhf11, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
+dhf11 <- dhf[dhf$TOW>=166 & dhf$TOW <= 180,]
+ggplot(dhf11, aes(as.numeric(bin), value)) + geom_bar(fill = "aquamarine3", stat = "identity") + facet_grid(GEAR~TOW, scales="free")
+
+dhf12 <- dhf[dhf$TOW>=181 & dhf$TOW <= 195,]
+ggplot(dhf12, aes(as.numeric(bin), value)) + geom_bar(fill = "aquamarine3", stat = "identity") + facet_grid(GEAR~TOW, scales="free")
+
+dhf13 <- dhf[dhf$TOW>=196 & dhf$TOW <= 210,]
+ggplot(dhf13, aes(as.numeric(bin), value)) + geom_bar(fill = "aquamarine3", stat = "identity") + facet_grid(GEAR~TOW, scales="free")
+
+dhf14 <- dhf[dhf$TOW>=211 & dhf$TOW <= 225,]
+ggplot(dhf14, aes(as.numeric(bin), value)) + geom_bar(fill = "aquamarine3", stat = "identity") + facet_grid(GEAR~TOW, scales="free")
+
+dhf15 <- dhf[dhf$TOW>=226 & dhf$TOW <= 240,]
+ggplot(dhf15, aes(as.numeric(bin), value)) + geom_bar(fill = "aquamarine3", stat = "identity") + facet_grid(GEAR~TOW, scales="free")
+
+dhf16 <- dhf[dhf$TOW>=241 & dhf$TOW <= 255,]
+ggplot(dhf16, aes(as.numeric(bin), value)) + geom_bar(fill = "aquamarine3", stat = "identity") + facet_grid(GEAR~TOW, scales="free")
+
+dhf17 <- dhf[dhf$TOW>256 & dhf$TOW <= 270,]
+ggplot(dhf17, aes(as.numeric(bin), value)) + geom_bar(fill = "aquamarine3", stat = "identity") + facet_grid(GEAR~TOW, scales="free")
+
+dhf18 <- dhf[dhf$TOW>271 & dhf$TOW <= 285,]
+ggplot(dhf18, aes(as.numeric(bin), value)) + geom_bar(fill = "aquamarine3", stat = "identity") + facet_grid(GEAR~TOW, scales="free")
+
+dhf19 <- dhf[dhf$TOW>286 & dhf$TOW <= 300,]
+ggplot(dhf19, aes(as.numeric(bin), value)) + geom_bar(fill = "aquamarine3", stat = "identity") + facet_grid(GEAR~TOW, scales="free")
+
+dhf20 <- dhf[dhf$TOW>301 & dhf$TOW <= 315,]
+ggplot(dhf20, aes(as.numeric(bin), value)) + geom_bar(fill = "aquamarine3", stat = "identity") + facet_grid(GEAR~TOW, scales="free")
+
+dhf21 <- dhf[dhf$TOW>316 & dhf$TOW <= 330,]
+ggplot(dhf21, aes(as.numeric(bin), value)) + geom_bar(fill = "aquamarine3", stat = "identity") + facet_grid(GEAR~TOW, scales="free")
+
+dhf22 <- dhf[dhf$TOW>331 & dhf$TOW <= 345,]
+ggplot(dhf22, aes(as.numeric(bin), value)) + geom_bar(fill = "aquamarine3", stat = "identity") + facet_grid(GEAR~TOW, scales="free")
 
 
-dhf12 <- dhf[dhf$TOW>281 & dhf$TOW < 292,]
-ggplot() + geom_point(data=dhf12, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
 
-dhf13 <- dhf[dhf$TOW>291 & dhf$TOW < 302,]
-ggplot() + geom_point(data=dhf13, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
 
-dhf14 <- dhf[dhf$TOW>301 & dhf$TOW < 312,]
-ggplot() + geom_point(data=dhf14, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
-
-dhf15 <- dhf[dhf$TOW>311 & dhf$TOW < 322,]
-ggplot() + geom_point(data=dhf15, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
-
-dhf16 <- dhf[dhf$TOW>321 & dhf$TOW < 332,]
-ggplot() + geom_point(data=dhf16, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
-
-dhf17 <- dhf[dhf$TOW>331 & dhf$TOW < 342,]
-ggplot() + geom_point(data=dhf17, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
+######## REPEAT ABOVE FOR DEAD ######
 
 
 # horsemussellive.csv---------------------
@@ -410,12 +561,11 @@ nrow(hm.l.long)+nrow(hm.d.long)
 ### tow data spatial checks
 ### use SCSTRATAINFO to make sure that they don't cross strata
 ### calculate distances between tow start/end to make sure they are within 1km-ish
-
 # cruise <- "BI2019"
 # direct <- "Y:/INSHORE SCALLOP/Survey/"
 # desktop="C:/Users/keyserf/Desktop/"
 
-#Check for strange Lat Long outliers
+#Check for strange Lat Long outliers (Can check these spatially in the plots below)
 
 start_long_less6500 <- num.tows %>% filter(Start_long < abs(6500))
 min(start_long_less6500$Start_long)
@@ -503,7 +653,17 @@ which(end_long_less6500$End_long == min(end_long_less6500$End_long)) #Which row 
    Strata.sf <- rbind(SPA6A, SPA6B, SPA6C, SPA6D)
  }
  
+ #First Visually inspect all tows to ensure they are within the boundaries of the SPAs/SFAs.
+ 
+ #For interactive map use Mapview to inspect:
+ mapview::mapview(check.tows.sf, zcol = "flag")+
+   mapview::mapview(Strata.sf, col.regions = "transparent")
+ 
+ 
+ #GGPLOT - Plot just the tows to check and save plot
+
  #Plot and save
+
  ggplot()+
    geom_sf(data = Strata.sf) +
    geom_sf(data = check.tows.sf |> filter(flag == "check"), aes(colour = Oracle.tow..))+
@@ -511,6 +671,23 @@ which(end_long_less6500$End_long == min(end_long_less6500$End_long)) #Which row 
                 nudge_x=0.02, nudge_y = 0) #adjust nudge if needed to view tow line properly
  #save
 ggsave(filename = paste0("Y:/Inshore/Survey/", year,"/DataEntry/",CRUISE, year,"/",CRUISE,year,"_strata_check.png"), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+
+ #For interactive map use Mapview to inspect tows to check:
+ mapview::mapview(check.tows.sf |> filter(Oracle.tow.. == 36), zcol = "Oracle.tow..")+
+   mapview::mapview(Strata.sf)
+ 
+ ggplot()+
+   geom_sf(data = Strata.sf) +
+   geom_sf(data = check.tows.sf |> filter(flag == "check"), aes(colour = Oracle.tow..))+
+   geom_sf_text(data = check.tows.sf |> filter(flag == "check"), aes(label = Oracle.tow..),
+                nudge_x=0.02, nudge_y = 0) #adjust nudge if needed to view tow line properly
+ 
+ 
+ plot.tows <- check.tows.sf |> filter(Oracle.tow..%in% c(81:91))
+ mapview::mapview(plot.tows, zcol = "Oracle.tow..")+
+   mapview::mapview(BF.strata)
+ 
+ 
 
  #For interactive map use Mapview to inspect:
  mapview::mapview(check.tows.sf |> filter(flag == "check"), zcol = "Oracle.tow..")+
@@ -520,7 +697,11 @@ ggsave(filename = paste0("Y:/Inshore/Survey/", year,"/DataEntry/",CRUISE, year,"
 
  if(CRUISE != "SFA29"){
    
+
+repeatslastyear <- read.csv(paste0(direct, as.numeric(year)-1, "/DataEntry/",CRUISE,year-1,"/",CRUISE,year-1,"tow_CONVERTED.csv"))
+
 repeatslastyear <- read.csv(paste0(direct, as.numeric(year)-1, "/data entry templates and examples/",CRUISE,year-1,"/",CRUISE,year-1,"tow_CONVERTED.csv"))
+
 rep.comp.tow <- read.csv(paste0(direct, year, "/DataEntry/",CRUISE,year,"/",CRUISE,year,"_REPCOMPTOW.csv"))
  
 tows.for.comparison <- rep.comp.tow$REF.TOW_NO
@@ -597,8 +778,12 @@ check.strata$flag <- ifelse(check.strata$ET_ID != check.strata$Strata_id, "check
    
    check.strata <- st_intersection(BF.strata,check.strata)
    
+
+   check.strata$flag <- ifelse(check.strata$STRATA_ID != check.strata$Strata_id, "check","ok")
+
    check.strata$flag <- ifelse(check.strata$STRATA_ID != check.strata$Strata_id, "check", 
                                ifelse(check.strata$STRATA_ID == check.strata$Strata_id, "ok"))
+
 }
   
 
