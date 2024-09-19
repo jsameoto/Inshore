@@ -25,10 +25,10 @@ pwd <- pw.sameotoj
 #uid <- keyring::key_list("Oracle")[1,2]
 #pwd <- keyring::key_get("Oracle", uid)
 
-surveyyear <- 2023  #This is the last survey year for which you want to include  - not should match year of cruise below 
-cruise <- "BF2023"  #note should match year for surveyyear set above 
+surveyyear <- 2024  #This is the last survey year for which you want to include  - not should match year of cruise below 
+cruise <- "BF2024"  #note should match year for surveyyear set above 
 
-assessmentyear <- 2023 #year in which you are conducting the survey 
+assessmentyear <- 2024 #year in which you are conducting the survey 
 area <- "1A1B4and5"  #SPA assessing recall SPA 1A, 1B, and 4 are grouped; options: "1A1B4and5", "3", "6" 
 path.directory <- "Y:/Inshore/BoF/"
 
@@ -263,7 +263,7 @@ mean.depth.bof$Condition[i] <- predict(MWTSHBF.YYYY, newdata = data.frame(Log.HE
 mean.depth.bof
 
 #Import previous year condition file: 
-BF.con.ts <- read.csv(paste0(path.directory, assessmentyear,"/Assessment/Data/SurveyIndices/SPA1A1B4and5/BoF_ConditionTimeSeries.csv"))
+BF.con.ts <- read.csv(paste0(path.directory, assessmentyear-1,"/Assessment/Data/SurveyIndices/SPA1A1B4and5/BoF_ConditionTimeSeries.csv"))
 unique(BF.con.ts$STRATA)
 #Add NAs for 2020
 #BF.con.ts <- BF.con.ts %>% add_row(YEAR = 2020, STRATA = "AdvocateHarbour", CONDITION = NA) %>% 

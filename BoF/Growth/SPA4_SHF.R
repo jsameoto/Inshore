@@ -37,8 +37,8 @@ pwd <- pw.sameotoj
 #uid <- keyring::key_list("Oracle")[1,2]
 #pwd <- keyring::key_get("Oracle", uid)
 
-surveyyear <- 2023  #This is the last survey year 
-assessmentyear <- 2023 #year in which you are conducting the survey 
+surveyyear <- 2024  #This is the last survey year 
+assessmentyear <- 2024 #year in which you are conducting the survey 
 area <- "1A1B4and5"  #SPA assessing recall SPA 1A, 1B, and 4 are grouped; options: "1A1B4and5", "3", "6" 
 path.directory <- "Y:/Inshore/BoF/"
 
@@ -85,7 +85,7 @@ SPA4.SHFmeans
 colnames(SPA4.SHFmeans) <- c(paste0("X",years))
 SPA4.SHFmeans
 dim(SPA4.SHFmeans)[1] == 40 
-View(SPA4.SHFmeans)  
+#View(SPA4.SHFmeans)  
   
 SPA4.SHFmeans <- data.frame(bin.label = row.names(SPA4.SHFmeans), SPA4.SHFmeans)
 SPA4.SHFmeans$X2020 <- NA # add 2020 column.
