@@ -46,16 +46,16 @@
 #### DEFINE ####
 	
 	direct <- "Y:/Inshore/BoF"
-	fishingyear <- 2023 #most recent year of commercial fishing data to be used (e.g. if fishing season is 2019/2020, use 2020)
-	assessmentyear <- 2023 #year in which you are conducting the assessment
-#	un.ID <- un.raperj #ptran username
-#	pwd.ID <- pw.raperj #ptran password
-	un.ID=un.sameotoj #ptran username
-	pwd.ID=pw.sameotoj#ptran password
+	fishingyear <- 2024 #most recent year of commercial fishing data to be used (e.g. if fishing season is 2019/2020, use 2020)
+	assessmentyear <- 2024 #year in which you are conducting the assessment
+	un.ID <- un.raperj #ptran username
+	pwd.ID <- pw.raperj #ptran password
+#	un.ID=un.sameotoj #ptran username
+#	pwd.ID=pw.sameotoj#ptran password
 	
 #Date range for logs to be selected 
-	start.date.logs <- "2022-10-01"  #YYYY-MM-DD use Oct 1 
-	ends.date.logs <- "2023-10-01"  #YYYY-MM-DD use Oct 1 
+	start.date.logs <- "2023-10-01"  #YYYY-MM-DD use Oct 1 
+	ends.date.logs <- "2024-10-01"  #YYYY-MM-DD use Oct 1 
 	
 #### Read files ####
 	
@@ -204,11 +204,8 @@
   
   #Landings by fleet:
   landings <- as.data.frame(t(tacq[c(1,2,3,5),-1]))
-<<<<<<< HEAD
   names(landings) <- c("FB","MB","TAC")
-=======
   names(landings) <- c("FB","MB","FSC", "TAC")
->>>>>>> 9c8329358cce6e810b9fbecdd8248e6c76d2dc99
   landings$year <- as.numeric(rownames(landings))
   
   #Convert landings data to long format
@@ -564,26 +561,25 @@
   
   
   
-  
-#### French Language Plots ####
-  
-  #PA Reference Point PLOT
-    ggplot(comm.dat.combined) +
-    theme_bw(base_size = 20) + theme(panel.grid=element_blank()) + 
-    geom_point(aes(x = year, y = cpue.kgh)) +
-    geom_line(aes(x = year, y = cpue.kgh)) +
-    scale_y_continuous("Taux de prises (kg/h)", limits=c(0,30), breaks=seq(0,30,5)) +
-    scale_x_continuous("Année", breaks=seq(2002,fishingyear,2)) +
-    geom_hline(yintercept = 6.2, linetype = "dashed") +
-    geom_hline(yintercept = 9.1, linetype = "dashed") +
-    annotate("rect", xmin=-Inf, xmax = Inf, ymin = -Inf, ymax = 6.2, fill = "red", alpha = 0.3) +
-    annotate("rect", xmin=-Inf, xmax = Inf, ymin = 6.2, ymax = 9.1, fill = "yellow", alpha = 0.3) + 
-    annotate("rect", xmin=-Inf, xmax = Inf, ymin = 9.1, ymax = Inf, fill = "green", alpha = 0.3) +
-    annotate("text", label="Bonne Santé", x=2018, y=11, size=7) +
-    annotate("text", label="Prudence", x=2018, y=7.8, size=7) +
-    annotate("text", label="Critique", x=2018, y=5, size=7)
-  #save
-  ggsave(filename = paste0(direct, "/",assessmentyear,"/Assessment/Figures/CommercialData/SPA6_RefPts",fishingyear, "_FR",".png"), width = 24, height = 20, dpi = 400,units='cm')
+# #### French Language Plots ####
+#   
+#   #PA Reference Point PLOT
+#     ggplot(comm.dat.combined) +
+#     theme_bw(base_size = 20) + theme(panel.grid=element_blank()) + 
+#     geom_point(aes(x = year, y = cpue.kgh)) +
+#     geom_line(aes(x = year, y = cpue.kgh)) +
+#     scale_y_continuous("Taux de prises (kg/h)", limits=c(0,30), breaks=seq(0,30,5)) +
+#     scale_x_continuous("Ann?e", breaks=seq(2002,fishingyear,2)) +
+#     geom_hline(yintercept = 6.2, linetype = "dashed") +
+#     geom_hline(yintercept = 9.1, linetype = "dashed") +
+#     annotate("rect", xmin=-Inf, xmax = Inf, ymin = -Inf, ymax = 6.2, fill = "red", alpha = 0.3) +
+#     annotate("rect", xmin=-Inf, xmax = Inf, ymin = 6.2, ymax = 9.1, fill = "yellow", alpha = 0.3) + 
+#     annotate("rect", xmin=-Inf, xmax = Inf, ymin = 9.1, ymax = Inf, fill = "green", alpha = 0.3) +
+#     annotate("text", label="Bonne Sant?", x=2018, y=11, size=7) +
+#     annotate("text", label="Prudence", x=2018, y=7.8, size=7) +
+#     annotate("text", label="Critique", x=2018, y=5, size=7)
+#   #save
+#   ggsave(filename = paste0(direct, "/",assessmentyear,"/Assessment/Figures/CommercialData/SPA6_RefPts",fishingyear, "_FR",".png"), width = 24, height = 20, dpi = 400,units='cm')
     
 
 
