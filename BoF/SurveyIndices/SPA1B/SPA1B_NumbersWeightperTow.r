@@ -2616,7 +2616,6 @@ MBNW.sprwt.est[MBNW.sprwt.est$Year==2024,c(2:3)] <-  c(K$Yspr, K$var.Yspr.correc
 MBNW.sprwt.est
 
 #make dataframe for all of MBN West Commercial Weight/tow
-
 MBNW.sprwt.est$method <- "spr"
 MBNW.sprwt.est$Prop <- 0.268
 names(MBNW.sprwt.est) <- c("Year", "Mean.wt", "var.y", "method", "Prop")
