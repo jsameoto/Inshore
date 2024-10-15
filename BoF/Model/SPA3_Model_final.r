@@ -67,25 +67,32 @@ library(compareDF)
 library(tidyverse)
 
 #### Import Mar-scal functions 
+#funcs <- c("https://raw.githubusercontent.com/Mar-scal/Inshore/master/BoF/Model/CreateExcelModelFile.R",
+#           "https://raw.githubusercontent.com/Mar-scal/Inshore/master/BoF/Model/SSModel_plot_median_new.r",
+#           "https://raw.githubusercontent.com/Mar-scal/Inshore/master/BoF/Model/SSModel_predict_summary_median.r",
+#           "https://raw.githubusercontent.com/Mar-scal/Inshore/master/BoF/Model/BoFmodelstats.R",
+#           "https://raw.githubusercontent.com/Mar-scal/Inshore/master/BoF/Model/eval_pred_inshore_replacement.R")
+#dir <- getwd()
+#for(fun in funcs) 
+#{
+#  temp <- dir
+#  download.file(fun,destfile = basename(fun))
+#  source(paste0(dir,"/",basename(fun)))
+#  file.remove(paste0(dir,"/",basename(fun)))
+#}
+
 funcs <- c("https://raw.githubusercontent.com/Mar-scal/Inshore/master/BoF/Model/CreateExcelModelFile.R",
            "https://raw.githubusercontent.com/Mar-scal/Inshore/master/BoF/Model/SSModel_plot_median_new.r",
            "https://raw.githubusercontent.com/Mar-scal/Inshore/master/BoF/Model/SSModel_predict_summary_median.r",
-           "https://raw.githubusercontent.com/Mar-scal/Inshore/master/BoF/Model/BoFmodelstats.R",
-           "https://raw.githubusercontent.com/Mar-scal/Inshore/master/BoF/Model/eval_pred_inshore_replacement.R")
-dir <- getwd()
+           "https://raw.githubusercontent.com/Mar-scal/Inshore/master/BoF/Model/BoFmodelstats.R")
+dir <- tempdir()
 for(fun in funcs) 
 {
   temp <- dir
-  download.file(fun,destfile = basename(fun))
+  download.file(fun,destfile = paste0(dir, "\\", basename(fun)))
   source(paste0(dir,"/",basename(fun)))
   file.remove(paste0(dir,"/",basename(fun)))
 }
-
-#source(paste0(direct, "/", assessmentyear, "/Assessment/Scripts/Model/CreateExcelModelFile_2021.R"))
-#source(paste0(direct, "/", assessmentyear, "/Assessment/Scripts/Model/SSModel_plot_median_new.r"))
-#source(paste0(direct, "/", assessmentyear, "/Assessment/Scripts/Model/SSModel_predict_summary_median.r"))
-#source(paste0(direct, "/", assessmentyear, "/Assessment/Scripts/Model/BoFmodelstats_2021.R"))
-#source(paste0(direct, "/", assessmentyear, "/Assessment/Scripts/Model/eval_pred_inshore_replacement.R"))  #Use instead of eval.predict() function in SSModel - since this can handle the NAs for 2020 related data whereas the eval.predict() in SSModel cannot 
 
 
 #################################################################
@@ -103,8 +110,8 @@ for(fun in funcs)
 # 9) when satisfied with the table, re-name it to remove the date. E.g. SPAxx_ModelData_R.xlsx 
 
 CreateExcelModelFile(direct = direct, 
-                     assessmentyear=2023, surveyyear = 2023, 
-                     area = 3, LastYearsModelRData = "SPA3_Model_2022", 
+                     assessmentyear=2024, surveyyear = 2024, 
+                     area = 3, LastYearsModelRData = "SPA3_Model_2023", 
                      savefile = T)
 
 # for testing only (using FK private repo): 
@@ -126,7 +133,7 @@ parm = c("B","R","q","K","P","sigma","S","m","kappa.tau","r", "Fmort","mu","Irep
 
 
 # Bring in the data, you will need to update this with the latest numbers!
-raw.dat <- read.xlsx(paste0(direct,"/",assessmentyear,"/Assessment/Data/Model/SPA",area,"/SPA3_ModelData_R_2023-10-19.xlsx"),sheet = "AlignedForModel",cols=1:13)
+raw.dat <- read.xlsx(paste0(direct,"/",assessmentyear,"/Assessment/Data/Model/SPA",area,"/SPA3_ModelData_R_2024-10-14.xlsx"),sheet = "AlignedForModel",cols=1:13)
 str(raw.dat)
 raw.dat$C <- as.numeric(raw.dat$C)
 raw.dat
@@ -163,7 +170,7 @@ SPA3.inits <- function(NY)
 }
 
 # ---- Run the model ----
-Spa3.model <- SSModel(SPA3.dat,BoFSPA4.priors,SPA3.inits(NY),model.file=BoFmodel,Years=yrs, parms = parm, nchains=nchains,niter=niter,nburnin=nburnin,nthin=nthin,debug=T)
+Spa3.model <- SSModel(SPA3.dat,BoFSPA4.priors,SPA3.inits(NY),model.file=BoFmodel,Years=yrs, parms = parm, nchains=nchains,niter=niter,nburnin=nburnin,nthin=nthin,debug=F)
 
 #need to save model as year defined object for prediction evaluations 
 assign(paste0("Spa3.new.", max(yrs)), Spa3.model)   
@@ -207,17 +214,20 @@ png(paste0(direct,"/",assessmentyear,"/Assessment/Figures/Model/SPA",area,"/Surv
 SSModel.plot.median(mod.res, type="Survey.est")
 dev.off()
 
+
+#within SSModel.plot.median: to adjust y placement of Cautious label on plots; fix(SSModel.plot.median)  line 242 y=ref.pts[1]*1.3
+
 # This is our biomass time series with reference points, box plot contains 80% of the data when pred.lim = 0.2 (i.e. 80% of the data is located between the whiskers)
 #windows(11,11)
 png(paste0(direct,"/",assessmentyear,"/Assessment/Figures/Model/SPA",area,"/Model_biomass_figure_",area,".png"),width=8,height=11,units = "in",res=920)
-RP.labels <- data.frame(region = c("Healthy","Cautious","Critical"),x.pos = c(2017,2017,2017),size = c(1.4,1.4,1.4))
+RP.labels <- data.frame(region = c("Healthy","Cautious","Critical"),x.pos = c(2017.5,2017.5,2017.5),size = c(1.4,1.4,1.4))
 SSModel.plot.median(mod.res, ref.pts=c(LRP,USR), Catch.next.year=catch.next.year, pred.lim=0.2, log.R=F,
                     g=mod.res$data$g[mod.res$data$NY],gR=mod.res$data$gR[mod.res$data$NY],RP.labels = RP.labels) 
 dev.off()
 
 #French 
 png(paste0(direct,"/",assessmentyear,"/Assessment/Figures/Model/SPA",area,"/Model_biomass_figure_",area,"_FR.png"),width=8,height=11,units = "in",res=920)
-RP.labels <- data.frame(region = c("Healthy","Cautious","Critical"),x.pos = c(2017,2017,2017),size = c(1.4,1.4,1.4))
+RP.labels <- data.frame(region = c("Healthy","Cautious","Critical"),x.pos = c(2019,2018.5,2018.5),size = c(1.4,1.4,1.4))
 SSModel.plot.median(mod.res, ref.pts=c(LRP,USR), Catch.next.year=catch.next.year, pred.lim=0.2, log.R=F,
                     g=mod.res$data$g[mod.res$data$NY],gR=mod.res$data$gR[mod.res$data$NY],RP.labels = RP.labels, french=TRUE) 
 dev.off()
@@ -225,13 +235,13 @@ dev.off()
 
 #windows(11,11)
 jpeg(paste0(direct,"/",assessmentyear,"/Assessment/Figures/Model/SPA",area,"/Biomass_figure_for_Document_",area,".jpg"),width=11,height=8,units = "in",res=920)
-RP.labels <- data.frame(region = c("Healthy","Cautious","Critical"),x.pos = c(2017,2015,2017),size = c(1.4,1.4,1.4))
+RP.labels <- data.frame(region = c("Healthy","Cautious","Critical"),x.pos = c(2017.5,2017.5,2017.5),size = c(1.4,1.4,1.4))
 SSModel.plot.median(mod.res, ref.pts=c(LRP,USR), Catch.next.year=catch.next.year, pred.lim=0.2,
                     g=mod.res$data$g[mod.res$data$NY],gR=mod.res$data$gR[mod.res$data$NY],log.R=NULL,RP.labels = RP.labels,cex=1.4) 
 dev.off()
 
 jpeg(paste0(direct,"/",assessmentyear,"/Assessment/Figures/Model/SPA",area,"/Biomass_figure_for_Document_",area,"_FR.jpg"),width=11,height=8,units = "in",res=920)
-RP.labels <- data.frame(region = c("Healthy","Cautious","Critical"),x.pos = c(2017,2015,2017),size = c(1.4,1.4,1.4))
+RP.labels <- data.frame(region = c("Healthy","Cautious","Critical"),x.pos = c(2019,2018.5,2018.5),size = c(1.4,1.4,1.4))
 SSModel.plot.median(mod.res, ref.pts=c(LRP,USR), Catch.next.year=catch.next.year, pred.lim=0.2,
                     g=mod.res$data$g[mod.res$data$NY],gR=mod.res$data$gR[mod.res$data$NY],log.R=NULL,RP.labels = RP.labels,cex=1.4, french=TRUE) 
 dev.off()
@@ -408,7 +418,7 @@ dev.off()
 
 
 #Finally here we have the decsion table.  This plots the decision table for all catch rates between 0 and 500 increments of 10 tonnes of catch (seq(0,500,10)).
-decision  <- predict (mod.res, Catch=c(seq(100, 320, 20)), g.parm=mod.res$data$g[mod.res$data$NY],gr.parm=mod.res$data$gR[mod.res$data$NY]) 
+decision  <- predict (mod.res, Catch=c(seq(60, 240, 20)), g.parm=mod.res$data$g[mod.res$data$NY],gr.parm=mod.res$data$gR[mod.res$data$NY]) 
 decision.table <- SSModel_predict_summary_median(decision, LRP=LRP, USR=USR, RRP=0.15)
 decision.table
 
@@ -416,9 +426,11 @@ write.csv(decision.table, paste0(direct,"/",assessmentyear,"/Assessment/Data/Mod
 
 
 # Finally, use the BoF Model stats function to produce a nice summary of model info that we need for assessment docs text 
-# Be sure to set assessmentyear and surveyyear and RDatafile appropriately !!
-stats.output <- BoF.model.stats(area = "3", assessmentyear=2023, surveyyear=2023, direct = "Y:/Inshore/BoF/", RDatafile = "SPA3_Model_2023")
 #Produces files: summary stats temporal_6_2019.csv ; summary stats_6_2019.csv
+# Be sure to set assessmentyear and surveyyear and RDatafile appropriately !!
+#stats.output <- BoF.model.stats(area = "3", assessmentyear=2024, surveyyear=2024, direct = "Y:/Inshore/BoF/", RDatafile = "SPA3_Model_2024")
+stats.output <- BoF.model.stats(area = "3", assessmentyear=assessmentyear, surveyyear=surveyyear, direct = "Y:/Inshore/BoF/", RDatafile = paste0("SPA3_Model_",surveyyear))
+
 
 
 # Probability that current year commercial biomass estimate is in the Healthy zone (i.e. above the USR), and in the cautious zone (ie. interpret as being above the LRP  and below the USR (i.e. 1- prob>USR): 
@@ -476,30 +488,30 @@ I.N.plot.2 <- ggplot(data = raw.dat.forplot.2, aes (x = YearSurvey)) +
   facet_wrap(Indices~., dir = "v", scales = "free")
 I.N.plot.2
 
-png(paste0(direct,"/",assessmentyear,"/Assessment/Figures/SPA3_population_number_index",surveyyear,".png"), type="cairo", width=30, height=15, units = "cm", res=300)
+png(paste0(direct,"/",assessmentyear,"/Assessment/Figures/Model/SPA3/SPA3_population_number_panel_indices",surveyyear,".png"), type="cairo", width=20, height=15, units = "cm", res=300)
 I.N.plot.2
 dev.off() 
 
 #Alternative plot:
 
-#raw.dat$wgt.num <- (raw.dat$I*1000000)/raw.dat$N #convert I in tonnes to grams
-#coeff <- 10^7
-#options(scipen = 999)
+raw.dat$wgt.num <- (raw.dat$I*1000000)/raw.dat$N #convert I in tonnes to grams
+coeff <- 10^7
+options(scipen = 999)
 #raw.dat.forplot <- raw.dat #|> filter(YearSurvey != 2024)
 
 
-#I.N.plot <- ggplot(data = raw.dat.forplot, aes (x = YearSurvey)) + 
-#  geom_line(data = raw.dat.forplot, aes(y = wgt.num), colour = "black") +
-#  geom_line(data = raw.dat.forplot, aes(y = N/coeff), colour = "grey", linetype = "dashed") +
-#  scale_y_continuous(name = "Average weight per scallop (grams)",
-#                     sec.axis = sec_axis(~.*coeff, name = "Numbers of scallops"))+
-#  scale_x_continuous(breaks=seq(min(raw.dat.forplot$YearSurvey),max(raw.dat.forplot$YearSurvey), 2))+
-#  theme_bw()+
-#  theme(axis.title.y.right = element_text(color = "grey"))+
-#  xlab("Year")
-#I.N.plot
+I.N.plot <- ggplot(data = raw.dat, aes (x = YearSurvey)) + 
+  geom_line(data = raw.dat, aes(y = wgt.num), colour = "black") +
+  geom_line(data = raw.dat, aes(y = N/coeff), colour = "grey", linetype = "dashed") +
+  scale_y_continuous(name = "Average weight per scallop (grams)",
+                     sec.axis = sec_axis(~.*coeff, name = "Numbers of scallops"))+
+  scale_x_continuous(breaks=seq(min(raw.dat.forplot$YearSurvey),max(raw.dat.forplot$YearSurvey), 2))+
+  theme_bw()+
+  theme(axis.title.y.right = element_text(color = "grey"))+
+  xlab("Year")
+I.N.plot
 
-#png(paste0(direct,"/",assessmentyear,"/Assessment/Figures/SPA3_population_number_index",surveyyear,".png"), type="cairo", width=30, height=15, units = "cm", res=300)
-#I.N.plot
-#dev.off() 
+png(paste0(direct,"/",assessmentyear,"/Assessment/Figures/Model/SPA3/SPA3_population_number_index",surveyyear,".png"), type="cairo", width=20, height=15, units = "cm", res=300)
+I.N.plot
+dev.off() 
 
