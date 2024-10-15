@@ -20,6 +20,8 @@
 # SPA3_CPUEgridplotyyyy.png
 # SPA3_Effortgridplotyyyy.png
 # SPA3_Catchgridplotyyyy.png
+# SPA1A_CPEUbyMonthyyyy.png
+# SPA1A_LandingsbyMonthyyyy.png
 
 
 #BEFORE RUNNING THIS SCRIPT:
@@ -37,6 +39,7 @@ library(PBSmapping)
 library(data.table)
 library(sf)
 library(dplyr)
+library(lubridate)
 
 source("Y:/Inshore/BoF/Assessment_fns/convert.dd.dddd.r")
 
@@ -44,16 +47,16 @@ source("Y:/Inshore/BoF/Assessment_fns/convert.dd.dddd.r")
 #### DEFINE ####
 
 direct <- "Y:/Inshore/BoF"
-fishingyear <- 2023 #most recent year of commercial fishing data to be used (e.g. if fishing season is 2019/2020, use 2020)
-assessmentyear <- 2023 #year in which you are conducting the assessment
-#un.ID=un.raperj #ptran username
-#pwd.ID=pw.raperj #ptran password
-un.ID=un.sameotoj #ptran username
-pwd.ID=pw.sameotoj#ptran password
+fishingyear <- 2024 #most recent year of commercial fishing data to be used (e.g. if fishing season is 2019/2020, use 2020)
+assessmentyear <- 2024 #year in which you are conducting the assessment
+un.ID=Sys.getenv("un.raperj") #ptran username
+pwd.ID=Sys.getenv("pw.raperj") #ptran password
+#un.ID=un.sameotoj #ptran username
+#pwd.ID=pw.sameotoj#ptran password
 
 #Date range for logs to be selected 
-start.date.logs <- "2022-10-01"  #YYYY-MM-DD use Oct 1 
-ends.date.logs <- "2023-10-01"  #YYYY-MM-DD use Oct 1 
+start.date.logs <- "2023-10-01"  #YYYY-MM-DD use Oct 1 
+ends.date.logs <- "2024-10-01"  #YYYY-MM-DD use Oct 1 
 
 
 #### Read files ####
@@ -98,6 +101,7 @@ quer2 <- paste(
   "FROM scallop.scallop_log_marfis s		         ",
   "WHERE s.assigned_area in ('SPA3')       ",
   " 	AND  s.date_fished >= to_date('",start.date.logs,"','YYYY-MM-DD') and s.date_fished < to_date('",ends.date.logs,"','YYYY-MM-DD') ",
+  "AND s.licence_id not in ('356089', '356090', '356091', '356092', '368730', '369132', '369133') ", #remove FSC
   "	AND (s.data_class = 1                        ",
   "OR (s.data_class = 2 AND s.quality_flag =',4' ) ",
   "OR (s.data_class = 2 AND s.quality_flag =',1,4') ",
@@ -114,20 +118,33 @@ dim(logs)
 logs$lat <- convert.dd.dddd(logs$LATITUDE/100) #coordinates in SCALLOP db are stored without the decimal point, have to divide by 100 to get degrees decimal minutes for convert.dd.dddd
 logs$lon <- (-1)*convert.dd.dddd(logs$LONGITUDE/100)
 
-#Add year column:
+#Add year and month columns:
 logs$DATE_FISHED <- as.Date(logs$DATE_FISHED, format="%Y-%m-%d")  
-logs$YEAR <- as.numeric(format(logs$DATE_FISHED, "%Y")) 
+logs$YEAR <- year(logs$DATE_FISHED)
+logs$month <- month(logs$DATE_FISHED)
+head(logs)
+unique(logs$month)
+str(logs)
 
 #Check data
 table(logs$YEAR) #check years, fishing season in SPA3 spans 2 calendar years
 table(logs$FLEET) #check fleets, SPA3 should only have records from Full Bay
 
+#Check cpue by month
+logs %>%
+  group_by(month) %>%
+  summarise(mean(CPUE_KG))
+
+#Check landings by month
+logs %>%
+  group_by(month) %>%
+  summarise(sum(DAY_CATCH_KG/1000))
 
 #If any issues here, STOP and address with log scan and/or VMS checks. Make any corrections in the SCALLOP db (and send to CDD), then restart this script
 
 
-#In the 2021 season after verifying with log scans, there was still a CPUE outlier of 180.92 kg/h. Removing records with CPUE > 180
-logs <- (logs[which(logs$CPUE_KG <= 180),]) 
+#Remove CPUE outliers
+logs <- (logs[which(logs$CPUE_KG <= 200),]) 
 dim(logs)
 
 #### Separate Catch by area (BILU and St.Mary's Bay) and season (Oct/June) ####
@@ -141,11 +158,10 @@ logs$area[logs$ID%in%findPolys(events,BILU.poly)$EID]<-"BILU"
 
 #Assign fishing season (June/Oct)
 logs$season <- "June" 
-logs$season[logs$DATE_FISHED %between% c("2022-10-01", "2022-11-15")] <- "Oct" #Update date range to current season
+logs$season[logs$DATE_FISHED %between% c("2023-10-01", "2023-11-15")] <- "Oct" #Update date range to current season
 #check date ranges to make sure none fall outside fishing season
 
 table(logs$season, logs$area) #check no of records for rule of <5
-### NOTE FROM JS -- Looks like NO fishing in fall of 2021 once Oct 1 2021 season started??? Is this correct ??? 
 
 #### Calculate CPUE by subarea and season ####
 
@@ -226,6 +242,39 @@ ggplot(filter(comm.dat.subarea, area != 'SMB'| season != 'Oct'), aes(x = year, y
   theme(legend.title = element_blank())
 #save
 ggsave(filename = paste0(direct, "/",assessmentyear,"/Assessment/Figures/CommercialData/SPA3_CPUE",fishingyear, ".png"), width = 24,height = 16,dpi = 400,units='cm')
+
+#CPUE by month
+CPUE_month <- logs %>% 
+  group_by(month) %>%
+  summarise(sum(DAY_CATCH_KG)/sum(effort_h)) %>%
+  slice(5:6,1:4) %>% #reorder months, this may change depending on months fished in a given year
+  mutate(month = factor(month, levels=unique(month))) #so months will plot in correct order
+
+ggplot(CPUE_month, aes(x = month, y = `sum(DAY_CATCH_KG)/sum(effort_h)`, group =1)) +
+  theme_bw(base_size = 16) + theme(panel.grid=element_blank()) + theme(plot.margin = unit(c(1,1,1,1), "cm")) +
+  geom_point() +
+  geom_line() +
+  scale_x_discrete("Month") +
+  scale_y_continuous("Catch Rate (kg/h)", limits = c(0,80), breaks = seq(0,80,10))
+#save
+ggsave(filename = paste0(direct, "/",assessmentyear,"/Assessment/Figures/CommercialData/SPA3_CPUEbyMonth",fishingyear, ".png"), width=24,height=20,dpi=400,units='cm')
+
+#Landings by month (from clean logs)
+Landings_month <- logs %>% 
+  group_by(month) %>%
+  summarise(sum(DAY_CATCH_KG/1000)) %>%
+  slice(5:6,1:4) %>% #reorder months, this may change depending on months fished in a given year
+  mutate(month = factor(month, levels=unique(month))) #so months will plot in correct order
+
+ggplot(Landings_month, aes(x = month, y = `sum(DAY_CATCH_KG/1000)`, group =1)) +
+  theme_bw(base_size = 16) + theme(panel.grid=element_blank()) + theme(plot.margin = unit(c(1,1,1,1), "cm")) +
+  geom_point() +
+  geom_line() +
+  scale_x_discrete("Month") +
+  scale_y_continuous("Landings (t)")
+#save
+ggsave(filename = paste0(direct, "/",assessmentyear,"/Assessment/Figures/CommercialData/SPA3_LandingsbyMonth",fishingyear, ".png"), width=24,height=20,dpi=400,units='cm')
+
 
 #CPUE and Effort (fishery-level)
 ggplot(comm.dat.combined) +
@@ -342,8 +391,7 @@ p +
   geom_sf(data = poly.VMS, fill=NA, colour="red") +
   geom_sf(data = poly.SMB, fill=NA, colour="red") +
   coord_sf(xlim = c(-66.8,-65.8), ylim = c(43.6,44.6), expand = FALSE) +
-  scale_fill_binned(type = "viridis", direction = -1, name="Catch (kg)") +
-  #scale_fill_fermenter(n.breaks = 8, palette = "YlGnBu", limits = c(5,800),direction = 1, name="Catch (kg)") +
+  scale_fill_binned(type = "viridis", direction = -1, name="Catch (kg)", breaks = c(500, 1000, 1500, 2000, 2500, 3000)) +
   theme(plot.title = element_text(size = 14, hjust = 0.5), #plot title size and position
         axis.title = element_text(size = 12),
         axis.text = element_text(size = 10),
@@ -377,8 +425,7 @@ p +
   geom_sf(data = poly.VMS, fill=NA, colour="red") +
   geom_sf(data = poly.SMB, fill=NA, colour="red") +
   coord_sf(xlim = c(-66.8,-65.8), ylim = c(43.6,44.6), expand = FALSE) +
-  #scale_fill_fermenter(n.breaks = 8, palette = "YlGnBu", limits = c(0.1,50),direction = 1, name="Effort (h)") +
-  scale_fill_binned(type = "viridis", direction = -1, name="Effort (h)") +
+  scale_fill_binned(type = "viridis", direction = -1, name="Effort (h)", breaks = c(25, 50, 75, 100, 125)) +
   theme(plot.title = element_text(size = 14, hjust = 0.5), #plot title size and position
         axis.title = element_text(size = 12),
         axis.text = element_text(size = 10),
