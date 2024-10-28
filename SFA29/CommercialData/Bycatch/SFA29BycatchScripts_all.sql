@@ -47,8 +47,8 @@ AND x.speccd_id = d.speccd_id
 AND b.fishset_id = f.fishset_id
 AND x.fishset_id = f.fishset_id
 AND y.tripcd_id = 4320
-AND f.pntcd_id = 3  /*can set to 2 or 3*/
-AND y.board_date BETWEEN '2020-10-01' AND '2021-09-30'
+AND f.pntcd_id = 2  /*can set to 2 or 3*/
+AND y.board_date BETWEEN '2023-10-01' AND '2024-09-30'
 AND g.cfv  NOT IN ('108626','152320', '106881', '105736','105912','105457','106604','106605','4062','102056','1579','102056','4055','101965','4031','1516','1518','1548','4050') /*list of offshore scallop vrns that have been observed trips*/
 order by trip, set_no
 ) 
@@ -92,10 +92,7 @@ AND x.speccd_id = d.speccd_id
 AND b.fishset_id = f.fishset_id
 AND x.fishset_id = f.fishset_id
 AND y.tripcd_id = 4320
---AND f.pntcd_id = 3  /*can set to 2 or 3*/
-AND y.board_date BETWEEN '2020-10-01' AND '2021-09-30'
-AND g.cfv  NOT IN ('152320', '106881', '105736','105912','105457','106604','106605','4062','102056','1579','102056','4055','101965','4031','1516','1518','1548','4050') /*list of offshore scallop vrns that have been observed trips*/
-AND y.trip IN ('J21-0144', 'J21-0119', 'J21-0133', 'J21-0118', 'J21-0131')
+AND y.trip IN ('J24-0083', 'J24-0091', 'J24-0092', 'J24-0098', 'J24-0106', 'J24-0107', 'J24-0133', 'J24-0172')
 )
 
 --SCRIPT 3--/*select observer trip data you want based on list of TRIP #s from above; CFV/VR_NUMBER, BOARD_DATE, LANDING_DATE*/
@@ -135,9 +132,9 @@ AND b.fishset_id = f.fishset_id
 AND x.fishset_id = f.fishset_id
 AND y.tripcd_id = 4320
 AND f.pntcd_id = 2  /*can set to 2 or 3*/
-AND y.board_date BETWEEN '2020-10-01' AND '2021-09-30'
+AND y.board_date BETWEEN '2023-10-01' AND '2024-09-30'
 AND g.cfv  NOT IN ('152320', '106881', '105736','105912','105457','106604','106605','4062','102056','1579','102056','4055','101965','4031','1516','1518','1548','4050') /*list of offshore scallop vrns that have been observed trips*/
-AND y.trip IN ('J21-0144', 'J21-0119', 'J21-0133', 'J21-0118', 'J21-0131')
+AND y.trip IN ('J24-0083', 'J24-0091', 'J24-0092', 'J24-0098', 'J24-0106', 'J24-0107', 'J24-0133', 'J24-0172')
 
 --SCRIPT 4--/*DAYS_OBS for each trip (equal to number of records pulled)*/
 SELECT DISTINCT TRIP, VESSEL_NAME, CFV, LICENSE_NO, SETDATE
@@ -177,18 +174,15 @@ AND x.speccd_id = d.speccd_id
 AND b.fishset_id = f.fishset_id
 AND x.fishset_id = f.fishset_id
 AND y.tripcd_id = 4320
---AND f.pntcd_id = 2  /*can set to 2 or 3*/
-AND y.board_date BETWEEN '2020-10-01' AND '2021-09-30'
-AND g.cfv  NOT IN ('152320', '106881', '105736','105912','105457','106604','106605','4062','102056','1579','102056','4055','101965','4031','1516','1518','1548','4050') /*list of offshore scallop vrns that have been observed trips*/
-AND y.trip IN ('J21-0144', 'J21-0119', 'J21-0133', 'J21-0118', 'J21-0131')
+AND y.trip IN ('J24-0083', 'J24-0091', 'J24-0092', 'J24-0098', 'J24-0106', 'J24-0107', 'J24-0133', 'J24-0172')
 )
 Order By TRIP, SETDATE
 
 --SCRIPT 5--/*use date range BOARD_DATE-1 and LANDING_DATE+1 to get apropriate TRIP_ID*/
 SELECT * 
 FROM scallop.scallop_log_marfis
-WHERE vr_number = 106654
-AND date_fished BETWEEN '2019-08-22' AND '2019-08-27'
+WHERE vr_number = 108465
+AND date_fished BETWEEN '2024-08-05' AND '2024-08-09'
 
 --SCRIPT 6--/*total hooks (i.e. total tows observed) and OBS_TOWS*/
 SELECT SUM(NUM_HOOK_HAUL) FROM (
@@ -230,8 +224,8 @@ AND b.fishset_id = f.fishset_id
 AND x.fishset_id = f.fishset_id
 AND f.pntcd_id = 2
 AND y.tripcd_id = 4320
-AND y.trip in ('J21-0131')
-AND comarea_id = 'SF29B' /*include only for split trips*/
+AND y.trip in ('J24-0172')
+--AND comarea_id = 'SF29B' /*include only for split trips*/
 order by y.trip, b.set_no)
 );
 
@@ -275,7 +269,7 @@ AND x.fishset_id = f.fishset_id
 AND f.pntcd_id = 2
 AND y.tripcd_id = 4320
 AND b.source = 0
-AND y.trip in ('J21-0131'))
+AND y.trip in ('J24-0172'))
 ORDER BY TRIP, COMAREA_ID, SET_NO
 
 --SCRIPT 8--/*pulls the observed trip from MARFIS; MON_DOC_ID, SUM_SLIP_WT, DATE_LANDED_MARFIS*/
@@ -287,8 +281,8 @@ AND trip_id = 508523
 --SCRIPT 9--/*pulls TOT_TOWS for the trip from MARFIS data*/
 SELECT SUM(NUM_OF_TOWS)
 FROM scallop.scallop_log_marfis
-WHERE trip_id = 552910
-AND assigned_area = '29B' /*include only for split trips*/
+WHERE trip_id = 618793
+--AND assigned_area = '29B' /*include only for split trips*/
 
 
 --SCRIPT 10--/*to get bycatch discard sums - save as csv.*/

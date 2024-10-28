@@ -29,19 +29,16 @@ for(fun in funcs)
   source(paste0(dir,"/",basename(fun)))
   file.remove(paste0(dir,"/",basename(fun)))
 }
-#source(paste0("Y:/Inshore/Survey/", year, "/data entry templates and examples/entry check functions/check.tows.spatial.r"))
 
 
 #define
 direct <- "Y:/Inshore/Survey/"
 year <- 2024 #For years prior to 2023, the directory name is different! Will need to adjust if running for previous years - year/data entry templates and examples/
-CRUISE <- "BF" # "BI", BF", "GM", "SFA29"
-
-
-uid <- un.sameotoj
-pwd <- pw.sameotoj
-year <- 2023 #For years prior to 2023, the directory name is different! Will need to adjust if running for previous years - year/data entry templates and examples/
-CRUISE <- "BF" # "BI", BF", "GM", "SFA29"
+CRUISE <- "SFA29" # "BI", BF", "GM", "SFA29"
+uid = Sys.getenv("un.raperj") #ptran username
+pwd = Sys.getenv("pw.raperj") #ptran password
+#uid <- un.sameotoj
+#pwd <- pw.sameotoj
 
 
 #Read in shapefiles if needed
@@ -58,18 +55,6 @@ BF.strata <- st_read(paste0(temp2, "/inshore_survey_strata/PolygonSCSTRATAINFO_r
 
 #polgons with strata for SPA 2
 #BF.strata <- st_read(paste0(temp2, "/inshore_survey_strata/archive/PolygonSCSTRATAINFO_AccessedSept102017.shp")) %>% st_transform(crs = 4326)
-
-SPA1A <- st_read(paste0(temp2, "/SPA1A_polygon_NAD83.shp")) %>% mutate(ET_ID = "1A") %>% st_transform(crs = 4326)
-SPA1B <- st_read(paste0(temp2, "/SPA1B_polygon_NAD83.shp")) %>% mutate(ET_ID = "1B") %>% st_transform(crs = 4326)
-SPA2 <- st_read(paste0(temp2, "/SPA2_polygon_NAD83_revised2023.shp")) %>% mutate(ET_ID = "2") %>% st_transform(crs = 4326)
-SPA3 <- st_read(paste0(temp2, "/SPA3_polygon_NAD83.shp")) %>% mutate(ET_ID = "3") %>% st_transform(crs = 4326)
-SPA4 <- st_read(paste0(temp2, "/SPA4_polygon_NAD83.shp")) %>% mutate(ET_ID = "4") %>% st_transform(crs = 4326)
-SPA5 <- st_read(paste0(temp2, "/SPA5_polygon_NAD83.shp")) %>% mutate(ET_ID = "5") %>% st_transform(crs = 4326)
-SPA6A <- st_read(paste0(temp2, "/SPA6A_polygon_NAD83.shp")) %>% mutate(ET_ID = "6A") %>% st_transform(crs = 4326)
-SPA6B <- st_read(paste0(temp2, "/SPA6B_polygon_NAD83.shp")) %>% mutate(ET_ID = "6B") %>% st_transform(crs = 4326)
-SPA6C <- st_read(paste0(temp2, "/SPA6C_polygon_NAD83.shp")) %>% mutate(ET_ID = "6C") %>% st_transform(crs = 4326)
-SPA6D <- st_read(paste0(temp2, "/SPA6D_polygon_NAD83.shp")) %>% mutate(ET_ID = "6D") %>% st_transform(crs = 4326)
-
 
 SPA1A <- st_read(paste0(temp2, "/SPA1A_polygon_NAD83.shp")) %>% mutate(ET_ID = "1A") %>% st_transform(crs = 4326)
 SPA1B <- st_read(paste0(temp2, "/SPA1B_polygon_NAD83.shp")) %>% mutate(ET_ID = "1B") %>% st_transform(crs = 4326)
@@ -99,7 +84,6 @@ num.tows <- read.csv(paste0("Y:/Inshore/Survey/", year,"/DataEntry/",CRUISE, yea
 
 #Check for missing tow lengths:
 table(is.na(num.tows$Tow_len))
-#table(is.na(num.tows$Tow_len_ID))
 
 #check for NAs in other columns.
 summary(num.tows)
@@ -135,10 +119,10 @@ ggplot() + geom_text(data=mwsh[mwsh$Tow>1 & mwsh$Tow<50,]
 #Plot individual tows (labels are sample numbers)
 
 ggplot() + geom_text(data=mwsh[mwsh$Tow==33,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
-ggplot() + geom_text(data=mwsh[mwsh$Tow==29,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
+ggplot() + geom_text(data=mwsh[mwsh$Tow==28,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
 
-ggplot() + geom_text(data=mwsh[mwsh$Tow==15,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
-ggplot() + geom_text(data=mwsh[mwsh$Tow==25,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
+ggplot() + geom_text(data=mwsh[mwsh$Tow==16,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
+ggplot() + geom_text(data=mwsh[mwsh$Tow==21,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
 
 
 #Plot fewer tows to visualize better - Tows 50-100
@@ -147,8 +131,8 @@ ggplot() + geom_text(data=mwsh[mwsh$Tow>50 & mwsh$Tow<100,]
 
 #Plot individual tows (labels are sample numbers)
 
-ggplot() + geom_text(data=mwsh[mwsh$Tow==99,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
-ggplot() + geom_text(data=mwsh[mwsh$Tow==69,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
+ggplot() + geom_text(data=mwsh[mwsh$Tow==77,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
+ggplot() + geom_text(data=mwsh[mwsh$Tow==84,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
 
 #Plot fewer tows to visualize better - Tows 100 max tow number for cruise
 ggplot() + geom_text(data=mwsh[mwsh$Tow>300 & max(mwsh$Tow),]
@@ -198,12 +182,6 @@ bycatch.names[is.na(bycatch.names$COMMON),]
 #Check codes and sex codes make sense 
 ggplot() + geom_point(data=bycatch.names, aes(Sex, as.factor(Species_code)))
 
-#Check codes and sex codes make sense 
-gplot(data=bycatch.names, aes(Sex, COMMON)) + 
-  geom_point() 
-  
-
-
 #CHECK why octopus not sexed
 bycatch[bycatch$Species_code == 4524 & bycatch$Sex == 0,]
 
@@ -228,28 +206,16 @@ bycatch[bycatch$Species_code == 204 & bycatch$Sex == 0,]
 #check why little skate not sexed 
 bycatch[bycatch$Species_code == 203 & bycatch$Sex == 0,]
 
-
 #check why smooth skate not sexed 
 bycatch[bycatch$Species_code == 202 & bycatch$Sex == 0,]
 
-
 #check why spiny dogfish sexed 
 bycatch[bycatch$Species_code == 220,]
-
-
 
 ##confirm different species of sea cucumber 6721
 bycatch[bycatch$Species_code == 6721,]
 
 
-
-# bycatch$Sex[which(bycatch$Species_code==203 & bycatch$Sex==21)] <- 1
-# bycatch[which(bycatch$Species_code==203 & bycatch$Sex==0),]
-# bycatch$Sex[which(bycatch$Species_code==203 & bycatch$Sex==0)] <- 1
-# bycatch[which(bycatch$Species_code==204 & bycatch$Sex==0),]
-# bycatch[bycatch$Species_code==160,]
-# bycatch[bycatch$Species_code==1220,]$Species_code <- 122
-# bycatch[bycatch$Species_code==1991,]$Species_code <- 1191
 
 # We only record ocean pout, so the species code should be 640. Change records of 845 or other (642, 598) to 640. Note that in 2012, they were miscoded as 845. 
 # bycatch[which(bycatch$Species_code%in% c(845, 642, 598)),]
@@ -261,7 +227,6 @@ ggplot() + geom_point(data=bycatch, aes(as.factor(Sex), Measurement)) + facet_wr
 #bycatch[which(bycatch$Species_code==1191 & bycatch$Measurement==30.5),]$Measurement <- 30
 #bycatch[which(bycatch$Species_code==1191 & bycatch$Measurement>30 & bycatch$Tow_num==244),]$Measurement <- 26
 
-#write.csv(bycatch, file="Y:/INSHORE SCALLOP/Survey/2018/data entry templates and examples/entry check functions/BF2018_bycatch_FK.csv")
 
 
 # dhf.csv ----------------------------------------------------------------
@@ -281,7 +246,7 @@ output$wx <- duplicated(output, fromLast = TRUE)
 dhf.dup.check <- rbind(dhf.dup.check, output)
 }
 ###Check these tows for duplicate entries### - Manually inspect all TRUE TOWs (cross reference datasheets) - These may or may not be errors (e.g. could just have 1s in the same column and NAs in the rest).
-dhf.dup.check |> filter(wx == TRUE) |> select(TOW)
+dhf.dup.check |> filter(wx == TRUE) |> dplyr::select(TOW)
 
 #Look at specific Tow number and cross reference with data sheet.
 View(dhf.dup.check |> filter(TOW == 94)) #enter tow
@@ -307,7 +272,7 @@ output$wx <- duplicated(output, fromLast = TRUE)
 dhf.dup.check <- rbind(dhf.dup.check, output)
 }
 ###Check these tows for duplicate entries### - These may or may not be errors (e.g. could just have 1s in the same column and NAs in the rest)
-dhf.dup.check |> filter(wx == TRUE) |> select(TOW)
+dhf.dup.check |> filter(wx == TRUE) |> dplyr::select(TOW)
 
 
 #Re-arrange data for plotting:
@@ -319,11 +284,8 @@ dhf$bin <- ifelse(dhf$c %in% c(0,2), dhf$variable,
 dhf <- dplyr::arrange(dhf, TOW, GEAR, c)
 
 #FILTER for live/dead - **!! CHANGE THIS LINE FOR LIVE OR DEAD !!**
-dhf <- dhf |> filter(c %in% c(2,3)) # c(0,1) for Live. and c(2,3)) for Dead
+dhf <- dhf |> filter(c %in% c(0,1)) # c(0,1) for Live. and c(2,3)) for Dead
 
-
-#Plot to look for outliers - will need to adjust for survey tow numbers. Plots frequency (y axis), bin (x axis), by Tow and Gear (unlined/lined)
-dhf1 <- dhf[dhf$TOW>0 & dhf$TOW <= 15,]
 
 #Plot to look for outliers - will need to adjust for survey tow numbers. Plots frequency (y axis), bin (x axis), by Tow and Gear (unlined/lined)
 dhf1 <- dhf[dhf$TOW>0 & dhf$TOW < 15,]
