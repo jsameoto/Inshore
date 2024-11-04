@@ -176,8 +176,8 @@ names(catch.dat.subarea) <- c("area", "season", "catch.kg")
 nlogs.subarea <- aggregate(logs$LOG_SEQ, by=list(logs$area, logs$season), FUN=length)
 names(nlogs.subarea) <- c("area", "season", "n")
 
-cpue.subarea <- merge(merge(effort.dat.subarea, catch.dat.subarea, by.x=c("area", "season"), by.y=c("area", "season")), 
-                      nlogs.subarea, by.x=c("area", "season"), by.y=c("area", "season"))
+cpue.subarea <- merge(merge(effort.dat.subarea, catch.dat.subarea, by.x=c("area", "season"), by.y=c("area", "season"), all=TRUE), 
+                      nlogs.subarea, by.x=c("area", "season"), by.y=c("area", "season"), all=TRUE)
 
 #CPUE is reported as long as rule of 5 is met for Privacy Act considerations, otherwise returns NA.
 cpue.subarea$cpue.kgh <- ifelse(cpue.subarea$n > 5, cpue.subarea$catch.kg/cpue.subarea$effort.hr, NA)
