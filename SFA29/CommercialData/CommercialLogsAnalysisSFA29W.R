@@ -28,10 +28,10 @@ source("Y:/Inshore/BoF/Assessment_fns/convert.dd.dddd.r")
 #### DEFINE ####
 
 direct <- "Y:/Inshore/SFA29"
-fishingyear <- 2023 #most recent year of commercial fishing data to be used (e.g. if fishing season is 2019/2020, use 2020)
-assessmentyear <- 2024 #year in which you are conducting the assessment
-un.ID = #ptran username
-pwd.ID = #ptran password
+fishingyear <- 2024 #most recent year of commercial fishing data to be used (e.g. if fishing season is 2019/2020, use 2020)
+assessmentyear <- 2025 #year in which you are conducting the assessment
+un.ID=Sys.getenv("un.raperj") #ptran username
+pwd.ID=Sys.getenv("pw.raperj") #ptran password
 ess <- "Y" #identify ess drive
 
 #### Import Mar-scal functions for Pectinid Projector
@@ -246,9 +246,9 @@ ggplot() +
   theme_bw(base_size = 16) + theme(panel.grid=element_blank()) + # white background, no gridlines
   geom_bar(data=landings.year[landings.year$variable%in%c('FB','EB','Combined', 'FSC'),], aes(Year, value, fill=factor(variable, levels = c('FSC','EB', 'FB','Combined'))), colour="black", stat="identity") + # plots the bars
   geom_line(data=landings.year[landings.year$variable == 'TAC',], aes(x = Year, y = value), lwd=0.55) + # adds the overlay line
-  scale_y_continuous("Débarquements (tonnes de chairs)", expand = expand_scale(mult = c(0.01,0.1)), breaks=seq(0,800,200)) + # 
-  scale_x_continuous("Année", breaks=seq(2001,fishingyear,2)) +
-  scale_fill_manual(values=c("grey13","lightskyblue4","white","grey84"), labels=c("À des fins alimentaires, sociales et rituelles","Est de Baccaro", "Totalité de la baie", "Total des flottilles"), name=NULL) +
+  scale_y_continuous("DÃ©barquements (tonnes de chairs)", expand = expand_scale(mult = c(0.01,0.1)), breaks=seq(0,800,200)) + # 
+  scale_x_continuous("AnnÃ©e", breaks=seq(2001,fishingyear,2)) +
+  scale_fill_manual(values=c("grey13","lightskyblue4","white","grey84"), labels=c("Ã€ des fins alimentaires, sociales et rituelles","Est de Baccaro", "TotalitÃ© de la baie", "Total des flottilles"), name=NULL) +
   annotate(geom="text",label="TAC", x=2004, y= 620) +
   theme(legend.position=c(0.75, 0.8))
 #save

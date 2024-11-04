@@ -21,6 +21,8 @@
 # SPA6_CPUEgridplotyyyy.png
 # SPA6_Effortgridplotyyyy.png
 # SPA6_Catchgridplotyyyy.png
+# SPA6_CPEUbyMonthyyyy.png
+# SPA6_LandingsbyMonthyyyy.png
 
 
 #BEFORE RUNNING THIS SCRIPT:
@@ -39,6 +41,7 @@
 	library(ggplot2)
 	library(RColorBrewer)
 	library(sf)
+	library(lubridate)
 
 	source("Y:/Inshore/BoF/Assessment_fns/convert.dd.dddd.r")
 	
@@ -48,8 +51,8 @@
 	direct <- "Y:/Inshore/BoF"
 	fishingyear <- 2024 #most recent year of commercial fishing data to be used (e.g. if fishing season is 2019/2020, use 2020)
 	assessmentyear <- 2024 #year in which you are conducting the assessment
-	un.ID <- un.raperj #ptran username
-	pwd.ID <- pw.raperj #ptran password
+	un.ID=Sys.getenv("un.raperj") #ptran username
+	pwd.ID=Sys.getenv("pw.raperj") #ptran password
 #	un.ID=un.sameotoj #ptran username
 #	pwd.ID=pw.sameotoj#ptran password
 	
@@ -105,6 +108,7 @@
 		"FROM scallop.scallop_log_marfis s		         ",
 		"WHERE s.assigned_area in ('6A','6B','6C','6D')       ",
 		" 	AND  s.date_fished >= to_date('",start.date.logs,"','YYYY-MM-DD') and s.date_fished < to_date('",ends.date.logs,"','YYYY-MM-DD') ",
+		"AND s.licence_id not in ('356089', '356090', '356091', '356092', '368730', '369132', '369133') ", #remove FSC
 		"	AND (s.data_class = 1                        ",
 		"OR (s.data_class = 2 AND s.quality_flag =',4' ) ",
 		"OR (s.data_class = 2 AND s.quality_flag =',1,4') ",
@@ -121,15 +125,28 @@
 	logs$lat <- convert.dd.dddd(logs$LATITUDE/100)
 	logs$lon <- (-1)*convert.dd.dddd(logs$LONGITUDE/100)
 	
-	#Add year column:
+	#Add year and month columns:
 	logs$DATE_FISHED <- as.Date(logs$DATE_FISHED, format="%Y-%m-%d")  
-	logs$YEAR <- as.numeric(format(logs$DATE_FISHED, "%Y")) 
-	
+	logs$YEAR <- year(logs$DATE_FISHED)
+	logs$month <- month(logs$DATE_FISHED)
+	head(logs)
+	unique(logs$month)
+	str(logs)
+
 	#Check data
 	table(logs$YEAR) #check years, fishery for SPA 6 should be just for a SINGLE year since starts in Jan
 	table(logs$FLEET) #check fleets, SPA6 is fished by Full Bay and Mid-Bay
 	table(logs$ASSIGNED_AREA, logs$FLEET) #check number of records for rule of <5
 	
+	#Check cpue by month
+	logs %>%
+	  group_by(month) %>%
+	  summarise(mean(CPUE_KG))
+	
+	#Check landings by month
+	logs %>%
+	  group_by(month) %>%
+	  summarise(sum(DAY_CATCH_KG/1000))
 	
 	#If any issues here, STOP and address with log scan and/or VMS checks. Make any corrections in the SCALLOP db (and send to CDD), then restart this script
 	
@@ -164,7 +181,7 @@
   #CPUE is reported as long as rule of 5 is met for Privacy Act considerations, otherwise returns NA.
   cpue.subarea$cpue.kgh <- ifelse(cpue.subarea$n > 5, cpue.subarea$catch.kg/cpue.subarea$effort.hr, NA)
   
-  #cpue.subarea$cpue.kgh <- cpue.subarea$catch.kg/cpue.subarea$effort.hr to look at records without Privacy removals
+  #cpue.subarea$cpue.kgh <- cpue.subarea$catch.kg/cpue.subarea$effort.hr #to look at records without Privacy removals
   
 #### Update CPUE_spa6_subarea csv file ####
   
@@ -204,7 +221,6 @@
   
   #Landings by fleet:
   landings <- as.data.frame(t(tacq[c(1,2,3,5),-1]))
-  names(landings) <- c("FB","MB","TAC")
   names(landings) <- c("FB","MB","FSC", "TAC")
   landings$year <- as.numeric(rownames(landings))
   
@@ -271,19 +287,19 @@
   
   #Plot points and check strata allocations   
   eventsIN <- logs %>%
-    select(ID, lon, lat, VMSSTRATA) %>%
+    dplyr::select(ID, lon, lat, VMSSTRATA) %>%
     filter(VMSSTRATA == 'IN') %>%
     rename(EID = ID, X = lon, Y = lat)
   attr(eventsIN,"projection") <- "LL"
   
   eventsOUT <- logs %>%
-    select(ID, lon, lat, VMSSTRATA) %>%
+    dplyr::select(ID, lon, lat, VMSSTRATA) %>%
     filter(VMSSTRATA == 'OUT') %>%
     rename(EID = ID, X = lon, Y = lat)
   attr(eventsOUT,"projection") <- "LL"
   
   eventsNA <- logs %>%
-    select(ID, lon, lat, VMSSTRATA) %>%
+    dplyr::select(ID, lon, lat, VMSSTRATA) %>%
     filter(is.na(VMSSTRATA)) %>%
     rename(EID = ID, X = lon, Y = lat)
   attr(eventsNA,"projection") <- "LL"                  
@@ -317,7 +333,7 @@
 
 #### Time Series Plots ####
   
-  #CPUE by fleet and subarea:
+#CPUE by fleet and subarea:
   
   #remove cpue prior to 2004 for Full Bay with too few records to show catch rate within subarea:
   #6B: 2002, 2003	(all others already NA in file)
@@ -335,6 +351,37 @@
   #save
   ggsave(filename = paste0(direct, "/",assessmentyear,"/Assessment/Figures/CommercialData/SPA6_CPUE",fishingyear, ".png"), width = 24, height = 24, dpi = 400,units='cm')
      
+#CPUE by month
+  CPUE_month <- logs %>% 
+    group_by(month) %>%
+    summarise(sum(DAY_CATCH_KG)/sum(effort_h)) %>%
+    slice(1:7) %>% #reorder months, this may change depending on months fished in a given year
+    mutate(month = factor(month, levels=unique(month))) #so months will plot in correct order
+  
+  ggplot(CPUE_month, aes(x = month, y = `sum(DAY_CATCH_KG)/sum(effort_h)`, group =1)) +
+    theme_bw(base_size = 16) + theme(panel.grid=element_blank()) + theme(plot.margin = unit(c(1,1,1,1), "cm")) +
+    geom_point() +
+    geom_line() +
+    scale_x_discrete("Month") +
+    scale_y_continuous("Catch Rate (kg/h)", limits = c(0,60), breaks = seq(0,60,10))
+  #save
+  ggsave(filename = paste0(direct, "/",assessmentyear,"/Assessment/Figures/CommercialData/SPA6_CPUEbyMonth",fishingyear, ".png"), width=24,height=20,dpi=400,units='cm')
+  
+#Landings by month (from clean logs)
+  Landings_month <- logs %>% 
+    group_by(month) %>%
+    summarise(sum(DAY_CATCH_KG/1000)) %>%
+    slice(1:7) %>% #reorder months, this may change depending on months fished in a given year
+    mutate(month = factor(month, levels=unique(month))) #so months will plot in correct order
+  
+  ggplot(Landings_month, aes(x = month, y = `sum(DAY_CATCH_KG/1000)`, group =1)) +
+    theme_bw(base_size = 16) + theme(panel.grid=element_blank()) + theme(plot.margin = unit(c(1,1,1,1), "cm")) +
+    geom_point() +
+    geom_line() +
+    scale_x_discrete("Month") +
+    scale_y_continuous("Landings (t)")
+  #save
+  ggsave(filename = paste0(direct, "/",assessmentyear,"/Assessment/Figures/CommercialData/SPA6_LandingsbyMonth",fishingyear, ".png"), width=24,height=20,dpi=400,units='cm')
   
 
   #CPUE and Effort by fleet (fishery-level)
@@ -376,24 +423,24 @@
     theme(legend.position=c(0.75, 0.85)) # play with the location if you want it inside the plotting panel
   ggsave(filename = paste0(direct, "/",assessmentyear,"/Assessment/Figures/CommercialData/SPA6_TACandLandings",fishingyear, ".png"), width = 24, height = 20, dpi = 400,units='cm')
   
-  #PA Reference Point PLOT
-  ggplot(comm.dat.combined) +
-    theme_bw(base_size = 20) + theme(panel.grid=element_blank()) + 
-    geom_point(aes(x = year, y = cpue.kgh)) +
-    geom_line(aes(x = year, y = cpue.kgh)) +
-    scale_y_continuous("Catch rate (kg/h)", limits=c(0,30), breaks=seq(0,30,5)) +
-    scale_x_continuous("Year", breaks=seq(2002,fishingyear,2)) +
-    geom_hline(yintercept = 6.2, linetype = "dashed") +
-    geom_hline(yintercept = 9.1, linetype = "dashed") +
-    annotate("rect", xmin=-Inf, xmax = Inf, ymin = -Inf, ymax = 6.2, fill = "red", alpha = 0.3) +
-    annotate("rect", xmin=-Inf, xmax = Inf, ymin = 6.2, ymax = 9.1, fill = "yellow", alpha = 0.3) + 
-    annotate("rect", xmin=-Inf, xmax = Inf, ymin = 9.1, ymax = Inf, fill = "green", alpha = 0.3) +
-    annotate("text", label="Healthy", x=2018, y=11, size=7) +
-    annotate("text", label="Cautious", x=2018, y=7.8, size=7) +
-    annotate("text", label="Critical", x=2018, y=5, size=7)
-  #save
-  ggsave(filename = paste0(direct, "/",assessmentyear,"/Assessment/Figures/CommercialData/SPA6_RefPts",fishingyear, ".png"), width = 24, height = 20, dpi = 400,units='cm')
- 
+  # #PA Reference Point PLOT
+  # ggplot(comm.dat.combined) +
+  #   theme_bw(base_size = 20) + theme(panel.grid=element_blank()) + 
+  #   geom_point(aes(x = year, y = cpue.kgh)) +
+  #   geom_line(aes(x = year, y = cpue.kgh)) +
+  #   scale_y_continuous("Catch rate (kg/h)", limits=c(0,30), breaks=seq(0,30,5)) +
+  #   scale_x_continuous("Year", breaks=seq(2002,fishingyear,2)) +
+  #   geom_hline(yintercept = 6.2, linetype = "dashed") +
+  #   geom_hline(yintercept = 9.1, linetype = "dashed") +
+  #   annotate("rect", xmin=-Inf, xmax = Inf, ymin = -Inf, ymax = 6.2, fill = "red", alpha = 0.3) +
+  #   annotate("rect", xmin=-Inf, xmax = Inf, ymin = 6.2, ymax = 9.1, fill = "yellow", alpha = 0.3) + 
+  #   annotate("rect", xmin=-Inf, xmax = Inf, ymin = 9.1, ymax = Inf, fill = "green", alpha = 0.3) +
+  #   annotate("text", label="Healthy", x=2018, y=11, size=7) +
+  #   annotate("text", label="Cautious", x=2018, y=7.8, size=7) +
+  #   annotate("text", label="Critical", x=2018, y=5, size=7)
+  # #save
+  # ggsave(filename = paste0(direct, "/",assessmentyear,"/Assessment/Figures/CommercialData/SPA6_RefPts",fishingyear, ".png"), width = 24, height = 20, dpi = 400,units='cm')
+  # 
   
   
 #PA Reference Point PLOT -- WITHOUT PA Zones - since MAY change to Biomass based PA in Dec 2022 -- being prepared here.. 
@@ -434,7 +481,7 @@
   p <- pecjector(area =list(x=c(-67.4,-65.8), y=c(44.2,45.2), crs=4326),repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot', add_layer = list(land = "grey", bathy = c(50,'c'), scale.bar = c('bl',0.5)))
   
   
-  #CPUE Grid Plot
+#CPUE Grid Plot
   
   #Create raster of mean cpue
   for.raster <- subset(logs, YEAR==fishingyear, c('lon','lat','CPUE_KG'))
@@ -460,7 +507,7 @@
     geom_sf(data = poly.6D, fill=NA, colour="grey55") +
     geom_sf(data = poly.VMSIN, fill=NA, colour="red") +
     coord_sf(xlim = c(-67.4,-65.8), ylim = c(44.2,45.2), expand = F) +
-    scale_fill_binned(type = "viridis", direction = -1, name="CPUE (kg/h)") +
+    scale_fill_binned(type = "viridis", direction = -1, name="CPUE (kg/h)", breaks = c(25, 50, 75, 100, 125)) +
     theme(plot.title = element_text(size = 14, hjust = 0.5), #plot title size and position
           axis.title = element_text(size = 12),
           axis.text = element_text(size = 10),
@@ -469,7 +516,7 @@
           legend.position = c(.07,.72), 
           legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.7)), #Legend bkg colour and transparency
           legend.box.margin = margin(6, 8, 6, 8))
-  #save
+ #save
   ggsave(filename = paste0(direct, "/",assessmentyear,"/Assessment/Figures/CommercialData/SPA6_CPUEgridplot",fishingyear, ".png"), width = 9, height = 9, dpi = 200,units='in')
   
   

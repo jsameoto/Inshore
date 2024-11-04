@@ -11,9 +11,9 @@ library(stringr)
 
 #DEFINE:
 direct <- "Y:/Inshore/BoF"
-assessmentyear <- 2023 #year in which you are conducting the assessment 
-surveyyear <- 2023  #last year of survey data you are using, e.g. if max year of survey is survey from summer 2019, this would be 2019 
-fishing.years <- "2022/2023"
+assessmentyear <- 2024 #year in which you are conducting the assessment 
+surveyyear <- 2024  #last year of survey data you are using, e.g. if max year of survey is survey from summer 2019, this would be 2019 
+fishing.years <- "2023/2024"
 
 #sources landings data by area 
 dat.1A <- read.xlsx(paste0(direct,"/",assessmentyear,"/Assessment/Data/CommercialData/SPA1A_TACandLandings_",surveyyear,".xlsx"),sheet = "TACandLandings")
@@ -41,7 +41,7 @@ dat.4and5 #all rows incl. FSC if added to .xlsx
 
 #SPA6
 dat.6.com.land <- dat.6 |> filter(Year %in% c("Full Bay","Mid-Bay")) |> 
-  select(where(is.numeric)) |> 
+  dplyr::select(where(is.numeric)) |> 
   summarise(across(where(is.numeric), ~ sum(.x, na.rm = TRUE))) |> 
   mutate(Year = "Landings", .before="1976") #add first column back in
 #filter rows for and FSC (if available) and TAC
