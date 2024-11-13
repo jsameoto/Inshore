@@ -421,7 +421,7 @@ dev.off()
 
 
 #decision table with reference points 
-decision  <- predict (mod.res, Catch=c(seq(150, 260, 10)), g.parm=mod.res$data$g[mod.res$data$NY],gr.parm=mod.res$data$gR[mod.res$data$NY]) 
+decision  <- predict (mod.res, Catch=c(seq(80, 260, 20)), g.parm=mod.res$data$g[mod.res$data$NY],gr.parm=mod.res$data$gR[mod.res$data$NY]) 
 decision.table <- SSModel_predict_summary_median(decision, LRP=LRP, USR=USR, RRP=0.18)
 decision.table
 
