@@ -423,9 +423,11 @@ plot_grid(plot.1A, plot.1B, plot.3, plot.4, plot.6, ncol=1)
 #want only single y axis label 
 #need to label each row with SPA.. 
 
-#ENGLISH VERSION
+#ENGLISH VERSION  rot=90,
 # gridtext
-yleft <- richtext_grob(text = "Proportion of maximum observation", rot=90, gp = gpar(fontsize = 14))
+#yleft <- richtext_grob(text = c("Proportion of maximum observation"), rot=90, gp = gpar(fontsize = 12))
+yleft <- grid.text("Proportion of maximum observation",  rot=90, gp=gpar(fontsize=12, col="black"))
+
 bottom <-  richtext_grob(text = 'Year', gp = gpar(fontsize = 14))
 
 p.eng <- list(plot.1A, plot.1B, plot.3, plot.4, plot.6)
@@ -433,12 +435,19 @@ p.eng <- list(plot.1A, plot.1B, plot.3, plot.4, plot.6)
 # Lay out plots
 plot.eng <- grid.arrange(grobs=p.eng, ncol = 1,
                      left = yleft, bottom = bottom)
+
 grid.draw(plot.eng)
+
+##Save out 
+ggsave(file=paste0("Y:/Inshore/BoF/",assessmentyear,"/Assessment/Figures/ConditionNumberWeight_BySPA_Proportion.png"), plot.eng, width = 20, height = 20, units = "cm", dpi = 300)
+
 
 #FRENCH VERSION
 plot_grid(plot.1A.FR, plot.1B.FR, plot.3.FR, plot.4.FR, plot.6.FR, ncol=1)
 
-yleft <- richtext_grob(text = "Proportion de l'observation maximale", rot=90, gp = gpar(fontsize = 14))
+#yleft <- richtext_grob(text = "Proportion de l'observation maximale", rot=90, gp = gpar(fontsize = 14))
+yleft <- grid.text("Proportion de l'observation maximale",  rot=90, gp=gpar(fontsize=12, col="black"))
+
 bottom <-  richtext_grob(text = 'Année', gp = gpar(fontsize = 14))
 
 p <- list(plot.1A.FR, plot.1B.FR, plot.3.FR, plot.4.FR, plot.6.FR)
@@ -448,14 +457,161 @@ plot.fr <- grid.arrange(grobs=p, ncol = 1,
                     left = yleft, bottom = bottom)
 grid.draw(plot.fr)
 
+ggsave(file=paste0("Y:/Inshore/BoF/",assessmentyear,"/Assessment/Figures/ConditionNumberWeight_BySPA_Proportion_FR.png"), plot.fr, width = 20, height = 20, units = "cm", dpi = 300)
+
+
 #Save using RStudio GUI 
 #size 666 x 868 for document (ConditionNumberWeight_BySPA.jpeg and ConditionNumberWeight_BySPA_FR.jpeg)
 #size 895 x 763 for presentation (ConditionNumberWeight_BySPA_forPres.jpeg)
 
-##Save out 
-ggsave(file=paste0("Y:/Inshore/BoF/",assessmentyear,"/Assessment/Figures/ConditionNumberWeight_BySPA_Proportion.png"), plot.eng, width = 20, height = 20, units = "cm", dpi = 300)
 
 #FOR FRENCH VERSION: From Raphael - Proportion du maximum observé? Proportion de l'observation maximale, the first one is the more direct translation, and the second is like saying Proportion of the maximum observation.
 
-ggsave(file=paste0("Y:/Inshore/BoF/",assessmentyear,"/Assessment/Figures/ConditionNumberWeight_BySPA_Proportion_FR.png"), plot.fr, width = 20, height = 20, units = "cm", dpi = 300)
+
+##### change in condition as percent #####
+
+YR <- 2024
+
+## 1A
+con.yr.t <- condition.1A[condition.1A$YEAR == YR,]
+con.yr.tminus1 <- condition.1A[condition.1A$YEAR == YR-1,]
+((con.yr.tminus1$CONDITION - con.yr.t$CONDITION) / (con.yr.tminus1$CONDITION))*100
+#42.36797
+
+
+## 1B
+con.yr.t <- condition.1B[condition.1B$YEAR == YR,]
+con.yr.tminus1 <- condition.1B[condition.1B$YEAR == YR-1,]
+((con.yr.tminus1$CONDITION - con.yr.t$CONDITION) / (con.yr.tminus1$CONDITION))*100
+# 39.33887
+
+## 3 
+con.yr.t <- condition.3[condition.3$YEAR == YR,]
+con.yr.tminus1 <- condition.3[condition.3$YEAR == YR-1,]
+((con.yr.tminus1$CONDITION - con.yr.t$CONDITION) / (con.yr.tminus1$CONDITION))*100
+# 42.19456
+
+## 4 
+con.yr.t <- condition.4[condition.4$YEAR == YR,]
+con.yr.tminus1 <- condition.4[condition.4$YEAR == YR-1,]
+((con.yr.tminus1$CONDITION - con.yr.t$CONDITION) / (con.yr.tminus1$CONDITION))*100
+# 43.08856
+
+## 6 
+con.yr.t <- condition.6[condition.6$YEAR == YR,]
+con.yr.tminus1 <- condition.6[condition.6$YEAR == YR-1,]
+((con.yr.tminus1$CONDITION - con.yr.t$CONDITION) / (con.yr.tminus1$CONDITION))*100
+# 30.89281
+
+
+
+
+
+
+##### change in biomass index as percent #####
+
+YR <- 2024
+
+## 1A
+B.yr.t <- all.dat.1A[all.dat.1A$YEAR == YR,]
+B.yr.tminus1 <- all.dat.1A[all.dat.1A$YEAR == YR-1,]
+((B.yr.tminus1$Biomass - B.yr.t$Biomass) / (B.yr.tminus1$Biomass))*100
+# 47.38632
+
+
+## 1B
+B.yr.t <- all.dat.1B[all.dat.1B$YEAR == YR,]
+B.yr.tminus1 <- all.dat.1B[all.dat.1B$YEAR == YR-1,]
+((B.yr.tminus1$Biomass - B.yr.t$Biomass) / (B.yr.tminus1$Biomass))*100
+#  41.01217
+
+## 3 
+B.yr.t <- all.dat.3[all.dat.3$YEAR == YR,]
+B.yr.tminus1 <- all.dat.3[all.dat.3$YEAR == YR-1,]
+((B.yr.tminus1$Biomass - B.yr.t$Biomass) / (B.yr.tminus1$Biomass))*100
+#  27.96012
+
+## 4 
+B.yr.t <- all.dat.4[all.dat.4$YEAR == YR,]
+B.yr.tminus1 <- all.dat.4[all.dat.4$YEAR == YR-1,]
+((B.yr.tminus1$Biomass - B.yr.t$Biomass) / (B.yr.tminus1$Biomass))*100
+# 41.97121
+
+## 6 
+B.yr.t <- all.dat.6[all.dat.6$YEAR == YR,]
+B.yr.tminus1 <- all.dat.6[all.dat.6$YEAR == YR-1,]
+((B.yr.tminus1$Biomass - B.yr.t$Biomass) / (B.yr.tminus1$Biomass))*100
+# 32.65995
+
+# range in biomass index: 28 - 47%
+
+
+
+##### change in Modelled Biomass as percent #####
+
+
+setwd("Y:/Inshore/BoF/2024/Assessment/Data/Model/")
+
+#current/most recent year 
+YR <- 2024
+
+B.1A <- read.csv(paste0("SPA1A/summary stats_1A_",YR,".csv"))
+B.1B <- read.csv(paste0("SPA1B/summary stats_1B_",YR,".csv"))
+B.3 <- read.csv(paste0("SPA3/summary stats_3_",YR,".csv"))
+B.4 <- read.csv(paste0("SPA4/summary stats_4_",YR,".csv"))
+B.6 <- read.csv(paste0("SPA6/summary stats_6_",YR,".csv"))
+
+                 
+                 
+## 1A
+B.1A <- B.1A[B.1A$description  == "comm.biomass",]
+yr.t <- B.1A[,6]
+yr.t
+yr.tminus1 <-  B.1A[,3]
+yr.tminus1
+((yr.tminus1 - yr.t) / (yr.tminus1))*100
+# 44.45334
+
+## 1B
+B.1B <- B.1B[B.1B$description  == "comm.biomass",]
+yr.t <- B.1B[,6]
+yr.t
+yr.tminus1 <-  B.1B[,3]
+yr.tminus1
+((yr.tminus1 - yr.t) / (yr.tminus1))*100
+#42.00945
+
+
+## 3 
+B.3 <- B.3[B.3$description  == "comm.biomass",]
+yr.t <- B.3[,6]
+yr.t
+yr.tminus1 <-  B.3[,3]
+yr.tminus1
+((yr.tminus1 - yr.t) / (yr.tminus1))*100
+#32.62144
+
+
+## 4 
+B.4 <- B.4[B.4$description  == "comm.biomass",]
+yr.t <- B.4[,6]
+yr.t
+yr.tminus1 <-  B.4[,3]
+yr.tminus1
+((yr.tminus1 - yr.t) / (yr.tminus1))*100
+#41.86935
+
+
+## 6 
+B.6 <- B.6[B.6$description  == "comm.biomass",]
+yr.t <- B.6[,6]
+yr.t
+yr.tminus1 <-  B.6[,3]
+yr.tminus1
+((yr.tminus1 - yr.t) / (yr.tminus1))*100
+#32.60546
+
+
+# range in modelled biomass: 33 - 44%
+
 
