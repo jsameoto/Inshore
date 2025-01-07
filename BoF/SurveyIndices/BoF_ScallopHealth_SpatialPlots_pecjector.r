@@ -41,12 +41,14 @@ library(ROracle)
 #pwd <- pw.sameotoj
 #uid <- un.raperj
 #pwd <- un.raperj
-uid <- keyring::key_list("Oracle")[1,2]
-pwd <- keyring::key_get("Oracle", uid)
+#uid <- keyring::key_list("Oracle")[1,2]
+#pwd <- keyring::key_get("Oracle", uid)
+uid <- un.englishg
+pwd <- pw.englishg
 
 #set year 
-survey.year <- 2023  #removed maxyear in script and changed to survey year
-assessmentyear <- 2023 #year in which you are providing advice for- determines where to save files to
+survey.year <- 2024  #removed maxyear in script and changed to survey year
+assessmentyear <- 2024 #year in which you are providing advice for- determines where to save files to
 path.directory <- "Y:/Inshore/BoF/"
 
 #set up directory to save plot
@@ -103,6 +105,7 @@ SPA6D <- st_read(paste0(temp2, "/SPA6D_polygon_NAD83.shp")) %>% mutate(ET_ID = "
 SPA6 <- rbind(SPA6A, SPA6B, SPA6D) %>% #SPA6C
   st_transform(crs = 4326)
 
+Hi.Res.Basemap <- st_read("Z:/GISdata/Private/AtlanticUSCdnCoast/MAR_Maine.shp")
 
 # -------------------------------Import WGTHGT DATA------------------------------------------
 
@@ -245,7 +248,7 @@ plot.theme.6 <- theme(plot.title = element_text(size = 14, hjust = 0.5), #plot t
                       axis.text = element_text(size = 10),
                       legend.title = element_text(size = 10, face = "bold"), 
                       legend.text = element_text(size = 8),
-                      legend.position = c(.10,.68), #legend position
+                      legend.position = c(.10,.6), #legend position
                       legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.7)), #Legend bkg colour and transparency
                       legend.box.margin = margin(6, 8, 6, 8))
 
@@ -257,11 +260,11 @@ sf::sf_use_s2(FALSE)
 
 # Proportion of Myco ------------------------------------------------------
 
-#For FULL BAY, SPA1A, SPA1B, SPA4&5
+#For FULL BAY, SPA1A, SPA1B, SPA4&5, SPA3, SPA6
 
-#Create contour and specify plot aesthetics
+#Create contour and specify plot aesthetics. Using this contour for all figures to avoid mapping errors in areas that have no myco. Contour.gen function doesn't run if all values in response variable column are 0.
 com.contours <- contour.gen(myco.datw %>% 
-                              filter(year == survey.year, !STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)) %>%
+                              filter(year == survey.year, !STRATA_ID %in% c(46, 45, 44, 42, 43, 41)) %>% #excludes SFA29
                               dplyr::select(ID, lon, lat, prop),
                             ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
 
@@ -288,14 +291,21 @@ cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = "Prop
 # ----FULL BAY -----
 
 p <- pecjector(area = "bof",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", survey = c("inshore", "outline"), scale.bar = c('tl',0.5, -1, -1)), 
+               add_layer = list(survey = c("inshore", "outline")), 
                add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>%
                                    mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = myco.datw %>% 
-                       filter(year == survey.year, !STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)), #excludes SPA3 and SFA29 data
+                       filter(year == survey.year, !STRATA_ID %in% c(46, 45, 44, 42, 43, 41)), #excludes SFA29 data
                      aes(lon, lat), size = 0.5) +
+  ###
+  #temporary fix for better map and visible scale bar
+  geom_sf(data = Hi.Res.Basemap, size = 0.1, colour = "black", alpha = 1, fill = "grey50") +
+  annotation_scale(location = "tl", width_hint = 0.5, pad_x = unit( 0.35, "cm"), pad_y = unit(0.35, "cm")) + 
+  annotation_north_arrow(location = "tl", which_north = "true", height = unit(1.25,"cm"), width = unit(1,'cm'),
+                         pad_x = unit(0.35, "cm"), pad_y = unit(0.75, "cm"),style = north_arrow_fancy_orienteering) + 
+  ###
   labs(title = paste(survey.year, "", "BoF Proportion of Myco Infections"), x = "Longitude", y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   coord_sf(xlim = c(-66.50,-64.30), ylim = c(44.25,45.80), expand = FALSE)+
@@ -307,7 +317,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_BF_MycoProportion',survey.year,'
 # ----SPA1A -----
 
 p <- pecjector(area = list(x=c(-66.40,-64.80), y=c(44.37,45.30), crs=4326), repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", survey = c("inshore", "outline"), scale.bar = c('br',0.5, -1,-1)), 
+               add_layer = list(survey = c("inshore", "outline")), 
                add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>%
                                    mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 ##p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
@@ -315,8 +325,15 @@ p <- pecjector(area = list(x=c(-66.40,-64.80), y=c(44.37,45.30), crs=4326), repo
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = myco.datw %>% 
-                       filter(year == survey.year, !STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)), #excludes SPA3 and SFA29 data
+                       filter(year == survey.year, !STRATA_ID %in% c(46, 45, 44, 42, 43, 41)), #excludes SFA29 data
                      aes(lon, lat), size = 0.5) +
+  ###
+  #temporary fix for better map and visible scale bar
+  geom_sf(data = Hi.Res.Basemap, size = 0.1, colour = "black", alpha = 1, fill = "grey50") +
+  annotation_scale(location = "tl", width_hint = 0.5, pad_x = unit( 0.35, "cm"), pad_y = unit(0.35, "cm")) + 
+  annotation_north_arrow(location = "tl", which_north = "true", height = unit(1.25,"cm"), width = unit(1,'cm'),
+                         pad_x = unit(0.35, "cm"), pad_y = unit(0.75, "cm"),style = north_arrow_fancy_orienteering) + 
+  ###
   labs(title = paste(survey.year, "", "SPA1A Proportion of Myco Infections"), x = "Longitude", y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   coord_sf(xlim = c(-66.40,-64.80), ylim = c(44.37,45.30), expand = FALSE)+
@@ -328,7 +345,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1A_MycoProportion',survey.yea
 # ----SPA1B -----
 
 p <- pecjector(area = "spa1B",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", survey = c("inshore", "outline"), scale.bar = c('tl',0.5, -1, -1)), 
+               add_layer = list(survey = c("inshore", "outline")), 
                add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>%
                                    mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 ##p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
@@ -337,6 +354,13 @@ p + #Plot survey data and format figure.
   geom_spatial_point(data = myco.datw %>% 
                        filter(year == survey.year, !STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)), #excludes SPA3 and SFA29 data
                      aes(lon, lat), size = 0.5) +
+  ###
+  #temporary fix for better map and visible scale bar
+  geom_sf(data = Hi.Res.Basemap, size = 0.1, colour = "black", alpha = 1, fill = "grey50") +
+  annotation_scale(location = "tl", width_hint = 0.5, pad_x = unit( 0.35, "cm"), pad_y = unit(0.35, "cm")) + 
+  annotation_north_arrow(location = "tl", which_north = "true", height = unit(1.25,"cm"), width = unit(1,'cm'),
+                         pad_x = unit(0.35, "cm"), pad_y = unit(0.75, "cm"),style = north_arrow_fancy_orienteering) + 
+  ###
   labs(title = paste(survey.year, "", "SPA1B Proportion of Myco Infections"), x = "Longitude", y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   coord_sf(xlim = c(-66.20,-64.30), ylim = c(44.80,45.70), expand = FALSE)+
@@ -349,15 +373,22 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1B_MycoProportion',survey.yea
 # ----SPA4 and 5 -----
 
 p <- pecjector(area = "spa4",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", survey = c("inshore", "outline"), scale.bar = c('tl',0.5,-1,-1)), 
+               add_layer = list(survey = c("inshore", "outline")), 
                add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>%
                                    mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 ##p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = myco.datw %>% 
-                       filter(year == survey.year, !STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)), #excludes SPA3 and SFA29 data
+                       filter(year == survey.year, !STRATA_ID %in% c(46, 45, 44, 42, 43, 41)), #excludes SFA29 data
                      aes(lon, lat), size = 0.5) +
+  ###
+  #temporary fix for better map and visible scale bar
+  geom_sf(data = Hi.Res.Basemap, size = 0.1, colour = "black", alpha = 1, fill = "grey50") +
+  annotation_scale(location = "tl", width_hint = 0.5, pad_x = unit( 0.35, "cm"), pad_y = unit(0.35, "cm")) + 
+  annotation_north_arrow(location = "tl", which_north = "true", height = unit(1.25,"cm"), width = unit(1,'cm'),
+                         pad_x = unit(0.35, "cm"), pad_y = unit(0.75, "cm"),style = north_arrow_fancy_orienteering) + 
+  ###
   labs(title = paste(survey.year, "", "SPA4 Proportion of Myco Infections"), x = "Longitude", y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   coord_sf(xlim = c(-66.20,-65.51), ylim = c(44.48,44.96), expand = FALSE)+
@@ -366,11 +397,6 @@ p + #Plot survey data and format figure.
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA4_MycoProportion',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA3 -----
-
-#Create contour and specify plot aesthetics
-com.contours <- contour.gen(myco.datw %>% filter(year == survey.year, STRATA_ID %in% c(22, 23, 24)) %>% #only SPA3
-                              dplyr::select(ID, lon, lat, prop), ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
-
 
 lvls <- c(0,0.02, 0.03, 0.04, 0.05, 0.06, 0.08, 0.1) #levels to be color coded
 CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
@@ -383,7 +409,7 @@ totCont.poly <- PolySet2SpatialLines(totCont.poly) # Spatial lines is a bit more
 totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
   st_cast("POLYGON") %>% #Convert multilines to polygons
-  st_make_valid() %>% 
+  st_make_valid() %>%
   mutate(level = unique(CP$PolyData$level))
 
 #Colour aesthetics and breaks for contours
@@ -392,13 +418,20 @@ col <- brewer.pal(length(lvls),"RdPu") #set colours
 cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = "Proportion Infected", limits = labels) #set custom fill arguments for pecjector
 
 p <- pecjector(area = "spa3",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", survey = c("inshore", "outline"), scale.bar = c('tl',0.5,-1,-1)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(survey = c("inshore", "outline")), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 ##p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = myco.datw %>% 
-                       filter(year == survey.year, STRATA_ID %in% c(22, 23, 24)), #only SPA3 strata IDs
+                       filter(year == survey.year, !STRATA_ID %in% c(41,42,43,44,45,46)), #excludes SFA29
                      aes(lon, lat), size = 0.5) +
+  ###
+  #temporary fix for better map and visible scale bar
+  geom_sf(data = Hi.Res.Basemap, size = 0.1, colour = "black", alpha = 1, fill = "grey50") +
+  annotation_scale(location = "tl", width_hint = 0.5, pad_x = unit( 0.35, "cm"), pad_y = unit(0.35, "cm")) + 
+  annotation_north_arrow(location = "tl", which_north = "true", height = unit(1.25,"cm"), width = unit(1,'cm'),
+                         pad_x = unit(0.35, "cm"), pad_y = unit(0.75, "cm"),style = north_arrow_fancy_orienteering) + 
+  ###
   geom_sf(data = spa3.poly, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
   labs(title = paste(survey.year, "", "SPA3 Proportion of Myco Infections"), x = "Longitude", y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
@@ -409,14 +442,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA3_MycoProportion',survey.year
 
 # ----SPA6 -----
 
-#Create contour and specify plot aesthetics
-com.contours <- contour.gen(myco.datw %>% 
-                              filter(year == survey.year, STRATA_ID %in% c(30,31,32,54)) %>% #Only SPA6
-                              dplyr::select(ID, lon, lat, prop), 
-                            ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
-
-
-lvls <- c(0,0.02, 0.03, 0.04, 0.05, 0.06, 0.08, 0.1) #levels to be color coded
+lvls <- c(0,0.02, 0.03, 0.04, 0.05, 0.06, 0.08,1 ) #levels to be color coded
 CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
 CP <- convCP(CL)
 totCont.poly <- CP$PolySet
@@ -427,7 +453,7 @@ totCont.poly <- PolySet2SpatialLines(totCont.poly) # Spatial lines is a bit more
 totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   st_transform(crs = 4326) %>% #Need to transform (missmatch with ellps=wgs84 and dataum=wgs84)
   st_cast("POLYGON") %>% #Convert multilines to polygons
-  st_make_valid() %>% 
+  st_make_valid() %>%
   mutate(level = unique(CP$PolyData$level))
 
 #Colour aesthetics and breaks for contours
@@ -436,17 +462,24 @@ col <- brewer.pal(length(lvls),"RdPu") #set colours
 cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = "Proportion Infected", limits = labels) #set custom fill arguments for pecjector
 
 
-p <- pecjector(area =list(x=c(-66.4, -67.5), y=c(44.4, 45.2), crs=4326),repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", survey = c("inshore", "outline"), scale.bar = c('tl',0.5, -1,-1)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA)) #
+p <- pecjector(area =list(x=c(-66.4, -67.5), y=c(44.4, 45.2), crs=4326),repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot', add_layer = list(),
+               add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA)) #
 #p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = myco.datw %>% 
-                       filter(year == survey.year, STRATA_ID %in% c(30,31,32, 54)), #Only SPA6
+                       filter(year == survey.year, STRATA_ID %in% c(30,31,32)), #Only SPA6
                      aes(lon, lat), size = 0.5) +
+  ###
+  #temporary fix for better map and visible scale bar
+  geom_sf(data = Hi.Res.Basemap, size = 0.1, colour = "black", alpha = 1, fill = "grey50") +
+  annotation_scale(location = "tl", width_hint = 0.5, pad_x = unit( 0.35, "cm"), pad_y = unit(0.35, "cm")) + 
+  annotation_north_arrow(location = "tl", which_north = "true", height = unit(1.25,"cm"), width = unit(1,'cm'),
+                         pad_x = unit(0.35, "cm"), pad_y = unit(0.75, "cm"),style = north_arrow_fancy_orienteering) + 
+  ###
   #geom_sf(data = SPA6, size = 0.4, colour = "black", alpha = 0.7, fill = NA) +
-  #geom_sf(data = outVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
-  #geom_sf(data = inVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
+  geom_sf(data = outVMS, size = 0.4, colour = "gray", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in gray
+  geom_sf(data = inVMS, size = 0.4, colour = "gray", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in gray
   labs(title = paste(survey.year, "", "SPA6 Proportion of Myco Infections"), x = "Longitude", y = "Latitude")+
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   coord_sf(xlim = c(-67.5, -66.4), ylim = c(44.4, 45.2), expand = FALSE)+
@@ -456,9 +489,6 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA6_MycoProportion',survey.year
 
 
 # ----All SPAs -----
-
-#Create contour and specify plot aesthetics
-com.contours <- contour.gen(myco.datw %>% filter(year == survey.year) %>% dplyr::select(ID, lon, lat, prop),ticks='define',nstrata=7, str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
 
 lvls <- c(0,0.02, 0.03, 0.04, 0.05, 0.06, 0.08, 0.1) #levels to be color coded
 CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
@@ -482,8 +512,8 @@ cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = "Prop
 
 #Plot with Pecjector
 
-p <- pecjector(area = list(x=c(-67.08,-64.4), y=c(45.62, 43.65), crs=4326),repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", survey = c("inshore", "outline"), scale.bar = c('tl',0.5,-1,-1)), 
+p <- pecjector(area = list(x=c(-67.18,-64.4), y=c(45.62, 43.65), crs=4326),repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
+               add_layer = list(survey = c("inshore", "outline")), 
                add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>%
                                    mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 ##p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
@@ -493,9 +523,16 @@ p + #Plot survey data and format figure.
   geom_spatial_point(data = myco.datw %>% 
                        filter(year == survey.year),
                      aes(lon, lat), size = 0.5) +
+  ###
+  #temporary fix for better map and visible scale bar
+  geom_sf(data = Hi.Res.Basemap, size = 0.1, colour = "black", alpha = 1, fill = "grey50") +
+  annotation_scale(location = "tl", width_hint = 0.5, pad_x = unit( 0.35, "cm"), pad_y = unit(0.35, "cm")) + 
+  annotation_north_arrow(location = "tl", which_north = "true", height = unit(1.25,"cm"), width = unit(1,'cm'),
+                         pad_x = unit(0.35, "cm"), pad_y = unit(0.75, "cm"),style = north_arrow_fancy_orienteering) + 
+  ###
   labs(title = paste(survey.year, "", "Proportion of Myco Infections"), x = "Longitude", y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
-  coord_sf(xlim = c(-67.08,-64.4), ylim = c(43.65,45.62), expand = FALSE)+
+  coord_sf(xlim = c(-67.18,-64.4), ylim = c(43.65,45.62), expand = FALSE)+
   theme(axis.title = element_text(size = 12),
         axis.text = element_text(size = 10),
         legend.title = element_text(size = 14, face = "bold"), 
@@ -518,10 +555,10 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_BFAll_MycoProportion',survey.yea
 
 myco.datw$Y <- as.numeric(myco.datw$Y)
 
-#Create contour and specify plot aesthetics
-com.contours <- contour.gen(myco.datw %>% filter(year == survey.year, !STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)) %>% dplyr::select(tow, lon, lat, Y),ticks='define',nstrata=7, str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
+#Create contour and specify plot aesthetics. Using this contour for all figures to avoid mapping errors in areas that have no myco. Contour.gen function doesn't run if all values in response variable column are 0.
+com.contours <- contour.gen(myco.datw %>% filter(year == survey.year, !STRATA_ID %in% c(46, 45, 44, 42, 43, 41)) %>% dplyr::select(tow, lon, lat, Y),ticks='define',nstrata=7, str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
 
-range(myco.datw %>% filter(year == survey.year, !STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)) %>% dplyr::select(Y)) #check range to determine levels
+range(myco.datw %>% filter(year == survey.year, !STRATA_ID %in% c(46, 45, 44, 42, 43, 41)) %>% dplyr::select(Y)) #check range to determine levels
 
 lvls=c(0, 1, 2, 3, 4, 5) 
 CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
@@ -545,14 +582,21 @@ cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = expre
 # ----FULL BAY -----
 
 p <- pecjector(area = "bof",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", survey = c("inshore", "outline"), scale.bar = c('tl',0.5, -1, -1)), 
+               add_layer = list(survey = c("inshore", "outline")), 
                add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>%
                                    mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = myco.datw %>% 
-                       filter(year == survey.year, !STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)), #excludes SPA3 and SFA29 data
+                       filter(year == survey.year, !STRATA_ID %in% c(46, 45, 44, 42, 43, 41)), #excludes SPA3 and SFA29 data
                      aes(lon, lat), size = 0.5) +
+  ###
+  #temporary fix for better map and visible scale bar
+  geom_sf(data = Hi.Res.Basemap, size = 0.1, colour = "black", alpha = 1, fill = "grey50") +
+  annotation_scale(location = "tl", width_hint = 0.5, pad_x = unit( 0.35, "cm"), pad_y = unit(0.35, "cm")) + 
+  annotation_north_arrow(location = "tl", which_north = "true", height = unit(1.25,"cm"), width = unit(1,'cm'),
+                         pad_x = unit(0.35, "cm"), pad_y = unit(0.75, "cm"),style = north_arrow_fancy_orienteering) + 
+  ###
   labs(title = paste(survey.year, "", "BoF Myco Infections per Tow"), x = "Longitude", y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   coord_sf(xlim = c(-66.50,-64.30), ylim = c(44.25,45.80), expand = FALSE)+
@@ -564,7 +608,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_BF_Myco_per_Tow',survey.year,'.p
 # ----SPA1A -----
 
 p <- pecjector(area = list(x=c(-66.40,-64.80), y=c(44.37,45.30), crs=4326), repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", survey = c("inshore", "outline"), scale.bar = c('br',0.5, -1,-1)), 
+               add_layer = list(survey = c("inshore", "outline")), 
                add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>%
                                    mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 ##p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
@@ -572,8 +616,15 @@ p <- pecjector(area = list(x=c(-66.40,-64.80), y=c(44.37,45.30), crs=4326), repo
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = myco.datw %>% 
-                       filter(year == survey.year, !STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)), #excludes SPA3 and SFA29 data
+                       filter(year == survey.year, !STRATA_ID %in% c(46, 45, 44, 42, 43, 41)), #excludes SFA29 data
                      aes(lon, lat), size = 0.5) +
+  ###
+  #temporary fix for better map and visible scale bar
+  geom_sf(data = Hi.Res.Basemap, size = 0.1, colour = "black", alpha = 1, fill = "grey50") +
+  annotation_scale(location = "tl", width_hint = 0.5, pad_x = unit( 0.35, "cm"), pad_y = unit(0.35, "cm")) + 
+  annotation_north_arrow(location = "tl", which_north = "true", height = unit(1.25,"cm"), width = unit(1,'cm'),
+                         pad_x = unit(0.35, "cm"), pad_y = unit(0.75, "cm"),style = north_arrow_fancy_orienteering) + 
+  ###
   labs(title = paste(survey.year, "", "SPA1A Myco Infections per Tow"), x = "Longitude", y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   coord_sf(xlim = c(-66.40,-64.80), ylim = c(44.37,45.30), expand = FALSE)+
@@ -585,7 +636,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1A_Myco_per_Tow',survey.year,
 # ----SPA1B -----
 
 p <- pecjector(area = "spa1B",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", survey = c("inshore", "outline"), scale.bar = c('tl',0.5, -1, -1)), 
+               add_layer = list(survey = c("inshore", "outline")), 
                add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>%
                                    mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 ##p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
@@ -594,6 +645,13 @@ p + #Plot survey data and format figure.
   geom_spatial_point(data = myco.datw %>% 
                        filter(year == survey.year, !STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)), #excludes SPA3 and SFA29 data
                      aes(lon, lat), size = 0.5) +
+  ###
+  #temporary fix for better map and visible scale bar
+  geom_sf(data = Hi.Res.Basemap, size = 0.1, colour = "black", alpha = 1, fill = "grey50") +
+  annotation_scale(location = "tl", width_hint = 0.5, pad_x = unit( 0.35, "cm"), pad_y = unit(0.35, "cm")) + 
+  annotation_north_arrow(location = "tl", which_north = "true", height = unit(1.25,"cm"), width = unit(1,'cm'),
+                         pad_x = unit(0.35, "cm"), pad_y = unit(0.75, "cm"),style = north_arrow_fancy_orienteering) + 
+  ###
   labs(title = paste(survey.year, "", "SPA1B Myco Infections per Tow"), x = "Longitude", y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   coord_sf(xlim = c(-66.20,-64.30), ylim = c(44.80,45.70), expand = FALSE)+
@@ -606,15 +664,22 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1B_Myco_per_Tow',survey.year,
 # ----SPA4 and 5 -----
 
 p <- pecjector(area = "spa4",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", survey = c("inshore", "outline"), scale.bar = c('tl',0.5,-1,-1)), 
+               add_layer = list(survey = c("inshore", "outline")), 
                add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>%
                                    mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 ##p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = myco.datw %>% 
-                       filter(year == survey.year, !STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)), #excludes SPA3 and SFA29 data
+                       filter(year == survey.year, !STRATA_ID %in% c(46, 45, 44, 42, 43, 41)), #excludes SFA29 data
                      aes(lon, lat), size = 0.5) +
+  ###
+  #temporary fix for better map and visible scale bar
+  geom_sf(data = Hi.Res.Basemap, size = 0.1, colour = "black", alpha = 1, fill = "grey50") +
+  annotation_scale(location = "tl", width_hint = 0.5, pad_x = unit( 0.35, "cm"), pad_y = unit(0.35, "cm")) + 
+  annotation_north_arrow(location = "tl", which_north = "true", height = unit(1.25,"cm"), width = unit(1,'cm'),
+                         pad_x = unit(0.35, "cm"), pad_y = unit(0.75, "cm"),style = north_arrow_fancy_orienteering) + 
+  ###
   labs(title = paste(survey.year, "", "SPA4 Myco Infections per Tow"), x = "Longitude", y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   coord_sf(xlim = c(-66.20,-65.51), ylim = c(44.48,44.96), expand = FALSE)+
@@ -623,11 +688,6 @@ p + #Plot survey data and format figure.
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA4_Myco_per_Tow',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA3 -----
-
-#Create contour and specify plot aesthetics
-com.contours <- contour.gen(myco.datw %>% filter(year == survey.year, STRATA_ID %in% c(22, 23, 24)) %>% #only SPA3
-                              dplyr::select(ID, lon, lat, Y), ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
-
 
 lvls=c(0, 1, 2, 3, 4, 5) 
 CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
@@ -649,13 +709,20 @@ col <- brewer.pal(length(lvls),"RdPu") #set colours
 cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = expression(frac(N,tow)), limits = labels) #set custom fill arguments for pecjector
 
 p <- pecjector(area = "spa3",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", survey = c("inshore", "outline"), scale.bar = c('tl',0.5,-1,-1)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(survey = c("inshore", "outline")), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 ##p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = myco.datw %>% 
-                       filter(year == survey.year, STRATA_ID %in% c(22, 23, 24)), #only SPA3 strata IDs
+                       filter(year == survey.year, !STRATA_ID %in% c(41,42,43,44,45,46)), #excludes SFA29
                      aes(lon, lat), size = 0.5) +
+  ###
+  #temporary fix for better map and visible scale bar
+  geom_sf(data = Hi.Res.Basemap, size = 0.1, colour = "black", alpha = 1, fill = "grey50") +
+  annotation_scale(location = "tl", width_hint = 0.5, pad_x = unit( 0.35, "cm"), pad_y = unit(0.35, "cm")) + 
+  annotation_north_arrow(location = "tl", which_north = "true", height = unit(1.25,"cm"), width = unit(1,'cm'),
+                         pad_x = unit(0.35, "cm"), pad_y = unit(0.75, "cm"),style = north_arrow_fancy_orienteering) + 
+  ###
   geom_sf(data = spa3.poly, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
   labs(title = paste(survey.year, "", "SPA3 Myco Infections per Tow"), x = "Longitude", y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
@@ -665,13 +732,6 @@ p + #Plot survey data and format figure.
 ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA3_Myco_per_Tow',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA6 -----
-
-#Create contour and specify plot aesthetics
-com.contours <- contour.gen(myco.datw %>% 
-                              filter(year == survey.year, STRATA_ID %in% c(30,31,32,54)) %>% #Only SPA6
-                              dplyr::select(ID, lon, lat, Y), 
-                            ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
-
 
 lvls=c(0, 1, 2, 3, 4, 5) 
 CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
@@ -693,16 +753,23 @@ col <- brewer.pal(length(lvls),"RdPu") #set colours
 cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = expression(frac(N,tow)), limits = labels) #set custom fill arguments for pecjector
 
 
-p <- pecjector(area =list(x=c(-66.4, -67.5), y=c(44.4, 45.2), crs=4326),repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", survey = c("inshore", "outline"), scale.bar = c('tl',0.5, -1,-1)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA)) 
+p <- pecjector(area =list(x=c(-66.4, -67.5), y=c(44.4, 45.2), crs=4326),repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot', add_layer = list(),
+                add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA)) 
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = myco.datw %>% 
                        filter(year == survey.year, STRATA_ID %in% c(30,31,32, 54)), #Only SPA6
                      aes(lon, lat), size = 0.5) +
+  ###
+  #temporary fix for better map and visible scale bar
+  geom_sf(data = Hi.Res.Basemap, size = 0.1, colour = "black", alpha = 1, fill = "grey50") +
+  annotation_scale(location = "tl", width_hint = 0.5, pad_x = unit( 0.35, "cm"), pad_y = unit(0.35, "cm")) + 
+  annotation_north_arrow(location = "tl", which_north = "true", height = unit(1.25,"cm"), width = unit(1,'cm'),
+                         pad_x = unit(0.35, "cm"), pad_y = unit(0.75, "cm"),style = north_arrow_fancy_orienteering) + 
+  ###
   #geom_sf(data = SPA6, size = 0.4, colour = "black", alpha = 0.7, fill = NA) +
-  #geom_sf(data = outVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
-  #geom_sf(data = inVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
+  geom_sf(data = outVMS, size = 0.7, colour = "grey", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in grey
+  geom_sf(data = inVMS, size = 0.7, colour = "grey", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in grey
   labs(title = paste(survey.year, "", "SPA6 Myco Infections per Tow"), x = "Longitude", y = "Latitude")+
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   coord_sf(xlim = c(-67.5, -66.4), ylim = c(44.4, 45.2), expand = FALSE)+
@@ -712,9 +779,6 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA6_Myco_per_Tow',survey.year,'
 
 
 # ----ALL SPAs -----
-
-#Create contour and specify plot aesthetics
-com.contours <- contour.gen(myco.datw %>% filter(year == survey.year) %>% dplyr::select(tow, lon, lat, Y),ticks='define',nstrata=7, str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
 
 range(myco.datw$Y) #check range to determine levels
 lvls=c(0,1, 2, 3, 4, 5) 
@@ -739,8 +803,8 @@ cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = expre
 
 #Plot with Pecjector for each area:
 
-p <- pecjector(area = list(x=c(-67.08,-64.4), y=c(45.62, 43.65), crs=4326),repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", survey = c("inshore", "outline"), scale.bar = c('tl',0.5,-1,-1)), 
+p <- pecjector(area = list(x=c(-67.18,-64.4), y=c(45.62, 43.65), crs=4326),repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
+               add_layer = list(survey = c("inshore", "outline")), 
                add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>%
                                    mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 ##p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
@@ -750,9 +814,16 @@ p + #Plot survey data and format figure.
   geom_spatial_point(data = myco.datw %>% 
                        filter(year == survey.year),
                      aes(lon, lat), size = 0.5) +
+  ###
+  #temporary fix for better map and visible scale bar
+  geom_sf(data = Hi.Res.Basemap, size = 0.1, colour = "black", alpha = 1, fill = "grey50") +
+  annotation_scale(location = "tl", width_hint = 0.5, pad_x = unit( 0.35, "cm"), pad_y = unit(0.35, "cm")) + 
+  annotation_north_arrow(location = "tl", which_north = "true", height = unit(1.25,"cm"), width = unit(1,'cm'),
+                         pad_x = unit(0.35, "cm"), pad_y = unit(0.75, "cm"),style = north_arrow_fancy_orienteering) + 
+  ###
   labs(title = paste(survey.year, "", "Myco Infections per Tow"), x = "Longitude", y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
-  coord_sf(xlim = c(-67.08,-64.4), ylim = c(43.65,45.62), expand = FALSE)+
+  coord_sf(xlim = c(-67.18,-64.4), ylim = c(43.65,45.62), expand = FALSE)+
   theme(axis.title = element_text(size = 12),
         axis.text = element_text(size = 10),
         legend.title = element_text(size = 14, face = "bold"), 
@@ -764,7 +835,7 @@ p + #Plot survey data and format figure.
         legend.box.margin = margin(6, 10, 6, 8)) #Legend bkg margin (top, right, bottom, left)
 
 #save
-ggsave(filename = paste0(saveplot.dir,'ContPlot_BF_Myco_per_Tow',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir,'ContPlot_BFAll_Myco_per_Tow',survey.year,'_new.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 
 
@@ -774,16 +845,16 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_BF_Myco_per_Tow',survey.year,'.p
 # Proportion of Grey meats ------------------------------------------------------
 
 #Create contour and specify plot aesthetics
-#For FULL BAY, SPA1A, SPA1B, SPA4&5
+#For FULL BAY, SPA1A, SPA1B, SPA4&5, SPA6
 
-#Create contour and specify plot aesthetics
+#Create contour and specify plot aesthetics. Using this contour for all figures to avoid mapping errors in areas that have no grey meat. Contour.gen function doesn't run if all values in response variable column are 0.
 com.contours <- contour.gen(greymeat.datw %>% 
-                              filter(year == survey.year, !STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)) %>%
+                              filter(year == survey.year, !STRATA_ID %in% c(46, 45, 44, 42, 43, 41)) %>%
                               dplyr::select(ID, lon, lat, prop),
                             ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
 
-#lvls <- c(0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3) #levels to be color coded
-lvls <- c(0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06)
+#lvls <- c(0, 0.01, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3) #levels to be color coded
+lvls <- c(0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07)
 CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
 CP <- convCP(CL)
 totCont.poly <- CP$PolySet
@@ -799,7 +870,7 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
 
 #Colour aesthetics and breaks for contours
 #labels <- c("0-0.01", "0.01-0.05","0.05-0.1", "0.1-0.15", "0.15-0.2", "0.2-0.25", "0.25-0.3", "0.3+")
-labels <- c("0-0.01", "0.01-0.02","0.02-0.03", "0.03-0.04", "0.04-0.05", "0.05-0.06", "0.06+")
+labels <- c("0-0.01", "0.01-0.02","0.02-0.03", "0.03-0.04", "0.04-0.05", "0.05-0.06", "0.06-0.07", "0.07+")
 col <- brewer.pal(length(lvls),"Greys") #set colours
 cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = "Proportion", limits = labels) #set custom fill arguments for pecjector
 
@@ -807,14 +878,21 @@ cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = "Prop
 # ----FULL BAY -----
 
 p <- pecjector(area = "bof",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", survey = c("inshore", "outline"), scale.bar = c('tl',0.5, -1, -1)), 
+               add_layer = list(survey = c("inshore", "outline")), 
                add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>%
                                    mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = greymeat.datw %>% 
-                       filter(year == survey.year, !STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)), #excludes SPA3 and SFA29 data
+                       filter(year == survey.year, !STRATA_ID %in% c(46, 45, 44, 42, 43, 41)), #excludes SFA29 data
                      aes(lon, lat), size = 0.5) +
+  ###
+  #temporary fix for better map and visible scale bar
+  geom_sf(data = Hi.Res.Basemap, size = 0.1, colour = "black", alpha = 1, fill = "grey50") +
+  annotation_scale(location = "tl", width_hint = 0.5, pad_x = unit( 0.35, "cm"), pad_y = unit(0.35, "cm")) + 
+  annotation_north_arrow(location = "tl", which_north = "true", height = unit(1.25,"cm"), width = unit(1,'cm'),
+                         pad_x = unit(0.35, "cm"), pad_y = unit(0.75, "cm"),style = north_arrow_fancy_orienteering) + 
+  ###
   labs(title = paste(survey.year, "", "BoF Proportion of Grey Meats"), x = "Longitude", y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   coord_sf(xlim = c(-66.50,-64.30), ylim = c(44.25,45.80), expand = FALSE)+
@@ -826,15 +904,22 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_BF_GreyMeatProportion',survey.ye
 # ----SPA1A -----
 
 p <- pecjector(area = list(x=c(-66.40,-64.80), y=c(44.37,45.30), crs=4326), repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", survey = c("inshore", "outline"), scale.bar = c('br',0.5, -1,-1)), 
+               add_layer = list(survey = c("inshore", "outline")), 
                add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>%
                                    mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = greymeat.datw %>% 
-                       filter(year == survey.year, !STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)), #excludes SPA3 and SFA29 data
+                       filter(year == survey.year, !STRATA_ID %in% c(46, 45, 44, 42, 43, 41)), #excludes SFA29 data
                      aes(lon, lat), size = 0.5) +
+  ###
+  #temporary fix for better map and visible scale bar
+  geom_sf(data = Hi.Res.Basemap, size = 0.1, colour = "black", alpha = 1, fill = "grey50") +
+  annotation_scale(location = "tl", width_hint = 0.5, pad_x = unit( 0.35, "cm"), pad_y = unit(0.35, "cm")) + 
+  annotation_north_arrow(location = "tl", which_north = "true", height = unit(1.25,"cm"), width = unit(1,'cm'),
+                         pad_x = unit(0.35, "cm"), pad_y = unit(0.75, "cm"),style = north_arrow_fancy_orienteering) + 
+  ###
   labs(title = paste(survey.year, "", "SPA1A Proportion of Grey Meats"), x = "Longitude", y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   coord_sf(xlim = c(-66.40,-64.80), ylim = c(44.37,45.30), expand = FALSE)+
@@ -846,7 +931,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1A_GreyMeatProportion',survey
 # ----SPA1B -----
 
 p <- pecjector(area = "spa1B",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", survey = c("inshore", "outline"), scale.bar = c('tl',0.5, -1, -1)), 
+               add_layer = list(survey = c("inshore", "outline")), 
                add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>%
                                    mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 ##p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
@@ -855,6 +940,13 @@ p + #Plot survey data and format figure.
   geom_spatial_point(data = greymeat.datw %>% 
                        filter(year == survey.year, !STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)), #excludes SPA3 and SFA29 data
                      aes(lon, lat), size = 0.5) +
+  ###
+  #temporary fix for better map and visible scale bar
+  geom_sf(data = Hi.Res.Basemap, size = 0.1, colour = "black", alpha = 1, fill = "grey50") +
+  annotation_scale(location = "tl", width_hint = 0.5, pad_x = unit( 0.35, "cm"), pad_y = unit(0.35, "cm")) + 
+  annotation_north_arrow(location = "tl", which_north = "true", height = unit(1.25,"cm"), width = unit(1,'cm'),
+                         pad_x = unit(0.35, "cm"), pad_y = unit(0.75, "cm"),style = north_arrow_fancy_orienteering) + 
+  ###
   labs(title = paste(survey.year, "", "SPA1B Proportion of Grey Meats"), x = "Longitude", y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   coord_sf(xlim = c(-66.20,-64.30), ylim = c(44.80,45.70), expand = FALSE)+
@@ -867,15 +959,22 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1B_GreyMeatProportion',survey
 # ----SPA4 and 5 -----
 
 p <- pecjector(area = "spa4",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", survey = c("inshore", "outline"), scale.bar = c('tl',0.5,-1,-1)), 
+               add_layer = list(survey = c("inshore", "outline")), 
                add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>%
                                    mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 ##p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = greymeat.datw %>% 
-                       filter(year == survey.year, !STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)), #excludes SPA3 and SFA29 data
+                       filter(year == survey.year, !STRATA_ID %in% c(46, 45, 44, 42, 43, 41)), #excludes SFA29 data
                      aes(lon, lat), size = 0.5) +
+  ###
+  #temporary fix for better map and visible scale bar
+  geom_sf(data = Hi.Res.Basemap, size = 0.1, colour = "black", alpha = 1, fill = "grey50") +
+  annotation_scale(location = "tl", width_hint = 0.5, pad_x = unit( 0.35, "cm"), pad_y = unit(0.35, "cm")) + 
+  annotation_north_arrow(location = "tl", which_north = "true", height = unit(1.25,"cm"), width = unit(1,'cm'),
+                         pad_x = unit(0.35, "cm"), pad_y = unit(0.75, "cm"),style = north_arrow_fancy_orienteering) + 
+  ###
   labs(title = paste(survey.year, "", "SPA4 Proportion of Grey Meats"), x = "Longitude", y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   coord_sf(xlim = c(-66.20,-65.51), ylim = c(44.48,44.96), expand = FALSE)+
@@ -885,11 +984,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA4_GreyMeatProportion',survey.
 
 # ----SPA3 -----
 
-#Create contour and specify plot aesthetics
-com.contours <- contour.gen(greymeat.datw %>% filter(year == survey.year, STRATA_ID %in% c(22, 23, 24)) %>% #only SPA3
-                              dplyr::select(ID, lon, lat, prop), ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
-
-
+#lvls <- c(0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07)
 lvls <- c(0, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5) #levels to be color coded
 CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
 CP <- convCP(CL)
@@ -905,18 +1000,26 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   mutate(level = unique(CP$PolyData$level))
 
 #Colour aesthetics and breaks for contours
+#labels <- c("0-0.01", "0.01-0.02","0.02-0.03", "0.03-0.04", "0.04-0.05", "0.05-0.06", "0.06-0.07", "0.07+")
 labels <- c("0-0.05", "0.05-0.1", "0.1-0.2", "0.2-0.3", "0.3-0.4", "0.4-0.5", "0.5+")
 col <- brewer.pal(length(lvls),"Greys") #set colours
 cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = "Proportion", limits = labels) #set custom fill arguments for pecjector
 
 p <- pecjector(area = "spa3",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", survey = c("inshore", "outline"), scale.bar = c('tl',0.5,-1,-1)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(survey = c("inshore", "outline")), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 ##p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = greymeat.datw %>% 
-                       filter(year == survey.year, STRATA_ID %in% c(22, 23, 24)), #only SPA3 strata IDs
+                       filter(year == survey.year, !STRATA_ID %in% c(41,42,43,44,45,.46)), #exclude SFA29
                      aes(lon, lat), size = 0.5) +
+  ###
+  #temporary fix for better map and visible scale bar
+  geom_sf(data = Hi.Res.Basemap, size = 0.1, colour = "black", alpha = 1, fill = "grey50") +
+  annotation_scale(location = "tl", width_hint = 0.5, pad_x = unit( 0.35, "cm"), pad_y = unit(0.35, "cm")) + 
+  annotation_north_arrow(location = "tl", which_north = "true", height = unit(1.25,"cm"), width = unit(1,'cm'),
+                         pad_x = unit(0.35, "cm"), pad_y = unit(0.75, "cm"),style = north_arrow_fancy_orienteering) + 
+  ###
   geom_sf(data = spa3.poly, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
   labs(title = paste(survey.year, "", "SPA3 Proportion of Grey Meats"), x = "Longitude", y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
@@ -927,14 +1030,8 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA3_GreyMeatProportion',survey.
 
 # ----SPA6 -----
 
-#Create contour and specify plot aesthetics
-com.contours <- contour.gen(greymeat.datw %>% 
-                              filter(year == survey.year, STRATA_ID %in% c(30,31,32,54)) %>% #Only SPA6
-                              dplyr::select(ID, lon, lat, prop), 
-                            ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
-
-
-lvls <- c(0, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5) #levels to be color coded
+lvls <- c(0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07)
+#lvls <- c(0, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5) #levels to be color coded
 CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
 CP <- convCP(CL)
 totCont.poly <- CP$PolySet
@@ -949,22 +1046,31 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   mutate(level = unique(CP$PolyData$level))
 
 #Colour aesthetics and breaks for contours
-labels <- c("0-0.05", "0.05-0.1", "0.1-0.2", "0.2-0.3", "0.3-0.4", "0.4-0.5", "0.5+")
+labels <- c("0-0.01", "0.01-0.02","0.02-0.03", "0.03-0.04", "0.04-0.05", "0.05-0.06", "0.06-0.07", "0.07+")
+#labels <- c("0-0.05", "0.05-0.1", "0.1-0.2", "0.2-0.3", "0.3-0.4", "0.4-0.5", "0.5+")
 col <- brewer.pal(length(lvls),"Greys") #set colours
 cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = "Proportion", limits = labels) #set custom fill arguments for pecjector
 
 
 p <- pecjector(area =list(x=c(-66.4, -67.5), y=c(44.4, 45.2), crs=4326),repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", survey = c("inshore", "outline"), scale.bar = c('tl',0.5, -1,-1)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA)) #
+               add_layer = list(), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+
 #p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = greymeat.datw %>% 
-                       filter(year == survey.year, STRATA_ID %in% c(30,31,32, 54)), #Only SPA6
+                       filter(year == survey.year, STRATA_ID %in% c(30,31,32)), #Only SPA6
                      aes(lon, lat), size = 0.5) +
   #geom_sf(data = SPA6, size = 0.4, colour = "black", alpha = 0.7, fill = NA) +
-  #geom_sf(data = outVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
-  #geom_sf(data = inVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
+  ###
+  #temporary fix for better map and visible scale bar
+  geom_sf(data = Hi.Res.Basemap, size = 0.1, colour = "black", alpha = 1, fill = "grey50") +
+  annotation_scale(location = "tl", width_hint = 0.5, pad_x = unit( 0.35, "cm"), pad_y = unit(0.35, "cm")) + 
+  annotation_north_arrow(location = "tl", which_north = "true", height = unit(1.25,"cm"), width = unit(1,'cm'),
+                         pad_x = unit(0.35, "cm"), pad_y = unit(0.75, "cm"),style = north_arrow_fancy_orienteering) + 
+  ###
+  geom_sf(data = outVMS, size = 0.7, colour = "grey", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in grey
+  geom_sf(data = inVMS, size = 0.7, colour = "grey", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in grey
   labs(title = paste(survey.year, "", "SPA6 Proportion of Grey Meats"), x = "Longitude", y = "Latitude")+
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   coord_sf(xlim = c(-67.5, -66.4), ylim = c(44.4, 45.2), expand = FALSE)+
@@ -975,9 +1081,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA6_GreyMeatProportion',survey.
 
 # ----All SPAs -----
 
-#Create contour and specify plot aesthetics
-com.contours <- contour.gen(greymeat.datw %>% filter(year == survey.year) %>% dplyr::select(ID, lon, lat, prop),ticks='define',nstrata=7, str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
-
+#lvls <- c(0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07)
 lvls <- c(0, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5) #levels to be color coded
 CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
 CP <- convCP(CL)
@@ -993,6 +1097,7 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   mutate(level = unique(CP$PolyData$level))
 
 #Colour aesthetics and breaks for contours
+#labels <- c("0-0.01", "0.01-0.02","0.02-0.03", "0.03-0.04", "0.04-0.05", "0.05-0.06", "0.06-0.07", "0.07+")
 labels <- c("0-0.05", "0.05-0.1", "0.1-0.2", "0.2-0.3", "0.3-0.4", "0.4-0.5", "0.5+")
 col <- brewer.pal(length(lvls),"Greys") #set colours
 cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = "Proportion", limits = labels) #set custom fill arguments for pecjector
@@ -1000,8 +1105,8 @@ cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = "Prop
 
 #Plot with Pecjector
 
-p <- pecjector(area = list(x=c(-67.08,-64.4), y=c(45.62, 43.65), crs=4326),repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", survey = c("inshore", "outline"), scale.bar = c('tl',0.5,-1,-1)), 
+p <- pecjector(area = list(x=c(-67.18,-64.4), y=c(45.62, 43.65), crs=4326),repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
+               add_layer = list(survey = c("inshore", "outline")), 
                add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>%
                                    mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 ##p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
@@ -1011,9 +1116,16 @@ p + #Plot survey data and format figure.
   geom_spatial_point(data = greymeat.datw %>% 
                        filter(year == survey.year),
                      aes(lon, lat), size = 0.5) +
+  ###
+  #temporary fix for better map and visible scale bar
+  geom_sf(data = Hi.Res.Basemap, size = 0.1, colour = "black", alpha = 1, fill = "grey50") +
+  annotation_scale(location = "tl", width_hint = 0.5, pad_x = unit( 0.35, "cm"), pad_y = unit(0.35, "cm")) + 
+  annotation_north_arrow(location = "tl", which_north = "true", height = unit(1.25,"cm"), width = unit(1,'cm'),
+                         pad_x = unit(0.35, "cm"), pad_y = unit(0.75, "cm"),style = north_arrow_fancy_orienteering) + 
+  ###
   labs(title = paste(survey.year, "", "Proportion of Grey Meats"), x = "Longitude", y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
-  coord_sf(xlim = c(-67.08,-64.4), ylim = c(43.65,45.62), expand = FALSE)+
+  coord_sf(xlim = c(-67.18,-64.4), ylim = c(43.65,45.62), expand = FALSE)+
   theme(axis.title = element_text(size = 12),
         axis.text = element_text(size = 10),
         legend.title = element_text(size = 14, face = "bold"), 
@@ -1032,14 +1144,14 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_BFAll_GreyMeatProportion',survey
 
 #For FULL BAY, SPA1A, SPA1B, SPA4&5
 
-#Create contour and specify plot aesthetics
-com.contours <- contour.gen(greymeat.datw %>% filter(year == survey.year, !STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)) %>% dplyr::select(tow, lon, lat, NUM_GREYMEAT),ticks='define',nstrata=7, str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01) 
+#Create contour and specify plot aesthetics. Using this contour for all figures to avoid mapping errors in areas that have no grey meat. Contour.gen function doesn't run if all values in response variable column are 0.
+com.contours <- contour.gen(greymeat.datw %>% filter(year == survey.year, !STRATA_ID %in% c(46, 45, 44, 42, 43, 41)) %>% dplyr::select(tow, lon, lat, NUM_GREYMEAT),ticks='define',nstrata=7, str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01) 
 
-range(greymeat.datw %>% filter(year == survey.year, !STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)) %>% dplyr::select(NUM_GREYMEAT)) #check range to determine levels
+range(greymeat.datw %>% filter(year == survey.year, !STRATA_ID %in% c( 46, 45, 44, 42, 43, 41)) %>% dplyr::select(NUM_GREYMEAT)) #check range to determine levels
 
-lvls=c(0, 1, 2, 3, 4, 5) 
-#lvls=c(0.1, 0.3, 0.5, 0.7, 0.9, 1)  #for really low numbers
-#lvls=c(0, 1, 2) 
+#lvls=c(0, 1, 2, 3, 4, 5) 
+#lvls=c(0, 0.1, 0.3, 0.5, 0.7, 0.9, 1)  #for really low numbers
+lvls=c(0, 0.5, 1, 1.5, 2)
 CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
 CP <- convCP(CL)
 totCont.poly <- CP$PolySet
@@ -1055,8 +1167,9 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
 
 #Colour aesthetics and breaks for contours
 
-labels <- c("0-1", "1-2", "2-3", "3-4", "4-5", "5+")
+#labels <- c("0-1", "1-2", "2-3", "3-4", "4-5", "5+")
 #labels <- c("0-0.1", "0.1-0.3","0.3-0.5", "0.5-0.7", "0.7-0.9", "0.9-1.0", "1+")
+labels <- c("0-0.5", "0.5-1.0","1.0-1.5", "1.5-2.0", "2+")
 #col.nu <- c("grey90", "grey80", "grey70", "grey60", "grey50", "grey40","grey30", "grey20")
 col <- brewer.pal(length(lvls),"Greys") #set colours
 cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = expression(frac(N,tow)), limits = labels) #set custom fill arguments for pecjector
@@ -1064,14 +1177,21 @@ cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = expre
 # ----FULL BAY -----
 
 p <- pecjector(area = "bof",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", survey = c("inshore", "outline"), scale.bar = c('tl',0.5, -1, -1)), 
+               add_layer = list(survey = c("inshore", "outline")), 
                add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>%
                                    mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = greymeat.datw %>% 
-                       filter(year == survey.year, !STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)), #excludes SPA3 and SFA29 data
+                       filter(year == survey.year, !STRATA_ID %in% c(46, 45, 44, 42, 43, 41)), #excludes SFA29 data
                      aes(lon, lat), size = 0.5) +
+  ###
+  #temporary fix for better map and visible scale bar
+  geom_sf(data = Hi.Res.Basemap, size = 0.1, colour = "black", alpha = 1, fill = "grey50") +
+  annotation_scale(location = "tl", width_hint = 0.5, pad_x = unit( 0.35, "cm"), pad_y = unit(0.35, "cm")) + 
+  annotation_north_arrow(location = "tl", which_north = "true", height = unit(1.25,"cm"), width = unit(1,'cm'),
+                         pad_x = unit(0.35, "cm"), pad_y = unit(0.75, "cm"),style = north_arrow_fancy_orienteering) + 
+  ###
   labs(title = paste(survey.year, "", "BoF Grey Meats per Tow"), x = "Longitude", y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   coord_sf(xlim = c(-66.50,-64.30), ylim = c(44.25,45.80), expand = FALSE)+
@@ -1086,7 +1206,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_BF_GreyMeats_per_Tow',survey.yea
 # ----SPA1A -----
 
 p <- pecjector(area = list(x=c(-66.40,-64.80), y=c(44.37,45.30), crs=4326), repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", survey = c("inshore", "outline"), scale.bar = c('br',0.5, -1,-1)), 
+               add_layer = list(survey = c("inshore", "outline")), 
                add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>%
                                    mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 ##p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
@@ -1094,8 +1214,15 @@ p <- pecjector(area = list(x=c(-66.40,-64.80), y=c(44.37,45.30), crs=4326), repo
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = greymeat.datw %>% 
-                       filter(year == survey.year, !STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)), #excludes SPA3 and SFA29 data
+                       filter(year == survey.year, !STRATA_ID %in% c(46, 45, 44, 42, 43, 41)), #excludes SFA29 data
                      aes(lon, lat), size = 0.5) +
+  ###
+  #temporary fix for better map and visible scale bar
+  geom_sf(data = Hi.Res.Basemap, size = 0.1, colour = "black", alpha = 1, fill = "grey50") +
+  annotation_scale(location = "tl", width_hint = 0.5, pad_x = unit( 0.35, "cm"), pad_y = unit(0.35, "cm")) + 
+  annotation_north_arrow(location = "tl", which_north = "true", height = unit(1.25,"cm"), width = unit(1,'cm'),
+                         pad_x = unit(0.35, "cm"), pad_y = unit(0.75, "cm"),style = north_arrow_fancy_orienteering) + 
+  ###
   labs(title = paste(survey.year, "", "SPA1A Grey Meats per Tow"), x = "Longitude", y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   coord_sf(xlim = c(-66.40,-64.80), ylim = c(44.37,45.30), expand = FALSE)+
@@ -1107,7 +1234,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1A_GreyMeats_per_Tow',survey.
 # ----SPA1B -----
 
 p <- pecjector(area = "spa1B",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", survey = c("inshore", "outline"), scale.bar = c('tl',0.5, -1, -1)), 
+               add_layer = list(survey = c("inshore", "outline")), 
                add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>%
                                    mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 ##p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
@@ -1116,6 +1243,13 @@ p + #Plot survey data and format figure.
   geom_spatial_point(data = greymeat.datw %>% 
                        filter(year == survey.year, !STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)), #excludes SPA3 and SFA29 data
                      aes(lon, lat), size = 0.5) +
+  ###
+  #temporary fix for better map and visible scale bar
+  geom_sf(data = Hi.Res.Basemap, size = 0.1, colour = "black", alpha = 1, fill = "grey50") +
+  annotation_scale(location = "tl", width_hint = 0.5, pad_x = unit( 0.35, "cm"), pad_y = unit(0.35, "cm")) + 
+  annotation_north_arrow(location = "tl", which_north = "true", height = unit(1.25,"cm"), width = unit(1,'cm'),
+                         pad_x = unit(0.35, "cm"), pad_y = unit(0.75, "cm"),style = north_arrow_fancy_orienteering) + 
+  ###
   labs(title = paste(survey.year, "", "SPA1B Grey Meats per Tow"), x = "Longitude", y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   coord_sf(xlim = c(-66.20,-64.30), ylim = c(44.80,45.70), expand = FALSE)+
@@ -1128,15 +1262,22 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1B_GreyMeats_per_Tow',survey.
 # ----SPA4 and 5 -----
 
 p <- pecjector(area = "spa4",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", survey = c("inshore", "outline"), scale.bar = c('tl',0.5,-1,-1)), 
+               add_layer = list(survey = c("inshore", "outline")), 
                add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>%
                                    mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 ##p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = greymeat.datw %>% 
-                       filter(year == survey.year, !STRATA_ID %in% c(22, 23, 24, 46, 45, 44, 42, 43, 41)), #excludes SPA3 and SFA29 data
+                       filter(year == survey.year, !STRATA_ID %in% c(46, 45, 44, 42, 43, 41)), #excludes SFA29 data
                      aes(lon, lat), size = 0.5) +
+  ###
+  #temporary fix for better map and visible scale bar
+  geom_sf(data = Hi.Res.Basemap, size = 0.1, colour = "black", alpha = 1, fill = "grey50") +
+  annotation_scale(location = "tl", width_hint = 0.5, pad_x = unit( 0.35, "cm"), pad_y = unit(0.35, "cm")) + 
+  annotation_north_arrow(location = "tl", which_north = "true", height = unit(1.25,"cm"), width = unit(1,'cm'),
+                         pad_x = unit(0.35, "cm"), pad_y = unit(0.75, "cm"),style = north_arrow_fancy_orienteering) + 
+  ###
   labs(title = paste(survey.year, "", "SPA4 Grey Meats per Tow"), x = "Longitude", y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   coord_sf(xlim = c(-66.20,-65.51), ylim = c(44.48,44.96), expand = FALSE)+
@@ -1146,11 +1287,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA4_GreyMeats_per_Tow',survey.y
 
 # ----SPA3 -----
 
-#Create contour and specify plot aesthetics
-com.contours <- contour.gen(greymeat.datw %>% filter(year == survey.year, STRATA_ID %in% c(22, 23, 24)) %>% #only SPA3
-                              dplyr::select(ID, lon, lat, NUM_GREYMEAT), ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
-
-
+#lvls=c(0, 1, 2) 
 lvls=c(0, 1, 2, 3, 4, 5) 
 CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
 CP <- convCP(CL)
@@ -1171,13 +1308,20 @@ col <- brewer.pal(length(lvls),"Greys") #set colours
 cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = expression(frac(N,tow)), limits = labels) #set custom fill arguments for pecjector
 
 p <- pecjector(area = "spa3",repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", survey = c("inshore", "outline"), scale.bar = c('tl',0.5,-1,-1)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
+               add_layer = list(survey = c("inshore", "outline")), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 ##p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = greymeat.datw %>% 
-                       filter(year == survey.year, STRATA_ID %in% c(22, 23, 24)), #only SPA3 strata IDs
+                       filter(year == survey.year, !STRATA_ID %in% c(41,42,43,44,45,46)), #exclude SFA29
                      aes(lon, lat), size = 0.5) +
+  ###
+  #temporary fix for better map and visible scale bar
+  geom_sf(data = Hi.Res.Basemap, size = 0.1, colour = "black", alpha = 1, fill = "grey50") +
+  annotation_scale(location = "tl", width_hint = 0.5, pad_x = unit( 0.35, "cm"), pad_y = unit(0.35, "cm")) + 
+  annotation_north_arrow(location = "tl", which_north = "true", height = unit(1.25,"cm"), width = unit(1,'cm'),
+                         pad_x = unit(0.35, "cm"), pad_y = unit(0.75, "cm"),style = north_arrow_fancy_orienteering) + 
+  ###
   geom_sf(data = spa3.poly, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
   labs(title = paste(survey.year, "", "SPA3 Grey Meats per Tow"), x = "Longitude", y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
@@ -1188,14 +1332,8 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA3_GreyMeats_per_Tow',survey.y
 
 # ----SPA6 -----
 
-#Create contour and specify plot aesthetics
-com.contours <- contour.gen(greymeat.datw %>% 
-                              filter(year == survey.year, STRATA_ID %in% c(30,31,32,54)) %>% #Only SPA6
-                              dplyr::select(ID, lon, lat, NUM_GREYMEAT), 
-                            ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
-
-
-lvls=c(0, 1, 2, 3, 4, 5) 
+lvls=c(0,0.5,1,1.5,2)
+#lvls=c(0, 1, 2, 3, 4, 5) 
 CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
 CP <- convCP(CL)
 totCont.poly <- CP$PolySet
@@ -1210,21 +1348,29 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   mutate(level = unique(CP$PolyData$level))
 
 #Colour aesthetics and breaks for contours
-labels <- c("0-1", "1-2", "2-3", "3-4", "4-5", "5+")
+labels <- c("0-0.5", "0.5-1.0", "1.0-1.5", "1.5-2.0", "2+")
+#labels <- c("0-1", "1-2", "2-3", "3-4", "4-5", "5+")
 col <- brewer.pal(length(lvls),"Greys") #set colours
 cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = expression(frac(N,tow)), limits = labels) #set custom fill arguments for pecjector
 
 
 p <- pecjector(area =list(x=c(-66.4, -67.5), y=c(44.4, 45.2), crs=4326),repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", survey = c("inshore", "outline"), scale.bar = c('tl',0.5, -1,-1)), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA)) 
+               add_layer = list(), add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>% mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA)) 
 
 p + #Plot survey data and format figure.
   geom_spatial_point(data = greymeat.datw %>% 
                        filter(year == survey.year, STRATA_ID %in% c(30,31,32, 54)), #Only SPA6
                      aes(lon, lat), size = 0.5) +
   #geom_sf(data = SPA6, size = 0.4, colour = "black", alpha = 0.7, fill = NA) +
-  #geom_sf(data = outVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
-  #geom_sf(data = inVMS, size = 0.7, colour = "red", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in red
+  ###
+  #temporary fix for better map and visible scale bar
+  geom_sf(data = Hi.Res.Basemap, size = 0.1, colour = "black", alpha = 1, fill = "grey50") +
+  annotation_scale(location = "tl", width_hint = 0.5, pad_x = unit( 0.35, "cm"), pad_y = unit(0.35, "cm")) + 
+  annotation_north_arrow(location = "tl", which_north = "true", height = unit(1.25,"cm"), width = unit(1,'cm'),
+                         pad_x = unit(0.35, "cm"), pad_y = unit(0.75, "cm"),style = north_arrow_fancy_orienteering) + 
+  ###
+  geom_sf(data = outVMS, size = 0.7, colour = "grey", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in grey
+  geom_sf(data = inVMS, size = 0.7, colour = "grey", alpha = 0.7, fill = NA) + # Plots Modeled area boundaries in grey
   labs(title = paste(survey.year, "", "SPA6 Grey Meats per Tow"), x = "Longitude", y = "Latitude")+
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
   coord_sf(xlim = c(-67.5, -66.4), ylim = c(44.4, 45.2), expand = FALSE)+
@@ -1235,12 +1381,10 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA6_GreyMeats_per_Tow',survey.y
 
 # ----ALL SPAs -----
 
-#Create contour and specify plot aesthetics
-com.contours <- contour.gen(greymeat.datw %>% filter(year == survey.year) %>% dplyr::select(tow, lon, lat, NUM_GREYMEAT),ticks='define',nstrata=7, str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',blank=T,plot=F,res=0.01)
 
 range(greymeat.datw$Y) #check range to determine levels
 lvls=c(0,1, 2, 3, 4, 5) 
-
+#lvls=c(0,1,2)
 CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
 CP <- convCP(CL)
 totCont.poly <- CP$PolySet
@@ -1255,14 +1399,15 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   mutate(level = unique(CP$PolyData$level))
 
 #Colour aesthetics and breaks for contours
+#labels <- c("0-1", "1-2", "2+")
 labels <- c("0-1", "1-2", "2-3", "3-4", "4-5", "5+")
 col <- brewer.pal(length(lvls),"Greys") #set colours
 cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = expression(frac(N,tow)), limits = labels) #set custom fill arguments for pecjector
 
 #Plot with Pecjector for each area:
 
-p <- pecjector(area = list(x=c(-67.08,-64.4), y=c(45.62, 43.65), crs=4326),repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
-               add_layer = list(land = "grey", survey = c("inshore", "outline"), scale.bar = c('tl',0.5,-1,-1)), 
+p <- pecjector(area = list(x=c(-67.18,-64.4), y=c(45.62, 43.65), crs=4326),repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot',
+               add_layer = list(survey = c("inshore", "outline")), 
                add_custom = list(obj = totCont.poly.sf %>% arrange(level) %>% mutate(brk = labels[1:length(unique(CP$PolyData$level))]) %>%
                                    mutate(brk = fct_reorder(brk, level)) %>% dplyr::select(brk), size = 1, fill = "cfd", color = NA))
 ##p$layers[[2]]$aes_params$alpha <- 0.25 #Changing transparency of bathy contours within pecjector object
@@ -1272,9 +1417,16 @@ p + #Plot survey data and format figure.
   geom_spatial_point(data = greymeat.datw %>% 
                        filter(year == survey.year),
                      aes(lon, lat), size = 0.5) +
+  ###
+  #temporary fix for better map and visible scale bar
+  geom_sf(data = Hi.Res.Basemap, size = 0.1, colour = "black", alpha = 1, fill = "grey50") +
+  annotation_scale(location = "tl", width_hint = 0.5, pad_x = unit( 0.35, "cm"), pad_y = unit(0.35, "cm")) + 
+  annotation_north_arrow(location = "tl", which_north = "true", height = unit(1.25,"cm"), width = unit(1,'cm'),
+                         pad_x = unit(0.35, "cm"), pad_y = unit(0.75, "cm"),style = north_arrow_fancy_orienteering) + 
+  ###
   labs(title = paste(survey.year, "", "Grey Meats per Tow"), x = "Longitude", y = "Latitude") +
   guides(fill = guide_legend(override.aes= list(alpha = .7))) + #Legend transparency
-  coord_sf(xlim = c(-67.08,-64.4), ylim = c(43.65,45.62), expand = FALSE)+
+  coord_sf(xlim = c(-67.18,-64.4), ylim = c(43.65,45.62), expand = FALSE)+
   theme(axis.title = element_text(size = 12),
         axis.text = element_text(size = 10),
         legend.title = element_text(size = 14, face = "bold"), 
@@ -1287,6 +1439,3 @@ p + #Plot survey data and format figure.
 
 #save
 ggsave(filename = paste0(saveplot.dir,'ContPlot_BFAll_GreyMeats_per_Tow',survey.year,'_new.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
-
-
-
