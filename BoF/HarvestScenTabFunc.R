@@ -22,31 +22,31 @@ harvest.scen.tab = function(area = area, catch.range = catch.range)
   require(dplyr) || stop("Install dplyr")
   
   if(area == "SPA1A") {
-    catch.range <- c(400, 440, 480, 520, 560, 600, 640, 680)
+    catch.range <- c(175, 200, 225, 250, 275, 300, 325, 350,375)
     decision.table <- SPA1A.decision.table
     table.caption <- paste0("Table 1. Harvest scenario table for SPA 1A to evaluate ", year,"--", year+1-2000, " catch levels in terms of resulting exploitation (e), expected changes in commercial biomass (%), probability (Pr) of commercial biomass increase, probability that after removal the stock will be above the Upper Stock Reference (USR; ", SPA1A$USR, " t), and above the Lower Reference Point (LRP; ", SPA1A$LRP, " t). Potential catches (t) in ", year,"--", year+1-2000," are evaluated in terms of the posterior probability of exceeding exploitation rate of 0.15.")
   }
   
   if(area == "SPA1B") {
-    catch.range <- c(400, 450,500, 550, 600, 650, 700, 750, 800)
+    catch.range <- c(250,275,300,325,350,375,400,425,450,475)
     decision.table <- SPA1B.decision.table
     table.caption <- paste0("Table 2. Harvest scenario table for SPA 1B to evaluate ", year,"--", year+1-2000, " catch levels in terms of resulting exploitation (e), expected changes in commercial biomass (%), probability (Pr) of commercial biomass increase, probability that after removal the stock will be above the Upper Stock Reference (USR; ", SPA1B$USR, " t), and above the Lower Reference Point (LRP; ", SPA1B$LRP, " t). Potential catches (t) in ", year,"--", year+1-2000," are evaluated in terms of the posterior probability of exceeding exploitation rate of 0.15.")
   }
   
   if(area == "SPA3") {
-    catch.range <- c(160, 180, 200, 220, 240, 260, 280, 300, 320)
+    catch.range <- c(100,120,140,160,180,200,220)
     decision.table <- SPA3.decision.table
     table.caption <- paste0("Table 3. Harvest scenario table for SPA 3 to evaluate ", year,"--", year+1-2000, " catch levels in terms of resulting exploitation (e), expected changes in commercial biomass (%), probability (Pr) of commercial biomass increase, probability that after removal the stock will be above the Upper Stock Reference (USR; ", SPA3$USR, " t), and above the Lower Reference Point (LRP; ", SPA3$LRP, " t). Potential catches (t) in ", year,"--", year+1-2000," are evaluated in terms of the posterior probability of exceeding exploitation rate of 0.15.")
   }
   
   if(area == "SPA4") {
-    catch.range <- c(260, 280, 300, 320, 340, 360,380, 400)
+    catch.range <- c(120,140,160,180,200,220,240)
     decision.table <- SPA4.decision.table
     table.caption <- paste0("Table 4. Harvest scenario table for SPA 4 to evaluate ", year,"--", year+1-2000, " catch levels in terms of resulting exploitation (e), expected changes in commercial biomass (%), probability (Pr) of commercial biomass increase, probability that after removal the stock will be above the Upper Stock Reference (USR; ", SPA4$USR, " t), and above the Lower Reference Point (LRP; ", SPA4$LRP, " t). Potential catches (t) in ", year,"--", year+1-2000," are evaluated in terms of the posterior probability of exceeding exploitation rate of 0.15.")
   }
   
   if(area == "SPA6") {
-    catch.range <- c(240, 250, 260, 270, 280, 290,300, 310, 320, 330)
+    catch.range <- c(160,180,200,220,240)
     decision.table <- SPA6.decision.table
     table.caption <- paste0("Table 5. Harvest scenario table for the SPA 6 modelled area to evaluate ", year,"--", year+1-2000, " catch levels in terms of resulting exploitation (\U1D452), expected changes in commercial biomass (%), probability (Pr) of commercial biomass increase. The probability that after removal the stock will be above the Upper Stock Reference (USR; ", SPA6$USR, " t), and above the Lower Reference Point (LRP; ", SPA6$LRP, " t); grey shaded columns. Corresponding catch levels for the whole area of SPA 6 are conditional on the proportion of catch from the modeled area staying the same in ", year+1," as in ", year," (", round((SPA6.landings %>% filter(Year == "Prop_IN") %>% dplyr::select(paste0(year)) %>% pull()*100),0),"%).")
   }
