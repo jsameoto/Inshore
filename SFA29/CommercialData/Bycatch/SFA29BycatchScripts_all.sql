@@ -224,7 +224,7 @@ AND b.fishset_id = f.fishset_id
 AND x.fishset_id = f.fishset_id
 AND f.pntcd_id = 2
 AND y.tripcd_id = 4320
-AND y.trip in ('J24-0172')
+AND y.trip in ('J24-0106')
 --AND comarea_id = 'SF29B' /*include only for split trips*/
 order by y.trip, b.set_no)
 );
@@ -269,7 +269,7 @@ AND x.fishset_id = f.fishset_id
 AND f.pntcd_id = 2
 AND y.tripcd_id = 4320
 AND b.source = 0
-AND y.trip in ('J24-0172'))
+AND y.trip in ('J24-0106'))
 ORDER BY TRIP, COMAREA_ID, SET_NO
 
 --SCRIPT 8--/*pulls the observed trip from MARFIS; MON_DOC_ID, SUM_SLIP_WT, DATE_LANDED_MARFIS*/
@@ -324,7 +324,7 @@ AND b.fishset_id = f.fishset_id
 AND x.fishset_id = f.fishset_id
 AND f.pntcd_id = 2
 AND y.tripcd_id = 4320
-AND y.trip in ('J21-0144', 'J21-0119', 'J21-0133', 'J21-0118', 'J21-0131')
+AND y.trip in ('J24-0083', 'J24-0091', 'J24-0092', 'J24-0098', 'J24-0133', 'J24-0172')
 order by y.trip, b.set_no)
 group by trip, common, comarea_id, source
 
