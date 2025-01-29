@@ -18,6 +18,8 @@
 # SPA1B_CPUEgridplotyyyy.png
 # SPA1B_Effortgridplotyyyy.png
 # SPA1B_Catchgridplotyyyy.png
+# SPA1B_CPEUbyMonthyyyy.png
+# SPA1B_LandingsbyMonthyyyy.png
 
 
 #BEFORE RUNNING THIS SCRIPT:
@@ -33,6 +35,7 @@ library(RColorBrewer)
 library(dplyr)
 library(openxlsx)
 library(sf)
+library(lubridate)
 
 source("Y:/Inshore/BoF/Assessment_fns/convert.dd.dddd.r")
 
@@ -54,16 +57,16 @@ for(fun in funcs)
 #### DEFINE ####
 
 direct <- "Y:/Inshore/BoF"
-fishingyear <- 2023 #most recent year of commercial fishing data to be used (e.g. if fishing season is 2019/2020, use 2020)
-assessmentyear <- 2023 #year in which you are conducting the assessment
-#un.ID=un.raperj #ptran username
-#pwd.ID=pw.raperj #ptran password
-un.ID=un.sameotoj #ptran username
-pwd.ID=pw.sameotoj#ptran password
+fishingyear <- 2024 #most recent year of commercial fishing data to be used (e.g. if fishing season is 2019/2020, use 2020)
+assessmentyear <- 2024 #year in which you are conducting the assessment
+un.ID=Sys.getenv("un.raperj") #ptran username
+pwd.ID=Sys.getenv("pw.raperj") #ptran password
+#un.ID=un.sameotoj #ptran username
+#pwd.ID=pw.sameotoj#ptran password
 
 #Date range for logs to be selected 
-start.date.logs <- "2022-10-01"  #YYYY-MM-DD use Oct 1 
-ends.date.logs <- "2023-10-01"  #YYYY-MM-DD use Oct 1 
+start.date.logs <- "2023-10-01"  #YYYY-MM-DD use Oct 1 
+ends.date.logs <- "2024-10-01"  #YYYY-MM-DD use Oct 1 
 
 
 #### Read files ####
@@ -89,6 +92,7 @@ quer2 <- paste(
   "FROM scallop.scallop_log_marfis s		         ",
   "WHERE s.assigned_area in ('1B', '28C', '28D')       ",
   " 	AND  s.date_fished >= to_date('",start.date.logs,"','YYYY-MM-DD') and s.date_fished < to_date('",ends.date.logs,"','YYYY-MM-DD') ",
+  "AND s.licence_id not in ('356089', '356090', '356091', '356092', '368730', '369132', '369133') ", #remove FSC
   "	AND (s.data_class = 1                        ",
   "OR (s.data_class = 2 AND s.quality_flag =',4' ) ",
   "OR (s.data_class = 2 AND s.quality_flag =',1,4') ",
@@ -105,19 +109,32 @@ dim(logs)
 logs$lat <- convert.dd.dddd(logs$LATITUDE/100) #coordinates in SCALLOP db are stored without the decimal point, have to divide by 100 to get degrees decimal minutes for convert.dd.dddd
 logs$lon <- (-1)*convert.dd.dddd(logs$LONGITUDE/100)
 
-#Add year column:
+#Add year and month columns:
 logs$DATE_FISHED <- as.Date(logs$DATE_FISHED, format="%Y-%m-%d")  
-logs$YEAR <- as.numeric(format(logs$DATE_FISHED, "%Y")) 
+logs$YEAR <- year(logs$DATE_FISHED)
+logs$month <- month(logs$DATE_FISHED)
+head(logs)
+unique(logs$month)
+str(logs)
 
 #Check data
 table(logs$YEAR) #check years, fishing season in 1B spans 2 calendar years
 table(logs$FLEET) #check fleets, 1B is fished by Full Bay, Mid-Bay, and Upper-Bay
 table(logs$FLEET, logs$ASSIGNED_AREA) #check no of records for rule of <5
 
+#Check cpue by month
+logs %>%
+  group_by(month) %>%
+  summarise(mean(CPUE_KG))
+
+#Check landings by month
+logs %>%
+  group_by(month) %>%
+  summarise(sum(DAY_CATCH_KG/1000))
 
 #If any issues here, STOP and address with log scan and/or VMS checks. Make any corrections in the SCALLOP db (and send to CDD), then restart this script
 
-#In the 2022 season after verifying with log scans, there were still CPUE outliers up to 1332 kg/h. Removing records with CPUE > 200
+#2024 - remove CPUE outliers
 logs <- (logs[which(logs$CPUE <= 200),]) 
 dim(logs)
 
@@ -186,9 +203,9 @@ cpue.fleet <- merge(merge(effort.dat.fleet, catch.dat.fleet, by.x="fleet", by.y=
 cpue.fleet$cpue.kgh <- ifelse(cpue.fleet$n > 5, cpue.fleet$catch.dat.kg/cpue.fleet$effort.dat.hr, NA)
 
 #Landings by fleet:
-landings <- tacq[c(1:3,8),-1]
+landings <- tacq[c(1:4,9),-1]
 landings <- as.data.frame(t(landings))
-names(landings) <- c("FB", "MB", "UB", "TAC")
+names(landings) <- c("FB", "MB", "UB","FSC", "TAC")
 landings$year <- as.numeric(substr(rownames(landings),6,9))
 
 #Convert landings data to long format
@@ -196,7 +213,7 @@ landings <- reshape2::melt(landings, id.vars = "year", value.name = "catch.fleet
 
 #Combine landings with cpue
 catch.fishery.fleet <- landings[which(landings$year == fishingyear),]
-catch.fishery.fleet <- catch.fishery.fleet[-4,]
+catch.fishery.fleet <- catch.fishery.fleet[-(4:5),]
 cpue.fleet <- cbind(cpue.fleet, catch.fishery.fleet)
 print(cpue.fleet)
 
@@ -257,6 +274,40 @@ ggplot(filter(comm.dat.subarea, area != '1B'), aes(x = year, y = cpue.kgh)) +
 #save
 ggsave(filename = paste0(direct, "/",assessmentyear,"/Assessment/Figures/CommercialData/SPA1B_CPUE",fishingyear, ".png"), width = 24,height = 16,dpi=400,units='cm')
 
+
+#CPUE by month
+CPUE_month <- logs %>% 
+  group_by(month) %>%
+  summarise(sum(DAY_CATCH_KG)/sum(effort_h)) %>%
+  slice(6:7,1:5) %>% #reorder months, this may change depending on months fished in a given year
+  mutate(month = factor(month, levels=unique(month))) #so months will plot in correct order
+
+ggplot(CPUE_month, aes(x = month, y = `sum(DAY_CATCH_KG)/sum(effort_h)`, group =1)) +
+  theme_bw(base_size = 16) + theme(panel.grid=element_blank()) + theme(plot.margin = unit(c(1,1,1,1), "cm")) +
+  geom_point() +
+  geom_line() +
+  scale_x_discrete("Month") +
+  scale_y_continuous("Catch Rate (kg/h)", limits = c(0,60), breaks = seq(0,60,10))
+#save
+ggsave(filename = paste0(direct, "/",assessmentyear,"/Assessment/Figures/CommercialData/SPA1B_CPUEbyMonth",fishingyear, ".png"), width=24,height=20,dpi=400,units='cm')
+
+#Landings by month (from clean logs)
+Landings_month <- logs %>% 
+  group_by(month) %>%
+  summarise(sum(DAY_CATCH_KG/1000)) %>%
+  slice(6:7,1:5) %>% #reorder months, this may change depending on months fished in a given year
+  mutate(month = factor(month, levels=unique(month))) #so months will plot in correct order
+
+ggplot(Landings_month, aes(x = month, y = `sum(DAY_CATCH_KG/1000)`, group =1)) +
+  theme_bw(base_size = 16) + theme(panel.grid=element_blank()) + theme(plot.margin = unit(c(1,1,1,1), "cm")) +
+  geom_point() +
+  geom_line() +
+  scale_x_discrete("Month") +
+  scale_y_continuous("Landings (t)")
+#save
+ggsave(filename = paste0(direct, "/",assessmentyear,"/Assessment/Figures/CommercialData/SPA1B_LandingsbyMonth",fishingyear, ".png"), width=24,height=20,dpi=400,units='cm')
+
+
 #CPUE and Effort by fleet (fishery-level)
 ggplot(comm.dat.fleet) +
   theme_bw(base_size = 16) + theme(panel.grid=element_blank()) +  
@@ -287,11 +338,11 @@ ggsave(file = paste0(direct, "/",assessmentyear,"/Assessment/Figures/CommercialD
 #TAC and Landings
 ggplot() +
   theme_bw(base_size = 16) + theme(panel.grid=element_blank()) + # white background, no gridlines
-  geom_bar(data=landings[landings$variable%in%c('FB','MB', 'UB'),], aes(year, catch.fleet.mt, fill=factor(variable, levels = c('UB', 'MB', 'FB'))), colour="black", stat="identity") + 
+  geom_bar(data=landings[landings$variable%in%c('FB','MB', 'UB', 'FSC'),], aes(year, catch.fleet.mt, fill=factor(variable, levels = c('FSC','UB', 'MB', 'FB'))), colour="black", stat="identity") + 
   geom_line(data=landings[landings$variable == 'TAC',], aes(x = year, y = catch.fleet.mt), lwd = 1) +
   scale_y_continuous("Landings (meats, t)", breaks=seq(0,1200,200)) + # 
   scale_x_continuous("Year", breaks=seq(2003,fishingyear,2)) +
-  scale_fill_manual(values=c("white", "blue", "black"), labels=c("Upper Bay", "Mid-Bay", "Full Bay"), name=NULL) +
+  scale_fill_manual(values=c("black", "white", "royalblue2", "grey"), labels=c("FSC","Upper Bay", "Mid-Bay", "Full Bay"), name=NULL) +
   annotate(geom="text",label="TAC", x=2010.4, y= 425) +
   theme(legend.position=c(0.15, 0.85)) # play with the location if you want it inside the plotting panel
 #save
@@ -314,11 +365,11 @@ ggsave(filename = paste0(direct, "/",assessmentyear,"/Assessment/Figures/Commerc
 #### SPATIAL PLOTS ####
  
  
- #Pecjector basemap with SPA 1B boundaries
+#Pecjector basemap with SPA 1B boundaries
   p <- pecjector(area =list(x=c(-66.5,-64.4), y=c(44.8,45.8), crs=4326),repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot', add_layer = list(land = "grey", bathy = c(50,'c'), scale.bar = c('tl',0.5)))
 
  
- #CPUE Grid Plot
+#CPUE Grid Plot
  
  #Create raster of mean cpue
  for.raster <- subset(logs, YEAR==fishingyear, c('lon','lat','CPUE_KG'))
@@ -337,7 +388,7 @@ ggsave(filename = paste0(direct, "/",assessmentyear,"/Assessment/Figures/Commerc
    geom_tile(df, mapping = aes(lon, lat, fill = mean.cpue), color = "grey55") +
    geom_sf(data = poly.strata, fill=NA, colour="grey55") +
    coord_sf(xlim = c(-66.5,-64.4), ylim = c(44.8,45.8), expand = FALSE) +
-   scale_fill_binned(type = "viridis", direction = -1, name="CPUE (kg/h)") +
+   scale_fill_binned(type = "viridis", direction = -1, name="CPUE (kg/h)", breaks = c(25, 50, 75, 100, 125, 150)) +
    theme(legend.key.size = unit(5,"mm"),
          plot.title = element_text(size = 14, hjust = 0.5), #plot title size and position
          axis.title = element_text(size = 12),
@@ -348,7 +399,6 @@ ggsave(filename = paste0(direct, "/",assessmentyear,"/Assessment/Figures/Commerc
          legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.7)), #Legend bkg colour and transparency
          legend.box.margin = margin(1, 1, 1, 1))
  #save
-# ggsave(filename = paste0(direct, "/",assessmentyear,"/Assessment/Figures/CommercialData/SPA1B_CPUEgridplot",fishingyear, ".png"), 9,9,res=200,units='in')
  ggsave(filename = paste0(direct, "/",assessmentyear,"/Assessment/Figures/CommercialData/SPA1B_CPUEgridplot",fishingyear, ".png"), width=9,height=9,dpi=200,units='in')
  
  
@@ -385,7 +435,7 @@ ggsave(filename = paste0(direct, "/",assessmentyear,"/Assessment/Figures/Commerc
    geom_tile(df, mapping = aes(lon, lat, fill = tot.catch), color = "grey55") +
    geom_sf(data = poly.strata, fill=NA, colour="grey55") +
    coord_sf(xlim = c(-66.5,-64.4), ylim = c(44.8,45.8), expand = FALSE) +
-   scale_fill_binned(type = "viridis", direction = -1, name="Catch (kg)", breaks = c(1000, 2000, 3000, 4000, 5000, 6000)) +
+   scale_fill_binned(type = "viridis", direction = -1, name="Catch (kg)", breaks = c(2000, 4000, 6000, 8000, 10000, 12000, 14000)) +
    theme(legend.key.size = unit(5,"mm"),
          plot.title = element_text(size = 14, hjust = 0.5), #plot title size and position
          axis.title = element_text(size = 12),
