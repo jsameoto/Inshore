@@ -41,14 +41,14 @@ names(surf.all) <- c("uid","Start.Bottom")
 # Define: 
 uid <- un.sameotoj
 pwd <- pw.sameotoj
-uid <- keyring::key_list("Oracle")[1,2]
-pwd <- keyring::key_get("Oracle", uid)
+#uid <- keyring::key_list("Oracle")[1,2]
+#pwd <- keyring::key_get("Oracle", uid)
 
-surveyyear <- 2023  #This is the last survey year for which you want to include  - note should match year of cruise below 
-cruise <- "SFA292023"  #note should match year for surveyyear set above 
-assessmentyear <- 2024 #year in which you are conducting the survey 
+surveyyear <- 2024  #This is the last survey year for which you want to include  - note should match year of cruise below 
+cruise <- "SFA292024"  #note should match year for surveyyear set above 
+assessmentyear <- 2025 #year in which you are conducting the survey 
 path.directory <- "Y:/Inshore/SFA29/"
-years <- c(2001:2023) 
+years <- c(2001:2024) 
 
 #Bring in survey tow data with SDM value (note - SFA29_SDM_LWM.R script must be run to get updated survey tows with SDM values prior to runnint this script)
 sdmtows <- read.csv("Y:/Inshore/SFA29/ScalSurv_SDM/SFA29Tows_SDM.csv")
@@ -107,7 +107,12 @@ quer2 <- paste(
 	# In 2004 1 tow landed in the exceedlingly small part of SFA29A which is high, we remove this tow for subsequent analyses below...
 	SFA29livefreq.dat[which(SFA29livefreq.dat$STRATA == "SFA29A" & SFA29livefreq.dat$SDM == "high"),]
 	SFA29livefreq.dat <- SFA29livefreq.dat[-which(SFA29livefreq.dat$STRATA == "SFA29A" & SFA29livefreq.dat$SDM == "high"),]
-	
+
+# in 2024 - survey poirtub if B that was not covered by MBES - do not use for estimates these were exploratory; these were tows 3,4,5,6,7 
+	SFA29livefreq.dat %>% filter(YEAR == 2024 & is.na(SDM) == TRUE)
+	dim(SFA29livefreq.dat)
+	SFA29livefreq.dat <- SFA29livefreq.dat[!(SFA29livefreq.dat$CRUISE == "SFA292024" & SFA29livefreq.dat$TOW_NO %in% c(3,4,5,6,7)), ]
+	dim(SFA29livefreq.dat)
 	SFA29livefreq.dat.all <- SFA29livefreq.dat
 
 	
@@ -337,6 +342,9 @@ logK <-  -1.56787
 #T0 don't have so use T0 from above VonB run to fill in just to get a plot:
 #... NOTE - Stephen's VonB model run gives different parameter estimates from using full dataset above
 # For now, use Stephen's given VonB parameter estimates to conduct growth calculations so full time series is equivalent. Will recalculate and redo in the future at next full RAP.
+#View(comm.size %>% filter(year == 2024))
+#View(rec.size %>% filter(year == 2024))
+##recruits have NA for low 29B and low 29D in 2024; this is bc there were no recruits (0) in low in 29B and low in 29D in 2024 
 
 #Grow up lbar for each year (t) to find expected mean SH for year t+1
 comm.size$SHF.pred <- Linf*(1-exp(-exp(logK)))+exp(-exp(logK))*comm.size$SHF 
@@ -349,6 +357,9 @@ lbar <- rbind(comm.size, rec.size)
 
 #remove SUBAREA Column to keep consistant with previous years files:
 lbar <- lbar |> dplyr::select(!SUBAREA)
+
+lbar %>% filter(year %in% c(2023,2024) & size == "recruit")
+
 
 #note lbar is column  "SHF" - curren year average height; column name "SHF.pred" is the predicted average SH in the following year 
 write.csv(lbar, paste0(path.directory,assessmentyear, "/Assessment/Data/Growth/SFA29.SHobj.",surveyyear,".csv"))

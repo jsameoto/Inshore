@@ -18,12 +18,12 @@ require(tidyverse)
 options(stringsAsFactors = FALSE)
 
 # Define: 
-#uid <- un.sameotoj
-#pwd <- pw.sameotoj
+uid <- un.sameotoj
+pwd <- pw.sameotoj
 #uid <- un.raperj
 #pwd <- un.raperj
-uid <- keyring::key_list("Oracle")[1,2]
-pwd <- keyring::key_get("Oracle", uid)
+#uid <- keyring::key_list("Oracle")[1,2]
+#pwd <- keyring::key_get("Oracle", uid)
 
 
 # ---Import Source functions ----------------------------------------------------------------------
@@ -50,8 +50,8 @@ sdm <- raster("Y:/Inshore/Databases/Scallsur/SFA29BottomTypes/SDM/sdm_sfa29/w001
 chan <- dbConnect(dbDriver("Oracle"),username=uid, password=pwd,'ptran')
 
 #set survey.year and cruise - *Note: requires single quotations within double quotations*
-survey.year <- "'2023'"
-cruise <- "'SFA292023'"
+survey.year <- "'2024'"
+cruise <- "'SFA292024'"
 
 #Db Query:
 quer2 <- paste(
@@ -197,7 +197,7 @@ sdmtows$SDM[sdmtows$sdmval_LWM >= 0.6] <- "high"
 sdmtows.old <- read.csv("Y:/Inshore/SFA29/ScalSurv_SDM/SFA29Tows_SDM.csv")
 sdmtows.updt <- rbind(sdmtows.old,sdmtows)
 sdmtows.updt <-sdmtows.updt %>% arrange(CRUISE, TOW_NO)
-
+summary(sdmtows.updt)
 
 # ---Save updated dataframe ----------------------------------------------------------------------
 
