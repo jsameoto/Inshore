@@ -37,8 +37,8 @@ source("Y:/Inshore/SFA29/2017/model/SFA29model9-2015.R") #contains the SFA29mode
 
 #DEFINE:
 path.directory <- "Y:/Inshore/SFA29/"
-assessmentyear <- 2024 #year in which you are conducting the assessment 
-surveyyear <- 2023  #last year of survey data you are using, e.g. if max year of survey is survey from summer 2019, this would be 2019 
+assessmentyear <- 2025 #year in which you are conducting the assessment 
+surveyyear <- 2024  #last year of survey data you are using, e.g. if max year of survey is survey from summer 2019, this would be 2019 
 area <- "SFA29C"  
 
 #yr <- year(Sys.Date()) # This should be set to the year after the year of the last survey.  e.g. if 2018 that means you are using the 2017 survey. This assumes you're running assessment in surveyyear + 1
@@ -352,10 +352,17 @@ plot.std.residuals
 dev.off()
 
 
-#Predict for next year...
+#Predict for next year, using the growth parameters from the model data...
+# FOR predictions to 2025 -- not g V V V LOW!!! Majorly negative 
+growth.parameter.decision.table <- growth.paras$gh
+growth.parameter.decision.table
+
+## test if growth was different than current year growth for decision table 
+#growth.parameter.decision.table <- c(1, 1,1) ## if use write out decision table as ... growth_1.csv 
+
 # First get the growth data, this will be in the order for the "strata" is above, as long as this is low then medium, then high this should be fine...
 #growth.paras <- mod.dat$gh[mod.dat$Year ==max(yrs) & mod.dat$Strata %in% strata]
-C.next.predict <- predict(C.mod.res,exploit=0.1,g.parm=c(growth.paras$gh))
+C.next.predict <- predict(C.mod.res,exploit=0.1,g.parm=c(growth.parameter.decision.table))
 summary(C.next.predict)
 
 #Method only does one exploitation at a time, note that I have changed the probabilities to be like those for BoF
@@ -369,7 +376,7 @@ Decision.table
 #LRP for C=: 1.41 t/km^2
 Decision.table <- NULL
 for(i in 1:10){
-  temp<-predict(C.mod.res,exploit=0.02*(i-1), g.parm=growth.paras$gh)
+  temp<-predict(C.mod.res,exploit=0.02*(i-1), g.parm=growth.parameter.decision.table)
   # Get the Probability of being above the LRP, for Area B is this 1.12, for area C this is 1.41, and D is 1.30
   lrp <- signif(length(which(temp$Bh.next$High/temp$Area[3] >= 1.41))/length(temp$Bh.next$High),digits=2)
   usr <- signif(length(which(temp$Bh.next$High/temp$Area[3] >= 2.82))/length(temp$Bh.next$High),digits=2)
@@ -383,6 +390,7 @@ Dec.tab
 
 # Save the decision table.
 write.csv(Dec.tab, paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29C/SFA29.C.mod.Decision.table.",surveyyear,".csv"), row.names = FALSE) 
+#write.csv(Dec.tab, paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29C/SFA29.C.mod.Decision.table.",surveyyear,"growth_1.csv"), row.names = FALSE) 
 
 # ---- OPTIONAL Decision table to predict max level exploitation risk - Not used for Update ---- 
 #Decision.table<-NULL
@@ -567,7 +575,7 @@ summary <- cbind(parameters, data.frame(summary, row.names=NULL))
 
 n <- 3
 years <- rep(2001:surveyyear, each=n)
-Habitat <- rep(c("Low", "Med", "High"), 23) #Need to fix this so new years are added.
+Habitat <- rep(c("Low", "Med", "High"), 24) #Need to fix this so new years are added.
 
 summary.Bh <- summary |>  filter(str_detect(summary$parameters, "^Bh"))
 summary.Bh$Year <- years

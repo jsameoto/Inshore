@@ -32,8 +32,8 @@ options(stringsAsFactors = FALSE)
 # ///.... DEFINE THESE ENTRIES ....////
 
 #DEFINE: year, area
-year <- 2023  #this is the survey year
-assessmentyear <- 2024 #this is the year you are running your assessment in -- corresponds to the assessment folder year name 
+year <- 2024  #this is the survey year
+assessmentyear <- 2025 #this is the year you are running your assessment in -- corresponds to the assessment folder year name 
 # DEFINE path for figures and dataouput to be saved; note expects within this folder that you've created a "dataoutput" and "Figures" folder under the following directory path;  MUST HAVE "/" at the end of your path! (shouldn't have to change this in most years with new folder structure)
 path.directory <- "Y:/Inshore/SFA29/"
 
@@ -55,6 +55,14 @@ sh.predict <- merge(SFA29.SHpredict.Com, SFA29.SHpredict.Rec, by=c("years", "STR
 head(sh.actual)
 head(sh.predict)
 
+## WHy NA for Recruits.. - check SHF script - it's bc there were 0 recruits 
+tail(sh.actual)
+tail(sh.predict)
+
+sh.actual %>% filter(years  %in% c(2023, 2024))
+sh.predict %>% filter(years  %in% c(2023, 2024))
+
+
 SH.object <- merge(sh.actual, sh.predict, by=c("years", "STRATA","SDM"))
 SH.object
 
@@ -64,6 +72,8 @@ SH.object
 #Y:/Inshore/SFA29/YYYY/Assessment/Data/Growth/
 
 # if your year defined above it 2019, then you should be bringing in the 2018 growth rate object.
+
+###### !!!!!! Be sure to bring this file over to teh current year assessment folder !!!!!! ######
 sfa29.growthrate <- read.csv(paste0("Y:/Inshore/SFA29/",assessmentyear,"/Assessment/Data/Growth/growth.actual.2001to",year-1,".csv"))
 #sfa29.growthrate <- read.csv("Y:/INSHORE SCALLOP/BoF/2020/Assessment/Data/Growth/SPA1A1B4and5/spa1a.growthrate.2019.csv")
 #sfa29.growthrate <- sfa29.growthrate[,-1]
@@ -75,7 +85,7 @@ sfa29.growthrate <- sfa29.growthrate %>% arrange(strata, sdm, Year)
 load(paste0("Y:/Inshore/SFA29/",assessmentyear,"/Assessment/Data/Growth/SFA29growth",year,".RData"))
 model.object.Y <- get(paste0("MWTSHSFA29.",year)) #Assign model.object.Y to current year model object - MWTSHSFA29.YYYY
 #Previous year;
-load(paste0("Y:/Inshore/SFA29/",assessmentyear,"/Assessment/Data/Growth/SFA29growth",year-1,".RData"))
+load(paste0("Y:/Inshore/SFA29/",assessmentyear-1,"/Assessment/Data/Growth/SFA29growth",year-1,".RData"))
 model.object.Yminus1 <- get(paste0("MWTSHSFA29.",year-1))
 
 summary(model.object.Y)
@@ -435,7 +445,7 @@ ggplot(xx %>% filter(Age == "Commercial" & strata != "SFA29E"), aes(y=rate, x=Ye
         legend.key.size = unit(6,"mm"),
         legend.justification = c("left", "top"),
         legend.box.just = "left",
-        legend.position = c(.82, .14),
+        legend.position = c(.07, .14),
         legend.margin = margin(0, 0, 0, 0),
         legend.title = element_blank(),
         text = element_text(size=20)) +
