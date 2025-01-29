@@ -7,8 +7,8 @@ library(tidyverse)
 library(lubridate)
 
 #define 
-yr <- 2024 # This should be set to the year after the year of the last survey.  e.g. if 2018 that means you are using the 2017 survey.
-survey.year <- 2023
+yr <- 2025 # This should be set to the year after the year of the last survey.  e.g. if 2018 that means you are using the 2017 survey.
+survey.year <- 2024
 
 path.directory <- paste0("Y:/Inshore/SFA29/")
 

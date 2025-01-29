@@ -36,9 +36,9 @@ pwd <- pw.sameotoj
 #uid <- keyring::key_list("Oracle")[1,2]
 #pwd <- keyring::key_get("Oracle", uid)
 
-surveyyear <- 2023  #This is the last survey year for which you want to include  - not should match year of cruise below 
-cruise <- "SFA292023"  #note should match year for surveyyear set above 
-assessmentyear <- 2024 #year in which you are conducting the survey 
+surveyyear <- 2024  #This is the last survey year for which you want to include  - not should match year of cruise below 
+cruise <- "SFA292024"  #note should match year for surveyyear set above 
+assessmentyear <- 2025 #year in which you are conducting the survey 
 path.directory <- "Y:/Inshore/SFA29/"
 years <- c(2001:surveyyear) #when have 2021 data ready with SDM value then can use line of code below 
 #yr.crnt <- surveyyear-1
@@ -113,9 +113,19 @@ data.obj <- dbGetQuery(chan, quer2)
 # Left join survey tows to SDM level on uid
 	data.obj <- merge(data.obj, sdmtows, by.x='uid', by.y='uid', all.x=TRUE)
 	dim(data.obj)
+	
+#In 2024 did tows outside 29W and also in non-MBES covered part of B; remove these so apples and apples with previous estimates 
+	data.obj %>% filter(CRUISE == "SFA292024" & is.na(SDM) == TRUE)
+	dim(data.obj)
+	
+	data.obj <- data.obj[!(data.obj$CRUISE == "SFA292024" & is.na(data.obj$SDM) == TRUE),]
+	dim(data.obj)
+	
 	data.obj.all <- data.obj
 
-
+# check for NA records 
+	summary(data.obj)
+	
 ####
 ###  ----   Calculate Stratified Random Survey Estimates ----             
 ###   PEDstrata(data.obj, strata.group, strata.name, catch, Subset)                            ###
@@ -400,9 +410,11 @@ data.obj <- dbGetQuery(chan, quer2)
 			data.obj.i <- temp.data[temp.data$STRATA==ab[j],]
 			for (k in 1:length(sdmlevels)){
 				data.obj.k <- data.obj.i[data.obj.i$SDM==sdmlevels[k],]
+				#data.obj.k[is.na(data.obj.k$uid),]  ## in 2024, NAs introduced in data.obj.k.. added line 412 to deal with this and added na.rm = TRUE to line 415 
+				data.obj.k <- data.obj.k[!is.na(data.obj.k$uid),]
 				m=m+1
 				if(dim(data.obj.k)[1]!=0){
-				out[m,"yst"] <- mean(data.obj.k$STDTOTALCAUGHT)
+				out[m,"yst"] <- mean(data.obj.k$STDTOTALCAUGHT, na.rm = TRUE)
 				out[m,"se.yst"] <- sqrt(var(data.obj.k$STDTOTALCAUGHT))/sqrt(dim(data.obj.k)[1])
 				out[m,"var.est"]<- var(data.obj.k$STDTOTALCAUGHT)/dim(data.obj.k)[1] #var.est is calculated as variance of the estimator
 				}
@@ -808,6 +820,8 @@ for (i in 1:length(year)) {
     data.obj.i <- temp.data[temp.data$STRATA==ab[j],]
     for (k in 1:length(sdmlevels)){
       data.obj.k <- data.obj.i[data.obj.i$SDM==sdmlevels[k],]
+      #data.obj.k[is.na(data.obj.k$uid),]  ## in 2024, NAs introduced in data.obj.k.. added line 412 to deal with this and added na.rm = TRUE to line 415 
+      data.obj.k <- data.obj.k[!is.na(data.obj.k$uid),]
       m=m+1
       if(dim(data.obj.k)[1]!=0){
         out[m,"yst"] <- mean(data.obj.k$STDTOTALCAUGHT)
@@ -1215,9 +1229,11 @@ for (i in 1:length(year)) {
     data.obj.i <- temp.data[temp.data$STRATA==ab[j],]
     for (k in 1:length(sdmlevels)){
       data.obj.k <- data.obj.i[data.obj.i$SDM==sdmlevels[k],]
+      #data.obj.k[is.na(data.obj.k$uid),]  ## in 2024, NAs introduced in data.obj.k.. added line 412 to deal with this and added na.rm = TRUE to line 415 
+      data.obj.k <- data.obj.k[!is.na(data.obj.k$uid),]
       m=m+1
       if(dim(data.obj.k)[1]!=0){
-        out[m,"yst"] <- mean(data.obj.k$STDTOTALCAUGHT)
+        out[m,"yst"] <- mean(data.obj.k$STDTOTALCAUGHT, na.rm = TRUE)
         out[m,"se.yst"] <- sqrt(var(data.obj.k$STDTOTALCAUGHT))/sqrt(dim(data.obj.k)[1])
         out[m,"var.est"]<- var(data.obj.k$STDTOTALCAUGHT)/dim(data.obj.k)[1] #var.est is calculated as variance of the estimator
       }
@@ -1397,7 +1413,8 @@ A.number.per.tow <- ggplot(data = sdm.levels %>% filter(SUBAREA == "Subarea A" &
   scale_linetype_manual(values = c(1,2,3),breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low"))+
   scale_shape_manual(values = c(15:17),breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low"))+
   theme_bw() + ylab("Survey mean no./tow") + xlab("Year") + 
-  theme(legend.position = c(0.1, 0.9),panel.grid.minor = element_blank()) #+ 
+  theme(legend.position = c(0.1, 0.9),panel.grid.minor = element_blank())  + 
+  scale_x_continuous(breaks = seq(2001,2026,by=4), limits = c(2001,2026)) #+ #+ 
 # geom_ribbon(aes(ymin=out.e$yst-out.e$se.yst, ymax=out.e$yst+out.e$se.yst), 
 #             alpha=0.1,       #transparency
 #             linetype=1,      #solid, dashed or other line types
@@ -1422,7 +1439,8 @@ B.number.per.tow <- ggplot(data = sdm.levels %>% filter(SUBAREA == "Subarea B"),
   scale_linetype_manual(values = c(1,2,3),breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low"))+
   scale_shape_manual(values = c(15:17),breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low"))+
   theme_bw() + ylab("Survey mean no./tow") + xlab("Year") + 
-  theme(legend.position = c(0.1, 0.89),panel.grid.minor = element_blank()) #+ 
+  theme(legend.position = c(0.1, 0.89),panel.grid.minor = element_blank())  + 
+  scale_x_continuous(breaks = seq(2001,2026,by=4), limits = c(2001,2026)) #+ #+ 
 # geom_ribbon(aes(ymin=out.e$yst-out.e$se.yst, ymax=out.e$yst+out.e$se.yst), 
 #             alpha=0.1,       #transparency
 #             linetype=1,      #solid, dashed or other line types
@@ -1447,7 +1465,8 @@ C.number.per.tow <- ggplot(data = sdm.levels %>% filter(SUBAREA == "Subarea C"),
   scale_linetype_manual(values = c(1,2,3),breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low"))+
   scale_shape_manual(values = c(15:17),breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low"))+
   theme_bw() + ylab("Survey mean no./tow") + xlab("Year") + 
-  theme(legend.position = c(0.1, 0.89),legend.background = element_rect(fill=alpha('white', 0.8)),panel.grid.minor = element_blank()) #+ 
+  theme(legend.position = c(0.1, 0.89),legend.background = element_rect(fill=alpha('white', 0.8)),panel.grid.minor = element_blank()) + 
+  scale_x_continuous(breaks = seq(2001,2026,by=4), limits = c(2001,2026)) #+  #+ 
 # geom_ribbon(aes(ymin=out.e$yst-out.e$se.yst, ymax=out.e$yst+out.e$se.yst), 
 #             alpha=0.1,       #transparency
 #             linetype=1,      #solid, dashed or other line types
@@ -1471,7 +1490,8 @@ D.number.per.tow <- ggplot(data = sdm.levels %>% filter(SUBAREA == "Subarea D"),
   scale_linetype_manual(values = c(1,2,3),breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low"))+
   scale_shape_manual(values = c(15:17),breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low"))+
   theme_bw() + ylab("Survey mean no./tow") + xlab("Year") + 
-  theme(legend.position = c(0.1, 0.89),legend.background = element_rect(fill=alpha('white', 0.8)),panel.grid.minor = element_blank()) #+ 
+  theme(legend.position = c(0.1, 0.89),legend.background = element_rect(fill=alpha('white', 0.8)),panel.grid.minor = element_blank())  + 
+  scale_x_continuous(breaks = seq(2001,2026,by=4), limits = c(2001,2026)) #+ #+ 
 # geom_ribbon(aes(ymin=out.e$yst-out.e$se.yst, ymax=out.e$yst+out.e$se.yst), 
 #             alpha=0.1,       #transparency
 #             linetype=1,      #solid, dashed or other line types
@@ -1495,7 +1515,8 @@ AtoD.number.per.tow.prerec <- ggplot(data = sdm.levels %>% filter(!(SUBAREA == "
   scale_shape_manual(values = c(15:17),breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low"))+
   facet_wrap(~SUBAREA, ncol=2) + 
   theme_bw() + ylab("Survey mean no./tow") + xlab("Year") + 
-  theme(legend.position = c(0.1, 0.85),panel.grid.minor = element_blank(),legend.title = element_blank()) #+ 
+  theme(legend.position = c(0.1, 0.85),panel.grid.minor = element_blank(),legend.title = element_blank())  + 
+  scale_x_continuous(breaks = seq(2001,2026,by=4), limits = c(2001,2026)) #+ #+ 
 # geom_ribbon(aes(ymin=out.e$yst-out.e$se.yst, ymax=out.e$yst+out.e$se.yst), 
 #             alpha=0.1,       #transparency
 #             linetype=1,      #solid, dashed or other line types
@@ -1519,7 +1540,8 @@ AtoD.number.per.tow.rec <- ggplot(data = sdm.levels %>% filter(!(SUBAREA == "Sub
   scale_linetype_manual(values = c(1,2,3),breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low"))+
   scale_shape_manual(values = c(15:17),breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low"))+
   theme_bw() + ylab("Survey mean no./tow") + xlab("Year") + 
-  theme(legend.position = c(0.1, 0.85),panel.grid.minor = element_blank(),legend.title = element_blank()) #+ 
+  theme(legend.position = c(0.1, 0.85),panel.grid.minor = element_blank(),legend.title = element_blank())  + 
+  scale_x_continuous(breaks = seq(2001,2026,by=4), limits = c(2001,2026)) #+ #+ 
 # geom_ribbon(aes(ymin=out.e$yst-out.e$se.yst, ymax=out.e$yst+out.e$se.yst), 
 #             alpha=0.1,       #transparency
 #             linetype=1,      #solid, dashed or other line types
@@ -1545,7 +1567,8 @@ AtoD.number.per.tow.comm <- ggplot(data = sdm.levels %>% filter(!(SUBAREA == "Su
   scale_linetype_manual(values = c(1,2,3),breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low"))+
   scale_shape_manual(values = c(15:17),breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low"))+
   theme_bw() + ylab("Survey mean no./tow") + xlab("Year") + 
-  theme(legend.position = c(0.85, 0.85),panel.grid.minor = element_blank(),legend.title = element_blank()) #+ 
+  theme(legend.position = c(0.85, 0.85),panel.grid.minor = element_blank(),legend.title = element_blank())  + 
+  scale_x_continuous(breaks = seq(2001,2026,by=4), limits = c(2001,2026)) #+ #+ 
 # geom_ribbon(aes(ymin=out.e$yst-out.e$se.yst, ymax=out.e$yst+out.e$se.yst), 
 #             alpha=0.1,       #transparency
 #             linetype=1,      #solid, dashed or other line types
@@ -1654,7 +1677,8 @@ E.number.per.tow <- ggplot(data = out.e, aes(x=YEAR, y=yst)) +
 	  facet_wrap(~group, ncol=1, labeller = size_names) + 
 	  theme_bw() + ylab("Survey mean no./tow") + xlab("Year") + 
 	  theme(legend.position = c(0.1, 0.9),panel.grid.minor = element_blank()) + 
-   geom_pointrange(aes(ymin=yst-se.yst, ymax=yst+se.yst)) 
+   geom_pointrange(aes(ymin=yst-se.yst, ymax=yst+se.yst))  + 
+  scale_x_continuous(breaks = seq(2001,2026,by=4), limits = c(2001,2026)) #+ 
 	 # geom_ribbon(aes(ymin=out.e$yst-out.e$se.yst, ymax=out.e$yst+out.e$se.yst), 
 	 #             alpha=0.1,       #transparency
 	 #             linetype=1,      #solid, dashed or other line types
@@ -1713,7 +1737,8 @@ clap.prop.comm <- ggplot(data=XX, aes(x=YEAR, y=prop.dead.no.NAs, col= Strata, s
 	  facet_wrap(~SUBAREA) + theme_bw() + 
   theme(legend.position = c(0.85, 0.85),panel.grid.minor = element_blank(),legend.title = element_blank()) + 
 	  ylab("Commercial (>=100mm) Clappers (proportion)") + 
-	  xlab("Year")
+	  xlab("Year")  + 
+  scale_x_continuous(breaks = seq(2001,2026,by=4), limits = c(2001,2026)) #+ 
 clap.prop.comm
 	
 	#save
@@ -1734,7 +1759,8 @@ clap.prop.rec <- ggplot(data=XX, aes(x=YEAR, y=prop.dead.no.NAs, col= Strata, sh
 	  facet_wrap(~SUBAREA) + theme_bw() + 
   theme(legend.position = c(0.85, 0.85),panel.grid.minor = element_blank(),legend.title = element_blank()) +
 	  ylab("Recruit (90-99mm) Clappers (proportion)") + 
-	  xlab("Year")
+	  xlab("Year") + 
+  scale_x_continuous(breaks = seq(2001,2026,by=4), limits = c(2001,2026)) #+ 
 clap.prop.rec
 
 #save
@@ -1753,7 +1779,8 @@ clap.prop.prerec <- ggplot(data=XX, aes(x=YEAR, y=prop.dead.no.NAs, col= Strata,
 	  facet_wrap(~SUBAREA) + theme_bw() +
   theme(legend.position = c(0.85, 0.85),panel.grid.minor = element_blank(),legend.title = element_blank()) + 
 	  ylab("Pre-recruit (<90mm) Clappers (proportion)") + 
-	  xlab("Year")
+	  xlab("Year") + 
+  scale_x_continuous(breaks = seq(2001,2026,by=4), limits = c(2001,2026)) #+ 
 clap.prop.prerec
 	#save
 	ggsave(filename = paste0(path.directory,assessmentyear,"/Assessment/Figures/SFA29AtoD.Clappers.Prop.Prerecruit.",surveyyear,".png"), plot = clap.prop.prerec, scale = 2.5, width =6, height = 6, dpi = 300, units = "cm", limitsize = TRUE)

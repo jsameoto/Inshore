@@ -36,8 +36,8 @@ source("Y:/Inshore/SFA29/2017/model/SFA29model9-2015.R") #contains the SFA29mode
 
 #DEFINE:
 path.directory <- "Y:/Inshore/SFA29/"
-assessmentyear <- 2024 #year in which you are conducting the assessment 
-surveyyear <- 2023  #last year of survey data you are using, e.g. if max year of survey is survey from summer 2019, this would be 2019 
+assessmentyear <- 2025 #year in which you are conducting the assessment 
+surveyyear <- 2024  #last year of survey data you are using, e.g. if max year of survey is survey from summer 2019, this would be 2019 
 area <- "SFA29A"  
 
 #yr <- year(Sys.Date()) # This should be set to the year after the year of the last survey.  e.g. if 2018 that means you are using the 2017 survey. This assumes you're running assessment in surveyyear + 1
@@ -263,7 +263,10 @@ resids <- rbind(resids.low,resids.med)
 
 plot.residuals <- ggplot(resids) + geom_point(aes(x=Year, y= mean)) + 
   geom_errorbar(aes(x = Year,ymin = `2.5%`,ymax=`97.5%`),width=0) + 
-  theme_bw() + geom_hline(yintercept = 0) + facet_wrap(~STRATA)
+  theme_bw() + 
+  geom_hline(yintercept = 0) + 
+  facet_wrap(~STRATA) + 
+  xlim(c(2000,surveyyear+1))
 plot.residuals
 
 png(paste0(path.directory,assessmentyear,"/Assessment/Figures/Model/SFA29A/SFA29.A.plot.resid.p.",surveyyear,".png"),width=11,height=8,units = "in",res=920)
@@ -284,7 +287,10 @@ s.resids <- rbind(s.resids.low,s.resids.med)
 
 plot.std.residuals <- ggplot(s.resids) + geom_point(aes(x=Year, y= mean)) + 
   geom_errorbar(aes(x = Year,ymin = `2.5%`,ymax=`97.5%`),width=0) + 
-  theme_bw() + geom_hline(yintercept = 0) + facet_wrap(~STRATA)
+  theme_bw() + 
+  geom_hline(yintercept = 0) + 
+  facet_wrap(~STRATA) +
+  xlim(c(2000,surveyyear+1))
 plot.std.residuals
 
 png(paste0(path.directory,assessmentyear,"/Assessment/Figures/Model/SFA29A/SFA29.A.plot.s.resids.",surveyyear,".png"),width=11,height=8,units = "in",res=920)
@@ -293,7 +299,14 @@ dev.off()
 
 
 #Predict for next year, using the growth parameters from the model data...
-A.next.predict <- predict(A.mod.res,exploit=0.1,g.parm=c(growth.paras$gh,NA))  #predict expect gh to be in order low, med, high - bc A only has low, med, add NA for high 
+# FOR predictions to 2025 -- not g V V V LOW!!! Majorly negative 
+growth.parameter.decision.table <- growth.paras$gh
+growth.parameter.decision.table
+
+# test if growth was different than current year growth for decision table 
+#growth.parameter.decision.table <- c(1, 1)
+
+A.next.predict <- predict(A.mod.res,exploit=0.1,g.parm=c(growth.parameter.decision.table,NA))  #predict expect gh to be in order low, med, high - bc A only has low, med, add NA for high 
 summary(A.next.predict)
 
 
@@ -306,7 +319,7 @@ dimnames(Decision.table)[[2]] <- names(summary(A.next.predict)$Next.year)
 # The decision table for next years fishing season...
 for(i in 1:10)
 {
-  temp<-predict(A.mod.res,exploit=0.02*(i-1), g.parm=c(growth.paras$gh,NA))
+  temp<-predict(A.mod.res,exploit=0.02*(i-1), g.parm=c(growth.parameter.decision.table,NA))
   Decision.table[i,]<-as.vector(unlist(summary(temp)$Next.year))
 }
 colnames(Decision.table) <- c(names(summary(temp)$Next.year))
@@ -315,6 +328,9 @@ Decision.table
 
 #Write out decision table 
 write.csv(Decision.table, paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29A/SFA29.A.mod.Decision.table.",surveyyear,".csv"), row.names = FALSE) 
+#write.csv(Decision.table, paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29A/SFA29.A.mod.Decision.table.",surveyyear,"growth_1.csv"), row.names = FALSE) 
+
+
 
 ############  Finally we can do prediction evaluations for each year....
 ## --- THE PREDICTION EVALUATION ----
@@ -484,7 +500,8 @@ ggplot()+
   xlab("Year")+
   ylab("Commercial Biomass")+
   theme_bw()+
-  facet_wrap(~Habitat)
+  facet_wrap(~Habitat) + 
+  xlim(c(2000, surveyyear+1))
 
 #save
 ggsave(filename = paste0(path.directory,assessmentyear,"/Assessment/Figures/Model/SFA29A/Survey_est_figure_SFA29A_",surveyyear,".png"), plot = last_plot(), scale = 2.5, width =11, height = 4, dpi = 300, units = "cm", limitsize = TRUE)

@@ -8,9 +8,9 @@ library(ggplot2)
 library(openxlsx)
 library(compareDF)
 
-surveyyear <- 2023  #This is the last survey year for which you want to include  - note should match year of cruise below 
-cruise <- "SFA292023"  #note should match year for surveyyear set above 
-assessmentyear <- 2024 #year in which you are conducting the survey 
+surveyyear <- 2024  #This is the last survey year for which you want to include  - note should match year of cruise below 
+cruise <- "SFA292024"  #note should match year for surveyyear set above 
+assessmentyear <- 2025 #year in which you are conducting the survey 
 path.directory <- "Y:/Inshore/SFA29/"
 years <- c(2001:surveyyear)
 
