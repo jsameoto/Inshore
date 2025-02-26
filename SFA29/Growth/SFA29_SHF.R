@@ -177,7 +177,7 @@ subarea.ids <- unique(SHF_sdm_means_4_plot$SUBAREA)
 yr.max <- surveyyear
 yr.min <- surveyyear-6
 
-#need to edit so it write out plots automatically 
+## SHF plots for last 6 years by subarea 
 for(i in 1:length(strata.ids))
 {
 p <- ggplot(SHF_sdm_means_4_plot[SHF_sdm_means_4_plot$STRATA == strata.ids[i] & SHF_sdm_means_4_plot$year %in% yr.min:yr.max,],aes(SHF.bin,SHF,group=SDM)) + 
@@ -199,7 +199,30 @@ ggsave(paste0("SHF_",strata.ids[i],".png"), path=paste0(path.directory,"/",asses
 } # end for(i in 1:length(strata.ids))
 
 
- 
+
+## SHF plots for last 10 years by subarea  
+yr.min <- surveyyear-10
+
+for(i in 1:length(strata.ids))
+{
+  p <- ggplot(SHF_sdm_means_4_plot[SHF_sdm_means_4_plot$STRATA == strata.ids[i] & SHF_sdm_means_4_plot$year %in% yr.min:yr.max,],aes(SHF.bin,SHF,group=SDM)) + 
+    geom_line(aes(group=SDM, linetype = SDM, color = SDM), size = 0.75) + facet_wrap(~year,ncol=1) + # geom_point(aes(shape=SDM)) + 
+    scale_linetype_manual(values = c(1,2,4),breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low")) +  
+    scale_color_manual(values=c('firebrick2', 'darkgrey', 'darkblue'), breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low")) +  #scale_shape_manual(values = 1:3) +
+    theme_bw() + theme(panel.grid=element_blank()) + scale_x_continuous(breaks = seq(0,170,20), limits = c (0,170)) +  #xlim(0, 170) + 
+    geom_vline(xintercept=90, colour = "grey40") + geom_vline(xintercept=100, colour = "grey40") +
+    xlab("Shell height") + ylab("Survey mean no./tow") + ggtitle(paste(subarea.ids[i],"Shell Height Frequency")) +
+    theme(#plot.title = element_text(size=10,hjust=0.5), 
+      legend.title = element_blank(),
+      legend.margin = margin(0,0,0,0),
+      legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.7)),
+      legend.text = element_text(size=10), 
+      legend.key.size = unit(0.53, "cm"), 
+      legend.position = c(0.07, 0.99)) 
+  windows(11,11); plot(p)
+  ggsave(paste0("SHF_10yr",strata.ids[i],".png"), path=paste0(path.directory,"/",assessmentyear,"/Assessment/Figures/Growth/"), type="cairo", width=18, height=24, units = "cm", dpi=400)   
+} # end for(i in 1:length(strata.ids))
+
 ###
 ### --- CALCULATE lbar FOR Comm and Rec; TO BE USED FOR CALCULATING GROWTH ---- 
 ###
@@ -397,8 +420,14 @@ E.SHFmeans.for.plot <- pivot_longer(E.SHFmeans.for.plot,
                                          values_to = "SH",
                                          values_drop_na = FALSE)
 E.SHFmeans.for.plot$year <- as.numeric(E.SHFmeans.for.plot$year)
+table(E.SHFmeans.for.plot$year )
 
+#select how many years back you want 
 E.SHFmeans.for.plot <- E.SHFmeans.for.plot %>% filter(year > surveyyear-7)
+
+#E.SHFmeans.for.plot <- E.SHFmeans.for.plot %>% filter(year > surveyyear-11)
+#table(E.SHFmeans.for.plot$year )
+
 #shorten SH data for plot or else get warning when run ggplot 
 E.SHFmeans.for.plot$SH <- round(E.SHFmeans.for.plot$SH,3)
 
@@ -407,7 +436,6 @@ E.SHFmeans.for.plot$SH <- round(E.SHFmeans.for.plot$SH,3)
 
 
 # Plot SHF #
-
 ylimits <- c(0,(max(E.SHFmeans.for.plot$SH,na.rm = TRUE)+10))
 xlimits <- c(0,200)
 recruitlimits <- c(90,100)
@@ -420,8 +448,9 @@ plot.E.SHF <- ggplot() + geom_col(data = E.SHFmeans.for.plot, aes(x = bin.mid.pt
 plot.E.SHF
 
 # Save out plot
-
 ggsave(paste0("SHF_SFA29E.png"), path=paste0(path.directory,"/",assessmentyear,"/Assessment/Figures/Growth/"), plot = plot.E.SHF, type="cairo", width=18, height=24, units = "cm", dpi=400)  
+#ggsave(paste0("SHF_SFA29E_10year.png"), path=paste0(path.directory,"/",assessmentyear,"/Assessment/Figures/Growth/"), plot = plot.E.SHF, type="cairo", width=18, height=24, units = "cm", dpi=400)  
+
 
 #png(paste0(path.directory,assessmentyear, "/Assessment/Figures/Growth/SHF_SFA29E.png"), type="cairo", width=18, height=24, units = "cm", res=400)
 #print(plot.E.SHF)

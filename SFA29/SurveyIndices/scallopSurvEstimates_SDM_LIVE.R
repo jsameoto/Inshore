@@ -1841,6 +1841,9 @@ sdm.strat.est$subarea[sdm.strat.est$SUBAREA == "SFA29B"] <- "Subarea B"
 sdm.strat.est$subarea[sdm.strat.est$SUBAREA == "SFA29C"] <- "Subarea C"
 sdm.strat.est$subarea[sdm.strat.est$SUBAREA == "SFA29D"] <- "Subarea D"
 
+## remove 2020 since this is interpolated 
+sdm.strat.est$yst[sdm.strat.est$YEAR == 2020] <- NA 
+
 
 AtoD.stratified.plot <- ggplot(data = sdm.strat.est, aes(x=YEAR, y=yst,  col=size, pch=size)) + 
   geom_point() + 
@@ -1865,14 +1868,14 @@ dev.off()
 
 
 ## Just pre-recruits ####
-LTM.prerec <-  sdm.strat.est %>% filter(size == "prerec" & YEAR < surveyyear) %>% group_by(subarea) %>% summarise(LTM = median(yst   ))
+LTM.prerec <-  sdm.strat.est %>% filter(size == "prerec" & YEAR < surveyyear) %>% group_by(subarea) %>% summarise(LTM = median(yst, na.rm = TRUE))
 LTM.prerec
 #subarea     LTM
 #<chr>     <dbl>
-#1 Subarea A  20.1
-#2 Subarea B  35.0
-#3 Subarea C  51.1
-#4 Subarea D  69.4
+#1 Subarea A  26.7
+#2 Subarea B  37.0
+#3 Subarea C  46.9
+#4 Subarea D  78.5
 
 AtoD.stratified.plot.prerec <- ggplot(data = sdm.strat.est %>% filter(size == "prerec"), aes(x=YEAR, y=yst)) + 
   geom_point() + 
@@ -1897,14 +1900,13 @@ ggsave(paste0(path.directory,assessmentyear,"/Assessment/Figures/SFA29.AtoD.stra
 
 
 ## Just recruits ####
-LTM.rec <-  sdm.strat.est %>% filter(size == "rec" & YEAR < surveyyear) %>% group_by(subarea) %>% summarise(LTM = median(yst   ))
+LTM.rec <-  sdm.strat.est %>% filter(size == "rec" & YEAR < surveyyear) %>% group_by(subarea) %>% summarise(LTM = median(yst, na.rm = TRUE   ))
 LTM.rec
 #subarea      LTM
-#<chr>      <dbl>
-#1 Subarea A  0.998
-#2 Subarea B  9.59 
-#3 Subarea C  7.91 
-#4 Subarea D 11.0  
+#1 Subarea A  1.12
+#2 Subarea B 10.1 
+#3 Subarea C  9.71
+#4 Subarea D 12.0 
 
 AtoD.stratified.plot.rec <- ggplot(data = sdm.strat.est %>% filter(size == "rec"), aes(x=YEAR, y=yst)) + 
   geom_point() + 
@@ -1929,14 +1931,14 @@ ggsave(paste0(path.directory,assessmentyear,"/Assessment/Figures/SFA29.AtoD.stra
 
 
 ## Just commercial ####
-LTM.comm <-  sdm.strat.est %>% filter(size == "comm" & YEAR < surveyyear) %>% group_by(subarea) %>% summarise(LTM = median(yst   ))
+LTM.comm <-  sdm.strat.est %>% filter(size == "comm" & YEAR < surveyyear) %>% group_by(subarea) %>% summarise(LTM = median(yst , na.rm = TRUE  ))
 LTM.comm
 #subarea     LTM
 #<chr>     <dbl>
 #1 Subarea A  95.7
-#2 Subarea B 130. 
-#3 Subarea C  75.3
-#4 Subarea D 131.
+#2 Subarea B 122. 
+#3 Subarea C  75.6
+#4 Subarea D 125. 
 
 AtoD.stratified.plot.comm <- ggplot(data = sdm.strat.est %>% filter(size == "comm"), aes(x=YEAR, y=yst)) + 
   geom_point() + 

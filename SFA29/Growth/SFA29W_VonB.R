@@ -214,6 +214,23 @@ png(paste0(path.directory,assessmentyear,"/Assessment/Figures/Growth/VonB.SFA29W
 vonB.29.95CI
 dev.off()
 
+
+vonB.29.mean <- ggplot() + 
+  #geom_point(data=BFdetail.vonB, aes(AGE, HEIGHT), size=1.6, alpha=0.3) +
+  geom_jitter(data=SFA29detail.vonB, aes(AGE, HEIGHT), size=1.6, alpha=0.1) + 
+  geom_line(data=p.curve.fixed, aes(AGE, predict.fixed), colour="blue", lwd=2, show.legend = F) +
+ # geom_ribbon(data=p.curve.fixed,aes(ymin=lwr, ymax=upper, x=AGE), alpha=0.6, fill="blue") + 
+  theme(panel.grid = element_blank(), axis.title=element_text(size=15), axis.text=element_text(size=14)) + 
+  xlab("Age (years)")+ylab("Shell height (mm)") + 
+  theme_bw(base_size = 12)
+vonB.29.mean
+
+png(paste0(path.directory,assessmentyear,"/Assessment/Figures/Growth/VonB.SFA29W.mean.png"),width=8,height=6,units = "in",res=300)
+vonB.29.mean
+dev.off()
+
+
+
 #Random effect of year
 vonB.29.year.raneff <- ggplot() + 
   #geom_point(data=BFdetail.vonB, aes(AGE, HEIGHT), size=1.6, alpha=0.3) +
