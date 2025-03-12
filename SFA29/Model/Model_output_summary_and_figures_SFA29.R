@@ -198,6 +198,7 @@ ggplot(dat.all,aes(Year,BM.dens,colour = Habitat)) +
   geom_hline(aes(yintercept = ref.pt),ref.points.2,linetype=c(rep("solid",3), rep("dashed",3), rep("dotdash",3)), colour = c(rep("red",3),rep("black",3),rep("blue",3))) +
   geom_line(aes(Year,BM.dens,colour = Habitat,linetype=Habitat)) + 
   geom_point(aes(Year,BM.dens,colour = Habitat,shape=Habitat))+
+  scale_x_continuous(limits = c(2000, (survey.year+1)), breaks = seq(2004, (survey.year+1), by = 4)) +
   facet_wrap(~area,nrow=1) +
   xlab("Year") + ylab(expression (paste("Biomass density (meats t/ ", km^{2}, ")"))) + #ggtitle("SFA29 Modelled Biomass Density") +
   theme_bw() + theme(panel.grid=element_blank()) +scale_color_manual(values=colr, breaks = c("High", "Med", "Low"),labels = c("high"="High", "Med"="Medium", "low"="Low")) +
@@ -219,6 +220,7 @@ ggplot(dat.all,aes(Year,BM.dens,colour = Habitat)) +
   geom_hline(aes(yintercept = ref.pt),ref.points.2,linetype=c(rep("solid",3), rep("dashed",3), rep("dotdash",3)), colour = c(rep("red",3),rep("black",3),rep("blue",3))) +
   geom_line(aes(Year,BM.dens,colour = Habitat,linetype=Habitat)) + 
   geom_point(aes(Year,BM.dens,colour = Habitat,shape=Habitat))+
+  scale_x_continuous(limits = c(2000, (survey.year+1)), breaks = seq(2004, (survey.year+1), by = 4)) +
   facet_wrap(~area_FR,nrow=1) +
   xlab("Année") + ylab(expression (paste("Densité de la biomasse (chairs, t/ ", km^{2}, ")"))) + #ggtitle("SFA29 Modelled Biomass Density") +
   theme_bw() + theme(panel.grid=element_blank()) +
@@ -284,6 +286,7 @@ explot.data.plot <- rbind(mod.summary[mod.summary$area%in%c('Subarea A')&mod.sum
 windows(6,5)
 ggplot(explot.data.plot[explot.data.plot$Year > 2001,],aes(Year,mu)) + geom_line(aes(group=Habitat, linetype = Habitat, color = Habitat), size = 0.75) + 
   geom_point(aes(group=Habitat, shape = Habitat, color = Habitat)) + facet_wrap(~area,nrow=1) +
+  scale_x_continuous(limits = c(2000, (survey.year+1)), breaks = seq(2004, (survey.year+1), by = 4)) +
   scale_color_manual(values=colr, breaks = c("High", "Med", "Low"),labels = c("high"="High", "Med"="Medium", "low"="Low")) +
   scale_linetype_manual(values = line.type, breaks = c("High", "Med", "Low"),labels = c("high"="High", "Med"="Medium", "low"="Low")) +
   scale_shape_manual(values = symbs, breaks = c("High", "Med", "Low"),labels = c("high"="High", "Med"="Medium", "low"="Low")) +
@@ -308,6 +311,7 @@ explot.data.plot <- rbind(mod.summary[mod.summary$area%in%c('Subarea A')&mod.sum
 windows(6,5)
 ggplot(explot.data.plot[explot.data.plot$Year > 2001,],aes(Year,mu,colour = Habitat)) + geom_line(aes(group=Habitat, linetype = Habitat, color = Habitat), size = 0.75) + 
   geom_point(aes(group=Habitat, shape = Habitat, color = Habitat)) + facet_wrap(~area_FR, nrow=1) +
+  scale_x_continuous(limits = c(2000, (survey.year+1)), breaks = seq(2004, (survey.year+1), by = 4)) +
   scale_color_manual(values=colr, breaks = c("High", "Med", "Low"),labels = c("High"="Elevé", "Med"="Moyen", "low"="Faible")) +
   scale_linetype_manual(values = line.type, breaks = c("High", "Med", "Low"),labels = c("High"="Elevé", "Med"="Moyen", "low"="Faible")) +
   scale_shape_manual(values = symbs, breaks = c("High", "Med", "Low"),labels = c("High"="Elevé", "Med"="Moyen", "low"="Faible"))+
@@ -365,6 +369,7 @@ lt_median.propm <- ddply (dat.all[dat.all$Year < max(dat.all$Year),],. (area), s
 windows(11,7)
 ggplot(dat.all,aes(Year,nat.m,colour = Habitat, linetype = Habitat))  + geom_line( size = 0.75) + 
   geom_point(aes(group=Habitat, shape = Habitat, color = Habitat)) + facet_wrap(~area, nrow=1) +
+  scale_x_continuous(limits = c(2000, (survey.year+1)), breaks = seq(2004, (survey.year+1), by = 4)) +
   scale_color_manual(values=colr, breaks = c("High", "Med", "Low")) +
   scale_linetype_manual(values = line.type, breaks = c("High", "Med", "Low")) +
   scale_shape_manual(values = symbs, breaks = c("High", "Med", "Low"))+
@@ -381,6 +386,7 @@ ggsave(filename = paste0(path.directory,"/",yr,"/Assessment/Figures/Model/NatMor
 windows(11,7)
 ggplot(dat.all,aes(Year,nat.m.prop,colour = Habitat, linetype = Habitat))  + geom_line( size = 0.75) + 
   geom_point(aes(group=Habitat, shape = Habitat, color = Habitat)) + facet_wrap(~area, nrow=1) +
+  scale_x_continuous(limits = c(2000, (survey.year+1)), breaks = seq(2004, (survey.year+1), by = 4)) +
   scale_color_manual(values=colr, breaks = c("High", "Med", "Low")) +
   scale_linetype_manual(values = line.type, breaks = c("High", "Med", "Low")) +
   scale_shape_manual(values = symbs, breaks = c("High", "Med", "Low"))+
@@ -411,6 +417,7 @@ lt_median.propm$area.fr <- factor(lt_median.propm$area,levels=c("Subarea A","Sub
 windows(11,7)
 ggplot(dat.all,aes(Year,nat.m,colour = Habitat, linetype = Habitat))  + geom_line( size = 0.75) + 
   geom_point(aes(group=Habitat, shape = Habitat, color = Habitat)) + facet_wrap(~area.fr, nrow=1) +
+  scale_x_continuous(limits = c(2000, (survey.year+1)), breaks = seq(2004, (survey.year+1), by = 4)) +
   scale_color_manual(values=colr, breaks = c("High", "Med", "Low")) +
   scale_linetype_manual(values = line.type, breaks = c("High", "Med", "Low")) +
   scale_shape_manual(values = symbs, breaks = c("High", "Med", "Low"))+
@@ -425,6 +432,7 @@ ggsave(filename = paste0(path.directory,"/",yr,"/Assessment/Figures/Model/NatMor
 windows(11,7)
 ggplot(dat.all,aes(Year,nat.m.prop,colour = Habitat, linetype = Habitat))  + geom_line( size = 0.75) + 
   geom_point(aes(group=Habitat, shape = Habitat, color = Habitat)) + facet_wrap(~area.fr, nrow=1) +
+  scale_x_continuous(limits = c(2000, (survey.year+1)), breaks = seq(2004, (survey.year+1), by = 4)) +
   scale_color_manual(values=colr, breaks = c("High", "Med", "Low")) +
   scale_linetype_manual(values = line.type, breaks = c("High", "Med", "Low")) +
   scale_shape_manual(values = symbs, breaks = c("High", "Med", "Low"))+

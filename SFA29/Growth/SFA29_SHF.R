@@ -43,6 +43,8 @@ uid <- un.sameotoj
 pwd <- pw.sameotoj
 #uid <- keyring::key_list("Oracle")[1,2]
 #pwd <- keyring::key_get("Oracle", uid)
+uid <- un.englishg
+pwd <- pw.englishg
 
 surveyyear <- 2024  #This is the last survey year for which you want to include  - note should match year of cruise below 
 cruise <- "SFA292024"  #note should match year for surveyyear set above 
@@ -280,6 +282,7 @@ lbar.comm <- ggplot(comm.size, aes(year,SHF,colour=SDM)) + geom_point(aes(shape 
   scale_color_manual(values=colr, breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low")) +
   scale_linetype_manual(values = line.type, breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low")) +
   scale_shape_manual(values = symbs, breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low"))+ 
+  scale_x_continuous(limits = c(2000, (survey.year+1)), breaks = seq(2002, (survey.year+1), by = 6)) +
   ylab("Shell Height (mm)") + xlab("Year") + 
   coord_cartesian(ylim=y) +
   theme_bw()+
@@ -310,6 +313,7 @@ lbar.rec <- ggplot(rec.size, aes(year,SHF,colour=SDM)) + geom_point(aes(shape = 
   scale_color_manual(values=colr,breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low")) +
   scale_linetype_manual(values = line.type, breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low")) +
   scale_shape_manual(values = symbs, breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low"))+
+  scale_x_continuous(limits = c(2000, (survey.year+1)), breaks = seq(2002, (survey.year+1), by = 6)) +
   ylab("Shell Height (mm)") + xlab("Year") + 
   coord_cartesian(ylim=y) +
   theme_bw()+

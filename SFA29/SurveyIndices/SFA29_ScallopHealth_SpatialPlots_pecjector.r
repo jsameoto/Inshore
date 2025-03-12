@@ -38,8 +38,8 @@ uid <- keyring::key_list("Oracle")[1,2]
 pwd <- keyring::key_get("Oracle", uid)
 
 #set year 
-survey.year <- 2023  #removed maxyear in script and changed to survey year
-assessmentyear <- 2024 #year in which you are providing advice for- determines where to save files to
+survey.year <- 2024  #removed maxyear in script and changed to survey year
+assessmentyear <- 2025 #year in which you are providing advice for- determines where to save files to
 path.directory <- "Y:/Inshore/SFA29/"
 
 #set up directory to save plot
@@ -151,12 +151,12 @@ myco.datw <- merge(myco.datw, tow.dat, by = "ID", all.x = TRUE) %>%
   rename(tow = tow.x)
 
 #Saves file
-#write.csv(myco.datw %>% filter(year == survey.year), paste0("Y:/Inshore/SFA29/",assessmentyear,"/Assessment/Data/SurveyIndices/SFA29towsdd_MYCOprop",survey.year,".csv"), row.names = FALSE)
+write.csv(myco.datw %>% filter(year == survey.year), paste0("Y:/Inshore/SFA29/",assessmentyear,"/Assessment/Data/SurveyIndices/SFA29towsdd_MYCOprop",survey.year,".csv"), row.names = FALSE)
 
 #Save files for each year
-#for(i in unique(myco.datw$year)){
-#write.csv(myco.datw %>% filter(year == i), paste0("Y:/Inshore/SFA29/",assessmentyear,"/Assessment/Data/SurveyIndices/SFA29towsdd_MYCOprop",i,".csv"#),row.names = FALSE)
-#}
+for(i in unique(myco.datw$year)){
+write.csv(myco.datw %>% filter(year == i), paste0("Y:/Inshore/SFA29/",assessmentyear,"/Assessment/Data/SurveyIndices/SFA29towsdd_MYCOprop",i,".csv"),row.names = FALSE)
+}
 
 
 # -------------------------------Format for Grey meats plots-----------------------------------------
@@ -185,12 +185,12 @@ greymeat.datw <- merge(greymeat.datw, tow.dat, by = "ID", all.x = TRUE) %>%
   rename(tow = tow.x)
 
 #Save file
-#write.csv(greymeat.datw %>% filter(year == survey.year), paste0("Y:/Inshore/SFA29/",assessmentyear,"/Assessment/Data/SurveyIndices/SFA29towsdd_QUALITYprop",survey.year,".csv"))
+write.csv(greymeat.datw %>% filter(year == survey.year), paste0("Y:/Inshore/SFA29/",assessmentyear,"/Assessment/Data/SurveyIndices/SFA29towsdd_QUALITYprop",survey.year,".csv"))
 
 #Save files for each year
-#for(i in unique(greymeat.datw$year)){
-#write.csv(greymeat.datw %>% filter(year == i), paste0("Y:/Inshore/SFA29/",assessmentyear,"/Assessment/Data/SurveyIndices/SFA29towsdd_MYCOprop",i,".csv"#),row.names = FALSE)
-#}
+for(i in unique(greymeat.datw$year)){
+write.csv(greymeat.datw %>% filter(year == i), paste0("Y:/Inshore/SFA29/",assessmentyear,"/Assessment/Data/SurveyIndices/SFA29towsdd_MYCOprop",i,".csv"),row.names = FALSE)
+}
 
 
 # --------------Set plot themes (legend orientation/aesthetics)------------------------------
