@@ -1726,10 +1726,8 @@ prop.dead <- prop.dead %>%
 
 #Commercial Size 	
 	XX <- prop.dead %>% filter(size=="comm") %>% 
-	  filter(SUBAREA != "SFA29A" | Strata != "high") #Removing the "high" habitat category from subarea A.
+	  filter(SUBAREA != "Subarea A" | Strata != "high") #Removing the "high" habitat category from subarea A.
 
-#png(paste0(path.directory,assessmentyear,"/Assessment/Figures/SFA29AtoD.Clappers.Prop.Commercial.",surveyyear,".png"),width=8,height=8,units = "in",res=300)
-	
 clap.prop.comm <- ggplot(data=XX, aes(x=YEAR, y=prop.dead.no.NAs, col= Strata, shape = Strata)) + geom_point()  + geom_line(aes(linetype = Strata)) + 
 	  scale_color_manual(values=c('firebrick2', 'darkgrey', 'darkblue'), breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low"))+
 	  scale_linetype_manual(values = c(1,2,3),breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low"))+
@@ -1741,7 +1739,7 @@ clap.prop.comm <- ggplot(data=XX, aes(x=YEAR, y=prop.dead.no.NAs, col= Strata, s
   scale_x_continuous(breaks = seq(2001,2026,by=4), limits = c(2001,2026)) #+ 
 clap.prop.comm
 	
-	#save
+#save
 	ggsave(filename = paste0(path.directory,assessmentyear,"/Assessment/Figures/SFA29AtoD.Clappers.Prop.Commercial.",surveyyear,".png"), plot = clap.prop.comm, scale = 2.5, width =6, height = 6, dpi = 300, units = "cm", limitsize = TRUE)
 	
 #dev.off()

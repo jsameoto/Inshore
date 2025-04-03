@@ -1757,6 +1757,26 @@ E.number.per.tow <- ggplot(data = out.e, aes(x=YEAR, y=yst)) +
   #           fill="grey70") 
 E.number.per.tow
 
+#2012-surveyyear
+E.number.per.tow <- ggplot(data = out.e , aes(x=YEAR, y=yst)) + 
+  geom_point() + 
+  geom_line() + 
+  facet_wrap(~group, ncol=1, labeller = size_names) + 
+  theme_bw() + ylab("Survey mean no./tow") + xlab("Year") + 
+  theme(legend.position = c(0.1, 0.9),panel.grid.minor = element_blank()) + 
+  # geom_pointrange(data = out.e, aes(ymin=(yst-se.yst), ymax=(yst - se.yst))) 
+  geom_pointrange(aes(ymin=out.e$yst-out.e$se.yst, ymax=out.e$yst+out.e$se.yst)) + 
+  scale_x_continuous(breaks = seq(2012,2025,by=4), limits = c(2012,2025))
+#geom_ribbon(aes(ymin=out.e$yst-out.e$se.yst, ymax=out.e$yst+out.e$se.yst), 
+#           alpha=0.1,       #transparency
+#           linetype=1,      #solid, dashed or other line types
+#           colour="grey70", #border line color
+#           size=1,          #border line size
+#           fill="grey70") 
+E.number.per.tow
+
+
+
 ggsave(filename = paste0(path.directory, assessmentyear, "/Assessment/Figures/SFA29E.Numberspertow.",surveyyear,".png"), plot = E.number.per.tow, scale = 2.5, width = 6, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 #png(paste0(path.directory,assessmentyear,"/Assessment/Figures/SFA29E.Numberspertow.",surveyyear,".png"),width=8,height=11,units = "in",res=300)
