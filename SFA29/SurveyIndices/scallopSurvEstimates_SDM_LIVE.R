@@ -134,10 +134,10 @@ data.obj.all <- data.obj
 
 
 # ---- PRE-RECRUITS ----	
-# NOTE this section of code is run once for each size (comm, rec, precec). Define below
+# NOTE this section of code is run once for each size (comm, rec, prerec). Define below
 strata.group <- SDMareas
-size <- "prerec" # MUST DEFINE if precruits, recruits or commercial size (i.e. column prerec, rec, or comm)
-data.obj$STDTOTALCAUGHT <- data.obj$prerec # MUST DEFINE if precruits, recruits or commercial size (i.e. column prerec, rec, or comm)
+size <- "prerec" # MUST DEFINE if prerecruits, recruits or commercial size (i.e. column prerec, rec, or comm)
+data.obj$STDTOTALCAUGHT <- data.obj$prerec # MUST DEFINE if prerecruits, recruits or commercial size (i.e. column prerec, rec, or comm)
 
 # Only use regular survey tows for estimation (TOW_TYPE_ID = 1)
 data.obj <- data.obj[data.obj$TOW_TYPE_ID==1,]
@@ -550,10 +550,10 @@ sdm.strat.est.all.prerec
 
 
 # ---- RECRUITS ---- 
-# NOTE this section of code is run once for each size (comm, rec, precec). Define below
+# NOTE this section of code is run once for each size (comm, rec, prerec). Define below
 strata.group <- SDMareas
-size <- "rec" # MUST DEFINE if precruits, recruits or commercial size (i.e. column prerec, rec, or comm)
-data.obj$STDTOTALCAUGHT <- data.obj$rec # MUST DEFINE if precruits, recruits or commercial size (i.e. column prerec, rec, or comm)
+size <- "rec" # MUST DEFINE if prerecruits, recruits or commercial size (i.e. column prerec, rec, or comm)
+data.obj$STDTOTALCAUGHT <- data.obj$rec # MUST DEFINE if prerecruits, recruits or commercial size (i.e. column prerec, rec, or comm)
 
 # Only use regular survey tows for estimation (TOW_TYPE_ID = 1)
 data.obj <- data.obj[data.obj$TOW_TYPE_ID==1,]
@@ -966,10 +966,10 @@ sdm.strat.est.all.rec
 
 
 # ---- COMMERCIAL ---- 
-# NOTE this section of code is run once for each size (comm, rec, precec). Define below
+# NOTE this section of code is run once for each size (comm, rec, prerec). Define below
 strata.group <- SDMareas
-size <- "comm" # MUST DEFINE if precruits, recruits or commercial size (i.e. column prerec, rec, or comm)
-data.obj$STDTOTALCAUGHT <- data.obj$comm # MUST DEFINE if precruits, recruits or commercial size (i.e. column prerec, rec, or comm)
+size <- "comm" # MUST DEFINE if prerecruits, recruits or commercial size (i.e. column prerec, rec, or comm)
+data.obj$STDTOTALCAUGHT <- data.obj$comm # MUST DEFINE if prerecruits, recruits or commercial size (i.e. column prerec, rec, or comm)
 
 # Only use regular survey tows for estimation (TOW_TYPE_ID = 1)
 data.obj <- data.obj[data.obj$TOW_TYPE_ID==1,]
@@ -1422,7 +1422,7 @@ write.csv(L.model, paste0(path.directory, assessmentyear, "/Assessment/Data/Surv
 sdm.levels$group <- factor(sdm.levels$size,      # Reordering group factor levels
                            levels = c("prerec", "rec", "comm"))
 size_names <- as_labeller(
-  c(`prerec` = "Precrecruits (<90 mm)", `rec` = "Recruits (90-99 mm)",`comm` = "Commercial (>= 100 mm)"))
+  c(`prerec` = "Prerecruits (<90 mm)", `rec` = "Recruits (90-99 mm)",`comm` = "Commercial (>= 100 mm)"))
 
 #For plots - removing 2020 values
 sdm.levels <- sdm.levels %>% 
@@ -1654,7 +1654,7 @@ ggsave(filename = paste0(path.directory, assessmentyear, "/Assessment/Figures/SF
 # NO DOMAIN DATAFRAME FOR E - for 2005 take simple mean #
 #some year were all exploratory tows - would need to get data from data.obj.all
 
-#precruits
+#prerecruits
 E.area <- data.obj.all[data.obj.all$STRATA_ID==45,]
 sizeE.prerec <- "prerec"	# Define - ensure matches entry on next line where assign E.area$STDTOTALCAUGHT
 E.area$STDTOTALCAUGHT <- E.area$prerec #DEFINE SIZE; comm, rec, prerec
@@ -1737,13 +1737,14 @@ write.csv(out.e, paste0(path.directory, assessmentyear, "/Assessment/Data/Survey
 out.e$group <- factor(out.e$size,      # Reordering group factor levels
                       levels = c("prerec", "rec", "comm"))
 size_names <- as_labeller(
-  c(`prerec` = "Precrecruits (<90 mm)", `rec` = "Recruits (90-99 mm)",`comm` = "Commercial (>= 100 mm)"))
+  c(`prerec` = "Prerecruits (<90 mm)", `rec` = "Recruits (90-99 mm)",`comm` = "Commercial (>= 100 mm)"))
 
 #2001-surveyyear
 E.number.per.tow <- ggplot(data = out.e, aes(x=YEAR, y=yst)) + 
   geom_point() + 
   geom_line() + 
   facet_wrap(~group, ncol=1, labeller = size_names) + 
+  scale_x_continuous(limits = c(2001, (survey.year+1)), breaks = seq(2001, (survey.year+1), by = 4)) +
   theme_bw() + ylab("Survey mean no./tow") + xlab("Year") + 
   theme(legend.position = c(0.1, 0.9),panel.grid.minor = element_blank()) + 
  # geom_pointrange(data = out.e, aes(ymin=(yst-se.yst), ymax=(yst - se.yst))) 
