@@ -17,8 +17,8 @@
 	library(sf)
 	library(raster)      
 	#library(devtools)
-	#library(Mar.datawrangling)
-  #library(Mar.utils)
+	library(Mar.datawrangling)
+  library(Mar.utils)
 	library(rgdal)
 	library(RColorBrewer)
 	library(foreign) 
@@ -63,11 +63,11 @@ poly.sf <- st_transform(poly.sf, crs = sp::CRS(SRS_string = "EPSG:32619"))
 #ORACLE Username and Password
   uid <- un.sameotoj
   pwd <- pw.sameotoj
-  surveyyear <- 2023  #This is the last survey year 
-  assessmentyear <- 2024 #year in which you are conducting the survey 
+  surveyyear <- 2024  #This is the last survey year 
+  assessmentyear <- 2025 #year in which you are conducting the survey 
   path.directory <- paste0(":/Inshore/SFA29/")
-  startdate <- "2023-01-01"   # Start DateTime for VMS 
-  stopdate <- "2023-12-31"    # Stop DateTime for VMS 
+  startdate <- "2024-01-01"   # Start DateTime for VMS 
+  stopdate <- "2024-12-31"    # Stop DateTime for VMS 
  
 #open database connection 
   chan <- dbConnect(dbDriver("Oracle"),username=uid, password=pwd,'ptran')
@@ -102,7 +102,7 @@ poly.sf <- st_transform(poly.sf, crs = sp::CRS(SRS_string = "EPSG:32619"))
 	
 	start <- Sys.time()
 	vms.new.raw <- VMS_get_recs(uid, pwd, "ptran", dateStart = startdate, dateEnd = stopdate, 
-	                            usepkg = 'roracle',vrn = c(vrn.list$VRN), rowNum = 1000000)  
+	                            usepkg = 'roracle',vrn = c(vrn.list$VRN), rowNum = 1500000)  
 	print(Sys.time()-start)
   dim(vms.new.raw) #be sure to check your dim(vms.new.raw) -- recall above pull will only take rowNum =1000000 so if you've hit this ceiling, up the rowNum in the query and try again
   dat <- vms.new.raw
@@ -116,7 +116,7 @@ poly.sf <- st_transform(poly.sf, crs = sp::CRS(SRS_string = "EPSG:32619"))
   head(dat)
   paste("Number of VMS records for ",surveyyear,": ",dim(dat)[1],sep="")
   #[1] "Number of VMS records for 2020: 733352"; #2021 729580; "Number of VMS records for 2022: 803407"
-	if(dim(dat)[1]>1000000){ 
+	if(dim(dat)[1]>=1000000){ 
 	  print("PROBLEM! You've hit your ceiling for records - edit rowNum in VME_get_rec() to ensure you're getting all rows") 
 	  } else { print("You're good to go -- your records is under the ceiling limit specified")}
  
@@ -158,7 +158,8 @@ poly.sf <- st_transform(poly.sf, crs = sp::CRS(SRS_string = "EPSG:32619"))
 	#In 2020: 736888
 	#in 2021: 734981
 	#in 2022: 183091... something not right with this method for this year - using Mike's method for 2023 assessment 
-	#in 2023 899856      
+	#in 2023 899856
+	#in 2024: 1191195
 	
 # ---- Clean scallop VMS data selected from VMS_pos ---- 
 # Remove duplicates and cross against SCALLOP MONITORING DOCS on VRN and Date to ID Scallop Only trips
@@ -176,6 +177,7 @@ poly.sf <- st_transform(poly.sf, crs = sp::CRS(SRS_string = "EPSG:32619"))
  #In 2021 904 removed ; 898 Mikes way 
 	#In 2022  753 removed
 	#In 2023 897 removed 
+	#in 2024 1825  removed
 	
 #
 # ---- Cross against logs to pull out SCALLOP trips ----
@@ -215,7 +217,7 @@ poly.sf <- st_transform(poly.sf, crs = sp::CRS(SRS_string = "EPSG:32619"))
 	# Number of SCALLOP VMS records for 2021: 228401   (old numbers: 234122; 235841
 	# "Number of SCALLOP VMS records for 2022: 226976"
 	#"Number of SCALLOP VMS records for 2023: 226750"
-	
+	#"Number of SCALLOP VMS records for 2024: 304355"
 	
 	vms.vrn <- unique(vms.dat$vrn) # vessels from vms data
 	aa <- length(vms.vrn)
@@ -229,6 +231,7 @@ poly.sf <- st_transform(poly.sf, crs = sp::CRS(SRS_string = "EPSG:32619"))
 	#"Vessels with MonDocs and no matching VMS:121" #in 2021 with Mike's pull; 21 from JS pull 
 	# "Vessels with MonDocs and no matching VMS:16"
 	#"Vessels with MonDocs and no matching VMS:23"
+	# "Vessels with MonDocs and no matching VMS:18"
 	
 	missing.vms <- is.element(el=log.vrn, set=vms.vrn) # log vrn with no matching VMS 
 	length(log.vrn[missing.vms==FALSE]) #check of length; should match print out of vessels with mondocs and no matching vms
@@ -294,6 +297,7 @@ poly.sf <- st_transform(poly.sf, crs = sp::CRS(SRS_string = "EPSG:32619"))
 	# 35408 in 2021 ; 35529 from JS pull 
 	# 25329 in 2022 
 	# 20700 in 2023
+	# 54364 in 2024 
 	
 	unique(vms.29$assigned_area)
 	table(vms.29$assigned_area)
@@ -337,7 +341,7 @@ poly.sf <- st_transform(poly.sf, crs = sp::CRS(SRS_string = "EPSG:32619"))
 	#28396  with minDist_m = 50 
 	#35408   with minDist_m = 0
 	# 25300    with minDist_m = 0 in 2022 
-	
+	# 
 	# to be comparable need to add option to subset data to minimum breaks -- i.e. pair down data to coarses temporal resolution. 
 	# in my perl script - this is the minimumInterogationTime -- which for 29W we set to 48 minutes (i.e. 1 hour polling)
 	
@@ -364,7 +368,7 @@ poly.sf <- st_transform(poly.sf, crs = sp::CRS(SRS_string = "EPSG:32619"))
 #If from Mikes data VMS pull
 #	vms.29$year <- year(vms.29$vmsdate)
 #	vms.29 <- vms.29 %>% dplyr::select(vesid = vrn,   lon, lat, vessel_name = vrn, 
-	                                 vrn = vrn, year, vmsdate,   vmstime, assigned_area, uid)
+#	                                 vrn = vrn, year, vmsdate,   vmstime, assigned_area, uid)
 	head(vms.29)
 
 	write.table(vms.29, paste0(ess,path.directory,assessmentyear,"/Assessment/Data/CommercialData/VMS/SFA29vms_",surveyyear,".txt",sep=""),quote=FALSE, row.names=FALSE, sep="\t") #write inshore scallop vms data to table for year = YR
@@ -516,7 +520,7 @@ names(vms.sdm.29)[grep("Y", names(vms.sdm.29))] <- 'lat'
 	upperlimit <- 1.175
 
 	vms.sdm.29speed  <-  vms.sdm.29[vms.sdm.29$SPEED_KNOTS>=lowerlimit & vms.sdm.29$SPEED_KNOTS<=upperlimit,] # VMS fishing 2015 after speed filter: 2985;  
-  dim(vms.sdm.29speed) #in 3715 in 2020; 2019 is 3031; 3388 records in 2018; 3650 in 2017.... 3912 in 2021 
+  dim(vms.sdm.29speed) #in 3715 in 2020; 2019 is 3031; 3388 records in 2018; 3650 in 2017.... 3912 in 2021 ; 6527 in 2024
 
 ###..................................................................................###
 ### ---- Prorate VMS effort on Logbook Catch - note assuming a single area and year ----
@@ -546,7 +550,7 @@ names(vms.sdm.29)[grep("Y", names(vms.sdm.29))] <- 'lat'
 	#  3774   in 2021 
 	#2959   in 2022 
 	#2128   in 2023 
-	
+	#6385 in 2024
 	
 	#Effort by trip
 	vms.effort <- aggregate(vms29$TIME_DIFF_S, by=list(vms29$TRIP_ID_LOGS, vms29$SUM_SLIP_WEIGHT_LBS), FUN=sum)
@@ -602,7 +606,7 @@ names(vms.sdm.29)[grep("Y", names(vms.sdm.29))] <- 'lat'
   
 ### Compare VMS trip effort to log trip effort ###
 	par(mfrow=c(1,2))  # all plots on one page
-	hist(vms.effort$VMSEFFORT_TOTALHRS, ylim=c(0,30), xlim=c(0,120), xlab="VMS effort by trip (hr)", main =paste0("SFA 29 ", surveyyear))
+	hist(vms.effort$VMSEFFORT_TOTALHRS, ylim=c(0,200), xlim=c(0,120), xlab="VMS effort by trip (hr)", main =paste0("SFA 29 ", surveyyear))
 	hist(mon.doc.trip.effort$effort, ylim=c(0,1000), xlim=c(0,120), xlab="Log effort by trip (hr)",main =paste0("SFA 29 ",surveyyear))
 	#save as CompareLogvsVMSeffortbyTripYYYY.png If you want 
 	
@@ -910,12 +914,14 @@ ggsave(paste0("SFA29vms_",yy,"v",xx,"_filtered.png"), path=paste0(ess,path.direc
 	  labs(x = "Year", y = expression(paste("VMS Effort  ", (h/km^2),sep=""))) + 
 	  theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) + 
 	  scale_color_manual(values=c('blue','red','black')) + 
+	  #xlim(c(2000,2026)) +
+	  scale_x_continuous(breaks=seq(2001, 2026, 4), limits=c(2001,2026)) +
 	  theme(
 	    legend.position = c(.125, .99),
 	    legend.justification = c("right", "top"),
-	    legend.box.just = "right",
-	    legend.margin = margin(6, 6, 6, 6)) 
-	ggsave(paste0("VMSeffortpersqkm.",(surveyyear),".png"), path=paste0(ess,path.directory,assessmentyear,"/Assessment/Figures/CommercialData/"), width =12, height = 8, dpi = 300, units = "in",)   
+	    legend.box.just = "right" ,
+	    legend.margin = margin(7, 7, 7, 7)) 
+	ggsave(paste0("VMSeffortpersqkm.",(surveyyear),".png"), path=paste0(ess,path.directory,assessmentyear,"/Assessment/Figures/CommercialData/"), width =12, height = 8, dpi = 300, units = "in")   
 	
 	
 	
@@ -957,5 +963,7 @@ ggsave(paste0("SFA29vms_",yy,"v",xx,"_filtered.png"), path=paste0(ess,path.direc
 	  
 	rm(un.sameotoj)
 	rm(pw.sameotoj)
-save.image(file = "Y:/Inshore/SFA29/2024/Assessment/Data/CommercialData/VMS/vms_temp.RData")	
+	
+	### UPDATE BEFORE SAVING 
+save.image(file = paste0("Y:/Inshore/SFA29/",assessmentyear,"/Assessment/Data/CommercialData/VMS/vms_temp.RData"))	
 	

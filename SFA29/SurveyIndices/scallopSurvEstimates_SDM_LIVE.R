@@ -39,9 +39,9 @@ pwd <- pw.sameotoj
 #uid <- keyring::key_list("Oracle")[1,2]
 #pwd <- keyring::key_get("Oracle", uid)
 
-surveyyear <- 2023  #This is the last survey year for which you want to include  - not should match year of cruise below 
-cruise <- "SFA292023"  #note should match year for surveyyear set above 
-assessmentyear <- 2024 #year in which you are conducting the survey 
+surveyyear <- 2024  #This is the last survey year for which you want to include  - not should match year of cruise below 
+cruise <- "SFA292024"  #note should match year for surveyyear set above 
+assessmentyear <- 2025 #year in which you are conducting the survey 
 path.directory <- "Y:/Inshore/SFA29/"
 years <- c(2001:surveyyear) #when have 2021 data ready with SDM value then can use line of code below 
 #yr.crnt <- surveyyear-1
@@ -113,6 +113,15 @@ data.obj <- merge(data.obj, surf.all, by.x='uid', by.y='uid', all.x=TRUE)
 # Left join survey tows to SDM level on uid
 data.obj <- merge(data.obj, sdmtows, by.x='uid', by.y='uid', all.x=TRUE)
 dim(data.obj)
+summary(data.obj)
+
+#In 2024 did tows outside 29W and also in non-MBES covered part of B; remove these so apples and apples with previous estimates 
+data.obj %>% filter(CRUISE == "SFA292024" & is.na(SDM) == TRUE)
+dim(data.obj)
+
+data.obj <- data.obj[!(data.obj$CRUISE == "SFA292024" & is.na(data.obj$SDM) == TRUE),]
+dim(data.obj)
+
 data.obj.all <- data.obj
 
 
@@ -125,10 +134,10 @@ data.obj.all <- data.obj
 
 
 # ---- PRE-RECRUITS ----	
-# NOTE this section of code is run once for each size (comm, rec, precec). Define below
+# NOTE this section of code is run once for each size (comm, rec, prerec). Define below
 strata.group <- SDMareas
-size <- "prerec" # MUST DEFINE if precruits, recruits or commercial size (i.e. column prerec, rec, or comm)
-data.obj$STDTOTALCAUGHT <- data.obj$prerec # MUST DEFINE if precruits, recruits or commercial size (i.e. column prerec, rec, or comm)
+size <- "prerec" # MUST DEFINE if prerecruits, recruits or commercial size (i.e. column prerec, rec, or comm)
+data.obj$STDTOTALCAUGHT <- data.obj$prerec # MUST DEFINE if prerecruits, recruits or commercial size (i.e. column prerec, rec, or comm)
 
 # Only use regular survey tows for estimation (TOW_TYPE_ID = 1)
 data.obj <- data.obj[data.obj$TOW_TYPE_ID==1,]
@@ -392,18 +401,25 @@ out.strat.2014toCRNT <- out
 
 #Calculate mean and variance within each SDM strata (High, Medium, Low)
 #NOTE: could also obtain this if added scall.levels <- PEDstrata(data.obj.i, strata.group.i,'SDM',catch=data.obj.i$STDTOTALCAUGHT) in the above loop and then assigned all outputs within each loop to a list
-sdmlevels <- na.omit(unique(data.obj$SDM))
+
+#View(data.obj %>% filter(YEAR == 2024 & STRATA == "SFA29B")) #getting NA for B in 2024; getting NAs in dataframe but not coming from database.. 
+
+sdmlevels <- c("high", "med", "low")
 out <- data.frame(YEAR=rep(NA,(length(year)*length(ab)*length(sdmlevels))),SUBAREA=rep(NA,(length(year)*length(ab)*length(sdmlevels))),Strata=rep(NA,(length(year)*length(ab)*length(sdmlevels))),yst=rep(NA,(length(year)*length(ab)*length(sdmlevels))),se.yst=rep(NA,(length(year)*length(ab)*length(sdmlevels))),var.est=rep(NA,(length(year)*length(ab)*length(sdmlevels))),descrip=rep("simple",(length(year)*length(ab)*length(sdmlevels))))
 m <- 0 #index
 for (i in 1:length(year)) {
   temp.data <- data.obj[data.obj$YEAR==year[i],]
+  #temp.data[is.na(temp.data$uid),]
   for(j in 1:length(ab)) {
     data.obj.i <- temp.data[temp.data$STRATA==ab[j],]
+    #data.obj.i[is.na(data.obj.i$uid),]
     for (k in 1:length(sdmlevels)){
       data.obj.k <- data.obj.i[data.obj.i$SDM==sdmlevels[k],]
+      #data.obj.k[is.na(data.obj.k$uid),]  ## in 2024, NAs introduced in data.obj.k.. added line 412 to deal with this and added na.rm = TRUE to line 415 
+      data.obj.k <- data.obj.k[!is.na(data.obj.k$uid),]
       m=m+1
       if(dim(data.obj.k)[1]!=0){
-        out[m,"yst"] <- mean(data.obj.k$STDTOTALCAUGHT)
+        out[m,"yst"] <- mean(data.obj.k$STDTOTALCAUGHT, na.rm = TRUE)
         out[m,"se.yst"] <- sqrt(var(data.obj.k$STDTOTALCAUGHT))/sqrt(dim(data.obj.k)[1])
         out[m,"var.est"]<- var(data.obj.k$STDTOTALCAUGHT)/dim(data.obj.k)[1] #var.est is calculated as variance of the estimator
       }
@@ -534,10 +550,10 @@ sdm.strat.est.all.prerec
 
 
 # ---- RECRUITS ---- 
-# NOTE this section of code is run once for each size (comm, rec, precec). Define below
+# NOTE this section of code is run once for each size (comm, rec, prerec). Define below
 strata.group <- SDMareas
-size <- "rec" # MUST DEFINE if precruits, recruits or commercial size (i.e. column prerec, rec, or comm)
-data.obj$STDTOTALCAUGHT <- data.obj$rec # MUST DEFINE if precruits, recruits or commercial size (i.e. column prerec, rec, or comm)
+size <- "rec" # MUST DEFINE if prerecruits, recruits or commercial size (i.e. column prerec, rec, or comm)
+data.obj$STDTOTALCAUGHT <- data.obj$rec # MUST DEFINE if prerecruits, recruits or commercial size (i.e. column prerec, rec, or comm)
 
 # Only use regular survey tows for estimation (TOW_TYPE_ID = 1)
 data.obj <- data.obj[data.obj$TOW_TYPE_ID==1,]
@@ -810,9 +826,11 @@ for (i in 1:length(year)) {
     data.obj.i <- temp.data[temp.data$STRATA==ab[j],]
     for (k in 1:length(sdmlevels)){
       data.obj.k <- data.obj.i[data.obj.i$SDM==sdmlevels[k],]
+      #data.obj.k[is.na(data.obj.k$uid),]  ## in 2024, NAs introduced in data.obj.k.. added line 412 to deal with this and added na.rm = TRUE to line 415 
+      data.obj.k <- data.obj.k[!is.na(data.obj.k$uid),]
       m=m+1
       if(dim(data.obj.k)[1]!=0){
-        out[m,"yst"] <- mean(data.obj.k$STDTOTALCAUGHT)
+        out[m,"yst"] <- mean(data.obj.k$STDTOTALCAUGHT, na.rm = TRUE)
         out[m,"se.yst"] <- sqrt(var(data.obj.k$STDTOTALCAUGHT))/sqrt(dim(data.obj.k)[1])
         out[m,"var.est"]<- var(data.obj.k$STDTOTALCAUGHT)/dim(data.obj.k)[1] #var.est is calculated as variance of the estimator
       }
@@ -948,10 +966,10 @@ sdm.strat.est.all.rec
 
 
 # ---- COMMERCIAL ---- 
-# NOTE this section of code is run once for each size (comm, rec, precec). Define below
+# NOTE this section of code is run once for each size (comm, rec, prerec). Define below
 strata.group <- SDMareas
-size <- "comm" # MUST DEFINE if precruits, recruits or commercial size (i.e. column prerec, rec, or comm)
-data.obj$STDTOTALCAUGHT <- data.obj$comm # MUST DEFINE if precruits, recruits or commercial size (i.e. column prerec, rec, or comm)
+size <- "comm" # MUST DEFINE if prerecruits, recruits or commercial size (i.e. column prerec, rec, or comm)
+data.obj$STDTOTALCAUGHT <- data.obj$comm # MUST DEFINE if prerecruits, recruits or commercial size (i.e. column prerec, rec, or comm)
 
 # Only use regular survey tows for estimation (TOW_TYPE_ID = 1)
 data.obj <- data.obj[data.obj$TOW_TYPE_ID==1,]
@@ -1226,9 +1244,11 @@ for (i in 1:length(year)) {
     data.obj.i <- temp.data[temp.data$STRATA==ab[j],]
     for (k in 1:length(sdmlevels)){
       data.obj.k <- data.obj.i[data.obj.i$SDM==sdmlevels[k],]
+      #data.obj.k[is.na(data.obj.k$uid),]  ## in 2024, NAs introduced in data.obj.k.. added line 412 to deal with this and added na.rm = TRUE to line 415 
+      data.obj.k <- data.obj.k[!is.na(data.obj.k$uid),]
       m=m+1
       if(dim(data.obj.k)[1]!=0){
-        out[m,"yst"] <- mean(data.obj.k$STDTOTALCAUGHT)
+        out[m,"yst"] <- mean(data.obj.k$STDTOTALCAUGHT, na.rm = TRUE)
         out[m,"se.yst"] <- sqrt(var(data.obj.k$STDTOTALCAUGHT))/sqrt(dim(data.obj.k)[1])
         out[m,"var.est"]<- var(data.obj.k$STDTOTALCAUGHT)/dim(data.obj.k)[1] #var.est is calculated as variance of the estimator
       }
@@ -1402,7 +1422,7 @@ write.csv(L.model, paste0(path.directory, assessmentyear, "/Assessment/Data/Surv
 sdm.levels$group <- factor(sdm.levels$size,      # Reordering group factor levels
                            levels = c("prerec", "rec", "comm"))
 size_names <- as_labeller(
-  c(`prerec` = "Precrecruits (<90 mm)", `rec` = "Recruits (90-99 mm)",`comm` = "Commercial (>= 100 mm)"))
+  c(`prerec` = "Prerecruits (<90 mm)", `rec` = "Recruits (90-99 mm)",`comm` = "Commercial (>= 100 mm)"))
 
 #For plots - removing 2020 values
 sdm.levels <- sdm.levels %>% 
@@ -1430,7 +1450,8 @@ A.number.per.tow <- ggplot(data = sdm.levels %>% filter(SUBAREA == "Subarea A" &
   scale_shape_manual(values = c(15:17),breaks = c("high", "med", "low"), labels = c("high"="High", "med"="Medium", "low"="Low"))+
   #scale_x_continuous(n.breaks = 5)+
   theme_bw() + ylab("Survey mean no./tow") + xlab("Year") + 
-  theme(legend.position = c(0.1, 0.9),panel.grid.minor = element_blank()) #+ 
+  theme(legend.position = c(0.1, 0.9),panel.grid.minor = element_blank()) + 
+  scale_x_continuous(breaks = seq(2001,2026,by=4), limits = c(2001,2026)) #+ 
 # geom_ribbon(aes(ymin=out.e$yst-out.e$se.yst, ymax=out.e$yst+out.e$se.yst), 
 #             alpha=0.1,       #transparency
 #             linetype=1,      #solid, dashed or other line types
@@ -1446,6 +1467,8 @@ ggsave(filename = paste0(path.directory, assessmentyear, "/Assessment/Figures/SF
 #A.number.per.tow
 #dev.off()
 
+
+
 ## Subarea B 
 B.number.per.tow <- ggplot(data = sdm.levels %>% filter(SUBAREA == "Subarea B"), aes(x=YEAR, y=Mean,  col=Strata, pch=Strata)) + 
   geom_point() + 
@@ -1455,7 +1478,8 @@ B.number.per.tow <- ggplot(data = sdm.levels %>% filter(SUBAREA == "Subarea B"),
   scale_linetype_manual(values = c(1,2,3),breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low"))+
   scale_shape_manual(values = c(15:17),breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low"))+
   theme_bw() + ylab("Survey mean no./tow") + xlab("Year") + 
-  theme(legend.position = c(0.1, 0.89),panel.grid.minor = element_blank()) #+ 
+  theme(legend.position = c(0.1, 0.89),panel.grid.minor = element_blank()) + 
+  scale_x_continuous(breaks = seq(2001,2026,by=4), limits = c(2001,2026))#+ 
 # geom_ribbon(aes(ymin=out.e$yst-out.e$se.yst, ymax=out.e$yst+out.e$se.yst), 
 #             alpha=0.1,       #transparency
 #             linetype=1,      #solid, dashed or other line types
@@ -1481,7 +1505,8 @@ C.number.per.tow <- ggplot(data = sdm.levels %>% filter(SUBAREA == "Subarea C"),
   scale_linetype_manual(values = c(1,2,3),breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low"))+
   scale_shape_manual(values = c(15:17),breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low"))+
   theme_bw() + ylab("Survey mean no./tow") + xlab("Year") + 
-  theme(legend.position = c(0.1, 0.89),legend.background = element_rect(fill=alpha('white', 0.8)),panel.grid.minor = element_blank())#Legend bkg colour and transparency)
+  theme(legend.position = c(0.1, 0.89),legend.background = element_rect(fill=alpha('white', 0.8)),panel.grid.minor = element_blank()) + 
+  scale_x_continuous(breaks = seq(2001,2026,by=4), limits = c(2001,2026))#Legend bkg colour and transparency)
 # geom_ribbon(aes(ymin=out.e$yst-out.e$se.yst, ymax=out.e$yst+out.e$se.yst), 
 #             alpha=0.1,       #transparency
 #             linetype=1,      #solid, dashed or other line types
@@ -1506,7 +1531,8 @@ D.number.per.tow <- ggplot(data = sdm.levels %>% filter(SUBAREA == "Subarea D"),
   scale_linetype_manual(values = c(1,2,3),breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low"))+
   scale_shape_manual(values = c(15:17),breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low"))+
   theme_bw() + ylab("Survey mean no./tow") + xlab("Year") + 
-  theme(legend.position = c(0.9, 0.89),panel.grid.minor = element_blank()) #+ 
+  theme(legend.position = c(0.9, 0.89),panel.grid.minor = element_blank()) + 
+  scale_x_continuous(breaks = seq(2001,2026,by=4), limits = c(2001,2026)) #+ 
 # geom_ribbon(aes(ymin=out.e$yst-out.e$se.yst, ymax=out.e$yst+out.e$se.yst), 
 #             alpha=0.1,       #transparency
 #             linetype=1,      #solid, dashed or other line types
@@ -1531,7 +1557,8 @@ AtoD.number.per.tow.prerec <- ggplot(data = sdm.levels %>% filter(!(SUBAREA == "
   scale_linetype_manual(values = c(1,2,3),breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low"))+
   scale_shape_manual(values = c(15:17),breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low"))+
   theme_bw() + ylab("Survey mean no./tow") + xlab("Year") + 
-  theme(legend.position = c(0.1, 0.85),panel.grid.minor.x = element_blank(),legend.title = element_blank())
+  theme(legend.position = c(0.1, 0.85),panel.grid.minor.x = element_blank(),legend.title = element_blank()) + 
+  scale_x_continuous(breaks = seq(2001,2026,by=4), limits = c(2001,2026))
 
 AtoD.number.per.tow.prerec
 
@@ -1547,7 +1574,8 @@ AtoD.number.per.tow.prerec.fr <- ggplot(data = sdm.levels %>% filter(!(SUBAREA =
   scale_linetype_manual(values = c(1,2,3),breaks = c("high", "med", "low"),labels = c("high"="Élevée", "med"="Moyenne", "low"="Faible"))+
   scale_shape_manual(values = c(15:17),breaks = c("high", "med", "low"),labels = c("high"="Élevée", "med"="Moyenne", "low"="Faible"))+
   theme_bw() + ylab("Nombre moyen par trait") + xlab("Année") + 
-  theme(legend.position = c(0.1, 0.85),panel.grid.minor.x = element_blank(),legend.title = element_blank())
+  theme(legend.position = c(0.1, 0.85),panel.grid.minor.x = element_blank(),legend.title = element_blank()) + 
+  scale_x_continuous(breaks = seq(2001,2026,by=4), limits = c(2001,2026))
 
 AtoD.number.per.tow.prerec.fr
 
@@ -1564,7 +1592,8 @@ AtoD.number.per.tow.rec <- ggplot(data = sdm.levels %>% filter(!(SUBAREA == "Sub
   scale_linetype_manual(values = c(1,2,3),breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low"))+
   scale_shape_manual(values = c(15:17),breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low"))+
   theme_bw() + ylab("Survey mean no./tow") + xlab("Year") + 
-  theme(legend.position = c(0.1, 0.85),panel.grid.minor.x = element_blank(),legend.title = element_blank()) #+ 
+  theme(legend.position = c(0.1, 0.85),panel.grid.minor.x = element_blank(),legend.title = element_blank()) + 
+  scale_x_continuous(breaks = seq(2001,2026,by=4), limits = c(2001,2026))#+ 
 
 AtoD.number.per.tow.rec
 
@@ -1579,7 +1608,8 @@ AtoD.number.per.tow.rec.fr <- ggplot(data = sdm.levels %>% filter(!(SUBAREA == "
   scale_linetype_manual(values = c(1,2,3),breaks = c("high", "med", "low"),labels = c("high"="Élevée", "med"="Moyenne", "low"="Faible"))+
   scale_shape_manual(values = c(15:17),breaks = c("high", "med", "low"),labels = c("high"="Élevée", "med"="Moyenne", "low"="Faible"))+
   theme_bw() + ylab("Nombre moyen par trait") + xlab("Année") + 
-  theme(legend.position = c(0.1, 0.85),panel.grid.minor.x = element_blank(),legend.title = element_blank()) 
+  theme(legend.position = c(0.1, 0.85),panel.grid.minor.x = element_blank(),legend.title = element_blank()) + 
+  scale_x_continuous(breaks = seq(2001,2026,by=4), limits = c(2001,2026))
 
 AtoD.number.per.tow.rec.fr
 
@@ -1595,7 +1625,8 @@ AtoD.number.per.tow.comm <- ggplot(data = sdm.levels %>% filter(!(SUBAREA == "Su
   scale_linetype_manual(values = c(1,2,3),breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low"))+
   scale_shape_manual(values = c(15:17),breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low"))+
   theme_bw() + ylab("Survey mean no./tow") + xlab("Year") + 
-  theme(legend.position = c(0.1, 0.85),panel.grid.minor.x = element_blank(),legend.title = element_blank()) #+ 
+  theme(legend.position = c(0.1, 0.85),panel.grid.minor.x = element_blank(),legend.title = element_blank()) + 
+  scale_x_continuous(breaks = seq(2001,2026,by=4), limits = c(2001,2026))#+ 
 
 AtoD.number.per.tow.comm
 
@@ -1610,7 +1641,8 @@ AtoD.number.per.tow.comm.fr <- ggplot(data = sdm.levels %>% filter(!(SUBAREA == 
   scale_linetype_manual(values = c(1,2,3),breaks = c("high", "med", "low"),labels = c("high"="Élevée", "med"="Moyenne", "low"="Faible"))+
   scale_shape_manual(values = c(15:17),breaks = c("high", "med", "low"),labels = c("high"="Élevée", "med"="Moyenne", "low"="Faible"))+
   theme_bw() + ylab("Nombre moyen par trait") + xlab("Année") +
-  theme(legend.position = c(0.1, 0.85),panel.grid.minor.x = element_blank(),legend.title = element_blank())
+  theme(legend.position = c(0.1, 0.85),panel.grid.minor.x = element_blank(),legend.title = element_blank()) + 
+  scale_x_continuous(breaks = seq(2001,2026,by=4), limits = c(2001,2026))
 
 AtoD.number.per.tow.comm.fr
 
@@ -1622,7 +1654,7 @@ ggsave(filename = paste0(path.directory, assessmentyear, "/Assessment/Figures/SF
 # NO DOMAIN DATAFRAME FOR E - for 2005 take simple mean #
 #some year were all exploratory tows - would need to get data from data.obj.all
 
-#precruits
+#prerecruits
 E.area <- data.obj.all[data.obj.all$STRATA_ID==45,]
 sizeE.prerec <- "prerec"	# Define - ensure matches entry on next line where assign E.area$STDTOTALCAUGHT
 E.area$STDTOTALCAUGHT <- E.area$prerec #DEFINE SIZE; comm, rec, prerec
@@ -1705,16 +1737,19 @@ write.csv(out.e, paste0(path.directory, assessmentyear, "/Assessment/Data/Survey
 out.e$group <- factor(out.e$size,      # Reordering group factor levels
                       levels = c("prerec", "rec", "comm"))
 size_names <- as_labeller(
-  c(`prerec` = "Precrecruits (<90 mm)", `rec` = "Recruits (90-99 mm)",`comm` = "Commercial (>= 100 mm)"))
+  c(`prerec` = "Prerecruits (<90 mm)", `rec` = "Recruits (90-99 mm)",`comm` = "Commercial (>= 100 mm)"))
 
 #2001-surveyyear
 E.number.per.tow <- ggplot(data = out.e, aes(x=YEAR, y=yst)) + 
   geom_point() + 
   geom_line() + 
   facet_wrap(~group, ncol=1, labeller = size_names) + 
+  scale_x_continuous(limits = c(2001, (survey.year+1)), breaks = seq(2001, (survey.year+1), by = 4)) +
   theme_bw() + ylab("Survey mean no./tow") + xlab("Year") + 
   theme(legend.position = c(0.1, 0.9),panel.grid.minor = element_blank()) + 
-  geom_pointrange(aes(ymin=out.e$yst-out.e$se.yst, ymax=out.e$yst+out.e$se.yst)) 
+ # geom_pointrange(data = out.e, aes(ymin=(yst-se.yst), ymax=(yst - se.yst))) 
+  geom_pointrange(aes(ymin=out.e$yst-out.e$se.yst, ymax=out.e$yst+out.e$se.yst)) + 
+  scale_x_continuous(breaks = seq(2001,2026,by=4), limits = c(2001,2026))
   #geom_ribbon(aes(ymin=out.e$yst-out.e$se.yst, ymax=out.e$yst+out.e$se.yst), 
   #           alpha=0.1,       #transparency
   #           linetype=1,      #solid, dashed or other line types
@@ -1729,6 +1764,7 @@ ggsave(filename = paste0(path.directory, assessmentyear, "/Assessment/Figures/SF
 #E.number.per.tow
 #dev.off()
 
+##French version -- NOT COMPLETE - overwrites ENG version still 
 out.e <- out.e %>% filter(YEAR %in% c(2012:surveyyear))
 out.e$YEAR <- as.factor(out.e$YEAR)
 
@@ -1739,7 +1775,8 @@ E.number.per.tow <- ggplot(data = out.e %>% filter(YEAR %in% c(2012:surveyyear))
   facet_wrap(~group, ncol=1, labeller = size_names) + 
   theme_bw() + ylab("Survey mean no./tow") + xlab("Year") + 
   theme(legend.position = c(0.1, 0.9),panel.grid.minor = element_blank()) + 
-  geom_pointrange(aes(ymin=out.e$yst-out.e$se.yst, ymax=out.e$yst+out.e$se.yst)) 
+  geom_pointrange(aes(ymin=out.e$yst-out.e$se.yst, ymax=out.e$yst+out.e$se.yst)) + 
+  scale_x_continuous(breaks = seq(2001,2026,by=4), limits = c(2001,2026))
 #geom_ribbon(aes(ymin=out.e$yst-out.e$se.yst, ymax=out.e$yst+out.e$se.yst), 
 #           alpha=0.1,       #transparency
 #           linetype=1,      #solid, dashed or other line types
@@ -1786,7 +1823,8 @@ tows.by.level <- ggplot(data=sdm.n.all %>% filter(!(SUBAREA == "SFA29A" & sdm.st
   scale_linetype_manual(values = c(1,2,4),breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low"))+
   scale_shape_manual(values = c(15:17),breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low"))+
   theme_bw() + ylab("Survey mean no./tow") + xlab("Year") + 
-  theme(legend.position = c(0.1, 0.85)) 
+  theme(legend.position = c(0.1, 0.85)) + 
+  scale_x_continuous(breaks = seq(2001,2026,by=4), limits = c(2001,2026))
 tows.by.level
 
 png(paste0(path.directory,assessmentyear,"/Assessment/Figures/SFA29.SDM.SampleSize.",surveyyear,".png"),width=11,height=11,units = "in",res=300)
@@ -1798,13 +1836,24 @@ dev.off()
 # --- Stratified estimates - NOT REQUIRED/USED by assessement but interesting ---- 
 ##
 
+#rename subareas 
+sdm.strat.est$subarea[sdm.strat.est$SUBAREA == "SFA29A"] <- "Subarea A"
+sdm.strat.est$subarea[sdm.strat.est$SUBAREA == "SFA29B"] <- "Subarea B"
+sdm.strat.est$subarea[sdm.strat.est$SUBAREA == "SFA29C"] <- "Subarea C"
+sdm.strat.est$subarea[sdm.strat.est$SUBAREA == "SFA29D"] <- "Subarea D"
+
+## remove 2020 since this is interpolated 
+sdm.strat.est$yst[sdm.strat.est$YEAR == 2020] <- NA 
+
+
 AtoD.stratified.plot <- ggplot(data = sdm.strat.est, aes(x=YEAR, y=yst,  col=size, pch=size)) + 
   geom_point() + 
   geom_line(aes(linetype = size)) + 
-  facet_wrap(~SUBAREA, ncol=2) +
+  facet_wrap(~subarea, ncol=2) +
   theme_bw() + ylab("Survey mean no./tow") + xlab("Year") + 
   theme(legend.position = c(0.1, 0.85),panel.grid.minor = element_blank()) + 
-  geom_pointrange(aes(ymin=yst-se.yst, ymax=yst+se.yst)) 
+  geom_pointrange(aes(ymin=yst-se.yst, ymax=yst+se.yst)) + 
+  scale_x_continuous(breaks = seq(2001,surveyyear+1,by=4), limits = c(2001,surveyyear+1))
 # geom_ribbon(aes(ymin=out.e$yst-out.e$se.yst, ymax=out.e$yst+out.e$se.yst), 
 #             alpha=0.1,       #transparency
 #             linetype=1,      #solid, dashed or other line types
@@ -1817,6 +1866,335 @@ png(paste0(path.directory,assessmentyear,"/Assessment/Figures/SFA29.AtoD.stratif
 AtoD.stratified.plot
 dev.off()
 
+
+
+## Just pre-recruits ####
+LTM.prerec <-  sdm.strat.est %>% filter(size == "prerec" & YEAR < surveyyear) %>% group_by(subarea) %>% summarise(LTM = median(yst, na.rm = TRUE))
+LTM.prerec
+#subarea     LTM
+#<chr>     <dbl>
+#1 Subarea A  26.7
+#2 Subarea B  37.0
+#3 Subarea C  46.9
+#4 Subarea D  78.5
+
+AtoD.stratified.plot.prerec <- ggplot(data = sdm.strat.est %>% filter(size == "prerec"), aes(x=YEAR, y=yst)) + 
+  geom_point() + 
+  geom_line() + 
+  facet_wrap(~subarea, ncol=2, scales = "free") +
+  theme_bw() + 
+  ylab("Survey mean no./tow") +
+  xlab("Year") + 
+  #theme(legend.position = c(0.1, 0.85),panel.grid.minor = element_blank()) + 
+  geom_pointrange(aes(ymin=yst-se.yst, ymax=yst+se.yst)) + 
+  scale_x_continuous(breaks = seq(2001,surveyyear+1,by=4), limits = c(2001,surveyyear+1)) + 
+  geom_hline(data = LTM.prerec, aes(yintercept=LTM), col = "blue", linetype = "dashed")
+# geom_ribbon(aes(ymin=out.e$yst-out.e$se.yst, ymax=out.e$yst+out.e$se.yst), 
+#             alpha=0.1,       #transparency
+#             linetype=1,      #solid, dashed or other line types
+#             colour="grey70", #border line color
+#             size=1,          #border line size
+#             fill="grey70") 
+AtoD.stratified.plot.prerec
+
+ggsave(paste0(path.directory,assessmentyear,"/Assessment/Figures/SFA29.AtoD.stratified.prerecuit.numbers.",surveyyear,".png"),width=15,height=10,units = "in",dpi=300)
+
+
+## Just recruits ####
+LTM.rec <-  sdm.strat.est %>% filter(size == "rec" & YEAR < surveyyear) %>% group_by(subarea) %>% summarise(LTM = median(yst, na.rm = TRUE   ))
+LTM.rec
+#subarea      LTM
+#1 Subarea A  1.12
+#2 Subarea B 10.1 
+#3 Subarea C  9.71
+#4 Subarea D 12.0 
+
+AtoD.stratified.plot.rec <- ggplot(data = sdm.strat.est %>% filter(size == "rec"), aes(x=YEAR, y=yst)) + 
+  geom_point() + 
+  geom_line() + 
+  facet_wrap(~subarea, ncol=2, scales = "free") +
+  theme_bw() + 
+  ylab("Survey mean no./tow") +
+  xlab("Year") + 
+  #theme(legend.position = c(0.1, 0.85),panel.grid.minor = element_blank()) + 
+  geom_pointrange(aes(ymin=yst-se.yst, ymax=yst+se.yst)) + 
+  scale_x_continuous(breaks = seq(2001,surveyyear+1,by=4), limits = c(2001,surveyyear+1)) + 
+  geom_hline(data = LTM.rec, aes(yintercept=LTM), col = "blue", linetype = "dashed")
+# geom_ribbon(aes(ymin=out.e$yst-out.e$se.yst, ymax=out.e$yst+out.e$se.yst), 
+#             alpha=0.1,       #transparency
+#             linetype=1,      #solid, dashed or other line types
+#             colour="grey70", #border line color
+#             size=1,          #border line size
+#             fill="grey70") 
+AtoD.stratified.plot.rec
+
+ggsave(paste0(path.directory,assessmentyear,"/Assessment/Figures/SFA29.AtoD.stratified.recuit.numbers.",surveyyear,".png"),width=15,height=10,units = "in",dpi=300)
+
+
+## Just commercial ####
+LTM.comm <-  sdm.strat.est %>% filter(size == "comm" & YEAR < surveyyear) %>% group_by(subarea) %>% summarise(LTM = median(yst , na.rm = TRUE  ))
+LTM.comm
+#subarea     LTM
+#<chr>     <dbl>
+#1 Subarea A  95.7
+#2 Subarea B 122. 
+#3 Subarea C  75.6
+#4 Subarea D 125. 
+
+AtoD.stratified.plot.comm <- ggplot(data = sdm.strat.est %>% filter(size == "comm"), aes(x=YEAR, y=yst)) + 
+  geom_point() + 
+  geom_line() + 
+  facet_wrap(~subarea, ncol=2, scales = "free") +
+  theme_bw() + 
+  ylab("Survey mean no./tow") +
+  xlab("Year") + 
+  #theme(legend.position = c(0.1, 0.85),panel.grid.minor = element_blank()) + 
+  geom_pointrange(aes(ymin=yst-se.yst, ymax=yst+se.yst)) + 
+  scale_x_continuous(breaks = seq(2001,surveyyear+1,by=4), limits = c(2001,surveyyear+1)) + 
+  geom_hline(data = LTM.comm, aes(yintercept=LTM), col = "blue", linetype = "dashed")
+# geom_ribbon(aes(ymin=out.e$yst-out.e$se.yst, ymax=out.e$yst+out.e$se.yst), 
+#             alpha=0.1,       #transparency
+#             linetype=1,      #solid, dashed or other line types
+#             colour="grey70", #border line color
+#             size=1,          #border line size
+#             fill="grey70") 
+AtoD.stratified.plot.comm
+
+ggsave(paste0(path.directory,assessmentyear,"/Assessment/Figures/SFA29.AtoD.stratified.commercial.numbers.",surveyyear,".png"),width=15,height=10,units = "in",dpi=300)
+
+
+#-- REFERENCE POINTS -proposal based off survey index of commercial numbers per tow ---- 
+
+# LRP Plots ---- 
+
+##... LRP Plot - 40% median value  -- where median is proxy for MSY - median doesn't include current year (2024) ####
+# 40% of 50% Bmax where Bmax proxy for Bo
+
+#Commerical biomass time series median of the yearly median values 
+LTM.comm <-  sdm.strat.est %>% filter(size == "comm" & YEAR < surveyyear) %>% group_by(subarea) %>% summarise(LTM = median(yst   ))
+LTM.comm
+#subarea     LTM
+#<chr>     <dbl>
+#1 Subarea A  95.7
+#2 Subarea B 130. 
+#3 Subarea C  75.3
+#4 Subarea D 131. 
+
+LTM.comm$LRP <- LTM.comm$LTM*0.4
+LTM.comm
+
+ggplot(data = sdm.strat.est %>% filter(size == "comm"), aes(x=YEAR, y=yst)) + 
+  geom_point() + 
+  geom_line() + 
+  facet_wrap(~subarea, ncol=2, scales = "free") +
+  theme_bw() + 
+  ylab("Survey mean no./tow") +
+  xlab("Year") + 
+  #theme(legend.position = c(0.1, 0.85),panel.grid.minor = element_blank()) + 
+  geom_pointrange(aes(ymin=yst-se.yst, ymax=yst+se.yst)) + 
+  scale_x_continuous(breaks = seq(2001,surveyyear+1,by=4), limits = c(2001,surveyyear+1)) + 
+  geom_hline(data = LTM.comm, aes(yintercept=LRP), col = "red", linetype = "dashed",  linewidth=0.5)
+
+ggsave(paste0(path.directory,assessmentyear,"/Assessment/Figures/Com_timeseries_LRP.40.Bmedian.",surveyyear,".png"),width=15,height=10,units = "in",dpi=300)
+
+
+
+##... LRP Plot - 40% of 50% Bmax where Bmax proxy for Bo ####
+max.val <- sdm.strat.est %>% filter(size == "comm") %>% group_by(subarea) %>% summarize(Bo = max(yst))
+
+max.val$Bmsy <- max.val$Bo*0.5
+max.val
+
+max.val$LRP <- 0.4*max.val$Bmsy
+max.val
+
+ggplot(data = sdm.strat.est %>% filter(size == "comm"), aes(x=YEAR, y=yst)) + 
+  geom_point() + 
+  geom_line() + 
+  facet_wrap(~subarea, ncol=2) +
+  theme_bw() + 
+  ylab("Survey mean no./tow") +
+  xlab("Year") + 
+  #theme(legend.position = c(0.1, 0.85),panel.grid.minor = element_blank()) + 
+  geom_pointrange(aes(ymin=yst-se.yst, ymax=yst+se.yst)) + 
+  scale_x_continuous(breaks = seq(2001,surveyyear+1,by=4), limits = c(2001,surveyyear+1)) + 
+  geom_hline(data = max.val, aes(yintercept=LRP), col = "red", linetype = "dashed",  linewidth=0.5)
+
+ggsave(paste0(path.directory,assessmentyear,"/Assessment/Figures/Com_timeseries_LRP.40.of.50.Bmax.",surveyyear,".png"),width=15,height=10,units = "in",dpi=300)
+
+
+##... LRP Plot - 20% of Bo (i.e. Bmax ) ####
+max.val <- sdm.strat.est %>% filter(size == "comm") %>% group_by(subarea) %>% summarize(Bo = max(yst))
+max.val$LRP <- max.val$Bo*0.2
+max.val
+#subarea      Bo   LRP
+#<chr>     <dbl> <dbl>
+#1 Subarea A  258.  51.6
+#2 Subarea B  575. 115. 
+#3 Subarea C  490.  98.1
+#4 Subarea D  386.  77.2
+
+
+ggplot(data = sdm.strat.est %>% filter(size == "comm"), aes(x=YEAR, y=yst)) + 
+  geom_point() + 
+  geom_line() + 
+  facet_wrap(~subarea, ncol=2) +
+  theme_bw() + 
+  ylab("Survey mean no./tow") +
+  xlab("Year") + 
+  #theme(legend.position = c(0.1, 0.85),panel.grid.minor = element_blank()) + 
+  geom_pointrange(aes(ymin=yst-se.yst, ymax=yst+se.yst)) + 
+  scale_x_continuous(breaks = seq(2001,surveyyear+1,by=4), limits = c(2001,surveyyear+1)) + 
+  geom_hline(data = max.val, aes(yintercept=LRP), col = "red", linetype = "dashed",  linewidth=0.5)
+
+ggsave(paste0(path.directory,assessmentyear,"/Assessment/Figures/Com_timeseries_LRP.20.of.Bmax.ie.Bo.",surveyyear,".png"),width=15,height=10,units = "in",dpi=300)
+
+## min biomass "B recover" in timeseries ####
+Brec.comm <-  sdm.strat.est %>% filter(size == "comm" & YEAR < surveyyear) %>% group_by(subarea) %>% summarise(min = min(yst   ))
+Brec.comm
+#subarea     min
+#<chr>     <dbl>
+#1 Subarea A  15.2
+#2 Subarea B  57.7
+#3 Subarea C  39.4
+#4 Subarea D  50.5
+
+
+ggplot(data = sdm.strat.est %>% filter(size == "comm"), aes(x=YEAR, y=yst)) + 
+  geom_point() + 
+  geom_line() + 
+  facet_wrap(~subarea, ncol=2) +
+  theme_bw() + 
+  ylab("Survey mean no./tow") +
+  xlab("Year") + 
+  #theme(legend.position = c(0.1, 0.85),panel.grid.minor = element_blank()) + 
+  geom_pointrange(aes(ymin=yst-se.yst, ymax=yst+se.yst)) + 
+  scale_x_continuous(breaks = seq(2001,surveyyear+1,by=4), limits = c(2001,surveyyear+1)) + 
+  geom_hline(data = Brec.comm, aes(yintercept=min), col = "red", linetype = "dashed",  linewidth=0.5)
+
+ggsave(paste0(path.directory,assessmentyear,"/Assessment/Figures/Com_timeseries_LRP.Brecover.",surveyyear,".png"),width=15,height=10,units = "in",dpi=300)
+
+
+### USE Brecover ### 
+Brec.comm
+#rename min as LRP 
+Brec.comm$LRP <- Brec.comm$min
+Brec.comm
+  
+#### USR Options #### 
+##... USR Plot - 80% of Bavg (Bavg ~ Bmsy)
+#Commerical biomass time series median of the yearly median values 
+LTM.comm <-  sdm.strat.est %>% filter(size == "comm" & YEAR < surveyyear) %>% group_by(subarea) %>% summarise(LTM = median(yst   ))
+LTM.comm
+
+LTM.comm$USR <- LTM.comm$LTM*0.8
+LTM.comm
+#subarea     LTM   USR
+#<chr>     <dbl> <dbl>
+#1 Subarea A  95.7  76.6
+#2 Subarea B 130.  104. 
+#3 Subarea C  75.3  60.2
+#4 Subarea D 131.  105. 
+
+PA.limits <- merge(LTM.comm, Brec.comm, by = "subarea")
+PA.limits
+
+
+ggplot(data = sdm.strat.est %>% filter(size == "comm"), aes(x=YEAR, y=yst)) + 
+  geom_point() + 
+  geom_line() + 
+  facet_wrap(~subarea, ncol=2) +
+  theme_bw() + 
+  ylab("Survey mean no./tow") +
+  xlab("Year") + 
+  #theme(legend.position = c(0.1, 0.85),panel.grid.minor = element_blank()) + 
+  geom_pointrange(aes(ymin=yst-se.yst, ymax=yst+se.yst)) + 
+  scale_x_continuous(breaks = seq(2001,surveyyear+1,by=4), limits = c(2001,surveyyear+1)) + 
+  geom_rect(data = PA.limits, aes(ymin = -Inf, ymax = LRP, xmin = -Inf, xmax = Inf), alpha = 0.3, fill="firebrick1", inherit.aes = FALSE) + 
+  geom_rect(data = PA.limits, aes(ymin = LRP, ymax = USR, xmin = -Inf, xmax = Inf), alpha = 0.3, fill="goldenrod1", inherit.aes = FALSE) + 
+  geom_rect(data = PA.limits, aes(ymin = USR, ymax = Inf, xmin = -Inf, xmax = Inf), alpha = 0.3, fill="chartreuse2", inherit.aes = FALSE)
+
+ggsave(paste0(path.directory,assessmentyear,"/Assessment/Figures/Com_timeseries_LRP.Brecover.USR.80.of.Bmedian.",surveyyear,".png"),width=15,height=10,units = "in",dpi=300)
+
+
+
+
+##... USR Plot - 80% of 50% Bmax where Bmax proxy for Bo
+#Commerical biomass time series median of the yearly median values 
+max.val <- sdm.strat.est %>% filter(size == "comm") %>% group_by(subarea) %>% summarize(Bo = max(yst))
+max.val$Bmsy <- max.val$Bo*0.5
+max.val
+
+max.val$USR <- max.val$Bmsy*0.8
+max.val
+
+PA.limits <- merge(max.val, Brec.comm, by = "subarea")
+PA.limits
+
+ggplot(data = sdm.strat.est %>% filter(size == "comm"), aes(x=YEAR, y=yst)) + 
+  geom_point() + 
+  geom_line() + 
+  facet_wrap(~subarea, ncol=2, scales = "free") +
+  theme_bw() + 
+  ylab("Survey mean no./tow") +
+  xlab("Year") + 
+  #theme(legend.position = c(0.1, 0.85),panel.grid.minor = element_blank()) + 
+  geom_pointrange(aes(ymin=yst-se.yst, ymax=yst+se.yst)) + 
+  scale_x_continuous(breaks = seq(2001,surveyyear+1,by=4), limits = c(2001,surveyyear+1)) + 
+  geom_rect(data = PA.limits, aes(ymin = -Inf, ymax = LRP, xmin = -Inf, xmax = Inf), alpha = 0.3, fill="firebrick1", inherit.aes = FALSE) + 
+  geom_rect(data = PA.limits, aes(ymin = LRP, ymax = USR, xmin = -Inf, xmax = Inf), alpha = 0.3, fill="goldenrod1", inherit.aes = FALSE) + 
+  geom_rect(data = PA.limits, aes(ymin = USR, ymax = Inf, xmin = -Inf, xmax = Inf), alpha = 0.3, fill="chartreuse2", inherit.aes = FALSE)
+
+ggsave(paste0(path.directory,assessmentyear,"/Assessment/Figures/Com_timeseries_LRP.Brecover.USR.80.of.50.Bmax.",surveyyear,".png"),width=15,height=10,units = "in",dpi=300)
+
+
+
+
+##... USR Plot - Median stock size 
+LTM.comm <-  sdm.strat.est %>% filter(size == "comm" & YEAR < surveyyear) %>% group_by(subarea) %>% summarise(USR = median(yst   ))
+LTM.comm
+
+PA.limits <- merge(LTM.comm, Brec.comm, by = "subarea")
+PA.limits
+
+
+ggplot(data = sdm.strat.est %>% filter(size == "comm"), aes(x=YEAR, y=yst)) + 
+  geom_point() + 
+  geom_line() + 
+  facet_wrap(~subarea, ncol=2, scales = "free") +
+  theme_bw() + 
+  ylab("Survey mean no./tow") +
+  xlab("Year") + 
+  #theme(legend.position = c(0.1, 0.85),panel.grid.minor = element_blank()) + 
+  geom_pointrange(aes(ymin=yst-se.yst, ymax=yst+se.yst)) + 
+  scale_x_continuous(breaks = seq(2001,surveyyear+1,by=4), limits = c(2001,surveyyear+1)) + 
+  geom_rect(data = PA.limits, aes(ymin = -Inf, ymax = LRP, xmin = -Inf, xmax = Inf), alpha = 0.3, fill="firebrick1", inherit.aes = FALSE) + 
+  geom_rect(data = PA.limits, aes(ymin = LRP, ymax = USR, xmin = -Inf, xmax = Inf), alpha = 0.3, fill="goldenrod1", inherit.aes = FALSE) + 
+  geom_rect(data = PA.limits, aes(ymin = USR, ymax = Inf, xmin = -Inf, xmax = Inf), alpha = 0.3, fill="chartreuse2", inherit.aes = FALSE)
+
+ggsave(paste0(path.directory,assessmentyear,"/Assessment/Figures/Com_timeseries_LRP.Brecover.USR.MedianBiomass.",surveyyear,".png"),width=15,height=10,units = "in",dpi=300)
+
+
+
+
+
+
+
+
+
+ggplot(dat, aes(x=YearSurvey, y=B.median)) +
+  geom_point( size = 2) +
+  geom_line( lwd = 0.5) +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  xlab ("Year") + ylab("Commercial Biomass (mt)") + 
+  #geom_hline(data = dat.combio.median, aes(yintercept=median_val), linetype="dashed",   color = "blue", size=0.5) +
+  geom_hline(yintercept=LRP, linetype="dashed",   color = "red", size=0.5) +
+  #ylim(0,2000) + 
+  scale_x_continuous(breaks = seq(1980,2020,by=2)) +
+  scale_y_continuous(breaks = seq(0,1500,by=250), limits = c(0,1500), expand = c(0,0)) +
+  geom_rect(data = PA.limits, aes(ymin = -Inf, ymax = LRP, xmin = -Inf, xmax = Inf), alpha = 0.3, fill="firebrick1", inherit.aes = FALSE)# + 
+#geom_rect(data = PA.limits, aes(ymin = LRP, ymax = USR, xmin = -Inf, xmax = Inf), alpha = 0.3, fill="goldenrod1", inherit.aes = FALSE) + 
+#geom_rect(data = PA.limits, aes(ymin = USR, ymax = Inf, xmin = -Inf, xmax = Inf), alpha = 0.3, fill="chartreuse2", inherit.aes = FALSE)
 
 
 
