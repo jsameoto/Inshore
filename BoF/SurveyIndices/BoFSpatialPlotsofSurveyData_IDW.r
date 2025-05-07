@@ -375,10 +375,10 @@ p <- function(mgmt_zone, surv_sf, land, scale_location = "tl", arrow_location = 
     
     # Set theme for the plot
     theme(plot.title = element_text(size = 14, hjust = 0.5), # Plot title size and position
-          axis.title = element_text(size = 12),
-          axis.text = element_text(size = 10),
-          legend.title = element_text(size = 10, face = "bold"), 
-          legend.text = element_text(size = 8),
+          axis.title = element_text(size = 14),
+          axis.text = element_text(size = 12),
+          legend.title = element_text(size = 14, face = "bold"), 
+          legend.text = element_text(size = 12),
           legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.7)), # Legend background color and transparency
           legend.box.margin = margin(6, 8, 6, 8),
           legend.position = legend_position, # Dynamic legend position
@@ -400,7 +400,7 @@ p <- function(mgmt_zone, surv_sf, land, scale_location = "tl", arrow_location = 
   )
 }
 
-#creating list with legend positions so that you can call for "spa1a" legend position. Any edits to legend positions are done here
+#creating list with legend positions so that you can call for "spa" legend position. Any edits to legend positions are done here
 legend_positions <- list(
   "spa1"  = c(0.85, 0.35),
   "spa1b" = c(0.85, 0.25),
@@ -409,6 +409,7 @@ legend_positions <- list(
   "spa6"  = c(0.15, 0.62)
 )
 
+#management zone list
 mgmt_zone_styles <- list(
   "BoF"  = geom_sf(data = mgmt.zones.detailed %>% filter(!STRATA_ID %in% c(26,57,90,91,92,93)), color = "grey40", fill = NA, linewidth = 0.3, linetype = "solid"),
   "spa3" = geom_sf(data = mgmt.zones.detailed %>% filter(STRATA_ID %in% c(92,93)), color = "red", linewidth = 0.3, fill = NA, linetype = "dashed"),
@@ -418,6 +419,7 @@ mgmt_zone_styles <- list(
   "Gen"  = geom_sf(data = mgmt.zones, color = "black", fill = NA, linewidth = 0.3, linetype = "solid")
 )
 
+#coordinates for each SPA
 coord_ranges = list(
   "BoF" = list(xlim = c(-66.50,-64.30), ylim = c(44.25,45.80)),
   "spa1a" = list(xlim = c(-66.40,-64.70), ylim = c(44.37,45.30)),
@@ -443,7 +445,7 @@ Surv.sf$log_com[which(Surv.sf$log_com==-Inf)] <- log(0.0001)
 
 
 #Overlay a grid over the survey area, as it is required to interpolate (smaller cellsize will take more time to run than larger. both here and during interpolation)
-grid <- st_make_grid(idw_sf, cellsize=2000) %>% st_intersection(idw_sf)
+grid <- st_make_grid(idw_sf, cellsize=1000) %>% st_intersection(idw_sf)
 #Doing the inverse distance weighted interpolation
 preds_idw2 <- gstat::idw(log_com~1,Surv.sf,grid,idp=3)
 
@@ -454,7 +456,7 @@ summary(Surv.sf$com)
 # ----FULL BAY -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nAbundance \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nabundance \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa1"]]) +
   coord_sf(xlim = coord_ranges[["BoF"]]$xlim, ylim = coord_ranges[["BoF"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "BoF Density (>= 80mm)"), 
@@ -466,7 +468,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_BF_ComDensity',survey.year,'.png
 # ----SPA1A -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nAbundance \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nabundance \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "br", arrow_location = "br", legend_position = legend_positions[["spa1"]]) +
   coord_sf(xlim = coord_ranges[["spa1a"]]$xlim, ylim = coord_ranges[["spa1a"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA1A Density (>= 80mm)"), 
@@ -478,7 +480,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1A_ComDensity',survey.year,'.
 # ----SPA1B -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nAbundance \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nabundance \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa1b"]]) +
   coord_sf(xlim = coord_ranges[["spa1b"]]$xlim, ylim = coord_ranges[["spa1b"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA1B Density (>= 80mm)"), 
@@ -490,7 +492,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1B_ComDensity',survey.year,'.
 # ----SPA4 and 5 -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nAbundance \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nabundance \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "br", arrow_location = "br", legend_position = legend_positions[["spa4"]]) +
   coord_sf(xlim = coord_ranges[["spa4"]]$xlim, ylim = coord_ranges[["spa4"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA4 Density (>= 80mm)"), 
@@ -502,7 +504,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA4_ComDensity',survey.year,'.p
 # ----SPA3 -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nAbundance \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nabundance \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone = list(mgmt_zone_styles[["spa3"]], mgmt_zone_styles[["Gen"]]), Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa3"]]) +
   coord_sf(xlim = coord_ranges[["spa3"]]$xlim, ylim = coord_ranges[["spa3"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA3 Density (>= 80mm)"), 
@@ -514,7 +516,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA3_ComDensity',survey.year,'.p
 # ----SPA6 -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nAbundance \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nabundance \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone = list(mgmt_zone_styles[["Gen"]], mgmt_zone_styles[["spa6"]]), Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa6"]]) +
   coord_sf(xlim = coord_ranges[["spa6"]]$xlim, ylim = coord_ranges[["spa6"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA6 Density (>= 80mm)"), 
@@ -537,7 +539,7 @@ Surv.sf$log_com[which(Surv.sf$log_com==-Inf)] <- log(0.0001)
 
 
 #Overlay a grid over the survey area, as it is required to interpolate (smaller cellsize will take more time to run than larger. both here and during interpolation)
-grid <- st_make_grid(idw_sf, cellsize=2000) %>% st_intersection(idw_sf)
+grid <- st_make_grid(idw_sf, cellsize=1000) %>% st_intersection(idw_sf)
 #Doing the inverse distance weighted interpolation
 preds_idw2 <- gstat::idw(log_com~1,Surv.sf,grid,idp=3)
 
@@ -548,7 +550,7 @@ summary(Surv.sf$com)
 # ----BoF ALL (BF, SPA3, & SPA6) -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nBiomass \n(kg/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nbiomass \n(kg/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["Gen"]], Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa1"]]) +
   coord_sf(xlim = coord_ranges[["BoFall"]]$xlim, ylim = coord_ranges[["BoFall"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "BoF Biomass (>= 80mm)"), 
@@ -560,7 +562,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_BoFAll_ComBiomass',survey.year,'
 # ----FULL BAY -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nBiomass \n(kg/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nbiomass \n(kg/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa1"]]) +
   coord_sf(xlim = coord_ranges[["BoF"]]$xlim, ylim = coord_ranges[["BoF"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "BoF Biomass (>= 80mm)"), 
@@ -572,7 +574,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_BF_ComBiomass',survey.year,'.png
 # ----SPA1A -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nBiomass \n(kg/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nbiomass \n(kg/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "br", arrow_location = "br", legend_position = legend_positions[["spa1"]]) +
   coord_sf(xlim = coord_ranges[["spa1a"]]$xlim, ylim = coord_ranges[["spa1a"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA1A Biomass (>= 80mm)"), 
@@ -584,7 +586,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1A_ComBiomass',survey.year,'.
 # ----SPA1B -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nBiomass \n(kg/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nbiomass \n(kg/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa1b"]]) +
   coord_sf(xlim = coord_ranges[["spa1b"]]$xlim, ylim = coord_ranges[["spa1b"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA1B Biomass (>= 80mm)"), 
@@ -596,7 +598,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1B_ComBiomass',survey.year,'.
 # ----SPA4 and 5 -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nBiomass \n(kg/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nbiomass \n(kg/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "br", arrow_location = "br", legend_position = legend_positions[["spa4"]]) +
   coord_sf(xlim = coord_ranges[["spa4"]]$xlim, ylim = coord_ranges[["spa4"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA4 Biomass (>= 80mm)"), 
@@ -608,7 +610,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA4_ComBiomass',survey.year,'.p
 # ----SPA3 -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nBiomass \n(kg/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nbiomass \n(kg/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone = list(mgmt_zone_styles[["spa3"]], mgmt_zone_styles[["Gen"]]), Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa3"]]) +
   coord_sf(xlim = coord_ranges[["spa3"]]$xlim, ylim = coord_ranges[["spa3"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA3 Biomass (>= 80mm)"), 
@@ -620,7 +622,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA3_ComBiomass',survey.year,'.p
 # ----SPA6 -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nBiomass \n(kg/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nbiomass \n(kg/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone = list(mgmt_zone_styles[["Gen"]], mgmt_zone_styles[["spa6"]]), Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa6"]]) +
   coord_sf(xlim = coord_ranges[["spa6"]]$xlim, ylim = coord_ranges[["spa6"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA6 Biomass (>= 80mm)"), 
@@ -643,7 +645,7 @@ Surv.sf$log_condition[which(Surv.sf$log_condition==-Inf)] <- log(0.0001)
 
 
 #Overlay a grid over the survey area, as it is required to interpolate (smaller cellsize will take more time to run than larger. both here and during interpolation)
-grid <- st_make_grid(idw_sf, cellsize=2000) %>% st_intersection(idw_sf)
+grid <- st_make_grid(idw_sf, cellsize=1000) %>% st_intersection(idw_sf)
 #Doing the inverse distance weighted interpolation
 preds_idw2 <- gstat::idw(log_condition~1,Surv.sf,grid,idp=3)
 
@@ -654,7 +656,7 @@ summary(Surv.sf$Condition)
 # ----BoF ALL (BF, SPA3, & SPA6) -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Condition (g)", limits = c(4,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "G", direction = -1,  trans = "sqrt", name = "Condition (g)", limits = c(4,max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["Gen"]], Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa1"]]) +
   coord_sf(xlim = coord_ranges[["BoFall"]]$xlim, ylim = coord_ranges[["BoFall"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "BoF Condition"), 
@@ -666,7 +668,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_BoFAll_Condition',survey.year,'.
 # ----FULL BAY -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Condition (g)", limits = c(4,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "D", direction = -1, trans = "sqrt", name = "Condition (g)", limits = c(4,max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa1"]]) +
   coord_sf(xlim = coord_ranges[["BoF"]]$xlim, ylim = coord_ranges[["BoF"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "BoF Condition"), 
@@ -678,7 +680,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_BF_Condition',survey.year,'.png'
 # ----SPA1A -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Condition (g)", limits = c(4,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "G", direction = -1,  trans = "sqrt", name = "Condition (g)", limits = c(4,max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "br", arrow_location = "br", legend_position = legend_positions[["spa1"]]) +
   coord_sf(xlim = coord_ranges[["spa1a"]]$xlim, ylim = coord_ranges[["spa1a"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA1A Condition"), 
@@ -690,7 +692,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1A_Condition',survey.year,'.p
 # ----SPA1B -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Condition (g)", limits = c(4,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "G", direction = -1,  trans = "sqrt", name = "Condition (g)", limits = c(4,max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa1b"]]) +
   coord_sf(xlim = coord_ranges[["spa1b"]]$xlim, ylim = coord_ranges[["spa1b"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA1B Condition"), 
@@ -702,7 +704,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1B_Condition',survey.year,'.p
 # ----SPA4 and 5 -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Condition (g)", limits = c(4,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "G", direction = -1,  trans = "sqrt", name = "Condition (g)", limits = c(4,max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "br", arrow_location = "br", legend_position = legend_positions[["spa4"]]) +
   coord_sf(xlim = coord_ranges[["spa4"]]$xlim, ylim = coord_ranges[["spa4"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA4 Condition"), 
@@ -714,7 +716,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA4_Condition',survey.year,'.pn
 # ----SPA3 -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Condition (g)", limits = c(4,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "G", direction = -1,  trans = "sqrt", name = "Condition (g)", limits = c(4,max(preds_idw2$prediction))) + 
   p(mgmt_zone = list(mgmt_zone_styles[["spa3"]], mgmt_zone_styles[["Gen"]]), Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa3"]]) +
   coord_sf(xlim = coord_ranges[["spa3"]]$xlim, ylim = coord_ranges[["spa3"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA3 Condition"), 
@@ -726,7 +728,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA3_Condition',survey.year,'.pn
 # ----SPA6 -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Condition (g)", limits = c(4,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "G", direction = -1,  trans = "sqrt", name = "Condition (g)", limits = c(4,max(preds_idw2$prediction))) + 
   p(mgmt_zone = list(mgmt_zone_styles[["Gen"]], mgmt_zone_styles[["spa6"]]), Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa6"]]) +
   coord_sf(xlim = coord_ranges[["spa6"]]$xlim, ylim = coord_ranges[["spa6"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA6 Condition"), 
@@ -749,7 +751,7 @@ Surv.sf$log_mtct[which(Surv.sf$log_mtct==-Inf)] <- log(0.0001)
 
 
 #Overlay a grid over the survey area, as it is required to interpolate (smaller cellsize will take more time to run than larger. both here and during interpolation)
-grid <- st_make_grid(idw_sf, cellsize=2000) %>% st_intersection(idw_sf)
+grid <- st_make_grid(idw_sf, cellsize=1000) %>% st_intersection(idw_sf)
 #Doing the inverse distance weighted interpolation
 preds_idw2 <- gstat::idw(log_mtct~1,Surv.sf,grid,idp=3)
 
@@ -760,7 +762,7 @@ summary(Surv.sf$meat.count)
 # ----BoF ALL (BF, SPA3, & SPA6) -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Meat Count \n(per 500g)", limits = c(10,45), oob = scales::squish) +#max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "B",  trans = "sqrt", name = "Meat count \n(per 500g)", limits = c(10,45), oob = scales::squish) +#max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["Gen"]], Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa1"]]) +
   coord_sf(xlim = coord_ranges[["BoFall"]]$xlim, ylim = coord_ranges[["BoFall"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "BoF Meat Count"), 
@@ -772,7 +774,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_BoFAll_MeatCount',survey.year,'.
 # ----FULL BAY -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Meat Count \n(per 500g)", limits = c(10,45), oob = scales::squish) +#max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "B",  trans = "sqrt", name = "Meat count \n(per 500g)", limits = c(10,45), oob = scales::squish) +#max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa1"]]) +
   coord_sf(xlim = coord_ranges[["BoF"]]$xlim, ylim = coord_ranges[["BoF"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "BoF Meat Count"), 
@@ -784,7 +786,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_BF_MeatCount',survey.year,'.png'
 # ----SPA1A -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Meat Count \n(per 500g)", limits = c(10,45), oob = scales::squish) +#max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "B",  trans = "sqrt", name = "Meat count \n(per 500g)", limits = c(10,45), oob = scales::squish) +#max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "br", arrow_location = "br", legend_position = legend_positions[["spa1"]]) +
   coord_sf(xlim = coord_ranges[["spa1a"]]$xlim, ylim = coord_ranges[["spa1a"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA1A Meat Count"), 
@@ -796,7 +798,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1A_MeatCount',survey.year,'.p
 # ----SPA1B -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Meat Count \n(per 500g)", limits = c(10,45), oob = scales::squish) +#max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "B",  trans = "sqrt", name = "Meat count \n(per 500g)", limits = c(10,45), oob = scales::squish) +#max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa1b"]]) +
   coord_sf(xlim = coord_ranges[["spa1b"]]$xlim, ylim = coord_ranges[["spa1b"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA1B Meat Count"), 
@@ -808,7 +810,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1B_MeatCount',survey.year,'.p
 # ----SPA4 and 5 -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Meat Count \n(per 500g)", limits = c(10,45), oob = scales::squish) +#max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "B",  trans = "sqrt", name = "Meat count \n(per 500g)", limits = c(10,45), oob = scales::squish) +#max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "br", arrow_location = "br", legend_position = legend_positions[["spa4"]]) +
   coord_sf(xlim = coord_ranges[["spa4"]]$xlim, ylim = coord_ranges[["spa4"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA4 Meat Count"), 
@@ -820,7 +822,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA4_MeatCount',survey.year,'.pn
 # ----SPA3 -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Meat Count \n(per 500g)", limits = c(10,45), oob = scales::squish) +#max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "B",  trans = "sqrt", name = "Meat count \n(per 500g)", limits = c(10,45), oob = scales::squish) +#max(preds_idw2$prediction))) + 
   p(mgmt_zone = list(mgmt_zone_styles[["spa3"]], mgmt_zone_styles[["Gen"]]), Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa3"]]) +
   coord_sf(xlim = coord_ranges[["spa3"]]$xlim, ylim = coord_ranges[["spa3"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA3 Meat Count"), 
@@ -832,7 +834,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA3_MeatCount',survey.year,'.pn
 # ----SPA6 -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Meat Count \n(per 500g)", limits = c(10,45), oob = scales::squish) +#max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "B",  trans = "sqrt", name = "Meat count \n(per 500g)", limits = c(10,45), oob = scales::squish) +#max(preds_idw2$prediction))) + 
   p(mgmt_zone = list(mgmt_zone_styles[["Gen"]], mgmt_zone_styles[["spa6"]]), Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa6"]]) +
   coord_sf(xlim = coord_ranges[["spa6"]]$xlim, ylim = coord_ranges[["spa6"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA6 Meat Count"), 
@@ -855,7 +857,7 @@ Surv.sf$log_com[which(Surv.sf$log_com==-Inf)] <- log(0.0001)
 
 
 #Overlay a grid over the survey area, as it is required to interpolate (smaller cellsize will take more time to run than larger. both here and during interpolation)
-grid <- st_make_grid(idw_sf, cellsize=2000) %>% st_intersection(idw_sf)
+grid <- st_make_grid(idw_sf, cellsize=1000) %>% st_intersection(idw_sf)
 #Doing the inverse distance weighted interpolation
 preds_idw2 <- gstat::idw(log_com~1,Surv.sf,grid,idp=3)
 
@@ -866,7 +868,7 @@ summary(Surv.sf$com)
 # ----FULL BAY -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nClappers \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nclappers \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa1"]]) +
   coord_sf(xlim = coord_ranges[["BoF"]]$xlim, ylim = coord_ranges[["BoF"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "BoF Clappers (>= 80mm)"), 
@@ -878,7 +880,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_BF_ComClappers',survey.year,'.pn
 # ----SPA1A -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nClappers \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) +
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nclappers \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) +
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "br", arrow_location = "br", legend_position = legend_positions[["spa1"]]) +
   coord_sf(xlim = coord_ranges[["spa1a"]]$xlim, ylim = coord_ranges[["spa1a"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA1A Clappers (>= 80mm)"), 
@@ -890,7 +892,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1A_ComClappers',survey.year,'
 # ----SPA1B -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nClappers \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nclappers \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa1b"]]) +
   coord_sf(xlim = coord_ranges[["spa1b"]]$xlim, ylim = coord_ranges[["spa1b"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA1B Clappers (>= 80mm)"), 
@@ -902,7 +904,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1B_ComClappers',survey.year,'
 # ----SPA4 and 5 -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nClappers \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nclappers \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "br", arrow_location = "br", legend_position = legend_positions[["spa4"]]) +
   coord_sf(xlim = coord_ranges[["spa4"]]$xlim, ylim = coord_ranges[["spa4"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA4 Clappers (>= 80mm)"), 
@@ -914,7 +916,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA4_ComClappers',survey.year,'.
 # ----SPA3 -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nClappers \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) +
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nclappers \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) +
   p(mgmt_zone = list(mgmt_zone_styles[["spa3"]], mgmt_zone_styles[["Gen"]]), Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa3"]]) +
   coord_sf(xlim = coord_ranges[["spa3"]]$xlim, ylim = coord_ranges[["spa3"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA3 Clappers (>= 80mm)"), 
@@ -926,7 +928,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA3_ComClappers',survey.year,'.
 # ----SPA6 -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nClappers \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nclappers \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone = list(mgmt_zone_styles[["Gen"]], mgmt_zone_styles[["spa6"]]), Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa6"]]) +
   coord_sf(xlim = coord_ranges[["spa6"]]$xlim, ylim = coord_ranges[["spa6"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA6 Clappers (>= 80mm)"), 
@@ -949,7 +951,7 @@ Surv.sf$log_prop.dead.com[which(Surv.sf$log_prop.dead.com==-Inf)] <- log(0.0001)
 
 
 #Overlay a grid over the survey area, as it is required to interpolate (smaller cellsize will take more time to run than larger. both here and during interpolation)
-grid <- st_make_grid(idw_sf, cellsize=2000) %>% st_intersection(idw_sf)
+grid <- st_make_grid(idw_sf, cellsize=1000) %>% st_intersection(idw_sf)
 #Doing the inverse distance weighted interpolation
 preds_idw2 <- gstat::idw(log_prop.dead.com~1,Surv.sf,grid,idp=3)
 
@@ -960,7 +962,7 @@ summary(Surv.sf$prop.dead.com)
 # ----FULL BAY -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nClappers \n(proportion)", limits = c(0,1)) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nclappers \n(proportion)", limits = c(0,1)) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa1"]]) +
   coord_sf(xlim = coord_ranges[["BoF"]]$xlim, ylim = coord_ranges[["BoF"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "BoF Clappers Proportion (>= 80mm)"), 
@@ -972,7 +974,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_BF_PropComClappers',survey.year,
 # ----SPA1A -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nClappers \n(proportion)", limits = c(0,1)) +
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nclappers \n(proportion)", limits = c(0,1)) +
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "br", arrow_location = "br", legend_position = legend_positions[["spa1"]]) +
   coord_sf(xlim = coord_ranges[["spa1a"]]$xlim, ylim = coord_ranges[["spa1a"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA1A Clappers Proportion (>= 80mm)"), 
@@ -984,7 +986,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1A_PropComClappers',survey.ye
 # ----SPA1B -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nClappers \n(proportion)", limits = c(0,1)) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nclappers \n(proportion)", limits = c(0,1)) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa1b"]]) +
   coord_sf(xlim = coord_ranges[["spa1b"]]$xlim, ylim = coord_ranges[["spa1b"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA1B Clappers Proportion (>= 80mm)"), 
@@ -996,7 +998,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1B_PropComClappers',survey.ye
 # ----SPA4 and 5 -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nClappers \n(proportion)", limits = c(0,1)) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nclappers \n(proportion)", limits = c(0,1)) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "br", arrow_location = "br", legend_position = legend_positions[["spa4"]]) +
   coord_sf(xlim = coord_ranges[["spa4"]]$xlim, ylim = coord_ranges[["spa4"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA4 Clappers Proportion (>= 80mm)"), 
@@ -1008,7 +1010,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA4_PropComClappers',survey.yea
 # ----SPA3 -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nClappers \n(proportion)", limits = c(0,1)) +
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nclappers \n(proportion)", limits = c(0,1)) +
   p(mgmt_zone = list(mgmt_zone_styles[["spa3"]], mgmt_zone_styles[["Gen"]]), Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa3"]]) +
   coord_sf(xlim = coord_ranges[["spa3"]]$xlim, ylim = coord_ranges[["spa3"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA3 Clappers Proportion (>= 80mm)"), 
@@ -1020,7 +1022,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA3_PropComClappers',survey.yea
 # ----SPA6 -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nClappers \n(Proportion)", limits = c(0,1)) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nclappers \n(Proportion)", limits = c(0,1)) + 
   p(mgmt_zone = list(mgmt_zone_styles[["Gen"]], mgmt_zone_styles[["spa6"]]), Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa6"]]) +
   coord_sf(xlim = coord_ranges[["spa6"]]$xlim, ylim = coord_ranges[["spa6"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA6 Clappers Proportion (>= 80mm)"), 
@@ -1045,7 +1047,7 @@ Surv.sf$log_rec[which(Surv.sf$log_rec==-Inf)] <- log(0.0001)
 
 
 #Overlay a grid over the survey area, as it is required to interpolate (smaller cellsize will take more time to run than larger. both here and during interpolation)
-grid <- st_make_grid(idw_sf, cellsize=2000) %>% st_intersection(idw_sf)
+grid <- st_make_grid(idw_sf, cellsize=1000) %>% st_intersection(idw_sf)
 #Doing the inverse distance weighted interpolation
 preds_idw2 <- gstat::idw(log_rec~1,Surv.sf,grid,idp=3)
 
@@ -1056,7 +1058,7 @@ summary(Surv.sf$rec)
 # ----FULL BAY -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nAbundance \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nabundance \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa1"]]) +
   coord_sf(xlim = coord_ranges[["BoF"]]$xlim, ylim = coord_ranges[["BoF"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "BoF Density (65-79mm)"), 
@@ -1068,7 +1070,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_BF_RecDensity',survey.year,'.png
 # ----SPA1A -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nAbundance \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nabundance \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "br", arrow_location = "br", legend_position = legend_positions[["spa1"]]) +
   coord_sf(xlim = coord_ranges[["spa1a"]]$xlim, ylim = coord_ranges[["spa1a"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA1A Density (65-79mm)"), 
@@ -1080,7 +1082,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1A_RecDensity',survey.year,'.
 # ----SPA1B -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nAbundance \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nabundance \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa1b"]]) +
   coord_sf(xlim = coord_ranges[["spa1b"]]$xlim, ylim = coord_ranges[["spa1b"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA1B Density (65-79mm)"), 
@@ -1092,7 +1094,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1B_RecDensity',survey.year,'.
 # ----SPA4 and 5 -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nAbundance \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nabundance \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "br", arrow_location = "br", legend_position = legend_positions[["spa4"]]) +
   coord_sf(xlim = coord_ranges[["spa4"]]$xlim, ylim = coord_ranges[["spa4"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA4 Density (65-79mm)"), 
@@ -1104,7 +1106,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA4_RecDensity',survey.year,'.p
 # ----SPA3 -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nAbundance \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nabundance \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone = list(mgmt_zone_styles[["spa3"]], mgmt_zone_styles[["Gen"]]), Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa3"]]) +
   coord_sf(xlim = coord_ranges[["spa3"]]$xlim, ylim = coord_ranges[["spa3"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA3 Density (65-79mm)"), 
@@ -1116,7 +1118,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA3_RecDensity',survey.year,'.p
 # ----SPA6 -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nAbundance \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nabundance \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone = list(mgmt_zone_styles[["Gen"]], mgmt_zone_styles[["spa6"]]), Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa6"]]) +
   coord_sf(xlim = coord_ranges[["spa6"]]$xlim, ylim = coord_ranges[["spa6"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA6 Density (65-79mm)"), 
@@ -1139,7 +1141,7 @@ Surv.sf$log_rec[which(Surv.sf$log_rec==-Inf)] <- log(0.0001)
 
 
 #Overlay a grid over the survey area, as it is required to interpolate (smaller cellsize will take more time to run than larger. both here and during interpolation)
-grid <- st_make_grid(idw_sf, cellsize=2000) %>% st_intersection(idw_sf)
+grid <- st_make_grid(idw_sf, cellsize=1000) %>% st_intersection(idw_sf)
 #Doing the inverse distance weighted interpolation
 preds_idw2 <- gstat::idw(log_rec~1,Surv.sf,grid,idp=3)
 
@@ -1150,7 +1152,7 @@ summary(Surv.sf$rec)
 # ----BoF ALL (BF, SPA 3, & SPA6) -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nBiomass \n(kg/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nbiomass \n(kg/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["Gen"]], Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa1"]]) +
   coord_sf(xlim = coord_ranges[["BoFall"]]$xlim, ylim = coord_ranges[["BoFall"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "BoF Biomass (65-79mm)"), 
@@ -1162,7 +1164,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_BoFAll_RecBiomass',survey.year,'
 # ----FULL BAY -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nBiomass \n(kg/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nbiomass \n(kg/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa1"]]) +
   coord_sf(xlim = coord_ranges[["BoF"]]$xlim, ylim = coord_ranges[["BoF"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "BoF Biomass (65-79mm)"), 
@@ -1174,7 +1176,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_BF_RecBiomass',survey.year,'.png
 # ----SPA1A -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nBiomass \n(kg/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nbiomass \n(kg/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "br", arrow_location = "br", legend_position = legend_positions[["spa1"]]) +
   coord_sf(xlim = coord_ranges[["spa1a"]]$xlim, ylim = coord_ranges[["spa1a"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA1A Biomass (65-79mm)"), 
@@ -1186,7 +1188,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1A_RecBiomass',survey.year,'.
 # ----SPA1B -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nBiomass \n(kg/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nbiomass \n(kg/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa1b"]]) +
   coord_sf(xlim = coord_ranges[["spa1b"]]$xlim, ylim = coord_ranges[["spa1b"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA1B Biomass (65-79mm)"), 
@@ -1198,7 +1200,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1B_RecBiomass',survey.year,'.
 # ----SPA4 and 5 -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nBiomass \n(kg/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nbiomass \n(kg/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "br", arrow_location = "br", legend_position = legend_positions[["spa4"]]) +
   coord_sf(xlim = coord_ranges[["spa4"]]$xlim, ylim = coord_ranges[["spa4"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA4 Biomass (65-79mm)"), 
@@ -1210,7 +1212,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA4_RecBiomass',survey.year,'.p
 # ----SPA3 -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nBiomass \n(kg/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nbiomass \n(kg/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone = list(mgmt_zone_styles[["spa3"]], mgmt_zone_styles[["Gen"]]), Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa3"]]) +
   coord_sf(xlim = coord_ranges[["spa3"]]$xlim, ylim = coord_ranges[["spa3"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA3 Biomass (65-79mm)"), 
@@ -1222,7 +1224,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA3_RecBiomass',survey.year,'.p
 # ----SPA6 -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nBiomass \n(kg/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nbiomass \n(kg/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone = list(mgmt_zone_styles[["Gen"]], mgmt_zone_styles[["spa6"]]), Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa6"]]) +
   coord_sf(xlim = coord_ranges[["spa6"]]$xlim, ylim = coord_ranges[["spa6"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA6 Biomass (65-79mm)"), 
@@ -1245,7 +1247,7 @@ Surv.sf$log_rec[which(Surv.sf$log_rec==-Inf)] <- log(0.0001)
 
 
 #Overlay a grid over the survey area, as it is required to interpolate (smaller cellsize will take more time to run than larger. both here and during interpolation)
-grid <- st_make_grid(idw_sf, cellsize=2000) %>% st_intersection(idw_sf)
+grid <- st_make_grid(idw_sf, cellsize=1000) %>% st_intersection(idw_sf)
 #Doing the inverse distance weighted interpolation
 preds_idw2 <- gstat::idw(log_rec~1,Surv.sf,grid,idp=3)
 
@@ -1256,7 +1258,7 @@ summary(Surv.sf$rec)
 # ----FULL BAY -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nClappers \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nclappers \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa1"]]) +
   coord_sf(xlim = coord_ranges[["BoF"]]$xlim, ylim = coord_ranges[["BoF"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "BoF Clappers (65-79mm)"), 
@@ -1268,7 +1270,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_BF_RecClappers',survey.year,'.pn
 # ----SPA1A -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nClappers \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) +
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nclappers \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) +
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "br", arrow_location = "br", legend_position = legend_positions[["spa1"]]) +
   coord_sf(xlim = coord_ranges[["spa1a"]]$xlim, ylim = coord_ranges[["spa1a"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA1A Clappers (65-79mm)"), 
@@ -1280,7 +1282,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1A_RecClappers',survey.year,'
 # ----SPA1B -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nClappers \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nclappers \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa1b"]]) +
   coord_sf(xlim = coord_ranges[["spa1b"]]$xlim, ylim = coord_ranges[["spa1b"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA1B Clappers (65-79mm)"), 
@@ -1292,7 +1294,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1B_RecClappers',survey.year,'
 # ----SPA4 and 5 -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nClappers \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nclappers \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "br", arrow_location = "br", legend_position = legend_positions[["spa4"]]) +
   coord_sf(xlim = coord_ranges[["spa4"]]$xlim, ylim = coord_ranges[["spa4"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA4 Clappers (65-79mm)"), 
@@ -1304,7 +1306,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA4_RecClappers',survey.year,'.
 # ----SPA3 -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nClappers \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) +
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nclappers \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) +
   p(mgmt_zone = list(mgmt_zone_styles[["spa3"]], mgmt_zone_styles[["Gen"]]), Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa3"]]) +
   coord_sf(xlim = coord_ranges[["spa3"]]$xlim, ylim = coord_ranges[["spa3"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA3 Clappers (65-79mm)"), 
@@ -1316,7 +1318,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA3_RecClappers',survey.year,'.
 # ----SPA6 -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nClappers \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nclappers \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone = list(mgmt_zone_styles[["Gen"]], mgmt_zone_styles[["spa6"]]), Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa6"]]) +
   coord_sf(xlim = coord_ranges[["spa6"]]$xlim, ylim = coord_ranges[["spa6"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA6 Clappers (65-79mm)"), 
@@ -1339,7 +1341,7 @@ Surv.sf$log_prop.dead.rec[which(Surv.sf$log_prop.dead.rec==-Inf)] <- log(0.0001)
 
 
 #Overlay a grid over the survey area, as it is required to interpolate (smaller cellsize will take more time to run than larger. both here and during interpolation)
-grid <- st_make_grid(idw_sf, cellsize=2000) %>% st_intersection(idw_sf)
+grid <- st_make_grid(idw_sf, cellsize=1000) %>% st_intersection(idw_sf)
 #Doing the inverse distance weighted interpolation
 preds_idw2 <- gstat::idw(log_prop.dead.rec~1,Surv.sf,grid,idp=3)
 
@@ -1350,7 +1352,7 @@ summary(Surv.sf$prop.dead.rec)
 # ----FULL BAY -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nClappers \n(proportion)", limits = c(0,1)) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nclappers \n(proportion)", limits = c(0,1)) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa1"]]) +
   coord_sf(xlim = coord_ranges[["BoF"]]$xlim, ylim = coord_ranges[["BoF"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "BoF Clappers Proportion (65-79mm)"), 
@@ -1362,7 +1364,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_BF_PropRecClappers',survey.year,
 # ----SPA1A -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nClappers \n(proportion)", limits = c(0,1)) +
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nclappers \n(proportion)", limits = c(0,1)) +
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "br", arrow_location = "br", legend_position = legend_positions[["spa1"]]) +
   coord_sf(xlim = coord_ranges[["spa1a"]]$xlim, ylim = coord_ranges[["spa1a"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA1A Clappers Proportion (65-79mm)"), 
@@ -1374,7 +1376,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1A_PropRecClappers',survey.ye
 # ----SPA1B -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nClappers \n(proportion)", limits = c(0,1)) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nclappers \n(proportion)", limits = c(0,1)) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa1b"]]) +
   coord_sf(xlim = coord_ranges[["spa1b"]]$xlim, ylim = coord_ranges[["spa1b"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA1B Clappers Proportion (65-79mm)"), 
@@ -1386,7 +1388,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1B_PropRecClappers',survey.ye
 # ----SPA4 and 5 -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nClappers \n(proportion)", limits = c(0,1)) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nclappers \n(proportion)", limits = c(0,1)) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "br", arrow_location = "br", legend_position = legend_positions[["spa4"]]) +
   coord_sf(xlim = coord_ranges[["spa4"]]$xlim, ylim = coord_ranges[["spa4"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA4 Clappers Proportion (65-79mm)"), 
@@ -1398,7 +1400,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA4_PropRecClappers',survey.yea
 # ----SPA3 -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nClappers \n(proportion)", limits = c(0,1)) +
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nclappers \n(proportion)", limits = c(0,1)) +
   p(mgmt_zone = list(mgmt_zone_styles[["spa3"]], mgmt_zone_styles[["Gen"]]), Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa3"]]) +
   coord_sf(xlim = coord_ranges[["spa3"]]$xlim, ylim = coord_ranges[["spa3"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA3 Clappers Proportion (65-79mm)"), 
@@ -1410,7 +1412,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA3_PropRecClappers',survey.yea
 # ----SPA6 -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nClappers \n(Proportion)", limits = c(0,1)) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nclappers \n(Proportion)", limits = c(0,1)) + 
   p(mgmt_zone = list(mgmt_zone_styles[["Gen"]], mgmt_zone_styles[["spa6"]]), Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa6"]]) +
   coord_sf(xlim = coord_ranges[["spa6"]]$xlim, ylim = coord_ranges[["spa6"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA6 Clappers Proportion (65-79mm)"), 
@@ -1435,7 +1437,7 @@ Surv.sf$log_pre[which(Surv.sf$log_pre==-Inf)] <- log(0.0001)
 
 
 #Overlay a grid over the survey area, as it is required to interpolate (smaller cellsize will take more time to run than larger. both here and during interpolation)
-grid <- st_make_grid(idw_sf, cellsize=2000) %>% st_intersection(idw_sf)
+grid <- st_make_grid(idw_sf, cellsize=1000) %>% st_intersection(idw_sf)
 #Doing the inverse distance weighted interpolation
 preds_idw2 <- gstat::idw(log_pre~1,Surv.sf,grid,idp=3)
 
@@ -1446,7 +1448,7 @@ summary(Surv.sf$pre)
 # ----BoF ALL (BF, SPA3, & SPA6) -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Pre-Recruit \nAbundance \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Pre-Recruit \nabundance \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["Gen"]], Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa1"]]) +
   coord_sf(xlim = coord_ranges[["BoFall"]]$xlim, ylim = coord_ranges[["BoFall"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "BoF Density (< 65mm)"), 
@@ -1458,7 +1460,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_BoFAll_PreDensity',survey.year,'
 # ----FULL BAY -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Pre-Recruit \nAbundance \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Pre-Recruit \nabundance \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa1"]]) +
   coord_sf(xlim = coord_ranges[["BoF"]]$xlim, ylim = coord_ranges[["BoF"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "BoF Density (< 65mm)"), 
@@ -1470,7 +1472,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_BF_PreDensity',survey.year,'.png
 # ----SPA1A -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Pre-Recruit \nAbundance \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Pre-Recruit \nabundance \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "br", arrow_location = "br", legend_position = legend_positions[["spa1"]]) +
   coord_sf(xlim = coord_ranges[["spa1a"]]$xlim, ylim = coord_ranges[["spa1a"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA1A Density (< 65mm)"), 
@@ -1482,7 +1484,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1A_PreDensity',survey.year,'.
 # ----SPA1B -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Pre-Recruit \nAbundance \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Pre-Recruit \nabundance \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa1b"]]) +
   coord_sf(xlim = coord_ranges[["spa1b"]]$xlim, ylim = coord_ranges[["spa1b"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA1B Density (< 65mm)"), 
@@ -1494,7 +1496,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1B_PreDensity',survey.year,'.
 # ----SPA4 and 5 -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Pre-Recruit \nAbundance \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Pre-Recruit \nabundance \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "br", arrow_location = "br", legend_position = legend_positions[["spa4"]]) +
   coord_sf(xlim = coord_ranges[["spa4"]]$xlim, ylim = coord_ranges[["spa4"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA4 Density (< 65mm)"), 
@@ -1506,7 +1508,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA4_PreDensity',survey.year,'.p
 # ----SPA3 -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Pre-Recruit \nAbundance \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Pre-Recruit \nabundance \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone = list(mgmt_zone_styles[["spa3"]], mgmt_zone_styles[["Gen"]]), Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa3"]]) +
   coord_sf(xlim = coord_ranges[["spa3"]]$xlim, ylim = coord_ranges[["spa3"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA3 Density (< 65mm)"), 
@@ -1518,7 +1520,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA3_PreDensity',survey.year,'.p
 # ----SPA6 -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Pre-Recruit \nAbundance \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Pre-Recruit \nabundance \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone = list(mgmt_zone_styles[["Gen"]], mgmt_zone_styles[["spa6"]]), Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa6"]]) +
   coord_sf(xlim = coord_ranges[["spa6"]]$xlim, ylim = coord_ranges[["spa6"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA6 Density (< 65mm)"), 
@@ -1541,7 +1543,7 @@ Surv.sf$log_pre[which(Surv.sf$log_pre==-Inf)] <- log(0.0001)
 
 
 #Overlay a grid over the survey area, as it is required to interpolate (smaller cellsize will take more time to run than larger. both here and during interpolation)
-grid <- st_make_grid(idw_sf, cellsize=2000) %>% st_intersection(idw_sf)
+grid <- st_make_grid(idw_sf, cellsize=1000) %>% st_intersection(idw_sf)
 #Doing the inverse distance weighted interpolation
 preds_idw2 <- gstat::idw(log_pre~1,Surv.sf,grid,idp=3)
 
@@ -1552,7 +1554,7 @@ summary(Surv.sf$pre)
 # ----FULL BAY -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Pre-Recruit \nBiomass \n(kg/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Pre-Recruit \nbiomass \n(kg/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa1"]]) +
   coord_sf(xlim = coord_ranges[["BoF"]]$xlim, ylim = coord_ranges[["BoF"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "BoF Biomass (< 65mm)"), 
@@ -1564,7 +1566,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_BF_PreBiomass',survey.year,'.png
 # ----SPA1A -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Pre-Recruit \nBiomass \n(kg/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Pre-Recruit \nbiomass \n(kg/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "br", arrow_location = "br", legend_position = legend_positions[["spa1"]]) +
   coord_sf(xlim = coord_ranges[["spa1a"]]$xlim, ylim = coord_ranges[["spa1a"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA1A Biomass (< 65mm)"), 
@@ -1576,7 +1578,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1A_PreBiomass',survey.year,'.
 # ----SPA1B -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Pre-Recruit \nBiomass \n(kg/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Pre-Recruit \nbiomass \n(kg/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa1b"]]) +
   coord_sf(xlim = coord_ranges[["spa1b"]]$xlim, ylim = coord_ranges[["spa1b"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA1B Biomass (< 65mm)"), 
@@ -1588,7 +1590,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1B_PreBiomass',survey.year,'.
 # ----SPA4 and 5 -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Pre-Recruit \nBiomass \n(kg/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Pre-Recruit \nbiomass \n(kg/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "br", arrow_location = "br", legend_position = legend_positions[["spa4"]]) +
   coord_sf(xlim = coord_ranges[["spa4"]]$xlim, ylim = coord_ranges[["spa4"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA4 Biomass (< 65mm)"), 
@@ -1600,7 +1602,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA4_PreBiomass',survey.year,'.p
 # ----SPA3 -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Pre-Recruit \nBiomass \n(kg/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Pre-Recruit \nbiomass \n(kg/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone = list(mgmt_zone_styles[["spa3"]], mgmt_zone_styles[["Gen"]]), Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa3"]]) +
   coord_sf(xlim = coord_ranges[["spa3"]]$xlim, ylim = coord_ranges[["spa3"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA3 Biomass (< 65mm)"), 
@@ -1612,7 +1614,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA3_PreBiomass',survey.year,'.p
 # ----SPA6 -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Pre-Recruit \nBiomass \n(kg/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Pre-Recruit \nbiomass \n(kg/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone = list(mgmt_zone_styles[["Gen"]], mgmt_zone_styles[["spa6"]]), Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa6"]]) +
   coord_sf(xlim = coord_ranges[["spa6"]]$xlim, ylim = coord_ranges[["spa6"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA6 Biomass (< 65mm)"), 
@@ -1635,7 +1637,7 @@ Surv.sf$log_pre[which(Surv.sf$log_pre==-Inf)] <- log(0.0001)
 
 
 #Overlay a grid over the survey area, as it is required to interpolate (smaller cellsize will take more time to run than larger. both here and during interpolation)
-grid <- st_make_grid(idw_sf, cellsize=2000) %>% st_intersection(idw_sf)
+grid <- st_make_grid(idw_sf, cellsize=1000) %>% st_intersection(idw_sf)
 #Doing the inverse distance weighted interpolation
 preds_idw2 <- gstat::idw(log_pre~1,Surv.sf,grid,idp=3)
 
@@ -1646,7 +1648,7 @@ summary(Surv.sf$pre)
 # ----FULL BAY -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Pre-Recruit \nClappers \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Pre-Recruit \nclappers \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa1"]]) +
   coord_sf(xlim = coord_ranges[["BoF"]]$xlim, ylim = coord_ranges[["BoF"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "BoF Clappers (< 65mm)"), 
@@ -1658,7 +1660,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_BF_PreClappers',survey.year,'.pn
 # ----SPA1A -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Pre-Recruit \nClappers \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) +
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Pre-Recruit \nclappers \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) +
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "br", arrow_location = "br", legend_position = legend_positions[["spa1"]]) +
   coord_sf(xlim = coord_ranges[["spa1a"]]$xlim, ylim = coord_ranges[["spa1a"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA1A Clappers (< 65mm)"), 
@@ -1670,7 +1672,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1A_PreClappers',survey.year,'
 # ----SPA1B -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Pre-Recruit \nClappers \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Pre-Recruit \nclappers \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa1b"]]) +
   coord_sf(xlim = coord_ranges[["spa1b"]]$xlim, ylim = coord_ranges[["spa1b"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA1B Clappers (< 65mm)"), 
@@ -1682,7 +1684,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1B_PreClappers',survey.year,'
 # ----SPA4 and 5 -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Pre-Recruit \nClappers \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Pre-Recruit \nclappers \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "br", arrow_location = "br", legend_position = legend_positions[["spa4"]]) +
   coord_sf(xlim = coord_ranges[["spa4"]]$xlim, ylim = coord_ranges[["spa4"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA4 Clappers (< 65mm)"), 
@@ -1694,7 +1696,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA4_PreClappers',survey.year,'.
 # ----SPA3 -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Pre-Recruit \nClappers \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) +
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Pre-Recruit \nclappers \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) +
   p(mgmt_zone = list(mgmt_zone_styles[["spa3"]], mgmt_zone_styles[["Gen"]]), Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa3"]]) +
   coord_sf(xlim = coord_ranges[["spa3"]]$xlim, ylim = coord_ranges[["spa3"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA3 Clappers (< 65mm)"), 
@@ -1706,7 +1708,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA3_PreClappers',survey.year,'.
 # ----SPA6 -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Pre-Recruit \nClappers \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Pre-Recruit \nclappers \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone = list(mgmt_zone_styles[["Gen"]], mgmt_zone_styles[["spa6"]]), Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa6"]]) +
   coord_sf(xlim = coord_ranges[["spa6"]]$xlim, ylim = coord_ranges[["spa6"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA6 Clappers (< 65mm)"), 
@@ -1756,7 +1758,7 @@ Surv.sf$log_com[which(Surv.sf$log_com==-Inf)] <- log(0.0001)
 
 
 #Overlay a grid over the survey area, as it is required to interpolate (smaller cellsize will take more time to run than larger. both here and during interpolation)
-grid <- st_make_grid(idw_sf, cellsize=2000) %>% st_intersection(idw_sf)
+grid <- st_make_grid(idw_sf, cellsize=1000) %>% st_intersection(idw_sf)
 #Doing the inverse distance weighted interpolation
 preds_idw2 <- gstat::idw(log_com~1,Surv.sf,grid,idp=3)
 
@@ -1767,74 +1769,74 @@ summary(Surv.sf$com)
 # ----FULL BAY -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Abondance \nCommerciale \n(N/traits de chalut)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Abondance \ncommerciale \n(N/traits de chalut)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa1"]]) +
   coord_sf(xlim = coord_ranges[["BoF"]]$xlim, ylim = coord_ranges[["BoF"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "BoF Density (>= 80mm)"), 
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_BF_ComDensity',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_BF_ComDensity',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA1A -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Abondance \nCommerciale \n(N/traits de chalut)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Abondance \ncommerciale \n(N/traits de chalut)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "br", arrow_location = "br", legend_position = legend_positions[["spa1"]]) +
   coord_sf(xlim = coord_ranges[["spa1a"]]$xlim, ylim = coord_ranges[["spa1a"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA1A Density (>= 80mm)"), 
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA1A_ComDensity',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA1A_ComDensity',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA1B -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Abondance \nCommerciale \n(N/traits de chalut)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Abondance \ncommerciale \n(N/traits de chalut)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa1b"]]) +
   coord_sf(xlim = coord_ranges[["spa1b"]]$xlim, ylim = coord_ranges[["spa1b"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA1B Density (>= 80mm)"), 
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA1B_ComDensity',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA1B_ComDensity',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA4 and 5 -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Abondance \nCommerciale \n(N/traits de chalut)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Abondance \ncommerciale \n(N/traits de chalut)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "br", arrow_location = "br", legend_position = legend_positions[["spa4"]]) +
   coord_sf(xlim = coord_ranges[["spa4"]]$xlim, ylim = coord_ranges[["spa4"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA4 Density (>= 80mm)"), 
     x = "Longitude", y = "Latitude")
 
 #save  
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA4_ComDensity',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA4_ComDensity',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA3 -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Abondance \nCommerciale \n(N/traits de chalut)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Abondance \ncommerciale \n(N/traits de chalut)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone = list(mgmt_zone_styles[["spa3"]], mgmt_zone_styles[["Gen"]]), Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa3"]]) +
   coord_sf(xlim = coord_ranges[["spa3"]]$xlim, ylim = coord_ranges[["spa3"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA3 Density (>= 80mm)"), 
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA3_ComDensity',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA3_ComDensity',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA6 -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Abondance \nCommerciale \n(N/traits de chalut)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Abondance \ncommerciale \n(N/traits de chalut)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone = list(mgmt_zone_styles[["Gen"]], mgmt_zone_styles[["spa6"]]), Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa6"]]) +
   coord_sf(xlim = coord_ranges[["spa6"]]$xlim, ylim = coord_ranges[["spa6"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA6 Density (>= 80mm)"), 
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA6_ComDensity',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA6_ComDensity',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 
 # ----BIOMASS PLOTS -----
@@ -1850,7 +1852,7 @@ Surv.sf$log_com[which(Surv.sf$log_com==-Inf)] <- log(0.0001)
 
 
 #Overlay a grid over the survey area, as it is required to interpolate (smaller cellsize will take more time to run than larger. both here and during interpolation)
-grid <- st_make_grid(idw_sf, cellsize=2000) %>% st_intersection(idw_sf)
+grid <- st_make_grid(idw_sf, cellsize=1000) %>% st_intersection(idw_sf)
 #Doing the inverse distance weighted interpolation
 preds_idw2 <- gstat::idw(log_com~1,Surv.sf,grid,idp=3)
 
@@ -1868,7 +1870,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_BoFAll_ComBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_BoFAll_ComBiomass',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----FULL BAY -----
 bathy + #Plot survey data and format figure.
@@ -1880,7 +1882,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_BF_ComBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_BF_ComBiomass',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA1A -----
 bathy + #Plot survey data and format figure.
@@ -1892,7 +1894,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA1A_ComBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA1A_ComBiomass',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA1B -----
 bathy + #Plot survey data and format figure.
@@ -1904,7 +1906,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA1B_ComBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA1B_ComBiomass',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA4 and 5 -----
 bathy + #Plot survey data and format figure.
@@ -1916,7 +1918,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save  
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA4_ComBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA4_ComBiomass',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA3 -----
 bathy + #Plot survey data and format figure.
@@ -1928,7 +1930,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA3_ComBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA3_ComBiomass',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA6 -----
 bathy + #Plot survey data and format figure.
@@ -1940,7 +1942,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA6_ComBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA6_ComBiomass',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 
 # ----CONDITION PLOTS-----
@@ -1956,7 +1958,7 @@ Surv.sf$log_condition[which(Surv.sf$log_condition==-Inf)] <- log(0.0001)
 
 
 #Overlay a grid over the survey area, as it is required to interpolate (smaller cellsize will take more time to run than larger. both here and during interpolation)
-grid <- st_make_grid(idw_sf, cellsize=2000) %>% st_intersection(idw_sf)
+grid <- st_make_grid(idw_sf, cellsize=1000) %>% st_intersection(idw_sf)
 #Doing the inverse distance weighted interpolation
 preds_idw2 <- gstat::idw(log_condition~1,Surv.sf,grid,idp=3)
 
@@ -1967,86 +1969,86 @@ summary(Surv.sf$Condition)
 # ----BoF ALL (BF, SPA3, & SPA6) -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Condition (g)", limits = c(4,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "G", direction = -1,  trans = "sqrt", name = "Condition (g)", limits = c(4,max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["Gen"]], Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa1"]]) +
   coord_sf(xlim = coord_ranges[["BoFall"]]$xlim, ylim = coord_ranges[["BoFall"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "BoF Condition"), 
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_BoFAll_Condition',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_BoFAll_Condition',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----FULL BAY -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Condition (g)", limits = c(4,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "G", direction = -1,  trans = "sqrt", name = "Condition (g)", limits = c(4,max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa1"]]) +
   coord_sf(xlim = coord_ranges[["BoF"]]$xlim, ylim = coord_ranges[["BoF"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "BoF Condition"), 
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_BF_Condition',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_BF_Condition',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA1A -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Condition (g)", limits = c(4,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "G", direction = -1,  trans = "sqrt", name = "Condition (g)", limits = c(4,max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "br", arrow_location = "br", legend_position = legend_positions[["spa1"]]) +
   coord_sf(xlim = coord_ranges[["spa1a"]]$xlim, ylim = coord_ranges[["spa1a"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA1A Condition"), 
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA1A_Condition',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA1A_Condition',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA1B -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Condition (g)", limits = c(4,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "G", direction = -1,  trans = "sqrt", name = "Condition (g)", limits = c(4,max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa1b"]]) +
   coord_sf(xlim = coord_ranges[["spa1b"]]$xlim, ylim = coord_ranges[["spa1b"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA1B Condition"), 
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA1B_Condition',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA1B_Condition',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA4 and 5 -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Condition (g)", limits = c(4,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "G", direction = -1,  trans = "sqrt", name = "Condition (g)", limits = c(4,max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "br", arrow_location = "br", legend_position = legend_positions[["spa4"]]) +
   coord_sf(xlim = coord_ranges[["spa4"]]$xlim, ylim = coord_ranges[["spa4"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA4 Condition"), 
     x = "Longitude", y = "Latitude")
 
 #save  
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA4_Condition',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA4_Condition',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA3 -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Condition (g)", limits = c(4,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "G", direction = -1,  trans = "sqrt", name = "Condition (g)", limits = c(4,max(preds_idw2$prediction))) + 
   p(mgmt_zone = list(mgmt_zone_styles[["spa3"]], mgmt_zone_styles[["Gen"]]), Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa3"]]) +
   coord_sf(xlim = coord_ranges[["spa3"]]$xlim, ylim = coord_ranges[["spa3"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA3 Condition"), 
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA3_Condition',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA3_Condition',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA6 -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Condition (g)", limits = c(4,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "G", direction = -1,  trans = "sqrt", name = "Condition (g)", limits = c(4,max(preds_idw2$prediction))) + 
   p(mgmt_zone = list(mgmt_zone_styles[["Gen"]], mgmt_zone_styles[["spa6"]]), Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa6"]]) +
   coord_sf(xlim = coord_ranges[["spa6"]]$xlim, ylim = coord_ranges[["spa6"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA6 Condition"), 
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA6_Condition',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA6_Condition',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 
 # ----MEAT COUNT -----
@@ -2062,7 +2064,7 @@ Surv.sf$log_mtct[which(Surv.sf$log_mtct==-Inf)] <- log(0.0001)
 
 
 #Overlay a grid over the survey area, as it is required to interpolate (smaller cellsize will take more time to run than larger. both here and during interpolation)
-grid <- st_make_grid(idw_sf, cellsize=2000) %>% st_intersection(idw_sf)
+grid <- st_make_grid(idw_sf, cellsize=1000) %>% st_intersection(idw_sf)
 #Doing the inverse distance weighted interpolation
 preds_idw2 <- gstat::idw(log_mtct~1,Surv.sf,grid,idp=3)
 
@@ -2073,86 +2075,86 @@ summary(Surv.sf$meat.count)
 # ----BoF ALL (BF, SPA3, & SPA6) -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "La quantité \nde chair \n(par 500g)", limits = c(10,45), oob = scales::squish) +#max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "B",  trans = "sqrt", name = "La quantité \nde chair \n(par 500g)", limits = c(10,45), oob = scales::squish) +#max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["Gen"]], Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa1"]]) +
   coord_sf(xlim = coord_ranges[["BoFall"]]$xlim, ylim = coord_ranges[["BoFall"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "BoF Meat Count"), 
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_BoFAll_MeatCount',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_BoFAll_MeatCount',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----FULL BAY -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "La quantité \nde chair \n(par 500g)", limits = c(10,45), oob = scales::squish) +#max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "B",  trans = "sqrt", name = "La quantité \nde chair \n(par 500g)", limits = c(10,45), oob = scales::squish) +#max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa1"]]) +
   coord_sf(xlim = coord_ranges[["BoF"]]$xlim, ylim = coord_ranges[["BoF"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "BoF Meat Count"), 
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_BF_MeatCount',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_BF_MeatCount',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA1A -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "La quantité \nde chair \n(par 500g)", limits = c(10,45), oob = scales::squish) +#max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "B",  trans = "sqrt", name = "La quantité \nde chair \n(par 500g)", limits = c(10,45), oob = scales::squish) +#max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "br", arrow_location = "br", legend_position = legend_positions[["spa1"]]) +
   coord_sf(xlim = coord_ranges[["spa1a"]]$xlim, ylim = coord_ranges[["spa1a"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA1A Meat Count"), 
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA1A_MeatCount',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA1A_MeatCount',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA1B -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "La quantité \nde chair \n(par 500g)", limits = c(10,45), oob = scales::squish) +#max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "B",  trans = "sqrt", name = "La quantité \nde chair \n(par 500g)", limits = c(10,45), oob = scales::squish) +#max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa1b"]]) +
   coord_sf(xlim = coord_ranges[["spa1b"]]$xlim, ylim = coord_ranges[["spa1b"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA1B Meat Count"), 
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA1B_MeatCount',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA1B_MeatCount',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA4 and 5 -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "La quantité \nde chair \n(par 500g)", limits = c(10,45), oob = scales::squish) +#max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "B",  trans = "sqrt", name = "La quantité \nde chair \n(par 500g)", limits = c(10,45), oob = scales::squish) +#max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "br", arrow_location = "br", legend_position = legend_positions[["spa4"]]) +
   coord_sf(xlim = coord_ranges[["spa4"]]$xlim, ylim = coord_ranges[["spa4"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA4 Meat Count"), 
     x = "Longitude", y = "Latitude")
 
 #save  
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA4_MeatCount',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA4_MeatCount',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA3 -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "La quantité \nde chair \n(par 500g)", limits = c(10,45), oob = scales::squish) +#max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "B",  trans = "sqrt", name = "La quantité \nde chair \n(par 500g)", limits = c(10,45), oob = scales::squish) +#max(preds_idw2$prediction))) + 
   p(mgmt_zone = list(mgmt_zone_styles[["spa3"]], mgmt_zone_styles[["Gen"]]), Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa3"]]) +
   coord_sf(xlim = coord_ranges[["spa3"]]$xlim, ylim = coord_ranges[["spa3"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA3 Meat Count"), 
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA3_MeatCount',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA3_MeatCount',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA6 -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "La quantité \nde chair \n(par 500g)", limits = c(10,45), oob = scales::squish) +#max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "B",  trans = "sqrt", name = "La quantité \nde chair \n(par 500g)", limits = c(10,45), oob = scales::squish) +#max(preds_idw2$prediction))) + 
   p(mgmt_zone = list(mgmt_zone_styles[["Gen"]], mgmt_zone_styles[["spa6"]]), Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa6"]]) +
   coord_sf(xlim = coord_ranges[["spa6"]]$xlim, ylim = coord_ranges[["spa6"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA6 Meat Count"), 
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA6_MeatCount',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA6_MeatCount',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 
 # ----CLAPPERS -----
@@ -2168,7 +2170,7 @@ Surv.sf$log_com[which(Surv.sf$log_com==-Inf)] <- log(0.0001)
 
 
 #Overlay a grid over the survey area, as it is required to interpolate (smaller cellsize will take more time to run than larger. both here and during interpolation)
-grid <- st_make_grid(idw_sf, cellsize=2000) %>% st_intersection(idw_sf)
+grid <- st_make_grid(idw_sf, cellsize=1000) %>% st_intersection(idw_sf)
 #Doing the inverse distance weighted interpolation
 preds_idw2 <- gstat::idw(log_com~1,Surv.sf,grid,idp=3)
 
@@ -2186,7 +2188,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_BF_ComClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_BF_ComClappers',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA1A -----
 bathy + #Plot survey data and format figure.
@@ -2198,7 +2200,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA1A_ComClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA1A_ComClappers',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA1B -----
 bathy + #Plot survey data and format figure.
@@ -2210,7 +2212,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA1B_ComClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA1B_ComClappers',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA4 and 5 -----
 bathy + #Plot survey data and format figure.
@@ -2222,7 +2224,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save  
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA4_ComClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA4_ComClappers',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA3 -----
 bathy + #Plot survey data and format figure.
@@ -2234,7 +2236,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA3_ComClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA3_ComClappers',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA6 -----
 bathy + #Plot survey data and format figure.
@@ -2246,7 +2248,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA6_ComClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA6_ComClappers',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 
 # ----PROPORTION OF CLAPPERS -----
@@ -2262,7 +2264,7 @@ Surv.sf$log_prop.dead.com[which(Surv.sf$log_prop.dead.com==-Inf)] <- log(0.0001)
 
 
 #Overlay a grid over the survey area, as it is required to interpolate (smaller cellsize will take more time to run than larger. both here and during interpolation)
-grid <- st_make_grid(idw_sf, cellsize=2000) %>% st_intersection(idw_sf)
+grid <- st_make_grid(idw_sf, cellsize=1000) %>% st_intersection(idw_sf)
 #Doing the inverse distance weighted interpolation
 preds_idw2 <- gstat::idw(log_prop.dead.com~1,Surv.sf,grid,idp=3)
 
@@ -2280,7 +2282,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_BF_PropComClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_BF_PropComClappers',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA1A -----
 bathy + #Plot survey data and format figure.
@@ -2292,7 +2294,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA1A_PropComClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA1A_PropComClappers',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA1B -----
 bathy + #Plot survey data and format figure.
@@ -2304,7 +2306,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA1B_PropComClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA1B_PropComClappers',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA4 and 5 -----
 bathy + #Plot survey data and format figure.
@@ -2316,7 +2318,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save  
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA4_PropComClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA4_PropComClappers',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA3 -----
 bathy + #Plot survey data and format figure.
@@ -2328,7 +2330,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA3_PropComClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA3_PropComClappers',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA6 -----
 bathy + #Plot survey data and format figure.
@@ -2340,7 +2342,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA6_PropComClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA6_PropComClappers',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 
 # ------------------------------RECRUIT SCALLOP - SURVEY DISTRIBUTION PLOTS -------------------------------------------
@@ -2358,7 +2360,7 @@ Surv.sf$log_rec[which(Surv.sf$log_rec==-Inf)] <- log(0.0001)
 
 
 #Overlay a grid over the survey area, as it is required to interpolate (smaller cellsize will take more time to run than larger. both here and during interpolation)
-grid <- st_make_grid(idw_sf, cellsize=2000) %>% st_intersection(idw_sf)
+grid <- st_make_grid(idw_sf, cellsize=1000) %>% st_intersection(idw_sf)
 #Doing the inverse distance weighted interpolation
 preds_idw2 <- gstat::idw(log_rec~1,Surv.sf,grid,idp=3)
 
@@ -2376,7 +2378,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_BF_RecDensity',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_BF_RecDensity',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA1A -----
 bathy + #Plot survey data and format figure.
@@ -2388,7 +2390,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA1A_RecDensity',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA1A_RecDensity',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA1B -----
 bathy + #Plot survey data and format figure.
@@ -2400,7 +2402,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA1B_RecDensity',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA1B_RecDensity',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA4 and 5 -----
 bathy + #Plot survey data and format figure.
@@ -2412,7 +2414,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save  
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA4_RecDensity',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA4_RecDensity',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA3 -----
 bathy + #Plot survey data and format figure.
@@ -2424,7 +2426,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA3_RecDensity',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA3_RecDensity',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA6 -----
 bathy + #Plot survey data and format figure.
@@ -2436,7 +2438,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA6_RecDensity',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA6_RecDensity',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 
 # ----BIOMASS PLOTS -----
@@ -2452,7 +2454,7 @@ Surv.sf$log_rec[which(Surv.sf$log_rec==-Inf)] <- log(0.0001)
 
 
 #Overlay a grid over the survey area, as it is required to interpolate (smaller cellsize will take more time to run than larger. both here and during interpolation)
-grid <- st_make_grid(idw_sf, cellsize=2000) %>% st_intersection(idw_sf)
+grid <- st_make_grid(idw_sf, cellsize=1000) %>% st_intersection(idw_sf)
 #Doing the inverse distance weighted interpolation
 preds_idw2 <- gstat::idw(log_rec~1,Surv.sf,grid,idp=3)
 
@@ -2470,7 +2472,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_BoFAll_RecBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_BoFAll_RecBiomass',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----FULL BAY -----
 bathy + #Plot survey data and format figure.
@@ -2482,7 +2484,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_BF_RecBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_BF_RecBiomass',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA1A -----
 bathy + #Plot survey data and format figure.
@@ -2494,7 +2496,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA1A_RecBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA1A_RecBiomass',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA1B -----
 bathy + #Plot survey data and format figure.
@@ -2506,7 +2508,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA1B_RecBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA1B_RecBiomass',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA4 and 5 -----
 bathy + #Plot survey data and format figure.
@@ -2518,7 +2520,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save  
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA4_RecBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA4_RecBiomass',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA3 -----
 bathy + #Plot survey data and format figure.
@@ -2530,7 +2532,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA3_RecBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA3_RecBiomass',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA6 -----
 bathy + #Plot survey data and format figure.
@@ -2542,7 +2544,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA6_RecBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA6_RecBiomass',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 
 # ----CLAPPERS -----
@@ -2558,7 +2560,7 @@ Surv.sf$log_rec[which(Surv.sf$log_rec==-Inf)] <- log(0.0001)
 
 
 #Overlay a grid over the survey area, as it is required to interpolate (smaller cellsize will take more time to run than larger. both here and during interpolation)
-grid <- st_make_grid(idw_sf, cellsize=2000) %>% st_intersection(idw_sf)
+grid <- st_make_grid(idw_sf, cellsize=1000) %>% st_intersection(idw_sf)
 #Doing the inverse distance weighted interpolation
 preds_idw2 <- gstat::idw(log_rec~1,Surv.sf,grid,idp=3)
 
@@ -2576,7 +2578,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_BF_RecClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_BF_RecClappers',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA1A -----
 bathy + #Plot survey data and format figure.
@@ -2588,7 +2590,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA1A_RecClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA1A_RecClappers',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA1B -----
 bathy + #Plot survey data and format figure.
@@ -2600,7 +2602,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA1B_RecClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA1B_RecClappers',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA4 and 5 -----
 bathy + #Plot survey data and format figure.
@@ -2612,7 +2614,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save  
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA4_RecClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA4_RecClappers',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA3 -----
 bathy + #Plot survey data and format figure.
@@ -2624,7 +2626,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA3_RecClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA3_RecClappers',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA6 -----
 bathy + #Plot survey data and format figure.
@@ -2636,7 +2638,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA6_RecClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA6_RecClappers',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 
 # ----PROPORTION OF CLAPPERS -----
@@ -2652,7 +2654,7 @@ Surv.sf$log_prop.dead.rec[which(Surv.sf$log_prop.dead.rec==-Inf)] <- log(0.0001)
 
 
 #Overlay a grid over the survey area, as it is required to interpolate (smaller cellsize will take more time to run than larger. both here and during interpolation)
-grid <- st_make_grid(idw_sf, cellsize=2000) %>% st_intersection(idw_sf)
+grid <- st_make_grid(idw_sf, cellsize=1000) %>% st_intersection(idw_sf)
 #Doing the inverse distance weighted interpolation
 preds_idw2 <- gstat::idw(log_prop.dead.rec~1,Surv.sf,grid,idp=3)
 
@@ -2670,7 +2672,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_BF_PropRecClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_BF_PropRecClappers',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA1A -----
 bathy + #Plot survey data and format figure.
@@ -2682,7 +2684,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA1A_PropRecClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA1A_PropRecClappers',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA1B -----
 bathy + #Plot survey data and format figure.
@@ -2694,7 +2696,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA1B_PropRecClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA1B_PropRecClappers',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA4 and 5 -----
 bathy + #Plot survey data and format figure.
@@ -2706,7 +2708,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save  
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA4_PropRecClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA4_PropRecClappers',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA3 -----
 bathy + #Plot survey data and format figure.
@@ -2718,7 +2720,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA3_PropRecClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA3_PropRecClappers',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA6 -----
 bathy + #Plot survey data and format figure.
@@ -2730,7 +2732,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA6_PropRecClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA6_PropRecClappers',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 
 # ------------------------------PRE-RECRUIT SCALLOP - SURVEY DISTRIBUTION PLOTS -------------------------------------------
@@ -2748,7 +2750,7 @@ Surv.sf$log_pre[which(Surv.sf$log_pre==-Inf)] <- log(0.0001)
 
 
 #Overlay a grid over the survey area, as it is required to interpolate (smaller cellsize will take more time to run than larger. both here and during interpolation)
-grid <- st_make_grid(idw_sf, cellsize=2000) %>% st_intersection(idw_sf)
+grid <- st_make_grid(idw_sf, cellsize=1000) %>% st_intersection(idw_sf)
 #Doing the inverse distance weighted interpolation
 preds_idw2 <- gstat::idw(log_pre~1,Surv.sf,grid,idp=3)
 
@@ -2766,7 +2768,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_BoFAll_PreDensity',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_BoFAll_PreDensity',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----FULL BAY -----
 bathy + #Plot survey data and format figure.
@@ -2778,7 +2780,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_BF_PreDensity',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_BF_PreDensity',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA1A -----
 bathy + #Plot survey data and format figure.
@@ -2790,7 +2792,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA1A_PreDensity',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA1A_PreDensity',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA1B -----
 bathy + #Plot survey data and format figure.
@@ -2802,7 +2804,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA1B_PreDensity',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA1B_PreDensity',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA4 and 5 -----
 bathy + #Plot survey data and format figure.
@@ -2814,7 +2816,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save  
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA4_PreDensity',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA4_PreDensity',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA3 -----
 bathy + #Plot survey data and format figure.
@@ -2826,7 +2828,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA3_PreDensity',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA3_PreDensity',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA6 -----
 bathy + #Plot survey data and format figure.
@@ -2838,7 +2840,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA6_PreDensity',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA6_PreDensity',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 
 # ----BIOMASS PLOTS -----
@@ -2854,7 +2856,7 @@ Surv.sf$log_pre[which(Surv.sf$log_pre==-Inf)] <- log(0.0001)
 
 
 #Overlay a grid over the survey area, as it is required to interpolate (smaller cellsize will take more time to run than larger. both here and during interpolation)
-grid <- st_make_grid(idw_sf, cellsize=2000) %>% st_intersection(idw_sf)
+grid <- st_make_grid(idw_sf, cellsize=1000) %>% st_intersection(idw_sf)
 #Doing the inverse distance weighted interpolation
 preds_idw2 <- gstat::idw(log_pre~1,Surv.sf,grid,idp=3)
 
@@ -2872,7 +2874,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_BF_PreBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_BF_PreBiomass',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA1A -----
 bathy + #Plot survey data and format figure.
@@ -2884,7 +2886,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA1A_PreBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA1A_PreBiomass',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA1B -----
 bathy + #Plot survey data and format figure.
@@ -2896,7 +2898,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA1B_PreBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA1B_PreBiomass',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA4 and 5 -----
 bathy + #Plot survey data and format figure.
@@ -2908,7 +2910,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save  
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA4_PreBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA4_PreBiomass',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA3 -----
 bathy + #Plot survey data and format figure.
@@ -2920,7 +2922,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA3_PreBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA3_PreBiomass',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA6 -----
 bathy + #Plot survey data and format figure.
@@ -2932,7 +2934,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA6_PreBiomass',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA6_PreBiomass',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 
 # ----CLAPPERS -----
@@ -2948,7 +2950,7 @@ Surv.sf$log_pre[which(Surv.sf$log_pre==-Inf)] <- log(0.0001)
 
 
 #Overlay a grid over the survey area, as it is required to interpolate (smaller cellsize will take more time to run than larger. both here and during interpolation)
-grid <- st_make_grid(idw_sf, cellsize=2000) %>% st_intersection(idw_sf)
+grid <- st_make_grid(idw_sf, cellsize=1000) %>% st_intersection(idw_sf)
 #Doing the inverse distance weighted interpolation
 preds_idw2 <- gstat::idw(log_pre~1,Surv.sf,grid,idp=3)
 
@@ -2966,7 +2968,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_BF_PreClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_BF_PreClappers',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA1A -----
 bathy + #Plot survey data and format figure.
@@ -2978,7 +2980,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA1A_PreClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA1A_PreClappers',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA1B -----
 bathy + #Plot survey data and format figure.
@@ -2990,7 +2992,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA1B_PreClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA1B_PreClappers',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA4 and 5 -----
 bathy + #Plot survey data and format figure.
@@ -3002,7 +3004,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save  
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA4_PreClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA4_PreClappers',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA3 -----
 bathy + #Plot survey data and format figure.
@@ -3014,7 +3016,7 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA3_PreClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA3_PreClappers',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ----SPA6 -----
 bathy + #Plot survey data and format figure.
@@ -3026,4 +3028,8 @@ bathy + #Plot survey data and format figure.
     x = "Longitude", y = "Latitude")
 
 #save
-ggsave(filename = paste0(saveplot.dir.fr,'FR_ContPlot_SPA6_PreClappers',survey.year,'.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA6_PreClappers',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+
+
+
+##### |------------------------------------- END OF SCRIPT -----------------------------------------------| #####
