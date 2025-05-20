@@ -157,7 +157,7 @@ wgt.2024to2025$prop.chage <- (wgt.2024to2025$wgt.g.labr.yrtplust1 - wgt.2024to20
 wgt.2024to2025$ratio.prop.change <- wgt.2024to2025$prop.chage+1
 wgt.2024to2025
 
-write.csv(wgt.2024to2025, paste0("Y:/Inshore/SFA29/",assessmentyear,"/Assessment/Data/expected.prop.change.by.growthonly.csv"))
+write.csv(wgt.2024to2025, paste0("Y:/Inshore/SFA29/",assessmentyear,"/Assessment/Data/SurveyIndices/expected.prop.change.by.growthonly.csv"))
 
 
 ## Bump stratified numbers by tow to area of medium and high area 
@@ -489,6 +489,8 @@ ggplot(data = exploitation.atod, aes(x = year, y = mu)) +
 ggsave(filename = "Y:/Inshore/SFA29/2025/Assessment/Figures/relative.exploitation.survey.png" , plot = last_plot(), scale = 2.5, width =8, height = 7, dpi = 300, units = "cm", limitsize = TRUE)
 
 
+
+write.csv(exploitation.atod, paste0("Y:/Inshore/SFA29/",assessmentyear,"/Assessment/Data/SurveyIndices/expected.rel.exploitation.csv"))
 
 
 
