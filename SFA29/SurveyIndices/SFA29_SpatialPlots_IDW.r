@@ -283,7 +283,7 @@ st_crs(Surv.sf) <- 4326
 Surv.sf<-st_transform(Surv.sf,crs = 32620)
 
 hull <- concaveman(Surv.sf)
-idw_sf <- st_buffer(hull, dist = 5000)
+idw_sf <- st_buffer(hull, dist = 2000)
 
 # Ensure correct CRS
 st_crs(idw_sf) <- 32620
@@ -313,13 +313,13 @@ p <- function(mgmt_zone, surv_sf, land) {
     
     # Set theme for the plot
     theme(plot.title = element_text(size = 14, hjust = 0.5), # Plot title size and position
-          axis.title = element_text(size = 12),
-          axis.text = element_text(size = 10),
-          legend.title = element_text(size = 10, face = "bold"), 
-          legend.text = element_text(size = 8),
+          axis.title = element_text(size = 14),
+          axis.text = element_text(size = 12),
+          legend.title = element_text(size = 14, face = "bold"), 
+          legend.text = element_text(size = 12),
           legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.7)), # Legend background color and transparency
           legend.box.margin = margin(6, 8, 6, 8),
-          legend.position = c(.90,.77), # Fixed legend position
+          legend.position = c(.85,.77), # Fixed legend position
           legend.justification = c(0.5, 0.5)), # Keep legend within bounds, 
     
     # Add scale bar with selectable location
@@ -351,7 +351,7 @@ Surv.sf$log_com <- log(Surv.sf$com) #commercial size
 Surv.sf$log_com[which(Surv.sf$log_com==-Inf)] <- log(0.0001)
 
 #Overlay a grid over the survey area, as it is required to interpolate (smaller cellsize will take more time to run than larger. both here and during interpolation)
-grid <- st_make_grid(idw_sf, cellsize=2000) %>% st_intersection(idw_sf)
+grid <- st_make_grid(idw_sf, cellsize=500) %>% st_intersection(idw_sf)
 #Doing the inverse distance weighted interpolation
 preds_idw2 <- gstat::idw(log_com~1,Surv.sf,grid,idp=3)
 
@@ -362,7 +362,7 @@ summary(Surv.sf$com)
 ##### DENSITY (ENGLISH) ----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nAbundance \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nabundance \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone, Surv.sf, Land) +
   coord_sf(xlim = c(-66.50,-65.45), ylim = c(43.10,43.80), expand = FALSE)+
   labs(#title = paste(survey.year, "", "SFA29W Density (>= 80mm)"), 
@@ -396,7 +396,7 @@ Surv.sf$log_com[which(Surv.sf$log_com==-Inf)] <- log(0.0001)
 
 
 #Overlay a grid over the survey area, as it is required to interpolate (smaller cellsize will take more time to run than larger. both here and during interpolation)
-grid <- st_make_grid(idw_sf, cellsize=2000) %>% st_intersection(idw_sf)
+grid <- st_make_grid(idw_sf, cellsize=500) %>% st_intersection(idw_sf)
 #Doing the inverse distance weighted interpolation
 preds_idw2 <- gstat::idw(log_com~1,Surv.sf,grid,idp=3)
 
@@ -407,7 +407,7 @@ summary(Surv.sf$com)
 ##### BIOMASS (ENGLISH) ----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nBiomass \n(kg/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nbiomass \n(kg/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone, Surv.sf, Land) +
   coord_sf(xlim = c(-66.50,-65.45), ylim = c(43.10,43.80), expand = FALSE)+
   labs(#title = paste(survey.year, "", "SFA29W Biomass (>= 80mm)"), 
@@ -441,7 +441,7 @@ Surv.sf$log_condition <- log(Surv.sf$Condition)
 Surv.sf$log_condition[which(Surv.sf$log_condition==-Inf)] <- log(0.0001)
 
 #Overlay a grid over the survey area, as it is required to interpolate (smaller cellsize will take more time to run than larger. both here and during interpolation)
-grid <- st_make_grid(idw_sf, cellsize=2000) %>% st_intersection(idw_sf)
+grid <- st_make_grid(idw_sf, cellsize=500) %>% st_intersection(idw_sf)
 #Doing the inverse distance weighted interpolation
 preds_idw2 <- gstat::idw(log_condition~1,Surv.sf,grid,idp=3)
 
@@ -452,7 +452,7 @@ summary(Surv.sf$Condition)
 ##### CONDITION (ENGLISH) ----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Condition (g)", limits = c(6,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "G", direction = -1,  trans = "sqrt", name = "Condition (g)", limits = c(6,max(preds_idw2$prediction))) + 
   p(mgmt_zone, Surv.sf, Land) +
   coord_sf(xlim = c(-66.50,-65.45), ylim = c(43.10,43.80), expand = FALSE)+
   labs(#title = paste(survey.year, "", "SFA29W Condition"), 
@@ -464,7 +464,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_Condition',survey.year,'.p
 ##### CONDITION (FRENCH) -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Condition (g)", limits = c(6,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "G", direction = -1,  trans = "sqrt", name = "Condition (g)", limits = c(6,max(preds_idw2$prediction))) + 
   p(mgmt_zone, Surv.sf, Land) +
   coord_sf(xlim = c(-66.50,-65.45), ylim = c(43.10,43.80), expand = FALSE)+
   labs(#title = paste(survey.year, "", "SFA29W Condition"), 
@@ -485,7 +485,7 @@ Surv.sf$log_mtct <- log(Surv.sf$meat.count)
 Surv.sf$log_mtct[which(Surv.sf$log_mtct==-Inf)] <- log(0.0001)
 
 #Overlay a grid over the survey area, as it is required to interpolate (smaller cellsize will take more time to run than larger. both here and during interpolation)
-grid <- st_make_grid(idw_sf, cellsize=2000) %>% st_intersection(idw_sf)
+grid <- st_make_grid(idw_sf, cellsize=500) %>% st_intersection(idw_sf)
 #Doing the inverse distance weighted interpolation
 preds_idw2 <- gstat::idw(log_mtct~1,Surv.sf,grid,idp=3)
 
@@ -496,7 +496,7 @@ summary(Surv.sf$meat.count)
 ##### MEAT COUNT (ENGLISH) ----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Meat Count \n(per 500g)", limits = c(10,35), oob = scales::squish) + 
+  scale_fill_viridis_c(option = "B",  trans = "sqrt", name = "Meat count \n(per 500g)", limits = c(10,35), oob = scales::squish) + 
   p(mgmt_zone, Surv.sf, Land) +
   coord_sf(xlim = c(-66.50,-65.45), ylim = c(43.10,43.80), expand = FALSE)+
   labs(#title = paste(survey.year, "", "SFA29W Meat Count"), 
@@ -508,7 +508,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_MeatCount',survey.year,'.p
 ##### MEAT COUNT (FRENCH) -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "La quantité \nde chair \n(par 500g)", limits = c(10,35), oob = scales::squish) + 
+  scale_fill_viridis_c(option = "B",  trans = "sqrt", name = "La quantité \nde chair \n(par 500g)", limits = c(10,35), oob = scales::squish) + 
   p(mgmt_zone, Surv.sf, Land) +
   coord_sf(xlim = c(-66.50,-65.45), ylim = c(43.10,43.80), expand = FALSE)+
   labs(#title = paste(survey.year, "", "SFA29W Meat Count"), 
@@ -529,7 +529,7 @@ Surv.sf$log_com <- log(Surv.sf$com)
 Surv.sf$log_com[which(Surv.sf$log_com==-Inf)] <- log(0.0001)
 
 #Overlay a grid over the survey area, as it is required to interpolate (smaller cellsize will take more time to run than larger. both here and during interpolation)
-grid <- st_make_grid(idw_sf, cellsize=2000) %>% st_intersection(idw_sf)
+grid <- st_make_grid(idw_sf, cellsize=500) %>% st_intersection(idw_sf)
 #Doing the inverse distance weighted interpolation
 preds_idw2 <- gstat::idw(log_com~1,Surv.sf,grid,idp=3)
 
@@ -540,7 +540,7 @@ summary(Surv.sf$com)
 ##### CLAPPERS (ENGLISH) ----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nClappers \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nclappers \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone, Surv.sf, Land) +
   coord_sf(xlim = c(-66.50,-65.45), ylim = c(43.10,43.80), expand = FALSE)+
   labs(#title = paste(survey.year, "", "SFA29W Clappers (>= 80mm)"), 
@@ -563,27 +563,27 @@ ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SFA29_ComClappers',survey.yea
 
 # ---- PROPORTION OF CLAPPERS PLOTS -----
 #IDW for whole BoF. Specific changes for each area will be done during plotting
-Surv.sf<-st_as_sf(subset(ScallopSurv.dead,year==survey.year),coords=c("lon","lat"))
+Surv.sf<-st_as_sf(subset(prop.clappers,year==survey.year),coords=c("lon","lat"))
 st_crs(Surv.sf) <- 4326
 Surv.sf<-st_transform(Surv.sf,crs = 32620)
 
 #log transforming for better idw() display. Transformed back later for reader comprehension
-Surv.sf$log_com <- log(Surv.sf$com)
+Surv.sf$log_com <- log(Surv.sf$prop.dead.com)
 Surv.sf$log_com[which(Surv.sf$log_com==-Inf)] <- log(0.0001)
 
 #Overlay a grid over the survey area, as it is required to interpolate (smaller cellsize will take more time to run than larger. both here and during interpolation)
-grid <- st_make_grid(idw_sf, cellsize=2000) %>% st_intersection(idw_sf)
+grid <- st_make_grid(idw_sf, cellsize=500) %>% st_intersection(idw_sf)
 #Doing the inverse distance weighted interpolation
 preds_idw2 <- gstat::idw(log_com~1,Surv.sf,grid,idp=3)
 
 preds_idw2$prediction <- exp(preds_idw2$var1.pred)
 summary(preds_idw2$prediction)
-summary(Surv.sf$com)
+summary(Surv.sf$prop.dead.com)
 
 ##### PROPORTION OF CLAPPERS (ENGLISH) ----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nClappers \n(proportion)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nclappers \n(proportion)", limits = c(0,1)) + 
   p(mgmt_zone, Surv.sf, Land) +
   coord_sf(xlim = c(-66.50,-65.45), ylim = c(43.10,43.80), expand = FALSE)+
   labs(#title = paste(survey.year, "", "SFA29W Proportion of Clappers (>= 80mm)"), 
@@ -595,7 +595,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_PropComClappers',survey.ye
 ##### PROPORTION OF CLAPPERS (FRENCH) -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Claquettes \ncommerciale \n(proportion)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Claquettes \ncommerciale \n(proportion)", limits = c(0,1)) + 
   p(mgmt_zone, Surv.sf, Land) +
   coord_sf(xlim = c(-66.50,-65.45), ylim = c(43.10,43.80), expand = FALSE)+
   labs(#title = paste(survey.year, "", "SFA29W Proportion of Clappers (>= 80mm)"), 
@@ -618,7 +618,7 @@ Surv.sf$log_rec <- log(Surv.sf$rec) #recruit size
 Surv.sf$log_rec[which(Surv.sf$log_rec==-Inf)] <- log(0.0001)
 
 #Overlay a grid over the survey area, as it is required to interpolate (smaller cellsize will take more time to run than larger. both here and during interpolation)
-grid <- st_make_grid(idw_sf, cellsize=2000) %>% st_intersection(idw_sf)
+grid <- st_make_grid(idw_sf, cellsize=500) %>% st_intersection(idw_sf)
 #Doing the inverse distance weighted interpolation
 preds_idw2 <- gstat::idw(log_rec~1,Surv.sf,grid,idp=3)
 
@@ -629,7 +629,7 @@ summary(Surv.sf$rec)
 ##### DENSITY (ENGLISH) ----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nAbundance \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nabundance \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone, Surv.sf, Land) +
   coord_sf(xlim = c(-66.50,-65.45), ylim = c(43.10,43.80), expand = FALSE)+
   labs(#title = paste(survey.year, "", "SFA29W Density (65-79mm)"), 
@@ -662,7 +662,7 @@ Surv.sf$log_rec <- log(Surv.sf$rec) #recruit size
 Surv.sf$log_rec[which(Surv.sf$log_rec==-Inf)] <- log(0.0001)
 
 #Overlay a grid over the survey area, as it is required to interpolate (smaller cellsize will take more time to run than larger. both here and during interpolation)
-grid <- st_make_grid(idw_sf, cellsize=2000) %>% st_intersection(idw_sf)
+grid <- st_make_grid(idw_sf, cellsize=500) %>% st_intersection(idw_sf)
 #Doing the inverse distance weighted interpolation
 preds_idw2 <- gstat::idw(log_rec~1,Surv.sf,grid,idp=3)
 
@@ -673,7 +673,7 @@ summary(Surv.sf$rec)
 ##### BIOMASS (ENGLISH) ----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nBiomass \n(kg/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nbiomass \n(kg/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone, Surv.sf, Land) +
   coord_sf(xlim = c(-66.50,-65.45), ylim = c(43.10,43.80), expand = FALSE)+
   labs(#title = paste(survey.year, "", "SFA29W Biomass (65-79mm)"), 
@@ -706,7 +706,7 @@ Surv.sf$log_rec <- log(Surv.sf$rec)
 Surv.sf$log_rec[which(Surv.sf$log_rec==-Inf)] <- log(0.0001)
 
 #Overlay a grid over the survey area, as it is required to interpolate (smaller cellsize will take more time to run than larger. both here and during interpolation)
-grid <- st_make_grid(idw_sf, cellsize=2000) %>% st_intersection(idw_sf)
+grid <- st_make_grid(idw_sf, cellsize=500) %>% st_intersection(idw_sf)
 #Doing the inverse distance weighted interpolation
 preds_idw2 <- gstat::idw(log_rec~1,Surv.sf,grid,idp=3)
 
@@ -717,7 +717,7 @@ summary(Surv.sf$rec)
 ##### CLAPPERS (ENGLISH) ----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nClappers \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nclappers \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone, Surv.sf, Land) +
   coord_sf(xlim = c(-66.50,-65.45), ylim = c(43.10,43.80), expand = FALSE)+
   labs(#title = paste(survey.year, "", "SFA29W Clappers (65-79mm)"), 
@@ -750,7 +750,7 @@ Surv.sf$log_prop.dead.rec <- log(Surv.sf$prop.dead.rec)
 Surv.sf$log_prop.dead.rec[which(Surv.sf$log_prop.dead.rec==-Inf)] <- log(0.0001)
 
 #Overlay a grid over the survey area, as it is required to interpolate (smaller cellsize will take more time to run than larger. both here and during interpolation)
-grid <- st_make_grid(idw_sf, cellsize=2000) %>% st_intersection(idw_sf)
+grid <- st_make_grid(idw_sf, cellsize=500) %>% st_intersection(idw_sf)
 #Doing the inverse distance weighted interpolation
 preds_idw2 <- gstat::idw(log_prop.dead.rec~1,Surv.sf,grid,idp=3)
 
@@ -761,7 +761,7 @@ summary(Surv.sf$prop.dead.rec)
 ##### PROPORTION OF CLAPPERS (ENGLISH) ----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nClappers \n(proportion)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nclappers \n(proportion)", limits = c(0,1)) + 
   p(mgmt_zone, Surv.sf, Land) +
   coord_sf(xlim = c(-66.50,-65.45), ylim = c(43.10,43.80), expand = FALSE)+
   labs(#title = paste(survey.year, "", "SFA29W Proportion of Clappers (65-79mm)"), 
@@ -773,7 +773,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_PropRecClappers',survey.ye
 ##### PROPORTION OF CLAPPERS (FRENCH) -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Claquettes \ndes recrues \n(proportion)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Claquettes \ndes recrues \n(proportion)", limits = c(0,1)) + 
   p(mgmt_zone, Surv.sf, Land) +
   coord_sf(xlim = c(-66.50,-65.45), ylim = c(43.10,43.80), expand = FALSE)+
   labs(#title = paste(survey.year, "", "SFA29W Proportion of Clappers (65-79mm)"), 
@@ -796,7 +796,7 @@ Surv.sf$log_pre <- log(Surv.sf$pre) #pre-recruit size
 Surv.sf$log_pre[which(Surv.sf$log_pre==-Inf)] <- log(0.0001)
 
 #Overlay a grid over the survey area, as it is required to interpolate (smaller cellsize will take more time to run than larger. both here and during interpolation)
-grid <- st_make_grid(idw_sf, cellsize=2000) %>% st_intersection(idw_sf)
+grid <- st_make_grid(idw_sf, cellsize=500) %>% st_intersection(idw_sf)
 #Doing the inverse distance weighted interpolation
 preds_idw2 <- gstat::idw(log_pre~1,Surv.sf,grid,idp=3)
 
@@ -807,7 +807,7 @@ summary(Surv.sf$pre)
 ##### DENSITY (ENGLISH) ----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Pre-recruit \nAbundance \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Pre-recruit \nabundance \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone, Surv.sf, Land) +
   coord_sf(xlim = c(-66.50,-65.45), ylim = c(43.10,43.80), expand = FALSE)+
   labs(#title = paste(survey.year, "", "SFA29W Density (65-79mm)"), 
@@ -840,7 +840,7 @@ Surv.sf$log_pre <- log(Surv.sf$pre) #pre-recruit size
 Surv.sf$log_pre[which(Surv.sf$log_pre==-Inf)] <- log(0.0001)
 
 #Overlay a grid over the survey area, as it is required to interpolate (smaller cellsize will take more time to run than larger. both here and during interpolation)
-grid <- st_make_grid(idw_sf, cellsize=2000) %>% st_intersection(idw_sf)
+grid <- st_make_grid(idw_sf, cellsize=500) %>% st_intersection(idw_sf)
 #Doing the inverse distance weighted interpolation
 preds_idw2 <- gstat::idw(log_pre~1,Surv.sf,grid,idp=3)
 
@@ -851,7 +851,7 @@ summary(Surv.sf$pre)
 ##### BIOMASS (ENGLISH) ----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Pre-recruit \nBiomass \n(kg/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Pre-recruit \nbiomass \n(kg/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone, Surv.sf, Land) +
   coord_sf(xlim = c(-66.50,-65.45), ylim = c(43.10,43.80), expand = FALSE)+
   labs(#title = paste(survey.year, "", "SFA29W Biomass (<65mm)"), 
@@ -884,7 +884,7 @@ Surv.sf$log_pre <- log(Surv.sf$pre)
 Surv.sf$log_pre[which(Surv.sf$log_pre==-Inf)] <- log(0.0001)
 
 #Overlay a grid over the survey area, as it is required to interpolate (smaller cellsize will take more time to run than larger. both here and during interpolation)
-grid <- st_make_grid(idw_sf, cellsize=2000) %>% st_intersection(idw_sf)
+grid <- st_make_grid(idw_sf, cellsize=500) %>% st_intersection(idw_sf)
 #Doing the inverse distance weighted interpolation
 preds_idw2 <- gstat::idw(log_pre~1,Surv.sf,grid,idp=3)
 
@@ -895,7 +895,7 @@ summary(Surv.sf$pre)
 ##### CLAPPERS (ENGLISH) ----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Pre-recruit \nClappers \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Pre-recruit \nclappers \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone, Surv.sf, Land) +
   coord_sf(xlim = c(-66.50,-65.45), ylim = c(43.10,43.80), expand = FALSE)+
   labs(#title = paste(survey.year, "", "SFA29W Clappers (<65mm)"), 

@@ -181,7 +181,7 @@ save(list = paste0("Spa4.", max(yrs)), file=paste0(direct,"/",assessmentyear, "/
 # If you are happy with the run you did most recently you can just load it rather than re-running the model.
 #load(file = paste0(direct,"/",assessmentyear,"/Assessment/Data/Model/SPA",area,"/SPA4_Model_",max(yrs),".RData"))
 #This is just to save you from wasting time changing the names of a bunch of lines below...
-#mod.res <- Spa4.2023
+#mod.res <- Spa4.2024
 mod.res <- Spa4.model
 
 #This gives a print to screen of model results and allows you to save it
@@ -402,7 +402,19 @@ png(paste0(direct,"/",assessmentyear,"/Assessment/Figures/Model/SPA",area,"/Pred
 eval.predict(Combined.runs.actual, Year=str.yr.pe,pred.lim=0.2)
 dev.off()
 
-# ---- Decision Table ----
+
+
+# --- One Year Projection Boxplot for Plot ----
+# Create data object (posterior distribution) associated with one year projection with interm TAC removals -- i.e. 1 year project boxplot data for commercial biomass timeseries figure in FSAR 
+# Note B.next is next year predicted biomass having grown up scallop as per g.parm and gr.parm and using mortality - default in function is m.avg = 5 (last 5 years)
+pred.1yr.boxplot <- predict(mod.res, Catch=catch.next.year, g.parm=mod.res$data$g[mod.res$data$NY],gr.parm=mod.res$data$gR[mod.res$data$NY])
+pred.1yr.boxplot$B.next
+median((pred.1yr.boxplot$B.next))
+write.csv(pred.1yr.boxplot$B.next, paste0(direct,"/",assessmentyear,"/Assessment/Data/Model/SPA",area,"/boxplot.data.1y.predict.catch.of.",catch.next.year,".in.",max(yrs)+1,"_",area,".csv"),row.names = F)
+
+
+
+# --- Decision Tables ----
 #Finally here we have the decision table.  This plots the decision table for all catch rates between 0 and 500 increments of 10 tonnes of catch (seq(0,500,10)).
 decision <- predict(mod.res, Catch=c(seq(100,300,20)), g.parm=mod.res$data$g[mod.res$data$NY],gr.parm=mod.res$data$gR[mod.res$data$NY])
 decision.table <- SSModel_predict_summary_median(decision, LRP=LRP, USR=USR, RRP=0.15)

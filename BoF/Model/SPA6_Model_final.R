@@ -410,7 +410,20 @@ png(paste0(direct,"/",assessmentyear,"/Assessment/Figures/Model/SPA",area,"/Pred
 eval.predict(Combined.runs.actual, Year=str.yr.pe, pred.lim=0.2)
 dev.off()
 
-# DECISION TABLE ---- 
+
+
+
+# --- One Year Projection Boxplot for Plot ----
+# Create data object (posterior distribution) associated with one year projection with interm TAC removals -- i.e. 1 year project boxplot data for commercial biomass timeseries figure in FSAR 
+# Note B.next is next year predicted biomass having grown up scallop as per g.parm and gr.parm and using mortality - default in function is m.avg = 5 (last 5 years)
+pred.1yr.boxplot <- predict(mod.res, Catch=catch.next.year, g.parm=mod.res$data$g[mod.res$data$NY],gr.parm=mod.res$data$gR[mod.res$data$NY])
+pred.1yr.boxplot$B.next
+median((pred.1yr.boxplot$B.next))
+write.csv(pred.1yr.boxplot$B.next, paste0(direct,"/",assessmentyear,"/Assessment/Data/Model/SPA",area,"/boxplot.data.1y.predict.catch.of.",catch.next.year,".in.",max(yrs)+1,"_",area,".csv"),row.names = F)
+
+
+
+# --- Decision Tables ----
 #generally for documentation don't exceed e=0.18 TO 0.2 on table (NOTE: formal RR was decided for SPA6 in 2022 during AC meeting and first implemented in 2023, rest of SPA RR is 0.15)
 #Finally here we have the decision table.  This plots the decision table for all catch rates between 0 and 500 increments of 10 tonnes of catch (seq(0,500,10)).
 

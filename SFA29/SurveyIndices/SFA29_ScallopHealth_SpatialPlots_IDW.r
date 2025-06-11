@@ -28,6 +28,7 @@ require(maptools)
 require(forcats)
 library(ROracle)
 require(concaveman)
+require(ggspatial)
 #library(RCurl)
 
 # Define: 
@@ -43,6 +44,7 @@ pwd <- pw.englishg
 survey.year <- 2024  #removed maxyear in script and changed to survey year
 assessmentyear <- 2025 #year in which you are providing advice for- determines where to save files to
 path.directory <- "Y:/Inshore/SFA29/"
+cruise <- "'SFA292024'"
 
 #set up directory to save plot
 saveplot.dir <- paste0(path.directory,assessmentyear,"/Assessment/Figures/test/") #remove test folder when done
@@ -109,7 +111,7 @@ quer4 <- paste(
 sampled.dat <- dbGetQuery(chan, quer4)
 sampled.dat <- sampled.dat[,1:17]
 
-# -------------------------------Format for myco plots-----------------------------------------
+# -------------------------------Format for Myco plots-----------------------------------------
 
 sampled.dat <- sampled.dat %>%
   mutate(year = year(TOW_DATE)) %>%
@@ -166,7 +168,7 @@ myco.datw <- merge(myco.datw, tow.dat, by = "ID", all.x = TRUE) %>%
 # }
 
 
-# -------------------------------Format for Grey meats plots-----------------------------------------
+# -------------------------------Format for Discoloured scallops plots-----------------------------------------
 
 table(sampled.dat$MEAT_COLOUR)
 
@@ -197,6 +199,43 @@ greymeat.datw <- merge(greymeat.datw, tow.dat, by = "ID", all.x = TRUE) %>%
 # write.csv(greymeat.datw %>% filter(year == i), paste0("Y:/Inshore/SFA29/",assessmentyear,"/Assessment/Data/SurveyIndices/SFA29towsdd_MYCOprop",i,".csv"),row.names = FALSE)
 # }
 
+# ----------- Making a custom boundary for IDW analysis based off survey tows ---------------
+
+#create shapefile out of survey tow locations. It will get re-written during IDW, but just a placeholder for function below.
+#Db Query:
+quer1 <- paste(
+  "SELECT *                                     ",
+  "FROM scallsur.SCLIVERES                      ",                                                                                                                                  
+  "WHERE strata_id IN (41, 42, 43, 44, 45)      ",								  
+  "AND CRUISE =",cruise,
+  sep=""
+)
+
+#ROracle: 
+ScallopSurv <- dbGetQuery(chan, quer1)
+
+ScallopSurv <- ScallopSurv %>%
+  mutate(year = as.numeric(substr(ScallopSurv$CRUISE,6,9))) %>% 
+  #mutate(year = year(TOW_DATE)) %>%  #Formats TOW_DATE as date - works with SFA29
+  mutate(lat = convert.dd.dddd(START_LAT)) %>% #Convert to DD
+  mutate(lon = convert.dd.dddd(START_LONG)) %>% #Convert to DD 
+  dplyr::rename(tow = TOW_NO) %>%  #Rename column TOW_NO to tow - required for one of the mapping functions.
+  mutate(tot = dplyr::select(., BIN_ID_0:BIN_ID_195) %>% rowSums(na.rm = TRUE)/4267.2) %>%  #add tot for bin 0 to bin 195 and standardize to #/m^2
+  unite(ID, c("CRUISE", "tow"), sep = ".", remove = FALSE) %>%  #Creates ID column with cruise and tow number
+  mutate(com = dplyr::select(., BIN_ID_100:BIN_ID_195) %>% rowSums(na.rm = TRUE) %>% round(0)) %>% # Commercial scallop - >=100mm; BINS 100 to 195
+  mutate(rec = dplyr::select(., BIN_ID_90:BIN_ID_95) %>% rowSums(na.rm = TRUE) %>% round(0)) %>% # Recruit scallop - 90-99; BINS 90 to 95
+  mutate(pre = dplyr::select(., BIN_ID_0:BIN_ID_85) %>% rowSums(na.rm = TRUE) %>% round(0))# Pre-recruit scallop - 0-85 mm; BINS 0 to 85
+
+Surv.sf<-st_as_sf(subset(ScallopSurv,year==survey.year),coords=c("lon","lat"))
+st_crs(Surv.sf) <- 4326
+Surv.sf<-st_transform(Surv.sf,crs = 32620)
+
+hull <- concaveman(Surv.sf)
+idw_sf <- st_buffer(hull, dist = 2000)
+
+# Ensure correct CRS
+st_crs(idw_sf) <- 32620
+
 # -------------- Set consistent plot objects/themes ------------------------------
 
 #Set standard layers: bathymetry on bottom layer, and land, survey tows, etc above IDW layer
@@ -222,13 +261,13 @@ p <- function(mgmt_zone, surv_sf, land) {
     
     # Set theme for the plot
     theme(plot.title = element_text(size = 14, hjust = 0.5), # Plot title size and position
-          axis.title = element_text(size = 12),
-          axis.text = element_text(size = 10),
-          legend.title = element_text(size = 10, face = "bold"), 
-          legend.text = element_text(size = 8),
+          axis.title = element_text(size = 14),
+          axis.text = element_text(size = 12),
+          legend.title = element_text(size = 14, face = "bold"), 
+          legend.text = element_text(size = 12),
           legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.7)), # Legend background color and transparency
           legend.box.margin = margin(6, 8, 6, 8),
-          legend.position = c(.90,.77), # Fixed legend position
+          legend.position = c(.85,.77), # Fixed legend position
           legend.justification = c(0.5, 0.5)), # Keep legend within bounds, 
     
     # Add scale bar with selectable location
@@ -264,7 +303,7 @@ Surv.sf$log_prop[which(Surv.sf$log_prop==-Inf)] <- log(0.0001)
 
 
 #Overlay a grid over the survey area, as it is required to interpolate (smaller cellsize will take more time to run than larger. both here and during interpolation)
-grid <- st_make_grid(idw_sf, cellsize=2000) %>% st_intersection(idw_sf)
+grid <- st_make_grid(idw_sf, cellsize=500) %>% st_intersection(idw_sf)
 #Doing the inverse distance weighted interpolation
 preds_idw2 <- gstat::idw(log_prop~1,Surv.sf,grid,idp=3)
 
@@ -275,7 +314,7 @@ summary(Surv.sf$prop)
 ## ENGLISH ####
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Infected \n(proportion)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Myco \n(proportion)", limits = c(0,1)) + 
   p(mgmt_zone, Surv.sf, Land) +
   coord_sf(xlim = c(-66.50,-65.45), ylim = c(43.10,43.80), expand = FALSE)+
   labs(#title = paste(survey.year, "", "SFA29W Myco Proportion"), 
@@ -287,7 +326,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_MycoProportion',survey.yea
 ## FRENCH ####
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Infectée \n(proportion)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Myco \n(proportion)", limits = c(0,1)) + 
   p(mgmt_zone, Surv.sf, Land) +
   coord_sf(xlim = c(-66.50,-65.45), ylim = c(43.10,43.80), expand = FALSE)+
   labs(#title = paste(survey.year, "", "SFA29W Myco Proportion"), 
@@ -297,7 +336,7 @@ bathy + #Plot survey data and format figure.
 ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SFA29_MycoProportion',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 
-# Infected per Tow  ------------------------------------------------------
+# Myco per Tow  ------------------------------------------------------
 
 #IDW for whole BoF. Specific changes for each area will be done during plotting
 Surv.sf<-st_as_sf(subset(myco.datw,year==survey.year),coords=c("lon","lat"))
@@ -310,7 +349,7 @@ Surv.sf$log_Y[which(Surv.sf$log_Y==-Inf)] <- log(0.0001)
 
 
 #Overlay a grid over the survey area, as it is required to interpolate (smaller cellsize will take more time to run than larger. both here and during interpolation)
-grid <- st_make_grid(idw_sf, cellsize=2000) %>% st_intersection(idw_sf)
+grid <- st_make_grid(idw_sf, cellsize=500) %>% st_intersection(idw_sf)
 #Doing the inverse distance weighted interpolation
 preds_idw2 <- gstat::idw(log_Y~1,Surv.sf,grid,idp=3)
 
@@ -321,7 +360,7 @@ summary(Surv.sf$Y)
 ## ENGLISH ####
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Infected \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Myco \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone, Surv.sf, Land) +
   coord_sf(xlim = c(-66.50,-65.45), ylim = c(43.10,43.80), expand = FALSE)+
   labs(#title = paste(survey.year, "", "SFA29W Myco per Tow"), 
@@ -333,7 +372,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_BF_Myco_per_Tow',survey.year,'.p
 ## FRENCH ####
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Infectée \n(N/traits de chalut)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Myco \n(N/traits de chalut)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone, Surv.sf, Land) +
   coord_sf(xlim = c(-66.50,-65.45), ylim = c(43.10,43.80), expand = FALSE)+
   labs(#title = paste(survey.year, "", "SFA29W Myco per Tow"), 
@@ -343,9 +382,9 @@ bathy + #Plot survey data and format figure.
 ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_BF_Myco_per_Tow',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 
-# -------------- GREY MEATS ------------------------------------------------------------
+# -------------- DISCOLOURED SCALLOPS ------------------------------------------------------------
 
-# Proportion of Grey meats ------------------------------------------------------
+# Proportion of Discoloured scallops ------------------------------------------------------
 
 #IDW for whole BoF. Specific changes for each area will be done during plotting
 Surv.sf<-st_as_sf(subset(greymeat.datw,year==survey.year),coords=c("lon","lat"))
@@ -358,7 +397,7 @@ Surv.sf$log_prop[which(Surv.sf$log_prop==-Inf)] <- log(0.0001)
 
 
 #Overlay a grid over the survey area, as it is required to interpolate (smaller cellsize will take more time to run than larger. both here and during interpolation)
-grid <- st_make_grid(idw_sf, cellsize=2000) %>% st_intersection(idw_sf)
+grid <- st_make_grid(idw_sf, cellsize=500) %>% st_intersection(idw_sf)
 #Doing the inverse distance weighted interpolation
 preds_idw2 <- gstat::idw(log_prop~1,Surv.sf,grid,idp=3)
 
@@ -369,10 +408,10 @@ summary(Surv.sf$prop)
 ## ENGLISH ####
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Grey Meat \n(proportion)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Discoloured scallop \n(proportion)", limits = c(0,1)) + 
   p(mgmt_zone, Surv.sf, Land) +
   coord_sf(xlim = c(-66.50,-65.45), ylim = c(43.10,43.80), expand = FALSE)+
-  labs(#title = paste(survey.year, "", "SFA29W Grey Meat Proportion"), 
+  labs(#title = paste(survey.year, "", "SFA29W Discoloured scallop Proportion"), 
     x = "Longitude", y = "Latitude")
 
 #save
@@ -381,17 +420,17 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_GreyMeatProportion',survey
 ## FRENCH ####
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Chair Grise \n(proportion)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Chair décoloré \n(proportion)", limits = c(0,1)) + 
   p(mgmt_zone, Surv.sf, Land) +
   coord_sf(xlim = c(-66.50,-65.45), ylim = c(43.10,43.80), expand = FALSE)+
-  labs(#title = paste(survey.year, "", "SFA29W Grey Meat Proportion"), 
+  labs(#title = paste(survey.year, "", "SFA29W Discoloured scallop Proportion"), 
     x = "Longitude", y = "Latitude")
 
 #save
 ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SFA29_GreyMeatProportion',survey.year,'_FR.png'), plot = last_plot(), scale = 2.5, width = 8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 
-# Number of Grey meats (moderate + severe) per Tow  ------------------------------------------------------
+# Number of Discoloured scallops (moderate + severe) per Tow  ------------------------------------------------------
 
 #IDW for whole BoF. Specific changes for each area will be done during plotting
 Surv.sf<-st_as_sf(subset(greymeat.datw,year==survey.year),coords=c("lon","lat"))
@@ -404,7 +443,7 @@ Surv.sf$log_grey[which(Surv.sf$log_grey==-Inf)] <- log(0.0001)
 
 
 #Overlay a grid over the survey area, as it is required to interpolate (smaller cellsize will take more time to run than larger. both here and during interpolation)
-grid <- st_make_grid(idw_sf, cellsize=2000) %>% st_intersection(idw_sf)
+grid <- st_make_grid(idw_sf, cellsize=500) %>% st_intersection(idw_sf)
 #Doing the inverse distance weighted interpolation
 preds_idw2 <- gstat::idw(log_grey~1,Surv.sf,grid,idp=3)
 
@@ -415,10 +454,10 @@ summary(Surv.sf$NUM_GREYMEAT)
 ## ENGLISH ####
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Grey Meat \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Discoloured scallop \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone, Surv.sf, Land) +
   coord_sf(xlim = c(-66.50,-65.45), ylim = c(43.10,43.80), expand = FALSE)+
-  labs(#title = paste(survey.year, "", "SFA29W Grey Meat per Tow"), 
+  labs(#title = paste(survey.year, "", "SFA29W Discoloured scallop per Tow"), 
     x = "Longitude", y = "Latitude")
 
 #save
@@ -427,10 +466,10 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_GreyMeats_per_Tow',survey.
 ## FRENCH ####
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Chair Grise \n(N/traits de chalut)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Chair décoloré \n(N/traits de chalut)", limits = c(0,max(preds_idw2$prediction))) + 
   p(mgmt_zone, Surv.sf, Land) +
   coord_sf(xlim = c(-66.50,-65.45), ylim = c(43.10,43.80), expand = FALSE)+
-  labs(#title = paste(survey.year, "", "SFA29W Grey Meat per Tow"), 
+  labs(#title = paste(survey.year, "", "SFA29W Discoloured scallop per Tow"), 
     x = "Longitude", y = "Latitude")
 
 #save
