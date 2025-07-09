@@ -57,16 +57,16 @@ for(fun in funcs)
 #### DEFINE ####
 
 direct <- "Y:/Inshore/BoF"
-fishingyear <- 2024 #most recent year of commercial fishing data to be used (e.g. if fishing season is 2019/2020, use 2020)
-assessmentyear <- 2024 #year in which you are conducting the assessment
+fishingyear <- 2025 #most recent year of commercial fishing data to be used (e.g. if fishing season is 2019/2020, use 2020)
+assessmentyear <- 2025 #year in which you are conducting the assessment
 un.ID=Sys.getenv("un.raperj") #ptran username
 pwd.ID=Sys.getenv("pw.raperj") #ptran password
 #un.ID=un.sameotoj #ptran username
 #pwd.ID=pw.sameotoj#ptran password
 
 #Date range for logs to be selected 
-start.date.logs <- "2023-10-01"  #YYYY-MM-DD use Oct 1 
-ends.date.logs <- "2024-10-01"  #YYYY-MM-DD use Oct 1 
+start.date.logs <- "2024-10-01"  #YYYY-MM-DD use Oct 1 
+ends.date.logs <- "2025-10-01"  #YYYY-MM-DD use Oct 1 
 
 
 #### Read files ####
@@ -388,7 +388,7 @@ ggsave(filename = paste0(direct, "/",assessmentyear,"/Assessment/Figures/Commerc
    geom_tile(df, mapping = aes(lon, lat, fill = mean.cpue), color = "grey55") +
    geom_sf(data = poly.strata, fill=NA, colour="grey55") +
    coord_sf(xlim = c(-66.5,-64.4), ylim = c(44.8,45.8), expand = FALSE) +
-   scale_fill_binned(type = "viridis", direction = -1, name="CPUE (kg/h)", breaks = c(25, 50, 75, 100, 125, 150)) +
+   scale_fill_binned(type = "viridis", direction = -1, name="CPUE (kg/h)", breaks = c(20, 40, 60, 80, 100)) +
    theme(legend.key.size = unit(5,"mm"),
          plot.title = element_text(size = 14, hjust = 0.5), #plot title size and position
          axis.title = element_text(size = 12),
@@ -435,7 +435,7 @@ ggsave(filename = paste0(direct, "/",assessmentyear,"/Assessment/Figures/Commerc
    geom_tile(df, mapping = aes(lon, lat, fill = tot.catch), color = "grey55") +
    geom_sf(data = poly.strata, fill=NA, colour="grey55") +
    coord_sf(xlim = c(-66.5,-64.4), ylim = c(44.8,45.8), expand = FALSE) +
-   scale_fill_binned(type = "viridis", direction = -1, name="Catch (kg)", breaks = c(2000, 4000, 6000, 8000, 10000, 12000, 14000)) +
+   scale_fill_binned(type = "viridis", direction = -1, name="Catch (kg)", breaks = c(2000, 4000, 6000, 8000)) +
    theme(legend.key.size = unit(5,"mm"),
          plot.title = element_text(size = 14, hjust = 0.5), #plot title size and position
          axis.title = element_text(size = 12),

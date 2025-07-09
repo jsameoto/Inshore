@@ -44,10 +44,12 @@ library(ROracle)
 #pwd <- un.raperj
 uid <- keyring::key_list("Oracle")[1,2]
 pwd <- keyring::key_get("Oracle", uid)
+uid <- un.englishg
+pwd <- pw.englishg
 
-survey.year <- 2023  #This is the last survey year 
-assessmentyear <- 2024 #year in which you are providing advice for - (e.g. 2017 survey is 2018 assessment) - Save to folder year
-cruise <- "'SFA292023'"
+survey.year <- 2024  #This is the last survey year 
+assessmentyear <- 2025 #year in which you are providing advice for - (e.g. 2017 survey is 2018 assessment) - Save to folder year
+cruise <- "'SFA292024'"
 
 #for multiple cruises:
 #cruise <- c('SFA292018','SFA292019') 
@@ -142,7 +144,7 @@ ScallopSurv <- ScallopSurv %>%
   mutate(pre = dplyr::select(., BIN_ID_0:BIN_ID_85) %>% rowSums(na.rm = TRUE) %>% round(0))# Pre-recruit scallop - 0-85 mm; BINS 0 to 85
 
 #Save out for notes for Survey Summary and WSAC
-#write.csv(ScallopSurv %>% filter(year == survey.year), paste0(path.directory,assessmentyear,"/Assessment/Data/SurveyIndices/SFA29_totalpertow_sizeclass_live",survey.year,".csv"))
+write.csv(ScallopSurv %>% filter(year == survey.year), paste0(path.directory,assessmentyear,"/Assessment/Data/SurveyIndices/SFA29_totalpertow_sizeclass_live",survey.year,".csv"))
 
 ##.. DEAD ..##
 #Db Query:
@@ -173,7 +175,7 @@ ScallopSurv.dead <- ScallopSurv.dead %>%
   mutate(pre = dplyr::select(., BIN_ID_0:BIN_ID_85) %>% rowSums(na.rm = TRUE) %>% round(0))# Pre-recruit scallop - 0-85 mm; BINS 0 to 85
 
 #Save out for notes for Survey Summary and WSAC
-#write.csv(ScallopSurv.dead %>% filter(year == survey.year), paste0(path.directory,assessmentyear,"/Assessment/Data/SurveyIndices/SFA29_totalpertow_sizeclass_dead",survey.year,".csv"))
+write.csv(ScallopSurv.dead %>% filter(year == survey.year), paste0(path.directory,assessmentyear,"/Assessment/Data/SurveyIndices/SFA29_totalpertow_sizeclass_dead",survey.year,".csv"))
 
 # -------------------------------Import WGTHGT DATA------------------------------------------
 quer3 <- paste(
@@ -276,7 +278,7 @@ bycatch.dat <- bycatch.dat %>%
 bycatch.dat[is.na(bycatch.dat)] <- 0 #Assumes all NAs are 0
 
 #Save out for notes for Survey Summary and WSAC
-#write.csv(bycatch.dat, paste0(path.directory,assessmentyear,"/Assessment/Data/SurveyIndices/LOBSTER_totalpertow",survey.year,".csv"))
+write.csv(bycatch.dat, paste0(path.directory,assessmentyear,"/Assessment/Data/SurveyIndices/LOBSTER_totalpertow",survey.year,".csv"))
 
 # Set plot themes (legend orientation/aesthetics) ------------------------
 
@@ -576,7 +578,8 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_ComClappers',survey.year,'
 com.contours<-contour.gen(prop.clappers %>% filter(year==survey.year) %>% 
                             dplyr::select(ID,lon,lat,prop.dead.com),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata', blank=T,plot=F,res=0.01)
 
-lvls=c(0.01,0.1,0.2,0.3,0.4,0.5,0.6,0.7) #levels to be color coded
+#lvls=c(0.01,0.1,0.2,0.3,0.4,0.5,0.6,0.7) #levels to be color coded
+lvls=c(0.01,0.05,0.1,0.15,0.2,0.3,0.4,0.5) #levels to be color coded
 
 CL <- contourLines(com.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
 CP <- convCP(CL)
@@ -594,7 +597,8 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
 
 
 #Colour aesthetics and breaks for contours
-labels <- c("0.01-0.1", "0.1-0.2", "0.2-0.3", "0.3-0.4", "0.4-0.5","0.5-0.6","0.6-0.7", "0.7+")
+#labels <- c("0.01-0.1", "0.1-0.2", "0.2-0.3", "0.3-0.4", "0.4-0.5","0.5-0.6","0.6-0.7", "0.7+")
+labels <- c("0.01-0.05", "0.05-0.1", "0.1-0.15", "0.15-0.2", "0.2-0.3","0.3-0.4","0.4-0.5", "0.5+")
 col <- brewer.pal(length(lvls),"YlGn") #set colours
 cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = "Proportion", limits = labels) #set custom fill arguments for pecjector.
 
@@ -765,7 +769,7 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
 
 #Colour aesthetics and breaks for contours
 #labels <- c("1-5", "5-10", "10-15", "15-20", "20-23", "23-30", "30-50", "50-100", "100+")
-labels <- c("1", "1-5", "5-10", "10-15", "15-20", "20-25","+25")
+labels <- c("1", "1-5", "5-10", "10-15", "15-20", "20-25","25+")
 col <- brewer.pal(length(lvls),"YlGn") #set colours
 cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = expression(frac(N,tow)), limits = labels) #set custom fill arguments for pecjector.
 
@@ -961,7 +965,8 @@ pre.contours<-contour.gen(ScallopSurv.dead %>%  filter(year==survey.year) %>%
                             dplyr::select(ID,lon,lat,pre),ticks='define',nstrata=7,str.min=0,place=2,id.par=3.5,units="mm",interp.method='gstat',key='strata',
                           blank=T,plot=F,res=0.01)
 
-lvls=c(1,5,10,15,20,25,30,50,100) #levels to be color coded
+#lvls=c(1,5,10,15,20,25,30,50,100) #levels to be color coded
+lvls=c(1,5,10,15,20,25) #levels to be color coded
 
 CL <- contourLines(pre.contours$image.dat,levels=lvls) #breaks interpolated raster/matrix according to levels so that levels can be color coded
 CP <- convCP(CL)
@@ -978,7 +983,8 @@ totCont.poly.sf <- st_as_sf(totCont.poly) %>%
   mutate(level = unique(CP$PolyData$level))
 
 #Colour aesthetics and breaks for contours
-labels <- c("1-5", "5-10", "10-15", "15-20", "20-23", "23-30", "30-50", "50-100", "100+")
+#labels <- c("1-5", "5-10", "10-15", "15-20", "20-25", "25-30", "30-50", "50-100", "100+")
+labels <- c("1-5", "5-10", "10-15", "15-20", "20-25", "25+")
 col <- brewer.pal(length(lvls),"YlGn") #set colours
 cfd <- scale_fill_manual(values = alpha(col, 0.4), breaks = labels, name = expression(frac(N,tow)), limits = labels) #set custom fill arguments for pecjector.
 
@@ -1012,7 +1018,8 @@ labels <- c("0", "1-5", "6-15", "16-20", paste0("21-",max(bycatch.dat$LOBSTERPER
 lvls <- c(0,1,5,15,20,max(bycatch.dat$LOBSTERPERTOW))
 
 bycatch.dat <- bycatch.dat %>% 
-  mutate(brk = cut(LOBSTERPERTOW, breaks = lvls, labels = labels, include.lowest = TRUE))
+  mutate(brk = cut(LOBSTERPERTOW, breaks = lvls, labels = labels, include.lowest = TRUE)) %>% 
+  filter(STRATA_ID != 46) #Filter out exploratory tows for future framework (strata 46)
 
 
 p + #Plot survey data and format figure.

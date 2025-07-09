@@ -19,7 +19,7 @@ library(ROracle)
 
 #Check tows spatial function and coord convert function:
 
-funcs <- c("https://raw.githubusercontent.com/Mar-scal/Inshore/master/Survey/check.tows.spatial.r",
+funcs <- c(#"https://raw.githubusercontent.com/Mar-scal/Inshore/master/Survey/check.tows.spatial.r",
            "https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Survey_and_OSAC/convert.dd.dddd.r")
 dir <- getwd()
 for(fun in funcs) 
@@ -33,12 +33,14 @@ for(fun in funcs)
 
 #define
 direct <- "Y:/Inshore/Survey/"
-year <- 2024 #For years prior to 2023, the directory name is different! Will need to adjust if running for previous years - year/data entry templates and examples/
-CRUISE <- "SFA29" # "BI", BF", "GM", "SFA29"
-uid = Sys.getenv("un.raperj") #ptran username
-pwd = Sys.getenv("pw.raperj") #ptran password
+year <- 2025 #For years prior to 2023, the directory name is different! Will need to adjust if running for previous years - year/data entry templates and examples/
+CRUISE <- "BI" # "BI", BF", "GM", "SFA29"
+#uid = Sys.getenv("un.raperj") #ptran username
+#pwd = Sys.getenv("pw.raperj") #ptran password
 #uid <- un.sameotoj
 #pwd <- pw.sameotoj
+uid <- un.englishg
+pwd <- pw.englishg
 
 
 #Read in shapefiles if needed
@@ -53,8 +55,8 @@ unzip(zipfile=temp, exdir=temp2)
 # Now read in the shapefiles
 BF.strata <- st_read(paste0(temp2, "/inshore_survey_strata/PolygonSCSTRATAINFO_rm46-26-57.shp")) %>% st_transform(crs = 4326)
 
-#polgons with strata for SPA 2
-#BF.strata <- st_read(paste0(temp2, "/inshore_survey_strata/archive/PolygonSCSTRATAINFO_AccessedSept102017.shp")) %>% st_transform(crs = 4326)
+#polygons with strata for SPA 2
+BF.strata <- st_read(paste0(temp2, "/inshore_survey_strata/archive/PolygonSCSTRATAINFO_AccessedSept102017.shp")) %>% st_transform(crs = 4326)
 
 SPA1A <- st_read(paste0(temp2, "/SPA1A_polygon_NAD83.shp")) %>% mutate(ET_ID = "1A") %>% st_transform(crs = 4326)
 SPA1B <- st_read(paste0(temp2, "/SPA1B_polygon_NAD83.shp")) %>% mutate(ET_ID = "1B") %>% st_transform(crs = 4326)
@@ -80,7 +82,7 @@ SFA29 <- st_read(paste0(temp2, "/SFA29_subareas_utm19N.shp")) %>% mutate(ID = se
 
 # tow_CONVERTED.csv ----------------------------------------------------------------
 
-num.tows <- read.csv(paste0("Y:/Inshore/Survey/", year,"/DataEntry/",CRUISE, year,"/",CRUISE,year,"tow_CONVERTED.csv"))
+num.tows <- read.csv(paste0("Y:/Inshore/Survey/", year,"/DataEntry/",CRUISE, year,"/",CRUISE,year,"_tow_CONVERTED.csv"))
 
 #Check for missing tow lengths:
 table(is.na(num.tows$Tow_len))
@@ -249,7 +251,7 @@ dhf.dup.check <- rbind(dhf.dup.check, output)
 dhf.dup.check |> filter(wx == TRUE) |> dplyr::select(TOW)
 
 #Look at specific Tow number and cross reference with data sheet.
-View(dhf.dup.check |> filter(TOW == 94)) #enter tow
+View(dhf.dup.check |> filter(TOW == 73)) #enter tow
 
 ## Check datasheet for tow 128 GM 2024 
 
@@ -662,7 +664,7 @@ ggsave(filename = paste0("Y:/Inshore/Survey/", year,"/DataEntry/",CRUISE, year,"
 
 repeatslastyear <- read.csv(paste0(direct, as.numeric(year)-1, "/DataEntry/",CRUISE,year-1,"/",CRUISE,year-1,"tow_CONVERTED.csv"))
 
-repeatslastyear <- read.csv(paste0(direct, as.numeric(year)-1, "/data entry templates and examples/",CRUISE,year-1,"/",CRUISE,year-1,"tow_CONVERTED.csv"))
+#repeatslastyear <- read.csv(paste0(direct, as.numeric(year)-1, "/data entry templates and examples/",CRUISE,year-1,"/",CRUISE,year-1,"tow_CONVERTED.csv"))
 
 rep.comp.tow <- read.csv(paste0(direct, year, "/DataEntry/",CRUISE,year,"/",CRUISE,year,"_REPCOMPTOW.csv"))
  

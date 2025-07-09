@@ -141,10 +141,10 @@ dim(data.obj)
 ###
 
 # ---- PRE-RECRUITS ----		
-# NOTE this section of code is run once for each size (comm, rec, precec). Define below
+# NOTE this section of code is run once for each size (comm, rec, prerec). Define below
 	strata.group <- SDMareas
-	size <- "prerec" # MUST DEFINE if precruits, recruits or commercial size (i.e. column  pre.bm, rec.bm, or com.bm)
-	data.obj$STDTOTALCAUGHT <- data.obj$pre.bm # MUST DEFINE if precruits, recruits or commercial size (i.e. column pre.bm, rec.bm, or com.bm)
+	size <- "prerec" # MUST DEFINE if prerecruits, recruits or commercial size (i.e. column  pre.bm, rec.bm, or com.bm)
+	data.obj$STDTOTALCAUGHT <- data.obj$pre.bm # MUST DEFINE if prerecruits, recruits or commercial size (i.e. column pre.bm, rec.bm, or com.bm)
 
 	# Only use regular survey tows for estimation (TOW_TYPE_ID = 1)
 	data.obj.all <- data.obj
@@ -307,10 +307,10 @@ sdm.levels.est.all
 		
 		
 # ---- RECRUITS ----		
-	# NOTE this section of code is run once for each size (comm, rec, precec). Define below
+	# NOTE this section of code is run once for each size (comm, rec, prerec). Define below
 	strata.group <- SDMareas
-	size <- "rec" # MUST DEFINE if precruits, recruits or commercial size (i.e. column  pre.bm, rec.bm, or com.bm)
-	data.obj$STDTOTALCAUGHT <- data.obj$rec.bm # MUST DEFINE if precruits, recruits or commercial size (i.e. column pre.bm, rec.bm, or com.bm)
+	size <- "rec" # MUST DEFINE if prerecruits, recruits or commercial size (i.e. column  pre.bm, rec.bm, or com.bm)
+	data.obj$STDTOTALCAUGHT <- data.obj$rec.bm # MUST DEFINE if prerecruits, recruits or commercial size (i.e. column pre.bm, rec.bm, or com.bm)
 	
 	# Only use regular survey tows for estimation (TOW_TYPE_ID = 1)
 	data.obj.all <- data.obj
@@ -483,10 +483,10 @@ sdm.levels.est.all
 	
 
 # ---- COMMERCIAL ----		
-	# NOTE this section of code is run once for each size (comm, rec, precec). Define below
+	# NOTE this section of code is run once for each size (comm, rec, prerec). Define below
 	strata.group <- SDMareas
-	size <- "comm" # MUST DEFINE if precruits, recruits or commercial size (i.e. column  pre.bm, rec.bm, or com.bm)
-	data.obj$STDTOTALCAUGHT <- data.obj$com.bm # MUST DEFINE if precruits, recruits or commercial size (i.e. column pre.bm, rec.bm, or com.bm)
+	size <- "comm" # MUST DEFINE if prerecruits, recruits or commercial size (i.e. column  pre.bm, rec.bm, or com.bm)
+	data.obj$STDTOTALCAUGHT <- data.obj$com.bm # MUST DEFINE if prerecruits, recruits or commercial size (i.e. column pre.bm, rec.bm, or com.bm)
 	
 	# Only use regular survey tows for estimation (TOW_TYPE_ID = 1)
 	data.obj.all <- data.obj
@@ -803,7 +803,7 @@ ggsave(filename = paste0(path.directory,assessmentyear,"/Assessment/Figures/SFA2
 ### ---- SUBAREA E ----  
 ## NO DOMAIN DATAFRAME FOR E - for 2005 take simple mean #
 	
-	#precruits
+	#prerecruits
 	E.area <- data.obj.all[data.obj.all$STRATA_ID==45,]
 	sizeE.prerec <- "prerec"	# Define - ensure matches entry on next line where assign E.area$STDTOTALCAUGHT
 	E.area$STDTOTALCAUGHT <- E.area$pre.bm #DEFINE SIZE; comm, rec, prerec
@@ -886,11 +886,12 @@ ggsave(filename = paste0(path.directory,assessmentyear,"/Assessment/Figures/SFA2
 	                      levels = c("prerec", "rec", "comm"))
 
 	size_names <- as_labeller(
-	  c(`prerec` = "Precrecruits (<90 mm)", `rec` = "Recruits (90-99 mm)",`comm` = "Commercial (>= 100 mm)"))
+	  c(`prerec` = "Prerecruits (<90 mm)", `rec` = "Recruits (90-99 mm)",`comm` = "Commercial (>= 100 mm)"))
 	
 	E.weight.per.tow <- ggplot(data = out.e, aes(x=YEAR, y=yst)) + 
 	  geom_point() + 
 	  geom_line() + 
+	  scale_x_continuous(limits = c(2013, (survey.year+1)), breaks = seq(2013, (survey.year+1), by = 4)) +
 	  facet_wrap(~group, ncol=1, labeller = size_names, scales = "free") + 
 	  theme_bw() + ylab("Mean weight/tow (kg)") + xlab("Year") + 
 	  theme(legend.position = c(0.1, 0.9),panel.grid.minor = element_blank()) + 

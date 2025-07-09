@@ -34,12 +34,12 @@ SELECT g.cfv,
   f.setdate,
   f.settime,
   b.comarea_id 
-   FROM observer.istrips y,
-  observer.isfishsets b,
-  observer.iscatches x,
-  observer.isspeciescodes d,
-  observer.issetprofile f,
-  observer.isvessels g
+   FROM istrips y,
+  isfishsets b,
+  iscatches x,
+  isspeciescodes d,
+  issetprofile f,
+  isvessels g
   WHERE y.trip_id = b.trip_id
 AND g.vess_id = y.vess_id
 AND b.fishset_id = x.fishset_id
@@ -79,12 +79,12 @@ SELECT g.cfv,
   f.setdate,
   f.settime,
   b.comarea_id 
-   FROM observer.istrips y,
-  observer.isfishsets b,
-  observer.iscatches x,
-  observer.isspeciescodes d,
-  observer.issetprofile f,
-  observer.isvessels g
+   FROM istrips y,
+  isfishsets b,
+  iscatches x,
+  isspeciescodes d,
+  issetprofile f,
+  isvessels g
   WHERE y.trip_id = b.trip_id
 AND g.vess_id = y.vess_id
 AND b.fishset_id = x.fishset_id
@@ -118,12 +118,12 @@ SELECT g.cfv,
   f.setdate,
   f.settime,
   b.comarea_id 
-   FROM observer.istrips y,
-  observer.isfishsets b,
-  observer.iscatches x,
-  observer.isspeciescodes d,
-  observer.issetprofile f,
-  observer.isvessels g
+   FROM istrips y,
+  isfishsets b,
+  iscatches x,
+  isspeciescodes d,
+  issetprofile f,
+  isvessels g
   WHERE y.trip_id = b.trip_id
 AND g.vess_id = y.vess_id
 AND b.fishset_id = x.fishset_id
@@ -134,7 +134,7 @@ AND y.tripcd_id = 4320
 AND f.pntcd_id = 2  /*can set to 2 or 3*/
 AND y.board_date BETWEEN '2023-10-01' AND '2024-09-30'
 AND g.cfv  NOT IN ('152320', '106881', '105736','105912','105457','106604','106605','4062','102056','1579','102056','4055','101965','4031','1516','1518','1548','4050') /*list of offshore scallop vrns that have been observed trips*/
-AND y.trip IN ('J24-0083', 'J24-0091', 'J24-0092', 'J24-0098', 'J24-0106', 'J24-0107', 'J24-0133', 'J24-0172')
+AND y.trip IN ('J24-0083', 'J24-0084', 'J24-0091', 'J24-0092', 'J24-0098', 'J24-0106', 'J24-0107', 'J24-0133', 'J24-0172')
 
 --SCRIPT 4--/*DAYS_OBS for each trip (equal to number of records pulled)*/
 SELECT DISTINCT TRIP, VESSEL_NAME, CFV, LICENSE_NO, SETDATE
@@ -161,12 +161,12 @@ SELECT g.cfv,
   f.setdate,
   f.settime,
   b.comarea_id 
-   FROM observer.istrips y,
-  observer.isfishsets b,
-  observer.iscatches x,
-  observer.isspeciescodes d,
-  observer.issetprofile f,
-  observer.isvessels g
+   FROM istrips y,
+  isfishsets b,
+  iscatches x,
+  isspeciescodes d,
+  issetprofile f,
+  isvessels g
   WHERE y.trip_id = b.trip_id
 AND g.vess_id = y.vess_id
 AND b.fishset_id = x.fishset_id
@@ -174,7 +174,7 @@ AND x.speccd_id = d.speccd_id
 AND b.fishset_id = f.fishset_id
 AND x.fishset_id = f.fishset_id
 AND y.tripcd_id = 4320
-AND y.trip IN ('J24-0083', 'J24-0091', 'J24-0092', 'J24-0098', 'J24-0106', 'J24-0107', 'J24-0133', 'J24-0172')
+AND y.trip IN ('J24-0083', 'J24-0084', 'J24-0091', 'J24-0092', 'J24-0098', 'J24-0106', 'J24-0107', 'J24-0133', 'J24-0172')
 )
 Order By TRIP, SETDATE
 
@@ -210,12 +210,12 @@ SELECT g.cfv,
   f.setdate,
   f.settime,
   b.comarea_id 
-   FROM observer.istrips y,
-  observer.isfishsets b,
-  observer.iscatches x,
-  observer.isspeciescodes d,
-  observer.issetprofile f,
-  observer.isvessels g
+   FROM istrips y,
+  isfishsets b,
+  iscatches x,
+  isspeciescodes d,
+  issetprofile f,
+  isvessels g
   WHERE y.trip_id = b.trip_id
 AND g.vess_id = y.vess_id
 AND b.fishset_id = x.fishset_id
@@ -224,7 +224,7 @@ AND b.fishset_id = f.fishset_id
 AND x.fishset_id = f.fishset_id
 AND f.pntcd_id = 2
 AND y.tripcd_id = 4320
-AND y.trip in ('J24-0106')
+AND y.trip in ('J24-0084')
 --AND comarea_id = 'SF29B' /*include only for split trips*/
 order by y.trip, b.set_no)
 );
@@ -254,12 +254,12 @@ SELECT g.cfv,
   f.setdate,
   f.settime,
   b.comarea_id 
-   FROM observer.istrips y,
-  observer.isfishsets b,
-  observer.iscatches x,
-  observer.isspeciescodes d,
-  observer.issetprofile f,
-  observer.isvessels g
+   FROM istrips y,
+  isfishsets b,
+  iscatches x,
+  isspeciescodes d,
+  issetprofile f,
+  isvessels g
   WHERE y.trip_id = b.trip_id
 AND g.vess_id = y.vess_id
 AND b.fishset_id = x.fishset_id
@@ -269,7 +269,7 @@ AND x.fishset_id = f.fishset_id
 AND f.pntcd_id = 2
 AND y.tripcd_id = 4320
 AND b.source = 0
-AND y.trip in ('J24-0106'))
+AND y.trip in ('J24-0084'))
 ORDER BY TRIP, COMAREA_ID, SET_NO
 
 --SCRIPT 8--/*pulls the observed trip from MARFIS; MON_DOC_ID, SUM_SLIP_WT, DATE_LANDED_MARFIS*/
@@ -281,7 +281,7 @@ AND trip_id = 508523
 --SCRIPT 9--/*pulls TOT_TOWS for the trip from MARFIS data*/
 SELECT SUM(NUM_OF_TOWS)
 FROM scallop.scallop_log_marfis
-WHERE trip_id = 618793
+WHERE trip_id = 615933
 --AND assigned_area = '29B' /*include only for split trips*/
 
 
@@ -310,12 +310,12 @@ SELECT g.cfv,
   f.setdate,
   f.settime,
   b.comarea_id 
-   FROM observer.istrips y,
-  observer.isfishsets b,
-  observer.iscatches x,
-  observer.isspeciescodes d,
-  observer.issetprofile f,
-  observer.isvessels g
+   FROM istrips y,
+  isfishsets b,
+  iscatches x,
+  isspeciescodes d,
+  issetprofile f,
+  isvessels g
   WHERE y.trip_id = b.trip_id
 AND g.vess_id = y.vess_id
 AND b.fishset_id = x.fishset_id
@@ -352,12 +352,12 @@ SELECT g.cfv,
   f.setdate,
   f.settime,
   b.comarea_id 
-   FROM observer.istrips y,
-  observer.isfishsets b,
-  observer.iscatches x,
-  observer.isspeciescodes d,
-  observer.issetprofile f,
-  observer.isvessels g
+   FROM istrips y,
+  isfishsets b,
+  iscatches x,
+  isspeciescodes d,
+  issetprofile f,
+  isvessels g
   WHERE y.trip_id = b.trip_id
 AND g.vess_id = y.vess_id
 AND b.fishset_id = x.fishset_id

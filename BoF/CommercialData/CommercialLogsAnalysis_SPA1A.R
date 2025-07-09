@@ -54,16 +54,16 @@ for(fun in funcs)
 #### DEFINE ####
 
 direct <- "Y:/Inshore/BoF"
-fishingyear <- 2024 #most recent year of commercial fishing data to be used (e.g. if fishing season is 2019/2020, use 2020)
-assessmentyear <- 2024 #year in which you are conducting the assessment
+fishingyear <- 2025 #most recent year of commercial fishing data to be used (e.g. if fishing season is 2019/2020, use 2020)
+assessmentyear <- 2025 #year in which you are conducting the assessment
 un.ID=Sys.getenv("un.raperj") #ptran username
 pwd.ID=Sys.getenv("pw.raperj") #ptran password
 #un.ID=un.sameotoj #ptran username
 #pwd.ID=pw.sameotoj#ptran password
 
 #Date range for logs to be selected 
-start.date.logs <- "2023-10-01"  #YYYY-MM-DD use Oct 1 
-ends.date.logs <- "2024-10-01"  #YYYY-MM-DD use Oct 1 
+start.date.logs <- "2024-10-01"  #YYYY-MM-DD use Oct 1 
+ends.date.logs <- "2025-10-01"  #YYYY-MM-DD use Oct 1 
 
 
 #### Read files ####
@@ -129,7 +129,7 @@ logs %>%
 
 #If any issues here, STOP and address with log scan and/or VMS checks. Make any corrections in the SCALLOP db (and send to CDD), then restart this script
 #2024 - remove one MidBay record
-logs <- logs[logs$FLEET!='Mid-Bay',]
+#logs <- logs[logs$FLEET!='Mid-Bay',]
 
 #2024 - remove CPUE outliers
 logs <- logs[logs$CPUE_KG < 200,]
@@ -294,7 +294,7 @@ ggsave(filename = paste0(direct, "/",assessmentyear,"/Assessment/Figures/Commerc
    geom_tile(df, mapping = aes(lon, lat, fill = mean.cpue), color = "grey55") +
    geom_sf(data = poly.strata, fill=NA, colour="grey55") +
    coord_sf(xlim = c(-66.5,-64.5), ylim = c(44.2,45.4), expand = FALSE) +
-   scale_fill_binned(type = "viridis", direction = -1, name="CPUE (kg/h)", breaks = c(25, 50, 75, 100, 125, 150, 175)) +
+   scale_fill_binned(type = "viridis", direction = -1, name="CPUE (kg/h)", breaks = c(10, 20, 30, 40, 50, 60)) +
    theme(plot.title = element_text(size = 14, hjust = 0.5), #plot title size and position
          axis.title = element_text(size = 12),
          axis.text = element_text(size = 10),
@@ -340,7 +340,7 @@ ggsave(filename = paste0(direct, "/",assessmentyear,"/Assessment/Figures/Commerc
    geom_tile(df, mapping = aes(lon, lat, fill = tot.catch), color = "grey55") +
    geom_sf(data = poly.strata, fill=NA, colour="grey55") +
    coord_sf(xlim = c(-66.5,-64.5), ylim = c(44.2,45.4), expand = FALSE) +
-   scale_fill_binned(type = "viridis", direction = -1, name="Catch (kg)", breaks = c(2000, 4000, 6000, 8000, 10000)) +
+   scale_fill_binned(type = "viridis", direction = -1, name="Catch (kg)", breaks = c(1000, 2000, 3000, 4000)) +
    theme(plot.title = element_text(size = 14, hjust = 0.5), #plot title size and position
          axis.title = element_text(size = 12),
          axis.text = element_text(size = 10),

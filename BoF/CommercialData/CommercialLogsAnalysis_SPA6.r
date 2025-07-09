@@ -49,16 +49,16 @@
 #### DEFINE ####
 	
 	direct <- "Y:/Inshore/BoF"
-	fishingyear <- 2024 #most recent year of commercial fishing data to be used (e.g. if fishing season is 2019/2020, use 2020)
-	assessmentyear <- 2024 #year in which you are conducting the assessment
+	fishingyear <- 2025 #most recent year of commercial fishing data to be used (e.g. if fishing season is 2019/2020, use 2020)
+	assessmentyear <- 2025 #year in which you are conducting the assessment
 	un.ID=Sys.getenv("un.raperj") #ptran username
 	pwd.ID=Sys.getenv("pw.raperj") #ptran password
 #	un.ID=un.sameotoj #ptran username
 #	pwd.ID=pw.sameotoj#ptran password
 	
 #Date range for logs to be selected 
-	start.date.logs <- "2023-10-01"  #YYYY-MM-DD use Oct 1 
-	ends.date.logs <- "2024-10-01"  #YYYY-MM-DD use Oct 1 
+	start.date.logs <- "2024-10-01"  #YYYY-MM-DD use Oct 1 
+	ends.date.logs <- "2025-10-01"  #YYYY-MM-DD use Oct 1 
 	
 #### Read files ####
 	
@@ -448,7 +448,7 @@
     theme_bw(base_size = 20) + theme(panel.grid=element_blank()) + 
     geom_point(aes(x = year, y = cpue.kgh)) +
     geom_line(aes(x = year, y = cpue.kgh)) +
-    scale_y_continuous("Catch rate (kg/h)", limits=c(0,30), breaks=seq(0,30,5)) +
+    scale_y_continuous("Catch rate (kg/h)", limits=c(0,40), breaks=seq(0,40,5)) +
     scale_x_continuous("Year", breaks=seq(2002,fishingyear,2)) # +
    # geom_hline(yintercept = 6.2, linetype = "dashed") +
   #  geom_hline(yintercept = 9.1, linetype = "dashed") +
@@ -557,7 +557,7 @@
     geom_sf(data = poly.6D, fill=NA, colour="grey55") +
     geom_sf(data = poly.VMSIN, fill=NA, colour="red") +
     coord_sf(xlim = c(-67.4,-65.8), ylim = c(44.2,45.2), expand = FALSE) +
-    scale_fill_binned(type = "viridis", direction = -1, name="Catch (kg)", breaks = c(2000, 4000, 6000, 10000)) +
+    scale_fill_binned(type = "viridis", direction = -1, name="Catch (kg)", breaks = c(1000, 2000, 3000, 4000)) +
     theme(plot.title = element_text(size = 14, hjust = 0.5), #plot title size and position
           axis.title = element_text(size = 12),
           axis.text = element_text(size = 10),
