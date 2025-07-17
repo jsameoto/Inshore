@@ -37,25 +37,25 @@ year <- 2025 #For years prior to 2023, the directory name is different! Will nee
 CRUISE <- "BI" # "BI", BF", "GM", "SFA29"
 #uid = Sys.getenv("un.raperj") #ptran username
 #pwd = Sys.getenv("pw.raperj") #ptran password
-#uid <- un.sameotoj
-#pwd <- pw.sameotoj
-uid <- un.englishg
-pwd <- pw.englishg
+uid <- un.sameotoj
+pwd <- pw.sameotoj
+#uid <- un.englishg
+#pwd <- pw.englishg
 
 
-#Read in shapefiles if needed
+###Read in shapefiles if needed
 temp <- tempfile()
-# Download this to the temp directory
+### Download this to the temp directory
 download.file("https://raw.githubusercontent.com/Mar-scal/GIS_layers/master/inshore_boundaries/inshore_boundaries.zip", temp)
-# Figure out what this file was saved as
+### Figure out what this file was saved as
 temp2 <- tempfile()
-# Unzip it
+### Unzip it
 unzip(zipfile=temp, exdir=temp2)
 
-# Now read in the shapefiles
-BF.strata <- st_read(paste0(temp2, "/inshore_survey_strata/PolygonSCSTRATAINFO_rm46-26-57.shp")) %>% st_transform(crs = 4326)
+### Now read in the shapefiles
+#BF.strata <- st_read(paste0(temp2, "/inshore_survey_strata/PolygonSCSTRATAINFO_rm46-26-57.shp")) %>% st_transform(crs = 4326)
 
-#polygons with strata for SPA 2
+#---- polygons with strata for SPA 2 ----
 BF.strata <- st_read(paste0(temp2, "/inshore_survey_strata/archive/PolygonSCSTRATAINFO_AccessedSept102017.shp")) %>% st_transform(crs = 4326)
 
 SPA1A <- st_read(paste0(temp2, "/SPA1A_polygon_NAD83.shp")) %>% mutate(ET_ID = "1A") %>% st_transform(crs = 4326)
@@ -92,6 +92,26 @@ summary(num.tows)
 
 ##Bottom code missing for GM2024 tow 134
 is.na(num.tows$Bottom_code)
+
+head(num.tows)
+
+### Check number of gangs, line and unlined - num_lined is number of lined gangs on gear, num_unlined is number of unlined gangs on gear; since switch to Miracle gear in 2012 this should be always be num_lined = 2, and num_unlined = 7 
+table(num.tows$num_lined)
+num.tows[num.tows$num_lined != 2,]
+#IF ANY TOWS RETURNED, MUST CHECK - ERROR
+
+table(num.tows$num_unlined)
+num.tows[num.tows$num_unlined != 7,]
+#IF ANY TOWS RETURNED, MUST CHECK - ERROR
+
+### Check number of gangs, num_lined_freq - number of lined gangs fished -- can be < 2 but NEVER zero -- DO NOT LOAD IF ZERO - if true zero tow must be dropped. 
+#CHECK ANY TOWS < 2 to confirm; and confirm NOT ZERO 
+num.tows[num.tows$num_lined_freq < 2,]
+
+### Check number of gangs, num_unlined_freq - number of unlined gangs fished -- can be < 7 but NEVER zero -- DO NOT LOAD IF ZERO - if true zero tow must be dropped. 
+#CHECK ANY TOWS < 7 to confirm; and confirm NOT ZERO 
+num.tows[num.tows$num_unlined_freq < 7,]
+
 
 
 # HGTWGT.csv ----------------------------------------------------------------
@@ -133,11 +153,11 @@ ggplot() + geom_text(data=mwsh[mwsh$Tow>50 & mwsh$Tow<100,]
 
 #Plot individual tows (labels are sample numbers)
 
-ggplot() + geom_text(data=mwsh[mwsh$Tow==77,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
-ggplot() + geom_text(data=mwsh[mwsh$Tow==84,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
+ggplot() + geom_text(data=mwsh[mwsh$Tow==83,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
+ggplot() + geom_text(data=mwsh[mwsh$Tow==69,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
 
 #Plot fewer tows to visualize better - Tows 100 max tow number for cruise
-ggplot() + geom_text(data=mwsh[mwsh$Tow>300 & max(mwsh$Tow),]
+ggplot() + geom_text(data=mwsh[mwsh$Tow>100 & max(mwsh$Tow),]
                      , aes(Height, Weight, colour=as.factor(Tow), label=as.factor(Tow))) 
 
 #Plot individual tows (labels are sample numbers)
@@ -293,6 +313,7 @@ dhf <- dhf |> filter(c %in% c(0,1)) # c(0,1) for Live. and c(2,3)) for Dead
 dhf1 <- dhf[dhf$TOW>0 & dhf$TOW < 15,]
 
 ggplot(dhf1, aes(as.numeric(bin), value)) + geom_bar(fill = "aquamarine3", stat = "identity") + facet_grid(GEAR~TOW, scales="free")
+
 
 dhf2 <- dhf[dhf$TOW >= 16 & dhf$TOW <= 30,]
 #ggplot() + geom_point(data=dhf2, aes(as.numeric(bin), value)) + facet_grid(GEAR~TOW, scales="free")
