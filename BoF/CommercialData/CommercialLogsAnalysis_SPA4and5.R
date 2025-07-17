@@ -53,13 +53,13 @@ for(fun in funcs)
 #### DEFINE ####
 
 direct <- "Y:/Inshore/BoF"
-fishingyear <- 2024 #most recent year of commercial fishing data to be used (e.g. if fishing season is 2019/2020, use 2020)
-assessmentyear <- 2024 #year in which you are conducting the assessment
+fishingyear <- 2025 #most recent year of commercial fishing data to be used (e.g. if fishing season is 2019/2020, use 2020)
+assessmentyear <- 2025 #year in which you are conducting the assessment
 un.ID=Sys.getenv("un.raperj") #ptran username
 pwd.ID=Sys.getenv("pw.raperj") #ptran password
 
 #Date range for logs to be selected 
-start.date.logs <- "2023-10-01"  #YYYY-MM-DD use Oct 1 
+start.date.logs <- "2024-10-01"  #YYYY-MM-DD use Oct 1 
 ends.date.logs <- "2024-10-01"  #YYYY-MM-DD use Oct 1 
 
 #### Read files ####
