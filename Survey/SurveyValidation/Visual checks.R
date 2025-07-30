@@ -34,13 +34,13 @@ for(fun in funcs)
 #define
 direct <- "Y:/Inshore/Survey/"
 year <- 2025 #For years prior to 2023, the directory name is different! Will need to adjust if running for previous years - year/data entry templates and examples/
-CRUISE <- "BI" # "BI", BF", "GM", "SFA29"
+CRUISE <- "GM" # "BI", BF", "GM", "SFA29"
 #uid = Sys.getenv("un.raperj") #ptran username
 #pwd = Sys.getenv("pw.raperj") #ptran password
-uid <- un.sameotoj
-pwd <- pw.sameotoj
-#uid <- un.englishg
-#pwd <- pw.englishg
+#uid <- un.sameotoj
+#pwd <- pw.sameotoj
+uid <- un.englishg
+pwd <- pw.englishg
 
 
 ###Read in shapefiles if needed
@@ -140,8 +140,8 @@ ggplot() + geom_text(data=mwsh[mwsh$Tow>1 & mwsh$Tow<50,]
 
 #Plot individual tows (labels are sample numbers)
 
-ggplot() + geom_text(data=mwsh[mwsh$Tow==33,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
-ggplot() + geom_text(data=mwsh[mwsh$Tow==28,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
+ggplot() + geom_text(data=mwsh[mwsh$Tow==5,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
+ggplot() + geom_text(data=mwsh[mwsh$Tow==29,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
 
 ggplot() + geom_text(data=mwsh[mwsh$Tow==16,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
 ggplot() + geom_text(data=mwsh[mwsh$Tow==21,], aes(Height, Weight, colour=as.factor(Tow), label=Num))
