@@ -31,14 +31,13 @@ for(fun in funcs)
 
 
 # Define: 
+#uid <- keyring::key_list("Oracle")[1,2]
+#pwd <- keyring::key_get("Oracle", uid)
 
-uid <- keyring::key_list("Oracle")[1,2]
-pwd <- keyring::key_get("Oracle", uid)
-
-#uid <- un.sameotoj
-#pwd <- pw.sameotoj
-surveyyear <- 2023  #This is the last survey year 
-assessmentyear <- 2023 #year in which you are conducting the survey 
+uid <- un.sameotoj
+pwd <- pw.sameotoj
+surveyyear <- 2024  #This is the last survey year 
+assessmentyear <- 2024 #year in which you are conducting the survey 
 area <- "3"  #SPA assessing recall SPA 1A, 1B, and 4 are grouped; options: "1A1B4and5", "3", "6"
 path.directory <- "Y:/Inshore/BoF/"
 
@@ -360,6 +359,16 @@ K <- summary(smblined16, summary(smblined15,summary(smblined14, summary(smblined
 
 SMBlined.spr.est[SMBlined.spr.est$Year==2023,c(2:3)] <- c(K$Yspr, K$var.Yspr.corrected)
 
+#2023/2024 
+smblined17 <- spr(lined2023$TOW_NO[lined2023$STRATA_ID==22],apply(lined2023[lined2023$STRATA_ID==22,24:50],1,sum),
+                  lined2024$TOW_NO[lined2024$STRATA_ID==22],apply(lined2024[lined2024$STRATA_ID==22,27:50],1,sum),
+                  crossref.spa3.2024[crossref.spa3.2024$STRATA_ID==22,c("TOW_NO_REF","TOW_NO")])
+ 
+K <- summary(smblined17,summary(smblined16, summary(smblined15,summary(smblined14, summary(smblined13,summary(smblined12, summary (smblined11, summary(smblined10, summary(smblined10, summary (smblined8,summary (smblined7, summary (smblined6,summary (smblined5, summary (smblined4,summary (smblined3,summary (smblined2,summary (smblined1)))))))))))))))))
+
+SMBlined.spr.est[SMBlined.spr.est$Year==2024,c(2:3)] <- c(K$Yspr, K$var.Yspr.corrected)
+
+
 SMBlined.spr.est
 
 #no data in 2020 - approximate 
@@ -508,6 +517,16 @@ INlined16 <- spr(lined2022$TOW_NO[lined2022$STRATA_ID==99],apply(lined2022[lined
 
 K <- summary(INlined16,summary(INlined15,summary(INlined14, summary(INlined13, summary(INlined12, summary (INlined11,summary(INlined10,summary (INlined9,summary (INlined8,summary(INlined7,summary(INlined6,summary(INlined5,summary(INlined4,summary(INlined3,summary(INlined2,summary (INlined1))))))))))))))))
 innerlined.spr.est [innerlined.spr.est$Year==2023,c(2:3)] <- c(K$Yspr, K$var.Yspr.corrected)
+
+#2023/2024 
+INlined17 <- spr(lined2023$TOW_NO[lined2023$STRATA_ID==99],apply(lined2023[lined2023$STRATA_ID==99,24:50],1,sum),
+                 lined2024$TOW_NO[lined2024$STRATA_ID==99],apply(lined2024[lined2024$STRATA_ID==99,27:50],1,sum),
+                 crossref.spa3.2024[crossref.spa3.2024$STRATA_ID==99,c("TOW_NO_REF","TOW_NO")])
+
+K <- summary(INlined17,summary(INlined16,summary(INlined15,summary(INlined14, summary(INlined13, summary(INlined12, summary (INlined11,summary(INlined10,summary (INlined9,summary (INlined8,summary(INlined7,summary(INlined6,summary(INlined5,summary(INlined4,summary(INlined3,summary(INlined2,summary (INlined1)))))))))))))))))
+
+innerlined.spr.est [innerlined.spr.est$Year==2024,c(2:3)] <- c(K$Yspr, K$var.Yspr.corrected)
+
 
 innerlined.spr.est
 
@@ -677,6 +696,16 @@ SMBun16 <- spr(unlined2022$TOW_NO[unlined2022$STRATA_ID==22],apply(unlined2022[u
 K <-  summary(SMBun16,summary(SMBun15,summary(SMBun14,summary(SMBun13, summary(SMBun12, summary (SMBun11,summary(SMBun10,summary (SMBun9,summary (SMBun8,summary(SMBun7,summary(SMBun6,summary(SMBun5,summary(SMBun4,summary(SMBun3,summary(SMBun2,summary(SMBun1))))))))))))))))
 SMBUNlined.spr.est[SMBUNlined.spr.est$Year==2023,c(2:3)] <- c(K$Yspr, K$var.Yspr.corrected)
 
+#2023/2024
+SMBun17 <- spr(unlined2023$TOW_NO[unlined2023$STRATA_ID==22],apply(unlined2023[unlined2023$STRATA_ID==22,24:50],1,sum),
+               unlined2024$TOW_NO[unlined2024$STRATA_ID==22],apply(unlined2024[unlined2024$STRATA_ID==22,27:50],1,sum),
+               crossref.spa3.2024[crossref.spa3.2024$STRATA_ID==22,c("TOW_NO_REF","TOW_NO")])
+
+K <-  summary(SMBun17,summary(SMBun16,summary(SMBun15,summary(SMBun14,summary(SMBun13, summary(SMBun12, summary (SMBun11,summary(SMBun10,summary (SMBun9,summary (SMBun8,summary(SMBun7,summary(SMBun6,summary(SMBun5,summary(SMBun4,summary(SMBun3,summary(SMBun2,summary(SMBun1)))))))))))))))))
+
+SMBUNlined.spr.est[SMBUNlined.spr.est$Year==2024,c(2:3)] <- c(K$Yspr, K$var.Yspr.corrected)
+
+
 SMBUNlined.spr.est
 
 #no data in 2020 - approximate 
@@ -822,6 +851,16 @@ INunlined16 <- spr(unlined2022$TOW_NO[unlined2022$STRATA_ID==99],apply(unlined20
                    crossref.spa3.2023[crossref.spa3.2023$STRATA_ID==99,c("TOW_NO_REF","TOW_NO")])
 K <-  summary(INunlined16,summary(INunlined15,summary(INunlined14, summary(INunlined13, summary(INunlined12, summary (INunlined11, summary(INunlined10, summary (INunlined9,summary(INunlined8,summary (INunlined7,summary(INunlined6,summary(INunlined5,summary (INunlined4,summary(INunlined3,summary(INunlined2,summary(INunlined1))))))))))))))))
 InnerUnlined.spr.est[InnerUnlined.spr.est$Year==2023,c(2:3)] <- c(K$Yspr, K$var.Yspr.corrected)
+
+#2023/2024
+INunlined17 <- spr(unlined2023$TOW_NO[unlined2023$STRATA_ID==99],apply(unlined2023[unlined2023$STRATA_ID==99,24:50],1,sum),
+                   unlined2024$TOW_NO[unlined2024$STRATA_ID==99],apply(unlined2024[unlined2024$STRATA_ID==99,27:50],1,sum),
+                   crossref.spa3.2024[crossref.spa3.2024$STRATA_ID==99,c("TOW_NO_REF","TOW_NO")])
+
+K <-  summary(INunlined17,summary(INunlined16,summary(INunlined15,summary(INunlined14, summary(INunlined13, summary(INunlined12, summary (INunlined11, summary(INunlined10, summary (INunlined9,summary(INunlined8,summary (INunlined7,summary(INunlined6,summary(INunlined5,summary (INunlined4,summary(INunlined3,summary(INunlined2,summary(INunlined1)))))))))))))))))
+
+InnerUnlined.spr.est[InnerUnlined.spr.est$Year==2024,c(2:3)] <- c(K$Yspr, K$var.Yspr.corrected)
+
 
 InnerUnlined.spr.est
 

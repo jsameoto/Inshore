@@ -19,14 +19,14 @@ library(ROracle)
 
 uid <- un.sameotoj
 pwd <- pw.sameotoj
-uid <- keyring::key_list("Oracle")[1,2]
-pwd <- keyring::key_get("Oracle", uid)
+#uid <- keyring::key_list("Oracle")[1,2]
+#pwd <- keyring::key_get("Oracle", uid)
 #yr <- 2020 
 
-surveyyear <- 2023  #This is the last survey year for which you want to include  - not should match year of cruise below 
+surveyyear <- 2024  #This is the last survey year for which you want to include  - not should match year of cruise below 
 #cruise <- "BI2021"  #note should match year for surveyyear set above 
 
-assessmentyear <- 2024 #year in which you are conducting the survey 
+assessmentyear <- 2025 #year in which you are conducting the survey 
 #area <- "1A1B4and5"  #SPA assessing recall SPA 1A, 1B, and 4 are grouped; options: "1A1B4and5", "3", "6" 
 path.directory <- "Y:/Inshore/SFA29/"
 
@@ -213,6 +213,23 @@ vonB.29.95CI
 png(paste0(path.directory,assessmentyear,"/Assessment/Figures/Growth/VonB.SFA29W.png"),width=11,height=8,units = "in",res=920)
 vonB.29.95CI
 dev.off()
+
+
+vonB.29.mean <- ggplot() + 
+  #geom_point(data=BFdetail.vonB, aes(AGE, HEIGHT), size=1.6, alpha=0.3) +
+  geom_jitter(data=SFA29detail.vonB, aes(AGE, HEIGHT), size=1.6, alpha=0.1) + 
+  geom_line(data=p.curve.fixed, aes(AGE, predict.fixed), colour="blue", lwd=2, show.legend = F) +
+ # geom_ribbon(data=p.curve.fixed,aes(ymin=lwr, ymax=upper, x=AGE), alpha=0.6, fill="blue") + 
+  theme(panel.grid = element_blank(), axis.title=element_text(size=15), axis.text=element_text(size=14)) + 
+  xlab("Age (years)")+ylab("Shell height (mm)") + 
+  theme_bw(base_size = 12)
+vonB.29.mean
+
+png(paste0(path.directory,assessmentyear,"/Assessment/Figures/Growth/VonB.SFA29W.mean.png"),width=8,height=6,units = "in",res=300)
+vonB.29.mean
+dev.off()
+
+
 
 #Random effect of year
 vonB.29.year.raneff <- ggplot() + 

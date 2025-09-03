@@ -15,6 +15,8 @@
 # SPA4and5_CPUEgridplotyyyy.png
 # SPA4and5_CPUEgridplotyyyy.png
 # SPA4and5_CPUEgridplotyyyy.png
+# SPA1A_CPEUbyMonthyyyy.png
+# SPA1A_LandingsbyMonthyyyy.png
 
 #BEFORE RUNNING THIS SCRIPT:
 
@@ -28,6 +30,7 @@ library(ggplot2)
 library(RColorBrewer)
 library(openxlsx)
 library(sf) 
+library(lubridate)
 
 source("Y:/Inshore/BoF/Assessment_fns/convert.dd.dddd.r")
 
@@ -50,14 +53,14 @@ for(fun in funcs)
 #### DEFINE ####
 
 direct <- "Y:/Inshore/BoF"
-fishingyear <- 2022 #most recent year of commercial fishing data to be used (e.g. if fishing season is 2019/2020, use 2020)
-assessmentyear <- 2022 #year in which you are conducting the assessment
-#un.ID=un.raperj #ptran username
-#pwd.ID=pw.raperj #ptran password
+fishingyear <- 2025 #most recent year of commercial fishing data to be used (e.g. if fishing season is 2019/2020, use 2020)
+assessmentyear <- 2025 #year in which you are conducting the assessment
+un.ID=Sys.getenv("un.raperj") #ptran username
+pwd.ID=Sys.getenv("pw.raperj") #ptran password
 
 #Date range for logs to be selected 
-start.date.logs <- "2021-10-01"  #YYYY-MM-DD use Oct 1 
-ends.date.logs <- "2022-10-01"  #YYYY-MM-DD use Oct 1 
+start.date.logs <- "2024-10-01"  #YYYY-MM-DD use Oct 1 
+ends.date.logs <- "2024-10-01"  #YYYY-MM-DD use Oct 1 
 
 #### Read files ####
 
@@ -86,6 +89,7 @@ quer2 <- paste(
   "FROM scallop.scallop_log_marfis s		         ",
   "WHERE s.assigned_area in ('SPA4', 'SPA5')       ",
   " 	AND  s.date_fished >= to_date('",start.date.logs,"','YYYY-MM-DD') and s.date_fished < to_date('",ends.date.logs,"','YYYY-MM-DD') ",
+  "AND s.licence_id not in ('356089', '356090', '356091', '356092', '368730', '369132', '369133') ", #remove FSC
   "	AND (s.data_class = 1                        ",
   "OR (s.data_class = 2 AND s.quality_flag =',4' ) ",
   "OR (s.data_class = 2 AND s.quality_flag =',1,4') ",
@@ -102,19 +106,36 @@ dim(logs)
 logs$lat <- convert.dd.dddd(logs$LATITUDE/100) #coordinates in SCALLOP db are stored without the decimal point, have to divide by 100 to get degrees decimal minutes for convert.dd.dddd
 logs$lon <- (-1)*convert.dd.dddd(logs$LONGITUDE/100)
 
-#Add year column:
+#Add year and month columns:
 logs$DATE_FISHED <- as.Date(logs$DATE_FISHED, format="%Y-%m-%d")  
-logs$YEAR <- as.numeric(format(logs$DATE_FISHED, "%Y")) 
+logs$YEAR <- year(logs$DATE_FISHED)
+logs$month <- month(logs$DATE_FISHED)
+head(logs)
+unique(logs$month)
+str(logs)
 
 #Check data
 table(logs$YEAR, logs$ASSIGNED_AREA) #check years, fishing season spans 2 calendar years in SPA4 and 1 in SPA 5
 table(logs$FLEET) #check fleets, SPA4 & 5 should only have records from Full Bay
 
+#Check cpue by month
+logs %>%
+  group_by(month) %>%
+  summarise(mean(CPUE_KG))
 
+#Check landings by month
+logs %>%
+  group_by(month) %>%
+  summarise(sum(DAY_CATCH_KG/1000))
 #If any issues here, STOP and address with log scan and/or VMS checks. Make any corrections in the SCALLOP db (and send to CDD), then restart this script
 
-#JS NOTE - 2022 -- a mid-bay record JR to check on, adding line to remove it for now: 
+#Remove Mid-Bay records
 logs <- logs[logs$FLEET != 'Mid-Bay',]
+
+#Remove CPUE outliers
+dim(logs)
+logs <- logs[logs$CPUE_KG <200,]
+dim(logs)
 
 #Change year in logs to reflect fishing year instead of calendar year
 logs$YEAR <- as.numeric(fishingyear)
@@ -208,6 +229,40 @@ ggplot(comm.dat.spa5, aes(x = year, y = cpue.kgh)) +
   geom_text(x = 1998, y = 22, label = "median")
 dev.off()
 
+#CPUE by month
+CPUE_month <- logs %>% 
+  group_by(month) %>%
+  summarise(sum(DAY_CATCH_KG)/sum(effort_h)) %>%
+  slice(5:7,1:4) %>% #reorder months, this may change depending on months fished in a given year
+  mutate(month = factor(month, levels=unique(month))) #so months will plot in correct order
+
+ggplot(CPUE_month, aes(x = month, y = `sum(DAY_CATCH_KG)/sum(effort_h)`, group =1)) +
+  theme_bw(base_size = 16) + theme(panel.grid=element_blank()) + theme(plot.margin = unit(c(1,1,1,1), "cm")) +
+  geom_point() +
+  geom_line() +
+  scale_x_discrete("Month") +
+  scale_y_continuous("Catch Rate (kg/h)", limits = c(0,60), breaks = seq(0,60,10))
+#save
+ggsave(filename = paste0(direct, "/",assessmentyear,"/Assessment/Figures/CommercialData/SPA4and5_CPUEbyMonth",fishingyear, ".png"), width=24,height=20,dpi=400,units='cm')
+
+#Landings by month (from clean logs)
+Landings_month <- logs %>% 
+  group_by(month) %>%
+  summarise(sum(DAY_CATCH_KG/1000)) %>%
+  slice(5:7,1:4) %>% #reorder months, this may change depending on months fished in a given year
+  mutate(month = factor(month, levels=unique(month))) #so months will plot in correct order
+
+ggplot(Landings_month, aes(x = month, y = `sum(DAY_CATCH_KG/1000)`, group =1)) +
+  theme_bw(base_size = 16) + theme(panel.grid=element_blank()) + theme(plot.margin = unit(c(1,1,1,1), "cm")) +
+  geom_point() +
+  geom_line() +
+  scale_x_discrete("Month") +
+  scale_y_continuous("Landings (t)")
+#save
+ggsave(filename = paste0(direct, "/",assessmentyear,"/Assessment/Figures/CommercialData/SPA4and5_LandingsbyMonth",fishingyear, ".png"), width=24,height=20,dpi=400,units='cm')
+
+
+
 #SPA4 CPUE and Effort (fishery-level)
 png(file = paste0(direct, "/",assessmentyear,"/Assessment/Figures/CommercialData/SPA4CPUEandEffort",fishingyear, ".png"), 24,20,res=400,units='cm')
 ggplot(comm.dat.spa4) +
@@ -269,7 +324,7 @@ ggplot() +
   scale_fill_manual(values=c("skyblue1", "grey"), labels=c("SPA 5", "SPA 4"), name=NULL) +
   annotate(geom="text",label="SPA 4 and 5 TAC", x=2014, y= 240) + 
   annotate(geom="text",label="SPA 4 TAC", x=2009, y= 140) +
-  theme(legend.position=c(0.85, 0.85)) # play with the location if you want it inside the plotting panel
+  theme(legend.position=c(0.7, 0.85)) # play with the location if you want it inside the plotting panel
 dev.off()
 
 
@@ -361,7 +416,7 @@ p <- pecjector(area =list(x=c(-66.2,-65.5), y=c(44.46,45), crs=4326),repo ='gith
    geom_tile(df, mapping = aes(lon, lat, fill = tot.catch), color = "grey55") +
    geom_sf(data = poly.strata, fill=NA, colour="grey55") +
    coord_sf(xlim = c(-66.2,-65.5), ylim = c(44.46,45), expand = F) +
-   scale_fill_binned(type = "viridis", direction = -1, name="Catch (kg)") +
+   scale_fill_binned(type = "viridis", direction = -1, name="Catch (kg)", breaks = c(2000, 4000, 6000)) +
    theme(plot.title = element_text(size = 14, hjust = 0.5), #plot title size and position
          axis.title = element_text(size = 12),
          axis.text = element_text(size = 10),

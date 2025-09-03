@@ -38,9 +38,9 @@ pwd <- pw.sameotoj
 #uid <- keyring::key_list("Oracle")[1,2]
 #pwd <- keyring::key_get("Oracle", uid)
 
-surveyyear <- 2023  #This is the last survey year for which you want to include  - not should match year of cruise below 
-cruise <- "SFA292023"  #note should match year for surveyyear set above 
-assessmentyear <- 2024 #year in which you are conducting the survey 
+surveyyear <- 2024  #This is the last survey year for which you want to include  - not should match year of cruise below 
+cruise <- "SFA292024"  #note should match year for surveyyear set above 
+assessmentyear <- 2025 #year in which you are conducting the survey 
 path.directory <- "Y:/Inshore/SFA29/"
 years <- c(2001:surveyyear) #when have 2021 data ready with SDM value then can use line of code below 
 #yr.crnt <- surveyyear-1
@@ -71,6 +71,7 @@ sfa29shw.dat <- sfa29shw.dat[,3:dim(sfa29shw.dat)[2]]
 sfa29shw.dat[,c(grep("BIN_ID_0",names(sfa29shw.dat)):grep("BIN_ID_195",names(sfa29shw.dat)))] <-  sfa29shw.dat[,c(grep("BIN_ID_0",names(sfa29shw.dat)):grep("BIN_ID_195",names(sfa29shw.dat)))]/1000 #convert tow size bins from grams to kg
 
 data.obj <- sfa29shw.dat
+dim(data.obj)
 
 # Check to see if any NA's in data & remove records with NAs in data - should not be any 
 	dim(data.obj)
@@ -119,9 +120,18 @@ data.obj <- sfa29shw.dat
 # Left join survey tows to SDM level on uid
 	data.obj <- merge(data.obj, sdmtows, by.x='uid', by.y='uid', all.x=TRUE)
 	dim(data.obj)
+	
+#In 2024 did tows outside 29W and also in non-MBES covered part of B; remove these so apples and apples with previous estimates 
+	data.obj %>% filter(CRUISE == "SFA292024" & is.na(SDM) == TRUE)
+	dim(data.obj)
+	
+	data.obj <- data.obj[!(data.obj$CRUISE == "SFA292024" & is.na(data.obj$SDM) == TRUE),]
+	dim(data.obj)
+	
 	data.obj.all <- data.obj
 	
-	
+#check for NAs 
+	summary(data.obj)
 
 ###
 ###  ----    Calculate Stratified Random Survey Estimates  ---- 
@@ -131,10 +141,10 @@ data.obj <- sfa29shw.dat
 ###
 
 # ---- PRE-RECRUITS ----		
-# NOTE this section of code is run once for each size (comm, rec, precec). Define below
+# NOTE this section of code is run once for each size (comm, rec, prerec). Define below
 	strata.group <- SDMareas
-	size <- "prerec" # MUST DEFINE if precruits, recruits or commercial size (i.e. column  pre.bm, rec.bm, or com.bm)
-	data.obj$STDTOTALCAUGHT <- data.obj$pre.bm # MUST DEFINE if precruits, recruits or commercial size (i.e. column pre.bm, rec.bm, or com.bm)
+	size <- "prerec" # MUST DEFINE if prerecruits, recruits or commercial size (i.e. column  pre.bm, rec.bm, or com.bm)
+	data.obj$STDTOTALCAUGHT <- data.obj$pre.bm # MUST DEFINE if prerecruits, recruits or commercial size (i.e. column pre.bm, rec.bm, or com.bm)
 
 	# Only use regular survey tows for estimation (TOW_TYPE_ID = 1)
 	data.obj.all <- data.obj
@@ -297,10 +307,10 @@ sdm.levels.est.all
 		
 		
 # ---- RECRUITS ----		
-	# NOTE this section of code is run once for each size (comm, rec, precec). Define below
+	# NOTE this section of code is run once for each size (comm, rec, prerec). Define below
 	strata.group <- SDMareas
-	size <- "rec" # MUST DEFINE if precruits, recruits or commercial size (i.e. column  pre.bm, rec.bm, or com.bm)
-	data.obj$STDTOTALCAUGHT <- data.obj$rec.bm # MUST DEFINE if precruits, recruits or commercial size (i.e. column pre.bm, rec.bm, or com.bm)
+	size <- "rec" # MUST DEFINE if prerecruits, recruits or commercial size (i.e. column  pre.bm, rec.bm, or com.bm)
+	data.obj$STDTOTALCAUGHT <- data.obj$rec.bm # MUST DEFINE if prerecruits, recruits or commercial size (i.e. column pre.bm, rec.bm, or com.bm)
 	
 	# Only use regular survey tows for estimation (TOW_TYPE_ID = 1)
 	data.obj.all <- data.obj
@@ -351,9 +361,11 @@ sdm.levels.est.all
 	    data.obj.i <- temp.data[temp.data$STRATA==ab[j],]
 	    for (k in 1:length(sdmlevels)){
 	      data.obj.k <- data.obj.i[data.obj.i$SDM==sdmlevels[k],]
+	      #data.obj.k[is.na(data.obj.k$uid),]  ## in 2024, NAs introduced in data.obj.k.. added line 412 to deal with this and added na.rm = TRUE to line 415 
+	      data.obj.k <- data.obj.k[!is.na(data.obj.k$uid),]
 	      m=m+1
 	      if(dim(data.obj.k)[1]!=0){
-	        out[m,"yst"] <- mean(data.obj.k$STDTOTALCAUGHT)
+	        out[m,"yst"] <- mean(data.obj.k$STDTOTALCAUGHT, na.rm = TRUE)
 	        out[m,"se.yst"] <- sqrt(var(data.obj.k$STDTOTALCAUGHT))/sqrt(dim(data.obj.k)[1])
 	        out[m,"var.est"]<- var(data.obj.k$STDTOTALCAUGHT)/dim(data.obj.k)[1] #var.est is calculated as variance of the estimator
 	      }
@@ -471,10 +483,10 @@ sdm.levels.est.all
 	
 
 # ---- COMMERCIAL ----		
-	# NOTE this section of code is run once for each size (comm, rec, precec). Define below
+	# NOTE this section of code is run once for each size (comm, rec, prerec). Define below
 	strata.group <- SDMareas
-	size <- "comm" # MUST DEFINE if precruits, recruits or commercial size (i.e. column  pre.bm, rec.bm, or com.bm)
-	data.obj$STDTOTALCAUGHT <- data.obj$com.bm # MUST DEFINE if precruits, recruits or commercial size (i.e. column pre.bm, rec.bm, or com.bm)
+	size <- "comm" # MUST DEFINE if prerecruits, recruits or commercial size (i.e. column  pre.bm, rec.bm, or com.bm)
+	data.obj$STDTOTALCAUGHT <- data.obj$com.bm # MUST DEFINE if prerecruits, recruits or commercial size (i.e. column pre.bm, rec.bm, or com.bm)
 	
 	# Only use regular survey tows for estimation (TOW_TYPE_ID = 1)
 	data.obj.all <- data.obj
@@ -525,9 +537,11 @@ sdm.levels.est.all
 	    data.obj.i <- temp.data[temp.data$STRATA==ab[j],]
 	    for (k in 1:length(sdmlevels)){
 	      data.obj.k <- data.obj.i[data.obj.i$SDM==sdmlevels[k],]
+	      #data.obj.k[is.na(data.obj.k$uid),]  ## in 2024, NAs introduced in data.obj.k.. added line 412 to deal with this and added na.rm = TRUE to line 415 
+	      data.obj.k <- data.obj.k[!is.na(data.obj.k$uid),]
 	      m=m+1
 	      if(dim(data.obj.k)[1]!=0){
-	        out[m,"yst"] <- mean(data.obj.k$STDTOTALCAUGHT)
+	        out[m,"yst"] <- mean(data.obj.k$STDTOTALCAUGHT, na.rm = TRUE)
 	        out[m,"se.yst"] <- sqrt(var(data.obj.k$STDTOTALCAUGHT))/sqrt(dim(data.obj.k)[1])
 	        out[m,"var.est"]<- var(data.obj.k$STDTOTALCAUGHT)/dim(data.obj.k)[1] #var.est is calculated as variance of the estimator
 	      }
@@ -727,7 +741,8 @@ sdm.levels.est.all
 	  theme(legend.position = c(0.1, 0.85),panel.grid.minor = element_blank(),legend.title = element_blank()) + 
 	  scale_color_manual(values=colors.sdm, breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low"))+
 	  scale_linetype_manual(values = c(1,2,3),breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low"))+
-	  scale_shape_manual(values = c(15:17),breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low"))
+	  scale_shape_manual(values = c(15:17),breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low")) + 
+	  scale_x_continuous(breaks = seq(2001,2026,by=4), limits = c(2001,2026)) #+ 
 	AtoD.per.tow.comm
 	
 #save
@@ -775,7 +790,8 @@ strat.comm.plot <- ggplot(data = sdm.strat.est %>% filter(size == "comm"), aes(x
   geom_errorbar( aes(x=YEAR, ymin=yst-se, ymax=yst+se), width=0.4, colour="orange", alpha=0.9, size=1.3) + 
   facet_wrap(~SUBAREA, ncol=2) + 
   theme_bw() + ylab("Mean weight/tow (kg)") + xlab("Year") + 
-  theme(legend.position = c(0.1, 0.85),panel.grid.minor = element_blank(),legend.title = element_blank())
+  theme(legend.position = c(0.1, 0.85),panel.grid.minor = element_blank(),legend.title = element_blank()) + 
+  scale_x_continuous(breaks = seq(2001,2026,by=4), limits = c(2001,2026)) #+ 
 strat.comm.plot
 
 #save
@@ -787,7 +803,7 @@ ggsave(filename = paste0(path.directory,assessmentyear,"/Assessment/Figures/SFA2
 ### ---- SUBAREA E ----  
 ## NO DOMAIN DATAFRAME FOR E - for 2005 take simple mean #
 	
-	#precruits
+	#prerecruits
 	E.area <- data.obj.all[data.obj.all$STRATA_ID==45,]
 	sizeE.prerec <- "prerec"	# Define - ensure matches entry on next line where assign E.area$STDTOTALCAUGHT
 	E.area$STDTOTALCAUGHT <- E.area$pre.bm #DEFINE SIZE; comm, rec, prerec
@@ -870,15 +886,17 @@ ggsave(filename = paste0(path.directory,assessmentyear,"/Assessment/Figures/SFA2
 	                      levels = c("prerec", "rec", "comm"))
 
 	size_names <- as_labeller(
-	  c(`prerec` = "Precrecruits (<90 mm)", `rec` = "Recruits (90-99 mm)",`comm` = "Commercial (>= 100 mm)"))
+	  c(`prerec` = "Prerecruits (<90 mm)", `rec` = "Recruits (90-99 mm)",`comm` = "Commercial (>= 100 mm)"))
 	
 	E.weight.per.tow <- ggplot(data = out.e, aes(x=YEAR, y=yst)) + 
 	  geom_point() + 
 	  geom_line() + 
+	  scale_x_continuous(limits = c(2013, (survey.year+1)), breaks = seq(2013, (survey.year+1), by = 4)) +
 	  facet_wrap(~group, ncol=1, labeller = size_names, scales = "free") + 
 	  theme_bw() + ylab("Mean weight/tow (kg)") + xlab("Year") + 
 	  theme(legend.position = c(0.1, 0.9),panel.grid.minor = element_blank()) + 
-	  geom_pointrange(aes(ymin=yst-se.yst, ymax=yst+se.yst)) 
+	  geom_pointrange(aes(ymin=yst-se.yst, ymax=yst+se.yst))  + 
+	  scale_x_continuous(breaks = seq(2013,2026,by=4), limits = c(2013,2026)) #+ 
 	E.weight.per.tow
 	
 	#save

@@ -29,12 +29,12 @@ names(SFA292005to2007sediment ) <- c("uid","Start.Bottom")
 
 #DEFINE:
 path.directory <- "Y:/Inshore/SFA29/"
-assessmentyear <- 2024 #year in which you are conducting the assessment 
-surveyyear <- 2023  #last year of survey data you are using, e.g. if max year of survey is survey from summer 2019, this would be 2019 
+assessmentyear <- 2025 #year in which you are conducting the assessment 
+surveyyear <- 2024  #last year of survey data you are using, e.g. if max year of survey is survey from summer 2019, this would be 2019 
 uid <- un.sameotoj
 pwd <- pw.sameotoj
-uid <- keyring::key_list("Oracle")[1,2]
-pwd <- keyring::key_get("Oracle", uid)
+#uid <- keyring::key_list("Oracle")[1,2]
+#pwd <- keyring::key_get("Oracle", uid)
 
 #Bring in survey tow data with SDM value (note - SFA29_SDM_LWM.R script must be run to get updated survey tows with SDM values prior to runnint this script)
 sdmtows <- read.csv("Y:/Inshore/SFA29/ScalSurv_SDM/SFA29Tows_SDM.csv")
@@ -550,13 +550,18 @@ cruise.list <- paste(cruise.list,collapse="','")
 	#this is plot used in survey summary presentation 
 	lobster.str <-  rbind(sdm.strat.est.all %>% dplyr::select(YEAR, SUBAREA,yst,descrip), out.e %>% dplyr::select(YEAR, SUBAREA, yst,descrip))  
 	lobster.str <- lobster.str %>% arrange(SUBAREA,YEAR)
+	str(lobster.str)
+	lobster.str$year <- as.numeric(lobster.str$YEAR)	
 	
-		ggplot(data = lobster.str, aes(x=YEAR, y=yst, group = 1)) + #use group = 1 for lines to work.
-		  geom_point() + geom_line() +
-		  scale_x_discrete(breaks = seq(2004, 2021, by = 4))+
+	
+	ggplot(data = lobster.str, aes(x=year, y=yst, group = 1)) + #use group = 1 for lines to work.
+		  geom_point() + 
+		  geom_line() +
+		  scale_x_continuous(limits = c(2000, (surveyyear+1)), breaks = seq(2004, (surveyyear+1), by = 4)) +
 		  theme_bw() +
-		  facet_wrap(~SUBAREA) + ylab("Mean number of Lobster per standarized tow ") + xlab("Year")
-		
+		  facet_wrap(~SUBAREA) + 
+		  ylab("Mean number of Lobster per standarized tow ") + 
+		  xlab("Year") 
 #save
 ggsave(filename = paste0(path.directory,assessmentyear,'/Assessment/Figures/LobsterSurvey_NumPerTow_SDM',surveyyear, '.png'), plot = last_plot(), scale = 2.5, width =9, height = 6, dpi = 300, units = "cm", limitsize = TRUE)	
 		
