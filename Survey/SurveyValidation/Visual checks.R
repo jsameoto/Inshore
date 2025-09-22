@@ -271,7 +271,7 @@ dhf.dup.check <- rbind(dhf.dup.check, output)
 dhf.dup.check |> filter(wx == TRUE) |> dplyr::select(TOW)
 
 #Look at specific Tow number and cross reference with data sheet.
-View(dhf.dup.check |> filter(TOW == 73)) #enter tow
+View(dhf.dup.check |> filter(TOW == 114)) #enter tow
 
 ## Check datasheet for tow 128 GM 2024 
 
@@ -306,7 +306,7 @@ dhf$bin <- ifelse(dhf$c %in% c(0,2), dhf$variable,
 dhf <- dplyr::arrange(dhf, TOW, GEAR, c)
 
 #FILTER for live/dead - **!! CHANGE THIS LINE FOR LIVE OR DEAD !!**
-dhf <- dhf |> filter(c %in% c(0,1)) # c(0,1) for Live. and c(2,3)) for Dead
+dhf <- dhf |> filter(c %in% c(2,3)) # c(0,1) for Live. and c(2,3)) for Dead
 
 
 #Plot to look for outliers - will need to adjust for survey tow numbers. Plots frequency (y axis), bin (x axis), by Tow and Gear (unlined/lined)

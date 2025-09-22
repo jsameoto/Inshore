@@ -36,8 +36,8 @@ for(fun in funcs)
 chan <- dbConnect(dbDriver("Oracle"),username=uid, password=pwd,'ptran')
 
 #set survey.year and cruise - *Note: requires single quotations within double quotations*
-survey.year <- "'2024'"
-cruise <- "'SFA292024'"
+survey.year <- "'2025'"
+cruise <- "'GM2025'"
 #appendingfile_year <- "2021" # for importing the current spreadsheet to append to.
 #updatefile_year <- "2021" #For saving file
 
@@ -63,6 +63,8 @@ ScallopSurv$lon <- convert.dd.dddd(ScallopSurv$START_LONG)
 ScallopSurv$DDSlat <- ScallopSurv$lat
 ScallopSurv$DDSlon <- ScallopSurv$lon 
 
+table(ScallopSurv$CRUISE)
+
 #added Jan 2020 
 #calculate mid point assuming staright line distance 
 # This makes sure that ALL the data have the lat/long calculated in the same way
@@ -76,30 +78,17 @@ ScallopSurv$DDSlon <- ScallopSurv$lon
 
 ## As of 2024; using DEM for all inshore areas including SFA 29W - bc in 2024 did some sampling outside MBES domain; use moving forward. 
 
-#if(grepl('SFA29',cruise)){
-#  bathy <- rast("Y:/Inshore/StandardDepth/SFA29_mbDEM/sfa29_utm/w001001.adf")
-#  crs(bathy)<- "epsg:32619"
-#  ScallopSurv.sf <- st_as_sf(ScallopSurv, coords = c("lon", "lat"), crs = 4326) |> 
-#    st_transform(crs = 32619) #Convert to utm zone 20 to match bathy.
-#  #extract olex depth values
-#  olex.depth <- terra::extract(bathy, vect(ScallopSurv.sf))
-#  #Append depth to survey data
-#  ScallopSurv.dpth <- cbind(ScallopSurv.sf, olex.depth) %>% 
-#    mutate(FID = row_number()) |>  dplyr::select(FID, CRUISE, TOW_NO, ID, START_LAT, START_LONG, DDSlat, DDSlon, RASTERVALU = sfa29_utm) %>%  #sort to match towsdd_Std column formatting
-#    st_set_geometry(NULL) #removes geometry
-#}else
-#  {
-    bathy <- rast("Y:/Inshore/StandardDepth/ScotianShelfDEM_Olex/mdem_olex/w001001.adf")
-    crs(bathy)<- "epsg:32620"
-    ScallopSurv.sf <- st_as_sf(ScallopSurv, coords = c("lon", "lat"), crs = 4326) |> 
+#---- For BoF and approaches areas ----
+bathy <- rast("Y:/Inshore/StandardDepth/ScotianShelfDEM_Olex/mdem_olex/w001001.adf")
+crs(bathy)<- "epsg:32620"
+ScallopSurv.sf <- st_as_sf(ScallopSurv, coords = c("lon", "lat"), crs = 4326) |> 
       st_transform(crs = 32620) #Convert to utm zone 20 to match bathy.
-    #extract olex depth values
-    olex.depth <- terra::extract(bathy, vect(ScallopSurv.sf))
-    #Append depth to survey data
-    ScallopSurv.dpth <- cbind(ScallopSurv.sf, olex.depth) %>% 
+#extract olex depth values
+olex.depth <- terra::extract(bathy, vect(ScallopSurv.sf))
+#Append depth to survey data
+ScallopSurv.dpth <- cbind(ScallopSurv.sf, olex.depth) %>% 
       mutate(FID = row_number()) |>  dplyr::select(FID, CRUISE, TOW_NO, ID, START_LAT, START_LONG, DDSlat, DDSlon, RASTERVALU = mdem_olex) %>%  #sort to match towsdd_Std column formatting
       st_set_geometry(NULL) #removes geometry
-#}
 
 #Load previous towsdd_stdDepth.csv file to append to.
 towsdd <- read.csv(paste0("Y:/Inshore/StandardDepth/towsdd_StdDepth.csv"))
@@ -111,6 +100,9 @@ towsdd.updt <- rbind(towsdd, ScallopSurv.dpth)
 dim(towsdd.updt)
 table(towsdd.updt$CRUISE)
 
+#check if increase in tows in what expect 
+dim(towsdd.updt)[1] - dim(towsdd)[1]  
+
 #Check values and plot if necessary
 summary(towsdd.updt)
 #mapview::mapview(ScallopSurv.sf)+ # %>% filter(TOW_NO %in% c(269,270,272)))
@@ -120,8 +112,8 @@ summary(towsdd.updt)
 write.csv(towsdd.updt, "Y:/Inshore/StandardDepth/towsdd_StdDepth.csv", row.names = FALSE)
 
 
-### 
-### For SFA 29 2024; surveyed outside MBES area; thus use regular DEM to get depths; compare to past year ####
+
+#---- For SFA 29 ; note in 2024 surveyed outside MBES area; thus use regular DEM to get depths; compare to past years, use this DEM moving forward -----
 bathy <- rast("Y:/Inshore/StandardDepth/ScotianShelfDEM_Olex/mdem_olex/w001001.adf")
 crs(bathy)<- "epsg:32620"
 ScallopSurv.sf <- st_as_sf(ScallopSurv, coords = c("lon", "lat"), crs = 4326) |> 

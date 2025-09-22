@@ -18,6 +18,7 @@ library(tidyverse)
 library(PBSmapping)
 library(ggplot2)
 library(cowplot)
+library(plyr)
 
 
 #Read in functions from Github
@@ -37,8 +38,8 @@ pwd <- pw.sameotoj
 #uid <- keyring::key_list("Oracle")[1,2]
 #pwd <- keyring::key_get("Oracle", uid)
 
-surveyyear <- 2024  #This is the last survey year 
-assessmentyear <- 2024 #year in which you are conducting the survey 
+surveyyear <- 2025  #This is the last survey year 
+assessmentyear <- 2025 #year in which you are conducting the survey 
 area <- "1A1B4and5"  #SPA assessing recall SPA 1A, 1B, and 4 are grouped; options: "1A1B4and5", "3", "6" 
 path.directory <- "Y:/Inshore/BoF/"
 
@@ -720,7 +721,8 @@ SPA1B.CS.SHFdead.for.plot <- SPA1B.CS.SHFdead %>% filter(year > surveyyear-7)
 SPA1B.CS.SHFdead.for.plot$SH <- round(SPA1B.CS.SHFdead.for.plot$SH,3)
 
 
-ylimits <- c(0,10)
+#ylimits <- c(0,10)
+ylimits <- c(0,round_any(max(SPA1B.CS.SHFdead.for.plot$SH, na.rm = TRUE), 10, f = ceiling)) 
 xlimits <- c(0,200)
 recruitlimits <- c(65,80)
 
@@ -821,7 +823,8 @@ SPA1B.MBN.SHFdead.for.plot <- SPA1B.MBN.SHFdead %>% filter(year > surveyyear-7)
 #shorten SH data for plot or else get warning when run ggplot 
 SPA1B.MBN.SHFdead.for.plot$SH <- round(SPA1B.MBN.SHFdead.for.plot$SH,3)
 
-ylimits <- c(0,10)
+#ylimits <- c(0,10)
+ylimits <- c(0,round_any(max(SPA1B.MBN.SHFdead.for.plot$SH, na.rm = TRUE), 10, f = ceiling)) 
 xlimits <- c(0,200)
 recruitlimits <- c(65,80)
 

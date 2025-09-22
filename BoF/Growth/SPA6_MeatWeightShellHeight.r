@@ -28,10 +28,10 @@ pwd <- pw.sameotoj
 #uid <- keyring::key_list("Oracle")[1,2]
 #pwd <- keyring::key_get("Oracle", uid)
 
-surveyyear <- 2024  #This is the last survey year for which you want to include  - not should match year of cruise below 
-cruise <- "GM2024"  #note should match year for surveyyear set above 
+surveyyear <- 2025  #This is the last survey year for which you want to include  - not should match year of cruise below 
+cruise <- "GM2025"  #note should match year for surveyyear set above 
 
-assessmentyear <- 2024 #year in which you are conducting the survey 
+assessmentyear <- 2025 #year in which you are conducting the survey 
 area <- "6"  #SPA assessing recall SPA 1A, 1B, and 4 are grouped; options: "1A1B4and5", "3", "6" 
 path.directory <- "Y:/Inshore/BoF/"
 
@@ -120,7 +120,8 @@ test.data$Log.DEPTH <- log(abs(test.data$ADJ_DEPTH)) #take abs to keep value pos
 test.data$Log.DEPTH.CTR <- test.data$Log.DEPTH - mean(test.data$Log.DEPTH)
 summary(test.data)
 
-#plot depths by tow
+#plot depths by tow.
+plot(ADJ_DEPTH~TOW_NO, data=test.data)
 png(paste0(path.directory, assessmentyear, "/Assessment/Figures/Growth/GMtowdepth",surveyyear,".png")) #!!!DEFINE
 plot(ADJ_DEPTH~TOW_NO, data=test.data)
 dev.off()
@@ -132,6 +133,7 @@ MWTSHGM.YYYY <- glmer(WET_MEAT_WGT~Log.HEIGHT.CTR+Log.DEPTH.CTR+(Log.HEIGHT.CTR|
 summary(MWTSHGM.YYYY)
 
 #Save summary to txt file
+print(summary(MWTSHGM.YYYY))
 sink(paste0(path.directory, assessmentyear, "/Assessment/Data/Growth/SPA",area,"/MWTSHGM",surveyyear,"_ModelSummary.txt"))
 print(summary(MWTSHGM.YYYY))
 sink()
@@ -139,12 +141,18 @@ sink()
 #diagnostics
 latt <- data.frame(test.data, res=residuals(MWTSHGM.YYYY,"pearson"),fit=fitted(MWTSHGM.YYYY)) #update model name
 
-#Residuals vs fitted - full area 
+#Residuals vs fitted - full area
+plot(MWTSHGM.YYYY) 
 png(paste0(path.directory, assessmentyear, "/Assessment/Figures/Growth/MWTSHGM",surveyyear,".png"))
-plot(MWTSHGM.YYYY) #update model name
+plot(MWTSHGM.YYYY) 
 dev.off()
 
 #Plot of tow level residuals
+xyplot(res~fit|as.factor(TOW_NO),data=latt, xlab="fitted", ylab="residuals",
+       panel = function(x, y) {
+         panel.xyplot(x, y)
+         panel.abline(h=0)
+       })
 png(paste0(path.directory, assessmentyear, "/Assessment/Figures/Growth/MWTSHGM",surveyyear,"_towresid.png"))
 xyplot(res~fit|as.factor(TOW_NO),data=latt, xlab="fitted", ylab="residuals",
   panel = function(x, y) {
@@ -154,6 +162,7 @@ xyplot(res~fit|as.factor(TOW_NO),data=latt, xlab="fitted", ylab="residuals",
 dev.off()
 
 #Plot of tow level fitted values 
+xyplot(WET_MEAT_WGT~fit|as.factor(TOW_NO),data=latt, xlab="fitted", ylab="Wet Meat weight")
 png(paste0(path.directory, assessmentyear, "/Assessment/Figures/Growth/MWTSHGM",surveyyear,"_towfit.png"))
 xyplot(WET_MEAT_WGT~fit|as.factor(TOW_NO),data=latt, xlab="fitted", ylab="Wet Meat weight")
 dev.off()

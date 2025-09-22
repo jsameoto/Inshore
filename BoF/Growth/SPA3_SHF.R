@@ -34,13 +34,13 @@ for(fun in funcs)
 #pwd <- keyring::key_get("Oracle", uid)
 uid <- un.sameotoj
 pwd <- pw.sameotoj
-surveyyear <- 2024  #This is the last survey year 
-assessmentyear <- 2024 #year in which you are conducting the survey 
+surveyyear <- 2025  #This is the last survey year 
+assessmentyear <- 2025 #year in which you are conducting the survey 
 area <- "3"  #SPA assessing recall SPA 1A, 1B, and 4 are grouped; options: "1A1B4and5", "3", "6" 
-cruise <- "'BI2024'"
+cruise <- "'BI2025'"
 path.directory <- "Y:/Inshore/BoF/"
 
-#polygon to for assingning new strata to data #To bring in sf object from Github eventually - will need to identify in and out VMS data points.
+#polygon to for assigning new strata to data #To bring in sf object from Github eventually - will need to identify in and out VMS data points.
 spa3area <- read.csv("Y:/Inshore/Databases/Scallsur/SPA3/SPA3_VMSpoly.csv")
 
 #////... END OF DEFINE SECTION ...////
@@ -261,7 +261,7 @@ SPA3.data.for.plot <- SPA3.data.for.plot %>% filter(year > surveyyear-7)
 #shorten SH data for plot or else get warning when run ggplot 
 SPA3.data.for.plot$SH <- round(SPA3.data.for.plot$SH,3)
 
-ylimits <- c(0,80)
+ylimits <- c(0,max(SPA3.data.for.plot$SH)+10)
 xlimits <- c(0,200)
 recruitlimits <- c(65,80)
 
