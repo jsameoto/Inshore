@@ -25,10 +25,10 @@ pwd <- pw.sameotoj
 #uid <- keyring::key_list("Oracle")[1,2]
 #pwd <- keyring::key_get("Oracle", uid)
 
-surveyyear <- 2024  #This is the last survey year for which you want to include  - not should match year of cruise below 
-cruise <- "BI2024"  #note should match year for surveyyear set above 
+surveyyear <- 2025  #This is the last survey year for which you want to include  - not should match year of cruise below 
+cruise <- "BI2025"  #note should match year for surveyyear set above 
 
-assessmentyear <- 2024 #year in which you are conducting the survey 
+assessmentyear <- 2025 #year in which you are conducting the survey 
 area <- "3"  #SPA assessing recall SPA 1A, 1B, and 4 are grouped; options: "1A1B4and5", "3", "6" 
 path.directory <- "Y:/Inshore/BoF/"
 
@@ -111,6 +111,7 @@ test.data$Log.DEPTH.CTR <- test.data$Log.DEPTH-mean(test.data$Log.DEPTH)
 summary(test.data)
 
 #plot depths by tow
+plot(ADJ_DEPTH~TOW_NO, data=test.data)
 png(paste0(path.directory, assessmentyear, "/Assessment/Figures/Growth/BItowdepth",surveyyear,".png")) #!!!DEFINE
 plot(ADJ_DEPTH~TOW_NO, data=test.data)
 dev.off()
@@ -130,11 +131,17 @@ sink()
 latt <- data.frame(test.data, res=residuals(MWTSHBI.YYYY,"pearson"),fit=fitted(MWTSHBI.YYYY)) 
 
 #Residuals vs fitted - full area 
+plot(MWTSHBI.YYYY) 
 png(paste0(path.directory, assessmentyear, "/Assessment/Figures/Growth/MWTSHBI",surveyyear,".png"))
 plot(MWTSHBI.YYYY) 
 dev.off()
 
 #Plot of tow level residuals
+xyplot(res~fit|as.factor(TOW_NO),data=latt, xlab="fitted", ylab="residuals",
+       panel = function(x, y) {
+         panel.xyplot(x, y)
+         panel.abline(h=0)
+       })
 png(paste0(path.directory, assessmentyear, "/Assessment/Figures/Growth/MWTSHBI",surveyyear,"_towresid.png"))
 xyplot(res~fit|as.factor(TOW_NO),data=latt, xlab="fitted", ylab="residuals",
        panel = function(x, y) {
@@ -144,6 +151,7 @@ xyplot(res~fit|as.factor(TOW_NO),data=latt, xlab="fitted", ylab="residuals",
 dev.off()
 
 #Plot of tow level fitted values 
+xyplot(WET_MEAT_WGT~fit|as.factor(TOW_NO),data=latt, xlab="fitted", ylab="Wet Meat weight")
 png(paste0(path.directory, assessmentyear, "/Assessment/Figures/Growth/MWTSHBI",surveyyear,"_towfit.png"))
 xyplot(WET_MEAT_WGT~fit|as.factor(TOW_NO),data=latt, xlab="fitted", ylab="Wet Meat weight")
 dev.off()
@@ -184,7 +192,7 @@ rm(un.sameotoj)
 rm(pw.sameotoj)
 
 #!!!Now save workspace as .RData object: e.g. BIgrowth2019.RData
-#save.image(file = paste0(path.directory, assessmentyear, "/Assessment/Data/Growth/SPA",area,"/BIgrowth",surveyyear,".RData"))
+save.image(file = paste0(path.directory, assessmentyear, "/Assessment/Data/Growth/SPA",area,"/BIgrowth",surveyyear,".RData"))
 
 #NEW - save only the objects we need later
 save(MWTSHBI.YYYY, latt, liveweightYYYY, BIdetailYYYY, BIlivefreq, livefreqYYYY,
@@ -210,7 +218,7 @@ ggplot(data = test.data, aes(x = HEIGHT, y = WET_MEAT_WGT, alpha = 0.5)) +
   ylab("Meat weight (g)") + 
   xlab("Shell height (mm)") + 
   theme_bw()
-
+## TO DO --- predict line for each tow - plot as different colour lines from main survey line
 
 
 
@@ -317,6 +325,8 @@ BI.con.ts$strata.name[BI.con.ts$STRATA=="InVMS_SMB"] <- "Inside VMS (St. Mary's 
 
 #BI.con.ts <- BI.con.ts |> 
 #  mutate(YEAR = lubridate::year(BI.con.ts$YEAR))
+
+## TO DO -- add median line per plot?? or does this make it too busy since would need to add LTM (not including most current year) for each 'subarea'.. to think on.. (JS)
 
 condition.ts.plot <- ggplot(BI.con.ts %>% filter(STRATA %in% c("SMB", "InVMS", "OutVMS")),
                             aes(x=YEAR, y=CONDITION,group_by(strata.name), color=strata.name)) +  
