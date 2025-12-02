@@ -15,7 +15,7 @@ library(xfun)
 
 setwd("Y:/")
 
-assessmentyear <- 2024
+assessmentyear <- 2025
 
 
 # SPA 1A ---- 
@@ -470,38 +470,38 @@ ggsave(file=paste0("Y:/Inshore/BoF/",assessmentyear,"/Assessment/Figures/Conditi
 
 ##### change in condition as percent #####
 
-YR <- 2024
+YR <- 2025
 
 ## 1A
 con.yr.t <- condition.1A[condition.1A$YEAR == YR,]
 con.yr.tminus1 <- condition.1A[condition.1A$YEAR == YR-1,]
 ((con.yr.tminus1$CONDITION - con.yr.t$CONDITION) / (con.yr.tminus1$CONDITION))*100
-#42.36797
+#11.82144
 
 
 ## 1B
 con.yr.t <- condition.1B[condition.1B$YEAR == YR,]
 con.yr.tminus1 <- condition.1B[condition.1B$YEAR == YR-1,]
 ((con.yr.tminus1$CONDITION - con.yr.t$CONDITION) / (con.yr.tminus1$CONDITION))*100
-# 39.33887
+# 6.575124
 
 ## 3 
 con.yr.t <- condition.3[condition.3$YEAR == YR,]
 con.yr.tminus1 <- condition.3[condition.3$YEAR == YR-1,]
 ((con.yr.tminus1$CONDITION - con.yr.t$CONDITION) / (con.yr.tminus1$CONDITION))*100
-# 42.19456
+# 4.288165
 
 ## 4 
 con.yr.t <- condition.4[condition.4$YEAR == YR,]
 con.yr.tminus1 <- condition.4[condition.4$YEAR == YR-1,]
 ((con.yr.tminus1$CONDITION - con.yr.t$CONDITION) / (con.yr.tminus1$CONDITION))*100
-# 43.08856
+# 13.06435
 
 ## 6 
 con.yr.t <- condition.6[condition.6$YEAR == YR,]
 con.yr.tminus1 <- condition.6[condition.6$YEAR == YR-1,]
 ((con.yr.tminus1$CONDITION - con.yr.t$CONDITION) / (con.yr.tminus1$CONDITION))*100
-# 30.89281
+# 29.93796
 
 
 
@@ -510,40 +510,40 @@ con.yr.tminus1 <- condition.6[condition.6$YEAR == YR-1,]
 
 ##### change in biomass index as percent #####
 
-YR <- 2024
+YR <- 2025
 
 ## 1A
 B.yr.t <- all.dat.1A[all.dat.1A$YEAR == YR,]
 B.yr.tminus1 <- all.dat.1A[all.dat.1A$YEAR == YR-1,]
 ((B.yr.tminus1$Biomass - B.yr.t$Biomass) / (B.yr.tminus1$Biomass))*100
-# 47.38632
+# 23.64881
 
 
 ## 1B
 B.yr.t <- all.dat.1B[all.dat.1B$YEAR == YR,]
 B.yr.tminus1 <- all.dat.1B[all.dat.1B$YEAR == YR-1,]
 ((B.yr.tminus1$Biomass - B.yr.t$Biomass) / (B.yr.tminus1$Biomass))*100
-#  41.01217
+#  15.80261
 
 ## 3 
 B.yr.t <- all.dat.3[all.dat.3$YEAR == YR,]
 B.yr.tminus1 <- all.dat.3[all.dat.3$YEAR == YR-1,]
 ((B.yr.tminus1$Biomass - B.yr.t$Biomass) / (B.yr.tminus1$Biomass))*100
-#  27.96012
+#  33.81979
 
 ## 4 
 B.yr.t <- all.dat.4[all.dat.4$YEAR == YR,]
 B.yr.tminus1 <- all.dat.4[all.dat.4$YEAR == YR-1,]
 ((B.yr.tminus1$Biomass - B.yr.t$Biomass) / (B.yr.tminus1$Biomass))*100
-# 41.97121
+# 38.78101
 
 ## 6 
 B.yr.t <- all.dat.6[all.dat.6$YEAR == YR,]
 B.yr.tminus1 <- all.dat.6[all.dat.6$YEAR == YR-1,]
 ((B.yr.tminus1$Biomass - B.yr.t$Biomass) / (B.yr.tminus1$Biomass))*100
-# 32.65995
+#45.93264
 
-# range in biomass index: 28 - 47%
+# range in biomass index: 15 - 46%
 
 
 

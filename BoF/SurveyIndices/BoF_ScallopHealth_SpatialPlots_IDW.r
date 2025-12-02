@@ -51,12 +51,12 @@ uid <- un.englishg
 pwd <- pw.englishg
 
 #set year 
-survey.year <- 2024  #survey year
-assessmentyear <- 2024 #year in which you are providing advice for- determines where to save files to
+survey.year <- 2025  #survey year
+assessmentyear <- 2025 #year in which you are providing advice for- determines where to save files to
 path.directory <- "Y:/Inshore/BoF/"
 
 #set up directory to save plot
-saveplot.dir <- paste0(path.directory,assessmentyear,"/Assessment/Figures/test/")
+saveplot.dir <- paste0(path.directory,assessmentyear,"/Assessment/Figures/")
 
 #ROracle
 chan <- dbConnect(dbDriver("Oracle"),username=uid, password=pwd,'ptran')
@@ -375,7 +375,7 @@ summary(Surv.sf$prop)
 # ----BoF ALL (BF, SPA3, & SPA6) -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Myco \n(proportion)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Myco \n(proportion)", limits = c(0,0.115), oob = scales::squish) +#max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["Gen"]], Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa1"]]) +
   coord_sf(xlim = coord_ranges[["BoFall"]]$xlim, ylim = coord_ranges[["BoFall"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "BoF Myco Proportion"), 
@@ -387,7 +387,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_BoFAll_MycoProportion',survey.ye
 # ----FULL BAY -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Myco \n(proportion)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Myco \n(proportion)", limits = c(0,0.115), oob = scales::squish) +#max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa1"]]) +
   coord_sf(xlim = coord_ranges[["BoF"]]$xlim, ylim = coord_ranges[["BoF"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "BoF Myco Proportion"), 
@@ -399,7 +399,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_BF_MycoProportion',survey.year,'
 # ----SPA1A -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Myco \n(proportion)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Myco \n(proportion)", limits = c(0,0.115), oob = scales::squish) +#max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "br", arrow_location = "br", legend_position = legend_positions[["spa1"]]) +
   coord_sf(xlim = coord_ranges[["spa1a"]]$xlim, ylim = coord_ranges[["spa1a"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA1A Myco Proportion"), 
@@ -411,7 +411,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1A_MycoProportion',survey.yea
 # ----SPA1B -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Myco \n(proportion)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Myco \n(proportion)", limits = c(0,0.115), oob = scales::squish) +#max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa1b"]]) +
   coord_sf(xlim = coord_ranges[["spa1b"]]$xlim, ylim = coord_ranges[["spa1b"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA1B Myco Proportion"), 
@@ -423,7 +423,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1B_MycoProportion',survey.yea
 # ----SPA4 and 5 -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Myco \n(proportion)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Myco \n(proportion)", limits = c(0,0.115), oob = scales::squish) +#max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "br", arrow_location = "br", legend_position = legend_positions[["spa4"]]) +
   coord_sf(xlim = coord_ranges[["spa4"]]$xlim, ylim = coord_ranges[["spa4"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA4 Myco Proportion"), 
@@ -435,7 +435,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA4_MycoProportion',survey.year
 # ----SPA3 -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Myco \n(proportion)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Myco \n(proportion)", limits = c(0,0.115), oob = scales::squish) +#max(preds_idw2$prediction))) + 
   p(mgmt_zone = list(mgmt_zone_styles[["spa3"]], mgmt_zone_styles[["Gen"]]), Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa3"]]) +
   coord_sf(xlim = coord_ranges[["spa3"]]$xlim, ylim = coord_ranges[["spa3"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA3 Myco Proportion"), 
@@ -447,7 +447,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA3_MycoProportion',survey.year
 # ----SPA6 -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Myco \n(proportion)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Myco \n(proportion)", limits = c(0,0.115), oob = scales::squish) +#max(preds_idw2$prediction))) + 
   p(mgmt_zone = list(mgmt_zone_styles[["Gen"]], mgmt_zone_styles[["spa6"]]), Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa6"]]) +
   coord_sf(xlim = coord_ranges[["spa6"]]$xlim, ylim = coord_ranges[["spa6"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA6 Myco Proportion"), 
@@ -588,7 +588,7 @@ summary(Surv.sf$prop)
 # ----BoF ALL (BF, SPA3, & SPA6) -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Discoloured scallop \n(proportion)", limits = c(0,1)) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Discoloured scallop \n(proportion)", limits = c(0,0.75), oob = scales::squish) + 
   p(mgmt_zone = mgmt_zone_styles[["Gen"]], Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa1"]]) +
   coord_sf(xlim = coord_ranges[["BoFall"]]$xlim, ylim = coord_ranges[["BoFall"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "BoF Discoloured scallop Proportion"), 
@@ -600,7 +600,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_BoFAll_GreyMeatProportion',surve
 # ----FULL BAY -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Discoloured scallop \n(proportion)", limits = c(0,1)) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Discoloured scallop \n(proportion)", limits = c(0,0.75), oob = scales::squish) +
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa1"]]) +
   coord_sf(xlim = coord_ranges[["BoF"]]$xlim, ylim = coord_ranges[["BoF"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "BoF Discoloured scallop Proportion"), 
@@ -612,7 +612,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_BF_GreyMeatProportion',survey.ye
 # ----SPA1A -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Discoloured scallop \n(proportion)", limits = c(0,1)) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Discoloured scallop \n(proportion)", limits = c(0,0.75), oob = scales::squish) +
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "br", arrow_location = "br", legend_position = legend_positions[["spa1"]]) +
   coord_sf(xlim = coord_ranges[["spa1a"]]$xlim, ylim = coord_ranges[["spa1a"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA1A Discoloured scallop Proportion"), 
@@ -624,7 +624,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1A_GreyMeatProportion',survey
 # ----SPA1B -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Discoloured scallop \n(proportion)", limits = c(0,1)) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Discoloured scallop \n(proportion)", limits = c(0,0.75), oob = scales::squish) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa1b"]]) +
   coord_sf(xlim = coord_ranges[["spa1b"]]$xlim, ylim = coord_ranges[["spa1b"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA1B Discoloured scallop Proportion"), 
@@ -636,7 +636,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA1B_GreyMeatProportion',survey
 # ----SPA4 and 5 -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Discoloured scallop \n(proportion)", limits = c(0,1)) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Discoloured scallop \n(proportion)", limits = c(0,0.75), oob = scales::squish) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "br", arrow_location = "br", legend_position = legend_positions[["spa4"]]) +
   coord_sf(xlim = coord_ranges[["spa4"]]$xlim, ylim = coord_ranges[["spa4"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA4 Discoloured scallop Proportion"), 
@@ -648,7 +648,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA4_GreyMeatProportion',survey.
 # ----SPA3 -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Discoloured scallop \n(proportion)", limits = c(0,1)) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Discoloured scallop \n(proportion)", limits = c(0,0.75), oob = scales::squish) +
   p(mgmt_zone = list(mgmt_zone_styles[["spa3"]], mgmt_zone_styles[["Gen"]]), Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa3"]]) +
   coord_sf(xlim = coord_ranges[["spa3"]]$xlim, ylim = coord_ranges[["spa3"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA3 Discoloured scallop Proportion"), 
@@ -660,7 +660,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SPA3_GreyMeatProportion',survey.
 # ----SPA6 -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Discoloured scallop \n(proportion)", limits = c(0,1)) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Discoloured scallop \n(proportion)", limits = c(0,0.75), oob = scales::squish) +
   p(mgmt_zone = list(mgmt_zone_styles[["Gen"]], mgmt_zone_styles[["spa6"]]), Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa6"]]) +
   coord_sf(xlim = coord_ranges[["spa6"]]$xlim, ylim = coord_ranges[["spa6"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA6 Discoloured scallop Proportion"), 
@@ -814,7 +814,7 @@ summary(Surv.sf$prop)
 # ----BoF ALL (BF, SPA3, & SPA6) -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Myco \n(proportion)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Myco \n(proportion)", limits = c(0,0.115), oob = scales::squish) +#max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["Gen"]], Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa1"]]) +
   coord_sf(xlim = coord_ranges[["BoFall"]]$xlim, ylim = coord_ranges[["BoFall"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "BoF Myco Proportion"), 
@@ -826,7 +826,7 @@ ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_BoFAll_MycoProportion',survey
 # ----FULL BAY -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Myco \n(proportion)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Myco \n(proportion)", limits = c(0,0.115), oob = scales::squish) +#max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa1"]]) +
   coord_sf(xlim = coord_ranges[["BoF"]]$xlim, ylim = coord_ranges[["BoF"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "BoF Myco Proportion"), 
@@ -838,7 +838,7 @@ ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_BF_MycoProportion',survey.yea
 # ----SPA1A -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Myco \n(proportion)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Myco \n(proportion)", limits = c(0,0.115), oob = scales::squish) +#max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "br", arrow_location = "br", legend_position = legend_positions[["spa1"]]) +
   coord_sf(xlim = coord_ranges[["spa1a"]]$xlim, ylim = coord_ranges[["spa1a"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA1A Myco Proportion"), 
@@ -850,7 +850,7 @@ ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA1A_MycoProportion',survey.
 # ----SPA1B -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Myco \n(proportion)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Myco \n(proportion)", limits = c(0,0.115), oob = scales::squish) +#max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa1b"]]) +
   coord_sf(xlim = coord_ranges[["spa1b"]]$xlim, ylim = coord_ranges[["spa1b"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA1B Myco Proportion"), 
@@ -862,7 +862,7 @@ ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA1B_MycoProportion',survey.
 # ----SPA4 and 5 -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Myco \n(proportion)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Myco \n(proportion)", limits = c(0,0.115), oob = scales::squish) +#max(preds_idw2$prediction))) + 
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "br", arrow_location = "br", legend_position = legend_positions[["spa4"]]) +
   coord_sf(xlim = coord_ranges[["spa4"]]$xlim, ylim = coord_ranges[["spa4"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA4 Myco Proportion"), 
@@ -874,7 +874,7 @@ ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA4_MycoProportion',survey.y
 # ----SPA3 -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Myco \n(proportion)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Myco \n(proportion)", limits = c(0,0.115), oob = scales::squish) +#max(preds_idw2$prediction))) + 
   p(mgmt_zone = list(mgmt_zone_styles[["spa3"]], mgmt_zone_styles[["Gen"]]), Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa3"]]) +
   coord_sf(xlim = coord_ranges[["spa3"]]$xlim, ylim = coord_ranges[["spa3"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA3 Myco Proportion"), 
@@ -886,7 +886,7 @@ ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA3_MycoProportion',survey.y
 # ----SPA6 -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Myco \n(proportion)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Myco \n(proportion)", limits = c(0,0.115), oob = scales::squish) +#max(preds_idw2$prediction))) + 
   p(mgmt_zone = list(mgmt_zone_styles[["Gen"]], mgmt_zone_styles[["spa6"]]), Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa6"]]) +
   coord_sf(xlim = coord_ranges[["spa6"]]$xlim, ylim = coord_ranges[["spa6"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA6 Myco Proportion"), 
@@ -1027,7 +1027,7 @@ summary(Surv.sf$prop)
 # ----BoF ALL (BF, SPA3, & SPA6) -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Chair décoloré \n(proportion)", limits = c(0,1)) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Chair décoloré \n(proportion)", limits = c(0,0.75), oob = scales::squish) +
   p(mgmt_zone = mgmt_zone_styles[["Gen"]], Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa1"]]) +
   coord_sf(xlim = coord_ranges[["BoFall"]]$xlim, ylim = coord_ranges[["BoFall"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "BoF Discoloured scallop Proportion"), 
@@ -1039,7 +1039,7 @@ ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_BoFAll_GreyMeatProportion',su
 # ----FULL BAY -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Chair décoloré \n(proportion)", limits = c(0,1)) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Chair décoloré \n(proportion)", limits = c(0,0.75), oob = scales::squish) +
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa1"]]) +
   coord_sf(xlim = coord_ranges[["BoF"]]$xlim, ylim = coord_ranges[["BoF"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "BoF Discoloured scallop Proportion"), 
@@ -1051,7 +1051,7 @@ ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_BF_GreyMeatProportion',survey
 # ----SPA1A -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Chair décoloré \n(proportion)", limits = c(0,1)) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Chair décoloré \n(proportion)", limits = c(0,0.75), oob = scales::squish) +
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "br", arrow_location = "br", legend_position = legend_positions[["spa1"]]) +
   coord_sf(xlim = coord_ranges[["spa1a"]]$xlim, ylim = coord_ranges[["spa1a"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA1A Discoloured scallop Proportion"), 
@@ -1063,7 +1063,7 @@ ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA1A_GreyMeatProportion',sur
 # ----SPA1B -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Chair décoloré \n(proportion)", limits = c(0,1)) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Chair décoloré \n(proportion)", limits = c(0,0.75), oob = scales::squish) +
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa1b"]]) +
   coord_sf(xlim = coord_ranges[["spa1b"]]$xlim, ylim = coord_ranges[["spa1b"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA1B Discoloured scallop Proportion"), 
@@ -1075,7 +1075,7 @@ ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA1B_GreyMeatProportion',sur
 # ----SPA4 and 5 -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Chair décoloré \n(proportion)", limits = c(0,1)) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Chair décoloré \n(proportion)", limits = c(0,0.75), oob = scales::squish) +
   p(mgmt_zone = mgmt_zone_styles[["BoF"]], Surv.sf, Land, scale_location = "br", arrow_location = "br", legend_position = legend_positions[["spa4"]]) +
   coord_sf(xlim = coord_ranges[["spa4"]]$xlim, ylim = coord_ranges[["spa4"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA4 Discoloured scallop Proportion"), 
@@ -1087,7 +1087,7 @@ ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA4_GreyMeatProportion',surv
 # ----SPA3 -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Chair décoloré \n(proportion)", limits = c(0,1)) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Chair décoloré \n(proportion)", limits = c(0,0.75), oob = scales::squish) +
   p(mgmt_zone = list(mgmt_zone_styles[["spa3"]], mgmt_zone_styles[["Gen"]]), Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa3"]]) +
   coord_sf(xlim = coord_ranges[["spa3"]]$xlim, ylim = coord_ranges[["spa3"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA3 Discoloured scallop Proportion"), 
@@ -1099,7 +1099,7 @@ ggsave(filename = paste0(saveplot.dir.fr,'ContPlot_SPA3_GreyMeatProportion',surv
 # ----SPA6 -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Chair décoloré \n(proportion)", limits = c(0,1)) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Chair décoloré \n(proportion)", limits = c(0,0.75), oob = scales::squish) +
   p(mgmt_zone = list(mgmt_zone_styles[["Gen"]], mgmt_zone_styles[["spa6"]]), Surv.sf, Land, scale_location = "tl", arrow_location = "tl", legend_position = legend_positions[["spa6"]]) +
   coord_sf(xlim = coord_ranges[["spa6"]]$xlim, ylim = coord_ranges[["spa6"]]$ylim, expand = FALSE) +
   labs(#title = paste(survey.year, "", "SPA6 Discoloured scallop Proportion"), 

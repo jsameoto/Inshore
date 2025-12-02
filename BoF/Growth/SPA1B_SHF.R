@@ -636,6 +636,7 @@ SPA1B.lbar.strata.groups <- cbind(CS.lbar.strata, dplyr::select(MBN.lbar.strata,
 dump(c("SPA1B.lbar.strata.groups"), paste0(path.directory,assessmentyear, "/Assessment/Data/Growth/SPA",area,"/SPA1B",surveyyear,".lbarbyStrataGroup.R"))
 
 
+
 # Prep for plot: 
 # Reshape into long format
 SPA1B.lbar.strata <- pivot_longer(SPA1B.lbar.strata.groups, 
@@ -645,6 +646,7 @@ SPA1B.lbar.strata <- pivot_longer(SPA1B.lbar.strata.groups,
                                   values_to = "lbar",
                                   values_drop_na = FALSE)
 
+write.csv(SPA1B.lbar.strata, paste0(path.directory,assessmentyear, "/Assessment/Data/Growth/SPA",area,"/SPA1B.lbar.by.Strata.",surveyyear,".csv"))
 
 # Plot of Mean Commercial SHell Height by Strata Group 
 plot.SPA1B.lbar.strata <- ggplot(SPA1B.lbar.strata) + geom_line(aes(x = Year, y = lbar, color = Strata)) + 

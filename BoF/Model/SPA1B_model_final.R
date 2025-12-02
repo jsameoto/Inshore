@@ -54,8 +54,8 @@ options(stringsAsFactors = FALSE)
 
 #DEFINE:
 direct <- "Y:/Inshore/BoF"
-assessmentyear <- 2024 #year in which you are conducting the assessment 
-surveyyear <- 2024  #last year of survey data you are using, e.g. if max year of survey is survey from summer 2019, this would be 2019 
+assessmentyear <- 2025 #year in which you are conducting the assessment 
+surveyyear <- 2025  #last year of survey data you are using, e.g. if max year of survey is survey from summer 2019, this would be 2019 
 area <- "1B"  #this would be the SPA, for entries options are to use: 1A, 1B, 3, 4, or 6  
 
 #Reference Points 
@@ -64,7 +64,7 @@ USR <- 1800
 
 # Set the value for catch next year, this is used in SSModel.plot.median() after the model runs 
 # This value should be the interim TAC in the area.
-catch.next.year <- 200
+catch.next.year <- 125
 
 #required packages
 library(SSModel)#v 1.0-3
@@ -115,8 +115,8 @@ for(fun in funcs)
 # 9) when satisfied with the table, re-name it to remove the date. E.g. SPAxx_ModelData_R.xlsx 
 
 CreateExcelModelFile(direct = direct, 
-                     assessmentyear=2024, surveyyear = 2024, 
-                     area = "1B", LastYearsModelRData = "SPA1B_Model_2023", 
+                     assessmentyear=2025, surveyyear = 2025, 
+                     area = "1B", LastYearsModelRData = "SPA1B_Model_2024", 
                      savefile = T)
 
 # for testing only (using FK private repo): 
@@ -137,7 +137,7 @@ parm = c("B","R","q","K","P","sigma","S","m","kappa.tau","r", "Fmort","mu","Irep
 #parm = c("B","R","q","K","P","sigma","S","m","kappa.tau","r", "Fmort","mu","Irep","IRrep")
 
 # Bring in the data, you will need to update this with the latest numbers!
-raw.dat <- read.xlsx(paste0(direct,"/",assessmentyear,"/Assessment/Data/Model/SPA",area,"/SPA1B_ModelData_R_2024-10-14.xlsx"),sheet = "AlignedForModel", cols=1:13) 
+raw.dat <- read.xlsx(paste0(direct,"/",assessmentyear,"/Assessment/Data/Model/SPA",area,"/SPA1B_ModelData_R_2025-10-30.xlsx"),sheet = "AlignedForModel", cols=1:13) 
 str(raw.dat)
 raw.dat$C <- as.numeric(raw.dat$C)
 
@@ -171,7 +171,7 @@ SPA1B.inits <- function(NY)
 
 # ---- Run the model ----
 Spa1B.model <- SSModel(SPA1B.dat,BoFSPA4.priors,SPA1B.inits(NY),model.file=BoFmodel,Years=yrs,parms = parm,
-                    nchains=nchains,niter=niter,nburnin=nburnin,nthin=nthin,debug=F) 
+                    nchains=nchains,niter=niter,nburnin=nburnin,nthin=nthin,debug=T) 
 #need to save model as year defined object for prediction evaluations 
 assign(paste0("Spa1B.", max(yrs)), Spa1B.model)   
 
@@ -182,7 +182,7 @@ save(list = paste0("Spa1B.", max(yrs)), file=paste0(direct,"/",assessmentyear, "
 #load(paste0(direct,"/",assessmentyear,"/Assessment/Data/Model/SPA",area,"/SPA1B_Model_",max(yrs),".RData"))
 
 #This is just to save you from wasting time changing the names of a bunch of lines below...
-#mod.res <- Spa1B.2024
+#mod.res <- Spa1B.2025
 mod.res <- Spa1B.model
 
 #This gives a print to screen of model results and allows you to save it
@@ -422,7 +422,7 @@ write.csv(pred.1yr.boxplot$B.next, paste0(direct,"/",assessmentyear,"/Assessment
 #Finally here we have the decsion table.  This plots the decision table for all catch rates between 0 and 500 increments of 10 tonnes of catch (seq(0,500,10)).
 # Note that Feb 2020 DK noted that the incorrect LRP and USR were entered here (used SPA4s), checked against existing decision table and it made
 # no difference in our probabilities luckily, but I did update the decision table based on these correct values.
-decision <- predict(mod.res, Catch=c(seq(150,500,25)), g.parm=mod.res$data$g[mod.res$data$NY],gr.parm=mod.res$data$gR[mod.res$data$NY])
+decision <- predict(mod.res, Catch=c(seq(150,375,25)), g.parm=mod.res$data$g[mod.res$data$NY],gr.parm=mod.res$data$gR[mod.res$data$NY])
 decision.table<-SSModel_predict_summary_median(decision, LRP=LRP, USR=USR, RRP=0.15)
 # decision.table<-SSModel_predict_summary_median(decision, LRP=880, USR=1800, RRP=0.12)
 decision.table
@@ -470,9 +470,9 @@ options(scipen = 999)
 raw.dat.forplot <- raw.dat #|> filter(YearSurvey != 2024)
 
 raw.dat.forplot <- raw.dat.forplot |> 
-  rename("Biomass (tonnes)" = I) |> 
-  rename("Numbers" = N) |> 
-  rename("Average Weight per Scallop (g)" = wgt.num)
+  dplyr::rename("Biomass (tonnes)" = I) |> 
+  dplyr::rename("Numbers" = N) |> 
+  dplyr::rename("Average Weight per Scallop (g)" = wgt.num)
 
 raw.dat.forplot.2 <- pivot_longer(raw.dat.forplot, 
                                   cols = c("Average Weight per Scallop (g)", "Numbers", "Biomass (tonnes)"),

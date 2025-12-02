@@ -41,13 +41,13 @@ require(ggspatial)
 uid <- un.englishg
 pwd <- pw.englishg
 #set year 
-survey.year <- 2024  #removed maxyear in script and changed to survey year
-assessmentyear <- 2025 #year in which you are providing advice for- determines where to save files to
+survey.year <- 2025  #removed maxyear in script and changed to survey year
+assessmentyear <- 2026 #year in which you are providing advice for- determines where to save files to
 path.directory <- "Y:/Inshore/SFA29/"
-cruise <- "'SFA292024'"
+cruise <- "'SFA292025'"
 
 #set up directory to save plot
-saveplot.dir <- paste0(path.directory,assessmentyear,"/Assessment/Figures/test/") #remove test folder when done
+saveplot.dir <- paste0(path.directory,assessmentyear,"/Assessment/Figures/") 
 #set up a directory for french figures
 saveplot.dir.fr <- paste0(saveplot.dir,"FrenchFigures_indicies/")
 
@@ -314,7 +314,7 @@ summary(Surv.sf$prop)
 ## ENGLISH ####
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Myco \n(proportion)", limits = c(0,1)) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Myco \n(proportion)", limits = c(0,0.75)) + 
   p(mgmt_zone, Surv.sf, Land) +
   coord_sf(xlim = c(-66.50,-65.45), ylim = c(43.10,43.80), expand = FALSE)+
   labs(#title = paste(survey.year, "", "SFA29W Myco Proportion"), 
@@ -326,7 +326,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_MycoProportion',survey.yea
 ## FRENCH ####
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Myco \n(proportion)", limits = c(0,1)) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Myco \n(proportion)", limits = c(0,0.75)) + 
   p(mgmt_zone, Surv.sf, Land) +
   coord_sf(xlim = c(-66.50,-65.45), ylim = c(43.10,43.80), expand = FALSE)+
   labs(#title = paste(survey.year, "", "SFA29W Myco Proportion"), 
@@ -408,7 +408,7 @@ summary(Surv.sf$prop)
 ## ENGLISH ####
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Discoloured scallop \n(proportion)", limits = c(0,1)) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Discoloured scallop \n(proportion)", limits = c(0,0.75)) + 
   p(mgmt_zone, Surv.sf, Land) +
   coord_sf(xlim = c(-66.50,-65.45), ylim = c(43.10,43.80), expand = FALSE)+
   labs(#title = paste(survey.year, "", "SFA29W Discoloured scallop Proportion"), 
@@ -420,7 +420,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_GreyMeatProportion',survey
 ## FRENCH ####
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Chair décoloré \n(proportion)", limits = c(0,1)) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Chair décoloré \n(proportion)", limits = c(0,0.75)) + 
   p(mgmt_zone, Surv.sf, Land) +
   coord_sf(xlim = c(-66.50,-65.45), ylim = c(43.10,43.80), expand = FALSE)+
   labs(#title = paste(survey.year, "", "SFA29W Discoloured scallop Proportion"), 

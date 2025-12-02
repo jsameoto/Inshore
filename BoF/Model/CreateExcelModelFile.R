@@ -24,6 +24,9 @@
 ### I am also adding arguments assessmentyear and surveyyear to facilitate the transition to our new folder structure. 
 ### There is also now a savefile argument that is F by default. This will just have the spreadsheet pop open in excel, without saving it. Great for testing.
 
+
+### BW - Sept 2025. Updated to add FSC landings to total landings for SPA1B and SPA6
+
 ### Enter arguments as follows for 2020 run of 2019 survey data:
 ### direct = "Y:/INSHORE SCALLOP/BoF/"
 ### assessmentyear = 2020
@@ -119,9 +122,10 @@ CreateExcelModelFile <- function(direct, assessmentyear, surveyyear, area, LastY
   # deal with area-specific quirks:
   if(area %in% c("1A", "3")) names(TACandlandings) <- c("C", "TAC", "YearSurvey")
   if(area =="1B") {
-    TACandlandings <- TACandlandings[, c("Full Bay", "Mid Bay", "Upper Bay", "TAC", "Year")]
+    TACandlandings <- TACandlandings[, c("Full Bay", "Mid Bay", "Upper Bay", "FSC","TAC", "Year")]
+    TACandlandings[is.na(TACandlandings)] <- 0 #Takes care of the NAs in FSC
     TACandlandings$C <- as.numeric(as.character(TACandlandings$`Full Bay`)) +  as.numeric(as.character(TACandlandings$`Mid Bay`)) + 
-      as.numeric(as.character(TACandlandings$`Upper Bay`))
+      as.numeric(as.character(TACandlandings$`Upper Bay`)) + as.numeric(as.character(TACandlandings$`FSC`))
     TACandlandings <- TACandlandings[, c("C", "TAC", "Year")]
     names(TACandlandings) <- c("C", "TAC", "YearSurvey") 
   }
@@ -130,8 +134,9 @@ CreateExcelModelFile <- function(direct, assessmentyear, surveyyear, area, LastY
     names(TACandlandings) <- c("C", "TAC", "YearSurvey")
   }
   if(area==6) {
-    TACandlandings <- TACandlandings[, c("Catch_IN", "TAC", "Year")]
-    TACandlandings$C <- as.numeric(as.character(TACandlandings$Catch_IN))
+    TACandlandings <- TACandlandings[, c("Catch_IN", "FSC", "TAC", "Year")]
+    TACandlandings[is.na(TACandlandings)] <- 0 #Takes care of the NAs in FSC
+    TACandlandings$C <- as.numeric(as.character(TACandlandings$Catch_IN)) + as.numeric(as.character(TACandlandings$FSC))
     TACandlandings <- TACandlandings[, c("C", "TAC", "Year")]
     names(TACandlandings) <- c("C", "TAC", "YearCatch")
   }

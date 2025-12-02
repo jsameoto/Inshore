@@ -47,8 +47,8 @@ options(stringsAsFactors = FALSE)
 
 #DEFINE:
 direct <- "Y:/Inshore/BoF"
-assessmentyear <- 2024 #year in which you are conducting the assessment 
-surveyyear <- 2024  #last year of survey data you are using, e.g. if max year of survey is survey from summer 2019, this would be 2019 
+assessmentyear <- 2025 #year in which you are conducting the assessment 
+surveyyear <- 2025  #last year of survey data you are using, e.g. if max year of survey is survey from summer 2019, this would be 2019 
 area <- 3  #this would be the SPA, for entries options are to use: 1A, 1B, 3, 4, or 6  
 
 #reference points 
@@ -58,7 +58,7 @@ USR <- 1000
 # Put in the catch for next year in the 2023 slot of the "C" data
 # Set the value for catch next year, this is used in SSModel.plot.median()
 # This should be based on the interim TAC for the area
-catch.next.year <- 100 
+catch.next.year <- 30 
 
 #required packages
 library(SSModel) #v 1.0-3
@@ -110,8 +110,8 @@ for(fun in funcs)
 # 9) when satisfied with the table, re-name it to remove the date. E.g. SPAxx_ModelData_R.xlsx 
 
 CreateExcelModelFile(direct = direct, 
-                     assessmentyear=2024, surveyyear = 2024, 
-                     area = 3, LastYearsModelRData = "SPA3_Model_2023", 
+                     assessmentyear=2025, surveyyear = 2025, 
+                     area = 3, LastYearsModelRData = "SPA3_Model_2024", 
                      savefile = T)
 
 # for testing only (using FK private repo): 
@@ -133,7 +133,7 @@ parm = c("B","R","q","K","P","sigma","S","m","kappa.tau","r", "Fmort","mu","Irep
 
 
 # Bring in the data, you will need to update this with the latest numbers!
-raw.dat <- read.xlsx(paste0(direct,"/",assessmentyear,"/Assessment/Data/Model/SPA",area,"/SPA3_ModelData_R_2024-10-14.xlsx"),sheet = "AlignedForModel",cols=1:13)
+raw.dat <- read.xlsx(paste0(direct,"/",assessmentyear,"/Assessment/Data/Model/SPA",area,"/SPA3_ModelData_R_2025-10-20.xlsx"),sheet = "AlignedForModel",cols=1:13)
 str(raw.dat)
 raw.dat$C <- as.numeric(raw.dat$C)
 raw.dat
@@ -170,7 +170,7 @@ SPA3.inits <- function(NY)
 }
 
 # ---- Run the model ----
-Spa3.model <- SSModel(SPA3.dat,BoFSPA4.priors,SPA3.inits(NY),model.file=BoFmodel,Years=yrs, parms = parm, nchains=nchains,niter=niter,nburnin=nburnin,nthin=nthin,debug=F)
+Spa3.model <- SSModel(SPA3.dat,BoFSPA4.priors,SPA3.inits(NY),model.file=BoFmodel,Years=yrs, parms = parm, nchains=nchains,niter=niter,nburnin=nburnin,nthin=nthin,debug=T)
 
 #need to save model as year defined object for prediction evaluations 
 assign(paste0("Spa3.new.", max(yrs)), Spa3.model)   
@@ -185,7 +185,7 @@ save(list = paste0("Spa3.new.", max(yrs)), file=paste0(direct,"/",assessmentyear
 #load(paste0(direct,"/",assessmentyear,"/Assessment/Data/Model/SPA",area,"/SPA3_Model_",max(yrs),".RData"))
 
 # This is just to save you from wasting time changing the names of a bunch of lines below...
-#mod.res <- Spa3.new.2024
+#mod.res <- Spa3.new.2025
 mod.res <- Spa3.model
 
 
@@ -431,7 +431,7 @@ write.csv(pred.1yr.boxplot$B.next, paste0(direct,"/",assessmentyear,"/Assessment
 
 # --- Decision Tables ----
 #Finally here we have the decsion table.  This plots the decision table for all catch rates between 0 and 500 increments of 10 tonnes of catch (seq(0,500,10)).
-decision  <- predict (mod.res, Catch=c(seq(60, 240, 20)), g.parm=mod.res$data$g[mod.res$data$NY],gr.parm=mod.res$data$gR[mod.res$data$NY]) 
+decision  <- predict (mod.res, Catch=c(seq(70, 140, 10)), g.parm=mod.res$data$g[mod.res$data$NY],gr.parm=mod.res$data$gR[mod.res$data$NY]) 
 decision.table <- SSModel_predict_summary_median(decision, LRP=LRP, USR=USR, RRP=0.15)
 decision.table
 

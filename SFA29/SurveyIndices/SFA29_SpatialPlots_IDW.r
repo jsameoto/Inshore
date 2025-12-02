@@ -46,9 +46,9 @@ require(ggspatial)
 uid <- un.englishg
 pwd <- pw.englishg
 
-survey.year <- 2024  #This is the last survey year 
-assessmentyear <- 2025 #year in which you are providing advice for - (e.g. 2017 survey is 2018 assessment) - Save to folder year
-cruise <- "'SFA292024'"
+survey.year <- 2025  #This is the last survey year 
+assessmentyear <- 2026 #year in which you are providing advice for - (e.g. 2017 survey is 2018 assessment) - Save to folder year
+cruise <- "'SFA292025'"
 
 #for multiple cruises:
 #cruise <- c('SFA292018','SFA292019') 
@@ -62,7 +62,7 @@ cruise <- "'SFA292024'"
 path.directory <- "Y:/Inshore/SFA29/"
 
 #set up directory to save plot
-saveplot.dir <- paste0("Y:/Inshore/SFA29/",assessmentyear,"/Assessment/Figures/test/") #remove test when finished
+saveplot.dir <- paste0("Y:/Inshore/SFA29/",assessmentyear,"/Assessment/Figures/") 
 #set up a directory for french figures
 saveplot.dir.fr <- paste0(saveplot.dir,"FrenchFigures_indicies/")
 
@@ -360,9 +360,10 @@ summary(preds_idw2$prediction)
 summary(Surv.sf$com)
 
 ##### DENSITY (ENGLISH) ----
+
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nabundance \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nabundance \n(N/Tow)", limits = c(0,975), oob = scales::squish) + #max(preds_idw2$prediction))) + 
   p(mgmt_zone, Surv.sf, Land) +
   coord_sf(xlim = c(-66.50,-65.45), ylim = c(43.10,43.80), expand = FALSE)+
   labs(#title = paste(survey.year, "", "SFA29W Density (>= 80mm)"), 
@@ -374,7 +375,7 @@ ggsave(filename = paste0(saveplot.dir,'ContPlot_SFA29_ComDensity',survey.year,'.
 ##### DENSITY (FRENCH) -----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Abondance \ncommerciale \n(N/traits de chalut)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Abondance \ncommerciale \n(N/traits de chalut)", limits = c(0,975), oob = scales::squish) + #max(preds_idw2$prediction))) + 
   p(mgmt_zone, Surv.sf, Land) +
   coord_sf(xlim = c(-66.50,-65.45), ylim = c(43.10,43.80), expand = FALSE)+
   labs(#title = paste(survey.year, "", "SFA29W Density (>= 80mm)"), 
@@ -957,3 +958,10 @@ ggplot() + #Plot survey data and format figure.
 ggsave(filename = paste0(saveplot.dir,'LobsterSpatialPlot_SFA29',survey.year,'.png'), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # ------------------------------END OF SPATIAL PLOTS  -------------------------------------------
+
+#Checking for anomalies 
+Surv.sf<-st_as_sf(subset(ScallopSurv.dead,year==survey.year),coords=c("lon","lat")) #clappers
+# Surv.sf<-st_as_sf(subset(ScallopSurv,year==survey.year),coords=c("lon","lat")) #alive
+Surv.sf %>% 
+  select(tow,pre, rec, com) %>% 
+  filter(pre > 50 | rec >50 | com > 50)

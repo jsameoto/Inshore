@@ -34,8 +34,8 @@ pwd <- pw.sameotoj
 #uid <- keyring::key_list("Oracle")[1,2]
 #pwd <- keyring::key_get("Oracle", uid)
 
-surveyyear <- 2024  #This is the last survey year 
-assessmentyear <- 2024 #year in which you are conducting the survey 
+surveyyear <- 2025  #This is the last survey year 
+assessmentyear <- 2025 #year in which you are conducting the survey 
 area <- "1A1B4and5"  #SPA assessing recall SPA 1A, 1B, and 4 are grouped; options: "1A1B4and5", "3", "6" 
 path.directory <- "Y:/Inshore/BoF/"
 
@@ -315,6 +315,13 @@ mbEcom14 <- spr(lined2023$TOW_NO[lined2023$STRATA_ID == 58],apply(lined2023[line
 K <- summary(mbEcom14,summary(mbEcom13, summary(mbEcom12, summary(mbEcom11, summary(mbEcom10, summary(mbEcom9, summary(mbEcom8, summary(mbEcom7, summary(mbEcom6, summary(mbEcom5, summary(mbEcom4, summary(mbEcom3, summary(mbEcom2, summary(mbEcom2))))))))))))))
 MBNE.lined.spr[MBNE.lined.spr$Year == 2024,c(2:3)] <- c(K$Yspr, K$var.Yspr.corrected)
 
+#2024/2025 
+mbEcom15 <- spr(lined2024$TOW_NO[lined2024$STRATA_ID == 58],apply(lined2024[lined2024$STRATA_ID == 58,24:50],1,sum),
+                lined2025$TOW_NO[lined2025$STRATA_ID == 58],apply(lined2025[lined2025$STRATA_ID == 58,27:50],1,sum),
+                crossref.BoF.2025[crossref.BoF.2025$STRATA_ID == 58,c("TOW_NO_REF","TOW_NO")])
+K <- summary(mbEcom15,summary(mbEcom14,summary(mbEcom13, summary(mbEcom12, summary(mbEcom11, summary(mbEcom10, summary(mbEcom9, summary(mbEcom8, summary(mbEcom7, summary(mbEcom6, summary(mbEcom5, summary(mbEcom4, summary(mbEcom3, summary(mbEcom2, summary(mbEcom2)))))))))))))))
+MBNE.lined.spr[MBNE.lined.spr$Year == 2025,c(2:3)] <- c(K$Yspr, K$var.Yspr.corrected)
+
 MBNE.lined.spr
 
 #in 2020 had no survey to linear interpolation from SPR estimate (note very different result from simple estimate)
@@ -470,6 +477,13 @@ mbWcom14 <- spr(lined2023$TOW_NO[lined2023$STRATA_ID == 38],apply(lined2023[line
                 crossref.BoF.2024[crossref.BoF.2024$STRATA_ID == 38,c("TOW_NO_REF","TOW_NO")])
 K <- summary(mbWcom14) 
 MBNW.lined.spr[MBNW.lined.spr$Year == 2024,c(2:3)] <- c(K$Yspr, K$var.Yspr.corrected)
+
+#2024/2025 
+mbWcom15 <- spr(lined2024$TOW_NO[lined2024$STRATA_ID == 38],apply(lined2024[lined2024$STRATA_ID == 38,24:50],1,sum),
+                lined2025$TOW_NO[lined2025$STRATA_ID == 38],apply(lined2025[lined2025$STRATA_ID == 38,27:50],1,sum),
+                crossref.BoF.2025[crossref.BoF.2025$STRATA_ID == 38,c("TOW_NO_REF","TOW_NO")])
+K <- summary(mbWcom15) 
+MBNW.lined.spr[MBNW.lined.spr$Year == 2025,c(2:3)] <- c(K$Yspr, K$var.Yspr.corrected)
 
 
 MBNW.lined.spr
@@ -631,6 +645,13 @@ ubcom14 <- spr(lined2023$TOW_NO[lined2023$STRATA_ID == 53],apply(lined2023[lined
 K <- summary(ubcom14,summary(ubcom13,summary(ubcom12,summary(ubcom11,summary(ubcom10, summary(ubcom9, summary(ubcom8, summary(ubcom7, summary(ubcom6, summary(ubcom5, summary(ubcom4, summary(ubcom3, summary(ubcom2, summary(ubcom1, summary(ubcom)))))))))))))))
 UB.lined.spr[UB.lined.spr$Year == 2024,c(2:3)] <- c(K$Yspr, K$var.Yspr.corrected)
 
+#2024/2025
+ubcom15 <- spr(lined2024$TOW_NO[lined2024$STRATA_ID == 53],apply(lined2024[lined2024$STRATA_ID == 53,24:50],1,sum),
+               lined2025$TOW_NO[lined2025$STRATA_ID == 53],apply(lined2025[lined2025$STRATA_ID == 53,27:50],1,sum),
+               crossref.BoF.2025[crossref.BoF.2025$STRATA_ID == 53,c("TOW_NO_REF","TOW_NO")])
+K <- summary(ubcom15,summary(ubcom14,summary(ubcom13,summary(ubcom12,summary(ubcom11,summary(ubcom10, summary(ubcom9, summary(ubcom8, summary(ubcom7, summary(ubcom6, summary(ubcom5, summary(ubcom4, summary(ubcom3, summary(ubcom2, summary(ubcom1, summary(ubcom))))))))))))))))
+UB.lined.spr[UB.lined.spr$Year == 2025,c(2:3)] <- c(K$Yspr, K$var.Yspr.corrected)
+
 
 UB.lined.spr
 
@@ -776,6 +797,12 @@ outcom14 <- spr(lined2023$TOW_NO[lined2023$STRATA_ID == 49],apply(lined2023[line
 K <- summary(outcom14,summary(outcom13,summary(outcom12, summary(outcom11, summary(outcom10, summary(outcom9, summary(outcom8, summary(outcom7, summary(outcom6)))))))))
 Out.lined.spr[Out.lined.spr$Year == 2024,c(2:3)] <- c(K$Yspr, K$var.Yspr.corrected)
 
+#2024/2025
+outcom15 <- spr(lined2024$TOW_NO[lined2024$STRATA_ID == 49],apply(lined2024[lined2024$STRATA_ID == 49,24:50],1,sum),
+                lined2025$TOW_NO[lined2025$STRATA_ID == 49],apply(lined2025[lined2025$STRATA_ID == 49,27:50],1,sum),
+                crossref.BoF.2025[crossref.BoF.2025$STRATA_ID == 49,c("TOW_NO_REF","TOW_NO")])
+K <-  summary(outcom15, summary(outcom14,summary(outcom13,summary(outcom12, summary(outcom11, summary(outcom10, summary(outcom9, summary(outcom8, summary(outcom7, summary(outcom6))))))))))
+Out.lined.spr[Out.lined.spr$Year == 2025,c(2:3)] <- c(K$Yspr, K$var.Yspr.corrected)
 
 Out.lined.spr
 
@@ -936,6 +963,12 @@ ahcom14 <- spr(lined2023$TOW_NO[lined2023$STRATA_ID == 35],apply(lined2023[lined
 K <- summary(ahcom14, summary(ahcom13, summary(ahcom12, summary(ahcom11, summary(ahcom10, summary(ahcom9, summary(ahcom8, summary(ahcom7, summary(ahcom6, summary(ahcom5, summary(ahcom4, summary(ahcom3, summary(ahcom2, summary(ahcom1, summary(ahcom)))))))))))))))
 AH.lined.spr[AH.lined.spr$Year == 2024,c(2:3)] <- c(K$Yspr, K$var.Yspr.corrected)
 
+#2024/2025 
+ahcom15 <- spr(lined2024$TOW_NO[lined2024$STRATA_ID == 35],apply(lined2024[lined2024$STRATA_ID == 35,24:50],1,sum),
+               lined2025$TOW_NO[lined2025$STRATA_ID == 35],apply(lined2025[lined2025$STRATA_ID == 35,27:50],1,sum),
+               crossref.BoF.2025[crossref.BoF.2025$STRATA_ID == 35,c("TOW_NO_REF","TOW_NO")])
+K <- summary(ahcom15,summary(ahcom14, summary(ahcom13, summary(ahcom12, summary(ahcom11, summary(ahcom10, summary(ahcom9, summary(ahcom8, summary(ahcom7, summary(ahcom6, summary(ahcom5, summary(ahcom4, summary(ahcom3, summary(ahcom2, summary(ahcom1, summary(ahcom))))))))))))))))
+AH.lined.spr[AH.lined.spr$Year == 2025,c(2:3)] <- c(K$Yspr, K$var.Yspr.corrected)
 
 AH.lined.spr
 
@@ -1111,6 +1144,13 @@ mbEcom14 <- spr(unlined2023$TOW_NO[unlined2023$STRATA_ID == 58],apply(unlined202
 K <- summary(mbEcom14,summary(mbEcom13, summary(mbEcom12, summary(mbEcom11, summary(mbEcom10, summary(mbEcom9, summary(mbEcom8, summary(mbEcom7, summary(mbEcom6, summary(mbEcom5, summary(mbEcom4, summary(mbEcom3, summary(mbEcom2, summary(mbEcom1))))))))))))))
 MBNE.unlined.spr[MBNE.unlined.spr$Year == 2024,c(2:3)] <- c(K$Yspr, K$var.Yspr.corrected)
 
+#2024/2025
+mbEcom15 <- spr(unlined2024$TOW_NO[unlined2024$STRATA_ID == 58],apply(unlined2024[unlined2024$STRATA_ID == 58,24:50],1,sum),
+                unlined2025$TOW_NO[unlined2025$STRATA_ID == 58],apply(unlined2025[unlined2025$STRATA_ID == 58,27:50],1,sum),
+                crossref.BoF.2025[crossref.BoF.2025$STRATA_ID == 58,c("TOW_NO_REF","TOW_NO")])
+K <- summary(mbEcom15,summary(mbEcom14,summary(mbEcom13, summary(mbEcom12, summary(mbEcom11, summary(mbEcom10, summary(mbEcom9, summary(mbEcom8, summary(mbEcom7, summary(mbEcom6, summary(mbEcom5, summary(mbEcom4, summary(mbEcom3, summary(mbEcom2, summary(mbEcom1)))))))))))))))
+MBNE.unlined.spr[MBNE.unlined.spr$Year == 2025,c(2:3)] <- c(K$Yspr, K$var.Yspr.corrected)
+
 MBNE.unlined.spr
 
 #in 2020 had no survey to linear interpolation from SPR estimate (note very different result from simple estimate)
@@ -1236,12 +1276,19 @@ MBNW.unlined.spr[MBNW.unlined.spr$Year == 2021,c(2:3)] <- c(243.1556, NA)
 #K <- summary(mbWcom13) #Use simple mean
 #MBNW.unlined.spr[MBNW.unlined.spr$Year == 2023,c(2:3)] <- c(K$Yspr, K$var.Yspr.corrected)
 
-#2022/2023  
+#2023/2024  
 mbWcom14 <- spr(unlined2023$TOW_NO[unlined2023$STRATA_ID == 38],apply(unlined2023[unlined2023$STRATA_ID == 38,24:50],1,sum),
                 unlined2024$TOW_NO[unlined2024$STRATA_ID == 38],apply(unlined2024[unlined2024$STRATA_ID == 38,27:50],1,sum),
                 crossref.BoF.2024[crossref.BoF.2024$STRATA_ID == 38,c("TOW_NO_REF","TOW_NO")])
 K <- summary(mbWcom14) #Use simple mean
 MBNW.unlined.spr[MBNW.unlined.spr$Year == 2024,c(2:3)] <- c(K$Yspr, K$var.Yspr.corrected)
+
+#2024/2025  
+mbWcom15 <- spr(unlined2024$TOW_NO[unlined2024$STRATA_ID == 38],apply(unlined2024[unlined2024$STRATA_ID == 38,24:50],1,sum),
+                unlined2025$TOW_NO[unlined2025$STRATA_ID == 38],apply(unlined2025[unlined2025$STRATA_ID == 38,27:50],1,sum),
+                crossref.BoF.2025[crossref.BoF.2025$STRATA_ID == 38,c("TOW_NO_REF","TOW_NO")])
+K <- summary(mbWcom15) #Use simple mean
+MBNW.unlined.spr[MBNW.unlined.spr$Year == 2025,c(2:3)] <- c(K$Yspr, K$var.Yspr.corrected)
 
 
 MBNW.unlined.spr
@@ -1395,6 +1442,12 @@ ubcom14 <- spr(unlined2023$TOW_NO[unlined2023$STRATA_ID == 53],apply(unlined2023
 K <- summary(ubcom14, summary(ubcom13,summary(ubcom12, summary(ubcom11, summary(ubcom10, summary(ubcom9, summary(ubcom8, summary(ubcom7, summary(ubcom6, summary(ubcom5, summary(ubcom4, summary(ubcom3, summary(ubcom2, summary(ubcom1, summary(ubcom)))))))))))))))
 UB.unlined.spr[UB.unlined.spr$Year == 2024,c(2:3)] <- c(K$Yspr, K$var.Yspr.corrected)
 
+#2024/2025
+ubcom15 <- spr(unlined2024$TOW_NO[unlined2024$STRATA_ID == 53],apply(unlined2024[unlined2024$STRATA_ID == 53,24:50],1,sum),
+               unlined2025$TOW_NO[unlined2025$STRATA_ID == 53],apply(unlined2025[unlined2025$STRATA_ID == 53,27:50],1,sum),
+               crossref.BoF.2025[crossref.BoF.2025$STRATA_ID == 53,c("TOW_NO_REF","TOW_NO")])
+K <- summary(ubcom15,summary(ubcom14, summary(ubcom13,summary(ubcom12, summary(ubcom11, summary(ubcom10, summary(ubcom9, summary(ubcom8, summary(ubcom7, summary(ubcom6, summary(ubcom5, summary(ubcom4, summary(ubcom3, summary(ubcom2, summary(ubcom1, summary(ubcom))))))))))))))))
+UB.unlined.spr[UB.unlined.spr$Year == 2025,c(2:3)] <- c(K$Yspr, K$var.Yspr.corrected)
 
 UB.unlined.spr
 
@@ -1539,6 +1592,13 @@ outcom13 <- spr(unlined2023$TOW_NO[unlined2023$STRATA_ID == 49],apply(unlined202
                 crossref.BoF.2024[crossref.BoF.2024$STRATA_ID == 49,c("TOW_NO_REF","TOW_NO")])
 K <- summary(outcom13)
 Out.unlined.spr[Out.unlined.spr$Year == 2024,c(2:3)] <-  c(K$Yspr, K$var.Yspr.corrected)
+
+#2024/2025
+outcom14 <- spr(unlined2024$TOW_NO[unlined2024$STRATA_ID == 49],apply(unlined2024[unlined2024$STRATA_ID == 49,24:50],1,sum),
+                unlined2025$TOW_NO[unlined2025$STRATA_ID == 49],apply(unlined2025[unlined2025$STRATA_ID == 49,27:50],1,sum),
+                crossref.BoF.2025[crossref.BoF.2025$STRATA_ID == 49,c("TOW_NO_REF","TOW_NO")])
+K <- summary(outcom14)
+Out.unlined.spr[Out.unlined.spr$Year == 2025,c(2:3)] <-  c(K$Yspr, K$var.Yspr.corrected)
 
 
 Out.unlined.spr
@@ -1691,6 +1751,12 @@ ahcom14 <- spr(unlined2023$TOW_NO[unlined2023$STRATA_ID == 35],apply(unlined2023
 K <- summary(ahcom14, summary(ahcom13, summary(ahcom12, summary(ahcom11, summary(ahcom10, summary(ahcom9, summary(ahcom8, summary(ahcom7, summary(ahcom6, summary(ahcom5, summary(ahcom4, summary(ahcom3, summary(ahcom2, summary(ahcom1, summary(ahcom)))))))))))))))
 AH.unlined.spr[AH.unlined.spr$Year == 2024,c(2:3)] <- c(K$Yspr, K$var.Yspr.corrected)
 
+#2024/2025  
+ahcom15 <- spr(unlined2024$TOW_NO[unlined2024$STRATA_ID == 35],apply(unlined2024[unlined2024$STRATA_ID == 35,24:50],1,sum),
+               unlined2025$TOW_NO[unlined2025$STRATA_ID == 35],apply(unlined2025[unlined2025$STRATA_ID == 35,27:50],1,sum),
+               crossref.BoF.2025[crossref.BoF.2025$STRATA_ID == 35,c("TOW_NO_REF","TOW_NO")])
+K <- summary(ahcom15, summary(ahcom14, summary(ahcom13, summary(ahcom12, summary(ahcom11, summary(ahcom10, summary(ahcom9, summary(ahcom8, summary(ahcom7, summary(ahcom6, summary(ahcom5, summary(ahcom4, summary(ahcom3, summary(ahcom2, summary(ahcom1, summary(ahcom))))))))))))))))
+AH.unlined.spr[AH.unlined.spr$Year == 2025,c(2:3)] <- c(K$Yspr, K$var.Yspr.corrected)
 
 AH.unlined.spr
 

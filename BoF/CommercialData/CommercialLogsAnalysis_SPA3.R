@@ -235,6 +235,17 @@ write.csv(comm.dat.combined, paste0(direct,"/",assessmentyear,"/Assessment/Data/
 #### Time Series Plots ####
 
 #CPUE by season and subarea:
+
+#median lines
+BLSummer <- filter(comm.dat.subarea, area == "BILU", season == "June")
+med.BLSummer <- median(BLSummer$cpue.kgh, na.rm = TRUE)
+SMB <- filter(comm.dat.subarea, area == "SMB", season == "June")
+med.SMB <- median(SMB$cpue.kgh, na.rm = TRUE)
+BLFall <- filter(comm.dat.subarea, area == "BILU", season == "Oct")
+med.BLFall <- median(BLFall$cpue.kgh, na.rm = TRUE)
+med = c(med.BLSummer, med.SMB, med.BLFall)
+
+#plot
 ggplot(filter(comm.dat.subarea, area != 'SMB'| season != 'Oct'), aes(x = year, y = cpue.kgh, colour = interaction(area, season))) +
   theme_bw(base_size = 16) + theme(panel.grid=element_blank()) +  
   geom_line() +
@@ -242,9 +253,12 @@ ggplot(filter(comm.dat.subarea, area != 'SMB'| season != 'Oct'), aes(x = year, y
   scale_x_continuous("Year", breaks = seq(2002,fishingyear,2)) +
   scale_y_continuous("Catch Rate (kg/h)", limits = c(0,50), breaks = seq(0,50,10)) +
   scale_colour_manual(values = c("black", "blue", "green"), labels = c("Brier/Lurcher Summer", "St. Mary's Bay", "Brier/Lurcher Fall")) +
+  geom_hline(yintercept = med, linetype = "dashed", color = c("black", "blue", "green")) +
   theme(legend.title = element_blank())
 #save
 ggsave(filename = paste0(direct, "/",assessmentyear,"/Assessment/Figures/CommercialData/SPA3_CPUE",fishingyear, ".png"), width = 24,height = 16,dpi = 400,units='cm')
+
+
 
 #CPUE by month
 CPUE_month <- logs %>% 
@@ -321,7 +335,7 @@ ggsave(filename = paste0(direct, "/",assessmentyear,"/Assessment/Figures/Commerc
 #### SPATIAL PLOTS ####
 
 #Pecjector basemap with SPA3 boundaries
-p <- pecjector(area =list(x=c(-66.8,-65.8), y=c(43.6,44.6), crs=4326),repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot', add_layer = list(land = "grey", bathy = c(50,'c'), scale.bar = c('tl',0.5)))
+p <- pecjector(area =list(x=c(-66.8,-65.8), y=c(43.6,44.6), crs=4326),repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot', add_layer = list(land = "grey", bathy = c(50,'c'), scale.bar = c('tl')))
 
 
 #CPUE Grid Plot
@@ -346,7 +360,9 @@ p +
   geom_sf(data = poly.SMB, fill=NA, colour="red") +
   coord_sf(xlim = c(-66.8,-65.8), ylim = c(43.6,44.6), expand = FALSE) +
   scale_fill_binned(type = "viridis", direction = -1, name="CPUE (kg/h)") +
-  #scale_fill_fermenter(n.breaks = 8, palette = "YlGnBu", limits = c(5,110),direction = 1, name="CPUE kg/h") +
+  geom_polygon(data = shp, aes(x = long, y = lat, group = group), fill="grey55") +
+  #annotation_scale() +
+  #annotation_north_arrow(location = "tl") +
   theme(plot.title = element_text(size = 14, hjust = 0.5), #plot title size and position
       axis.title = element_text(size = 12),
       axis.text = element_text(size = 10),
@@ -356,7 +372,7 @@ p +
       legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.7)), #Legend bkg colour and transparency
       legend.box.margin = margin(6, 8, 6, 8))
 #save
-ggsave(filename = paste0(direct, "/",assessmentyear,"/Assessment/Figures/CommercialData/SPA3_CPUEgridplot",fishingyear, ".png"), width = 9, height = 9, dpi = 200,units='in')
+ggsave(filename = paste0(direct, "/",assessmentyear,"/Assessment/Figures/CommercialData/SPA3_CPUEgridplot_new",fishingyear, ".png"), width = 9, height = 9, dpi = 200,units='in')
 
 
 # # Make histogram by area for distribution of cpue
@@ -428,7 +444,7 @@ p +
   geom_sf(data = poly.VMS, fill=NA, colour="red") +
   geom_sf(data = poly.SMB, fill=NA, colour="red") +
   coord_sf(xlim = c(-66.8,-65.8), ylim = c(43.6,44.6), expand = FALSE) +
-  scale_fill_binned(type = "viridis", direction = -1, name="Effort (h)", breaks = c(25, 50, 75, 100, 125)) +
+  scale_fill_binned(type = "viridis", direction = -1, name="Effort (h)", breaks = c(25, 50, 75, 100, 125, 150, 200)) +
   theme(plot.title = element_text(size = 14, hjust = 0.5), #plot title size and position
         axis.title = element_text(size = 12),
         axis.text = element_text(size = 10),

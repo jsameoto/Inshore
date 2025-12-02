@@ -272,7 +272,7 @@ ggsave(filename = paste0(direct, "/",assessmentyear,"/Assessment/Figures/Commerc
 #### SPATIAL PLOTS ####
 
 #Pecjector basemap with SPA 1A boundaries
- p <- pecjector(area =list(x=c(-66.5,-64.5), y=c(44.2,45.4), crs=4326),repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot', add_layer = list(land = "grey", bathy = c(50,'c'), scale.bar = c('tl',0.5)))
+ p <- pecjector(area =list(x=c(-66.5,-64.5), y=c(44.2,45.4), crs=4326),repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot', add_layer = list(land = "grey", bathy = c(50,'c')))
  
  
 #CPUE Grid Plot
@@ -288,13 +288,19 @@ ggsave(filename = paste0(direct, "/",assessmentyear,"/Assessment/Figures/Commerc
  ##convert raster to sf object
  df <- (as.data.frame(raster::rasterToPoints(raster.data)))
  names(df) <- c("lon", "lat", "mean.cpue")
- 
+
+ shp <- readOGR("Y:/Admin/Request_and_Review_Tracking/Aquaculture_Reviews/shp/SMB_proposed_Aquaculture_sites.shp")
+  
  ##add sf objects to basemap outside of pecjector
- p +
+ 
+p +
    geom_tile(df, mapping = aes(lon, lat, fill = mean.cpue), color = "grey55") +
    geom_sf(data = poly.strata, fill=NA, colour="grey55") +
    coord_sf(xlim = c(-66.5,-64.5), ylim = c(44.2,45.4), expand = FALSE) +
-   scale_fill_binned(type = "viridis", direction = -1, name="CPUE (kg/h)", breaks = c(10, 20, 30, 40, 50, 60)) +
+   scale_fill_binned(type = "viridis", direction = -1, name="CPUE (kg/h)", breaks = c(25, 50, 75, 100, 125, 150, 175), limits = c(0,200)) +
+   geom_polygon(data = shp, aes(x = long, y = lat, group = group), fill="grey55") +
+   annotation_scale() +
+   annotation_north_arrow(location = "br") +
    theme(plot.title = element_text(size = 14, hjust = 0.5), #plot title size and position
          axis.title = element_text(size = 12),
          axis.text = element_text(size = 10),
@@ -303,8 +309,8 @@ ggsave(filename = paste0(direct, "/",assessmentyear,"/Assessment/Figures/Commerc
          legend.position = c(.87,.32), #legend position
          legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.7)), #Legend bkg colour and transparency
          legend.box.margin = margin(6, 8, 6, 8)) #Legend bkg margin (top, right, bottom, left)
- #save
-ggsave(filename = paste0(direct, "/",assessmentyear,"/Assessment/Figures/CommercialData/SPA1A_CPUEgridplot",fishingyear, ".png"), width = 9,height = 9,dpi= 200,units='in')
+#save
+ggsave(filename = paste0(direct, "/",assessmentyear,"/Assessment/Figures/CommercialData/SPA1A_CPUEgridplot_new",fishingyear, ".png"), width = 9,height = 9,dpi= 200,units='in')
  
  
  # Make histogram by area for distribution of cpue
