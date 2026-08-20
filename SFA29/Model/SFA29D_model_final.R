@@ -33,13 +33,13 @@ library(lubridate)
 library(readxl)
 library(tidyverse)
 #library(SSModel) #v 1.0-5
-source("Y:/Inshore/SFA29/2017/model/SFA29model9-2015.R") #contains the SFA29model model (BUGS) 
+source("Z:/Inshore/Assessment/SFA29/2017/model/SFA29model9-2015.R") #contains the SFA29model model (BUGS) 
 
 
 #DEFINE:
-path.directory <- "Y:/Inshore/SFA29/"
-assessmentyear <- 2025 #year in which you are conducting the assessment 
-surveyyear <- 2024  #last year of survey data you are using, e.g. if max year of survey is survey from summer 2019, this would be 2019 
+path.directory <- "Z:/Inshore/Assessment/SFA29/"
+assessmentyear <- 2026 #year in which you are conducting the assessment 
+surveyyear <- 2025  #last year of survey data you are using, e.g. if max year of survey is survey from summer 2019, this would be 2019 
 area <- "SFA29D"  
 
 #yr <- year(Sys.Date()) # This should be set to the year after the year of the last survey.  e.g. if 2018 that means you are using the 2017 survey. This assumes you're running assessment in surveyyear + 1
@@ -47,7 +47,7 @@ yrs <- 2001:surveyyear  #(yr-1)
 #yrs <- 2001:2020
   
 #setwd
-#setwd(paste0("Y:/Inshore/SFA29/",assessmentyear,"/Assessment/Data/Model/"))
+#setwd(paste0("Z:/Inshore/SFA29/",assessmentyear,"/Assessment/Data/Model/"))
 
 # Let's be consistent with our MCMC!
 niter = 500000 #300000
@@ -83,7 +83,7 @@ SFA29.parms <- c("Bh","BBh","Ph","Rh" ,"Kh" , "m" , "sigma","q" , "S" , "log.Kh"
 # the relationship between fishing intensity and density; !unique to subarea!
 e.parms.29D <- c(6.015838e-04, 1.415631e-03, 3.795913e-03, 5.234428e-01, 8.597847e+01)
 
-# The area of each strata in D, I think...
+# The area of each strata in D
 D.area <- c(133.5575, 142.9425, 51.07)
 num.areas <- length(D.area) # The number of strata in the area...
 
@@ -480,7 +480,7 @@ for(i in 1:num.pe.years)
                                                     g.parm=mod.dat$gh[mod.dat$Year ==pe.years[i] & mod.dat$Strata %in% strata])
 }
 
-#save(pe.pred,file="Y:/INSHORE SCALLOP/SFA29/Model_results_2014_2016/SFA29D/prediction_evaluation_results_2011_2016.RData")
+#save(pe.pred,file="Z:/INSHORE SCALLOP/SFA29/Model_results_2014_2016/SFA29D/prediction_evaluation_results_2011_2016.RData")
 #save(pe.pred,file = paste0(getwd(),"/SFA29D_results/prediction_evaluation_results_",pe.years,".RData"))
 save(pe.pred,file=paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29D/SFA29D.prediction.evaluation.results.",surveyyear,".RData"))
 
@@ -491,7 +491,7 @@ save(pe.pred,file=paste0(path.directory,assessmentyear,"/Assessment/Data/Model/S
 # we need to bring in all the prediction evalulation data we have....
 # Now load all the old pe.pred results, first identify where to find the data...
 
-direct <- "Y:/Inshore/SFA29/"
+direct <- "Z:/Inshore/Assessment/SFA29/"
 pe.all <- NULL
 
 for(i in 2016:pe.years) {
@@ -575,7 +575,7 @@ summary <- cbind(parameters, data.frame(summary, row.names=NULL))
 
 n <- 3
 years <- rep(2001:surveyyear, each=n)
-Habitat <- rep(c("Low", "Med", "High"), 24) #Need to fix this so new years are added.
+Habitat <- rep(c("Low", "Med", "High"), 25) #Need to fix this so new years are added.
 
 summary.Bh <- summary |>  filter(str_detect(summary$parameters, "^Bh"))
 summary.Bh$Year <- years

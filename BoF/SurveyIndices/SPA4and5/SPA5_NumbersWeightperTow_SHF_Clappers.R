@@ -28,8 +28,8 @@ pwd <- pw.sameotoj
 surveyyear <- 2025  #This is the last survey year 
 assessmentyear <- 2025 #year in which you are conducting the survey 
 area <- "1A1B4and5"  #SPA assessing recall SPA 1A, 1B, and 4 are grouped; options: "1A1B4and5", "3", "6" 
-path.directory <- "Y:/Inshore/BoF/"
-
+path.directory <- "Y:/Inshore/Assessment/BoF/"
+#path.directory <- "Y:/Inshore/BoF/"
 
 ####
 # read in shell height and meat weight data from database
@@ -154,7 +154,7 @@ survtow <- aggregate(TOW_NO~YEAR, data=spa5freq, length)
 survtow
 
 #Save out to input number of tows into Update document:
-write.csv(survtow, paste0("Y:/Inshore/BoF/",surveyyear,"/Assessment/Data/SurveyIndices/SPA1A1B4and5/SPA5.Numtows.per.survey",assessmentyear,".csv"), row.names = FALSE)
+write.csv(survtow, paste0(path.directory,surveyyear,"/Assessment/Data/SurveyIndices/SPA1A1B4and5/SPA5.Numtows.per.survey",assessmentyear,".csv"), row.names = FALSE)
 
 # SPA5detail<-subset(BFliveweight, STRATA_ID==21)
 # detailtow<-tapply(SPA5detail$TOW_NO, SPA5detail$CRUISE, FUN = function(x) length(unique(x)))

@@ -14,7 +14,7 @@ for(fun in funcs)
 
 #Histogram - biomass distribution by Habitat
 
-ScallopSurv.kg <- read.csv("Y:/Inshore/SFA29/2025/Assessment/Data/SurveyIndices/SFA29liveweight2024.csv") |> filter(YEAR == 2024) |> arrange(TOW_NO)
+ScallopSurv.kg <- read.csv("Y:/Inshore/Assessment/SFA29/2025/Assessment/Data/SurveyIndices/SFA29liveweight2024.csv") |> filter(YEAR == 2024) |> arrange(TOW_NO)
 head(ScallopSurv.kg)
 ScallopSurv.kg <- ScallopSurv.kg %>% dplyr::select(-X) %>%  #removes index column X
   mutate(lat = convert.dd.dddd(START_LAT)) %>% #Convert to DD
@@ -25,7 +25,7 @@ ScallopSurv.kg <- ScallopSurv.kg %>% dplyr::select(-X) %>%  #removes index colum
   mutate(pre.bm = dplyr::select(., BIN_ID_0:BIN_ID_85) %>% rowSums(na.rm = TRUE) %>% round(0)/1000)
 
 
-sdm <- read.csv("Y:/Inshore/SFA29/ScalSurv_SDM/SFA29Tows_SDM.csv") |> filter(CRUISE == "SFA292024") |> arrange(TOW_NO)
+sdm <- read.csv("Y:/Inshore/Assessment/SFA29/ScalSurv_SDM/SFA29Tows_SDM.csv") |> filter(CRUISE == "SFA292024") |> arrange(TOW_NO)
 
 dim(sdm)
 dim(ScallopSurv.kg)

@@ -41,12 +41,15 @@ pwd <- pw.sameotoj
 surveyyear <- 2025  #This is the last survey year 
 assessmentyear <- 2025 #year in which you are conducting the survey 
 area <- "6"  #SPA assessing recall SPA 1A, 1B, and 4 are grouped; options: "1A1B4and5", "3", "6"
-path.directory <- "Y:/Inshore/BoF/"
+path.directory <- "Y:/Inshore/Assessment/BoF/"
+#path.directory <- "Y:/Inshore/BoF/"
 
 
 # polygons to for assigning new strata to data
-inVMS <- read.csv("Y:/Inshore/BoF/2015/SPA6/Survey/SPA6_VMS_IN_R_final_MOD.csv")
-outvms <- read.csv("Y:/Inshore/BoF/2015/SPA6/Survey/SPA6_VMS_OUT_R_final_MOD.csv")
+inVMS <- read.csv("Y:/Inshore/Assessment/BoF/2015/SPA6/Survey/SPA6_VMS_IN_R_final_MOD.csv")
+#inVMS <- read.csv("Y:/Inshore/BoF/2015/SPA6/Survey/SPA6_VMS_IN_R_final_MOD.csv")
+outvms <- read.csv("Y:/Inshore/Assessment/BoF/2015/SPA6/Survey/SPA6_VMS_OUT_R_final_MOD.csv")
+#outvms <- read.csv("Y:/Inshore/BoF/2015/SPA6/Survey/SPA6_VMS_OUT_R_final_MOD.csv")
 
 #SHF data
 #SPA 6C(30), 6B(31), 6A(32)

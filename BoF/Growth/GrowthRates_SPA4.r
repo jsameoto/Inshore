@@ -22,10 +22,12 @@ area <- "1A1B4and5"  #SPAs 1A, 1B and 4 and 5 all modelled together, therefore c
 assessmentyear <- 2025 #this is the year you are running your assessment in -- corresponds to the assessment folder year name e.g. INSHORE SCALLOP/2020/Assessment..
 
 # DEFINE: load required workspace with model objects -- should be from current year of assessment, eg. if survey from 2021 and running assessment in 2021 this is in 2021 assessment folder 
-load(paste0("Y:/Inshore/BoF/",year,"/Assessment/Data/Growth/SPA1A1B4and5/BFgrowth",year,".RData"))
+load(paste0("Y:/Inshore/Assessment/BoF/",year,"/Assessment/Data/Growth/SPA1A1B4and5/BFgrowth",year,".RData"))
+#load(paste0("Y:/Inshore/BoF/",year,"/Assessment/Data/Growth/SPA1A1B4and5/BFgrowth",year,".RData"))
 
 # DEFINE: load shell height objects - again should be current year of assessment, e.g. if survey from 2021 and running assessment in 2021 this is in 2021 assessment folder 
-source(paste0("Y:/Inshore/BoF/",year,"/Assessment/Data/Growth/SPA1A1B4and5/SPA4.SHobj.",year,".R"))#start at 1996
+source(paste0("Y:/Inshore/Assessment/BoF/",year,"/Assessment/Data/Growth/SPA1A1B4and5/SPA4.SHobj.",year,".R"))#start at 1996
+#source(paste0("Y:/Inshore/BoF/",year,"/Assessment/Data/Growth/SPA1A1B4and5/SPA4.SHobj.",year,".R"))#start at 1996
 #Check that you have correctly identified all required Shell Height objects and they are within the workspace (should have been loaded via the shell height object above)
 sh.actual
 sh.predict 
@@ -38,7 +40,8 @@ SH.object
 
 # DEFINE: Source previous year meat weight and growth rate object for ACTUAL & PREDITED growth rates:
 # if your year defined above it 2019, then you should be bringing in the 2018 growth rate object.
-spa4.growthrate <- read.csv(paste0("Y:/Inshore/BoF/",year-1,"/Assessment/Data/Growth/SPA1A1B4and5/spa4.growthrate.",year-1,".csv"))
+spa4.growthrate <- read.csv(paste0("Y:/Inshore/Assessment/BoF/",year-1,"/Assessment/Data/Growth/SPA1A1B4and5/spa4.growthrate.",year-1,".csv"))
+#spa4.growthrate <- read.csv(paste0("Y:/Inshore/BoF/",year-1,"/Assessment/Data/Growth/SPA1A1B4and5/spa4.growthrate.",year-1,".csv"))
 spa4.growthrate <- spa4.growthrate[,-1]
 
 #break out data to object: 
@@ -56,7 +59,8 @@ data <- BFdetail.foryear
 
 
 # DEFINE path for figures and dataouput to be saved; note expects within this folder that you've created a "dataoutput" and "Figures" folder under the following directory path;  MUST HAVE "/" at the end of your path!
-path.directory <- "Y:/Inshore/BoF/"
+path.directory <- "Y:/Inshore/Assessment/BoF/"
+#path.directory <- "Y:/Inshore/BoF/"
 
 
 #////... END OF DEFINE SECTION ...////

@@ -23,7 +23,8 @@ for(fun in funcs)
 
 
 #DEFINE:
-direct <- "Y:/Inshore/BoF"
+direct <- "Y:/Inshore/Assessment/BoF"
+#direct <- "Y:/Inshore/BoF"
 assessmentyear <- 2025 #year in which you are conducting the assessment 
 surveyyear <- 2025  #last year of survey data you are using, e.g. if max year of survey is survey from summer 2019, this would be 2019
 
@@ -81,7 +82,7 @@ decision.1yrmort.1A <- decision.1yrmort.1A$Next.year
 decision.1yrmort.1A <- decision.1yrmort.1A |> mutate(Table.Type = "Natural mortality is current year") |> mutate(SPA = "SPA 1A") |> mutate(RRP=0.15)
 decision.1yrmort.1A
 
-#write.csv(decision.1yrmort.1A, "Y:/Inshore/BoF/2025/Assessment/Data/Model/SPA1A/decision_with_1yrmort_2025.csv")
+#write.csv(decision.1yrmort.1A, (paste0(direct,"/",assessmentyear,"/Assessment/Data/Model/SPA1A/decision_with_1yrmort_2025.csv"))
 
 decision.tabs.1A <- rbind(decision.table.current.1A, decision.1yrmort.1A)
 
@@ -114,7 +115,7 @@ decision.1yrmort.1B <- SSModel_predict_summary_median(decision.1yrmort.1B, LRP=8
 decision.1yrmort.1B <- decision.1yrmort.1B$Next.year
 decision.1yrmort.1B <- decision.1yrmort.1B |> mutate(Table.Type = "Natural mortality is current year") |> mutate(SPA = "SPA 1B") |> mutate(RRP=0.15)
 decision.1yrmort.1B
-#write.csv(decision.1yrmort.1B, "Y:/Inshore/BoF/2025/Assessment/Data/Model/SPA1B/decision_with_1yrmort_2025.csv")
+#write.csv(decision.1yrmort.1B, (paste0(direct,"/",assessmentyear,"/Assessment/Data/Model/SPA1B/decision_with_1yrmort_2025.csv"))
 
 decision.tabs.1B <- rbind(decision.table.current.1B, decision.1yrmort.1B)
 
@@ -148,7 +149,7 @@ decision.1yrmort.3 <- SSModel_predict_summary_median(decision.1yrmort.3, LRP=600
 decision.1yrmort.3 <- decision.1yrmort.3$Next.year
 decision.1yrmort.3 <- decision.1yrmort.3 |> mutate(Table.Type = "Natural mortality is current year") |> mutate(SPA = "SPA 3") |> mutate(RRP=0.15)
 decision.1yrmort.3
-#write.csv(decision.1yrmort.3, "Y:/Inshore/BoF/2025/Assessment/Data/Model/SPA3/decision_with_1yrmort_2025.csv")
+#write.csv(decision.1yrmort.3, (paste0(direct,"/",assessmentyear,"/Assessment/Data/Model/SPA3/decision_with_1yrmort_2025.csv"))
 
 decision.tabs.3 <- rbind(decision.table.current.3, decision.1yrmort.3)
 
@@ -181,7 +182,7 @@ decision.1yrmort.4 <- SSModel_predict_summary_median(decision.1yrmort.4, LRP=530
 decision.1yrmort.4 <- decision.1yrmort.4$Next.year
 decision.1yrmort.4 <- decision.1yrmort.4 |> mutate(Table.Type = "Natural mortality is current year") |> mutate(SPA = "SPA 4") |> mutate(RRP=0.15)
 decision.1yrmort.4
-#write.csv(decision.1yrmort.4, "Y:/Inshore/BoF/2025/Assessment/Data/Model/SPA4/decision_with_1yrmort_2025.csv")
+#write.csv(decision.1yrmort.4, (paste0(direct,"/",assessmentyear,"/Assessment/Data/Model/SPA4/decision_with_1yrmort_2025.csv"))
 
 decision.tabs.4 <- rbind(decision.table.current.4, decision.1yrmort.4)
 
@@ -231,7 +232,7 @@ prop.catch.in <- round(SPA6.landings %>% filter(Year == "Prop_IN") %>%
 decision.1yrmort.6 <- decision.1yrmort.6 %>% 
   mutate(Catch.all = round(Catch/prop.catch.in,0))
 decision.1yrmort.6
-write.csv(decision.1yrmort.6, "Y:/Inshore/BoF/2025/Assessment/Data/Model/SPA6/decision_with_1yrmort_2025.csv")
+#write.csv(decision.1yrmort.6,(paste0(direct,"/",assessmentyear,"/Assessment/Data/Model/SPA6/decision_with_1yrmort_2025.csv"))
 
 decision.tabs.6 <- rbind(decision.table.current.6, decision.1yrmort.6)
 #Switch Catch from modelled area to catch all

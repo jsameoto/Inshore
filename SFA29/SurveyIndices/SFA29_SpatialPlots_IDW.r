@@ -41,10 +41,10 @@ require(ggspatial)
 #pwd <- pw.sameotoj
 #uid <- un.raperj
 #pwd <- un.raperj
-# uid <- keyring::key_list("Oracle")[1,2]
-# pwd <- keyring::key_get("Oracle", uid)
-uid <- un.englishg
-pwd <- pw.englishg
+ uid <- keyring::key_list("Oracle")[1,2]
+ pwd <- keyring::key_get("Oracle", uid)
+#uid <- un.englishg
+#pwd <- pw.englishg
 
 survey.year <- 2025  #This is the last survey year 
 assessmentyear <- 2026 #year in which you are providing advice for - (e.g. 2017 survey is 2018 assessment) - Save to folder year
@@ -59,10 +59,10 @@ cruise <- "'SFA292025'"
 #yr.crnt <- yr-1
 #years <- c(2001:(yr-1))
 
-path.directory <- "Y:/Inshore/SFA29/"
+path.directory <- "Y:/Inshore/Assessment/SFA29/"
 
 #set up directory to save plot
-saveplot.dir <- paste0("Y:/Inshore/SFA29/",assessmentyear,"/Assessment/Figures/") 
+saveplot.dir <- paste0("Y:/Inshore/Assessment/SFA29/",assessmentyear,"/Assessment/Figures/") 
 #set up a directory for french figures
 saveplot.dir.fr <- paste0(saveplot.dir,"FrenchFigures_indicies/")
 
@@ -190,7 +190,7 @@ sampled.dat <- dbGetQuery(chan, quer3)
 #ScallopSurv.kg <- read.csv(paste0("Y:/INSHORE SCALLOP/SFA29/",assessmentyear,"/dataoutput/SFA29liveweight",survey.year,".csv"))
 
 #Multiple years - DEFINE
-ScallopSurv.kg <- read.csv(paste0("Y:/Inshore/SFA29/",assessmentyear,"/Assessment/Data/SurveyIndices/SFA29liveweight2014to",survey.year,".csv"))  
+ScallopSurv.kg <- read.csv(paste0("Y:/Inshore/Assessment/SFA29/",assessmentyear,"/Assessment/Data/SurveyIndices/SFA29liveweight2014to",survey.year,".csv"))  
 #ScallopSurv.kg <- read.csv("Y:/Inshore/SFA29/2020/dataoutput/SFA29liveweight2014to2019.csv")  
 
 # 2014 to current year
@@ -207,7 +207,7 @@ ScallopSurv.kg <- ScallopSurv.kg %>% dplyr::select(-X) %>%  #removes index colum
 
 #Condition data is read in from the previously generated "ConditionforMapYYYY.csv" files in Y:\INSHORE SCALLOP\SFA29\YYYY\dataoutput directories.
 
-con.dat <- read.csv(paste0("Y:/Inshore/SFA29/",assessmentyear,"/Assessment/Data/SurveyIndices/SFA29ConditionforMap",survey.year,".csv")) #NOTE: 2014 file made by Jessica (..._JS.csv), will be slightly different than for 2015 assessment since Stephen calculated this using smaller dataset for mtwt sh model
+con.dat <- read.csv(paste0("Y:/Inshore/Assessment/SFA29/",assessmentyear,"/Assessment/Data/SurveyIndices/SFA29ConditionforMap",survey.year,".csv")) #NOTE: 2014 file made by Jessica (..._JS.csv), will be slightly different than for 2015 assessment since Stephen calculated this using smaller dataset for mtwt sh model
 #con.dat <- read.csv("Y:/Inshore/SFA29/2020/dataoutput/ConditionforMap2019.csv") 
 
 con.dat <- con.dat %>% dplyr::select(-X) %>%  #removes index column X
@@ -292,8 +292,9 @@ st_crs(idw_sf) <- 32620
 
 #Set standard layers: bathymetry on bottom layer, and land, survey tows, etc above IDW layer
 bathy <-   ggplot() + #goes before IDW layer
-  geom_sf(data = bathy_sf, color = "steelblue", alpha = 0.1, size = 0.5) +
-  coord_sf(xlim = c(-66.50,-64.30), ylim = c(44.25,45.80), expand = FALSE)
+  geom_sf(data = bathy_sf, color = "steelblue", alpha = 0.05, size = 0.5) +
+  coord_sf(xlim = c(-66.50,-64.30), ylim = c(44.25,45.80), expand = FALSE)+
+  theme_bw()
 
 # Function to generate map layers to go after IDW layer
 p <- function(mgmt_zone, surv_sf, land) {
@@ -408,7 +409,7 @@ summary(Surv.sf$com)
 ##### BIOMASS (ENGLISH) ----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nbiomass \n(kg/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Commercial \nbiomass \n(kg/Tow)", limits = c(0,35), breaks = c(0,10,20,30)) + 
   p(mgmt_zone, Surv.sf, Land) +
   coord_sf(xlim = c(-66.50,-65.45), ylim = c(43.10,43.80), expand = FALSE)+
   labs(#title = paste(survey.year, "", "SFA29W Biomass (>= 80mm)"), 
@@ -453,7 +454,7 @@ summary(Surv.sf$Condition)
 ##### CONDITION (ENGLISH) ----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "G", direction = -1,  trans = "sqrt", name = "Condition (g)", limits = c(6,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "G", direction = -1,  trans = "sqrt", name = "Condition (g)", limits = c(6,13), breaks = c(6, 8,10,12)) + 
   p(mgmt_zone, Surv.sf, Land) +
   coord_sf(xlim = c(-66.50,-65.45), ylim = c(43.10,43.80), expand = FALSE)+
   labs(#title = paste(survey.year, "", "SFA29W Condition"), 
@@ -630,7 +631,7 @@ summary(Surv.sf$rec)
 ##### DENSITY (ENGLISH) ----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nabundance \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nabundance \n(N/Tow)", limits = c(0,400), breaks = c(0,100,200,300)) + 
   p(mgmt_zone, Surv.sf, Land) +
   coord_sf(xlim = c(-66.50,-65.45), ylim = c(43.10,43.80), expand = FALSE)+
   labs(#title = paste(survey.year, "", "SFA29W Density (65-79mm)"), 
@@ -709,7 +710,7 @@ Surv.sf$log_rec[which(Surv.sf$log_rec==-Inf)] <- log(0.0001)
 #Overlay a grid over the survey area, as it is required to interpolate (smaller cellsize will take more time to run than larger. both here and during interpolation)
 grid <- st_make_grid(idw_sf, cellsize=500) %>% st_intersection(idw_sf)
 #Doing the inverse distance weighted interpolation
-preds_idw2 <- gstat::idw(log_rec~1,Surv.sf,grid,idp=3)
+preds_idw2 <- gstat::idw(Surv.sf$log_rec~1,Surv.sf,grid,idp=3)
 
 preds_idw2$prediction <- exp(preds_idw2$var1.pred)
 summary(preds_idw2$prediction)
@@ -718,7 +719,7 @@ summary(Surv.sf$rec)
 ##### CLAPPERS (ENGLISH) ----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nclappers \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Recruit \nclappers \n(N/Tow)", breaks = c(0,1), limits = c(0,1)) + 
   p(mgmt_zone, Surv.sf, Land) +
   coord_sf(xlim = c(-66.50,-65.45), ylim = c(43.10,43.80), expand = FALSE)+
   labs(#title = paste(survey.year, "", "SFA29W Clappers (65-79mm)"), 
@@ -808,7 +809,7 @@ summary(Surv.sf$pre)
 ##### DENSITY (ENGLISH) ----
 bathy + #Plot survey data and format figure.
   geom_sf(data = preds_idw2, aes(fill = prediction),  colour = NA) + 
-  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Pre-recruit \nabundance \n(N/Tow)", limits = c(0,max(preds_idw2$prediction))) + 
+  scale_fill_viridis_c(option = "H",  trans = "sqrt", name = "Pre-recruit \nabundance \n(N/Tow)", limits = c(0,1200), breaks = c(0,300,600,900,1200)) + 
   p(mgmt_zone, Surv.sf, Land) +
   coord_sf(xlim = c(-66.50,-65.45), ylim = c(43.10,43.80), expand = FALSE)+
   labs(#title = paste(survey.year, "", "SFA29W Density (65-79mm)"), 
@@ -942,7 +943,8 @@ ggplot() + #Plot survey data and format figure.
   scale_y_continuous(labels = scales::label_number(accuracy = 0.01))+
   annotation_scale(location = "bl", width_hint = 0.5, pad_x = unit(0.35, "cm"), pad_y = unit(0.35, "cm")) + # Add scale bar with selectable location
   annotation_north_arrow(location = "bl", which_north = "true", height = unit(1.25, "cm"), width = unit(1, "cm"),
-                         pad_x = unit(0.35, "cm"), pad_y = unit(0.75, "cm"),style = north_arrow_fancy_orienteering) + # Add north arrow with selectable location
+                         pad_x = unit(0.35, "cm"), pad_y = unit(0.75, "cm"),style = north_arrow_fancy_orienteering) + # Add north arrow with selectable location+
+  theme_bw()+
   theme(legend.key.size = unit(6,"mm"),
         plot.title = element_text(size = 14, hjust = 0.5), #plot title size and position
         axis.title = element_text(size = 12),

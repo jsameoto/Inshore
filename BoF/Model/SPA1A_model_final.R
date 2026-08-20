@@ -47,7 +47,8 @@ rm(list=ls(all=T))
 options(stringsAsFactors = FALSE)
 
 #DEFINE:
-direct <- "Y:/Inshore/BoF"
+direct <- "Y:/Inshore/Assessment/BoF"
+#direct <- "Y:/Inshore/BoF"
 assessmentyear <- 2025 #year in which you are conducting the assessment 
 surveyyear <- 2025  #last year of survey data you are using, e.g. if max year of survey is survey from summer 2019, this would be 2019 
 area <- "1A"  #this would be the SPA, for entries options are to use: 1A, 1B, 3, 4, or 6 

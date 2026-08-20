@@ -38,10 +38,12 @@ surveyyear <- 2025  #This is the last survey year
 assessmentyear <- 2025 #year in which you are conducting the survey 
 area <- "3"  #SPA assessing recall SPA 1A, 1B, and 4 are grouped; options: "1A1B4and5", "3", "6" 
 cruise <- "'BI2025'"
-path.directory <- "Y:/Inshore/BoF/"
+path.directory <- "Y:/Inshore/Assessment/BoF/"
+#path.directory <- "Y:/Inshore/BoF/"
 
 #polygon to for assigning new strata to data #To bring in sf object from Github eventually - will need to identify in and out VMS data points.
 spa3area <- read.csv("Y:/Inshore/Databases/Scallsur/SPA3/SPA3_VMSpoly.csv")
+#spa3area <- read.csv("Y:/Inshore/Databases/Scallsur/SPA3/SPA3_VMSpoly.csv")
 
 #////... END OF DEFINE SECTION ...////
 

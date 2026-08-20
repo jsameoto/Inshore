@@ -32,13 +32,13 @@ library(lubridate)
 library(readxl)
 library(tidyverse)
 #library(SSModel) #v 1.0-5
-source("Y:/Inshore/SFA29/2017/model/SFA29model9-2015.R") #contains the SFA29model model (BUGS) 
+source("Y:/Inshore/Assessment/SFA29/2017/model/SFA29model9-2015.R") #contains the SFA29model model (BUGS) 
 
 
 #DEFINE:
-path.directory <- "Y:/Inshore/SFA29/"
-assessmentyear <- 2025 #year in which you are conducting the assessment 
-surveyyear <- 2024  #last year of survey data you are using, e.g. if max year of survey is survey from summer 2019, this would be 2019 
+path.directory <- "Y:/Inshore/Assessment/SFA29/"
+assessmentyear <- 2026 #year in which you are conducting the assessment 
+surveyyear <- 2025  #last year of survey data you are using, e.g. if max year of survey is survey from summer 2019, this would be 2019 
 area <- "SFA29B"  
 
 #last year survey in model 
@@ -83,7 +83,7 @@ SFA29.parms <- c("Bh","BBh","Ph","Rh" ,"Kh" , "m" , "sigma","q" , "S" , "log.Kh"
 # the relationship between fishing intensity and density; unique to subarea
 e.parms.29B <- c(4.431782e-04, 1.740606e-03, 4.411668e-03, 2.332540e-01, 8.747000e+01 )
 
-# The area of each strata in B, I think...
+# The area of each strata in B
 B.areas <- c(248.8925, 244.3425, 52.3925)
 num.areas <- length(B.areas) # The number of strata in the area...
 
@@ -461,7 +461,7 @@ save(pe.pred,file=paste0(path.directory,assessmentyear,"/Assessment/Data/Model/S
 # we need to bring in all the prediction evaluation data we have....
 # Now load all the old pe.pred results, first identify where to find the data...
 
-direct <- "Y:/Inshore/SFA29/"
+direct <- "Y:/Inshore/Assessment/SFA29/"
 pe.all <- NULL
 
 for(i in 2016:pe.years) {
@@ -557,7 +557,7 @@ summary <- cbind(parameters, data.frame(summary, row.names=NULL))
 
 n <- 3
 years <- rep(2001:surveyyear, each=n)
-Habitat <- rep(c("Low", "Med", "High"), 24) #Need to fix this so new years are added.
+Habitat <- rep(c("Low", "Med", "High"), 25) #Need to fix this so new years are added.
 
 summary.Bh <- summary |>  filter(str_detect(summary$parameters, "^Bh"))
 summary.Bh$Year <- years

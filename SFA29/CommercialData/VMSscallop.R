@@ -46,11 +46,11 @@ for(fun in funcs)
 #required special function:
 specify_decimal <- function(x, k) format(round(x, k), nsmall=k)  #Function to specify number after the decimal point
 
-#define what you have ess drive mapped as: 
-ess <- "Y" 
+#define what you have Sky drive mapped as: 
+sky <- "Z" 
 #subset data to select only VMS records in SFA29W
-poly.sf <- st_read(paste0(ess,":/Inshore/Databases/Scallsur/SFA29BottomTypes/SFA29_shp"),layer = "SFA29_BoundariesFollowing12nmDD_NoSubareas_WGS84")
-poly.subareas <- st_read(paste0(ess,":/Inshore/Databases/Scallsur/SFA29BottomTypes/SFA29_shp"),layer = "SFA29_subareas_utm19N")
+poly.sf <- st_read(paste0(sky,":/Inshore/Databases/Scallsur/SFA29BottomTypes/SFA29_shp"),layer = "SFA29_BoundariesFollowing12nmDD_NoSubareas_WGS84")
+poly.subareas <- st_read(paste0(sky,":/Inshore/Databases/Scallsur/SFA29BottomTypes/SFA29_shp"),layer = "SFA29_subareas_utm19N")
 #Set datum for sfa29w polygon as WGS84 then convert to UTM Zone 19 
 poly.sf <- st_transform(poly.sf, crs = sp::CRS(SRS_string = "EPSG:32619"))
 
@@ -65,7 +65,7 @@ poly.sf <- st_transform(poly.sf, crs = sp::CRS(SRS_string = "EPSG:32619"))
   pwd <- pw.sameotoj
   surveyyear <- 2024  #This is the last survey year 
   assessmentyear <- 2025 #year in which you are conducting the survey 
-  path.directory <- paste0(":/Inshore/SFA29/")
+  path.directory <- paste0(":/Inshore/Assessment/SFA29/")
   startdate <- "2024-01-01"   # Start DateTime for VMS 
   stopdate <- "2024-12-31"    # Stop DateTime for VMS 
  
@@ -246,7 +246,7 @@ poly.sf <- st_transform(poly.sf, crs = sp::CRS(SRS_string = "EPSG:32619"))
 	
 # Write Outputs #	
 #write list of VRNs with mon docs and no matching VMS for the year 
-	write.table(MonDocs.No.VMS, paste0(ess,path.directory,assessmentyear,"/Assessment/Data/CommercialData/VMS/VRNsMissingVMS",surveyyear,".txt",sep=""),quote=FALSE, row.names=FALSE, sep=",")
+	write.table(MonDocs.No.VMS, paste0(sky,path.directory,assessmentyear,"/Assessment/Data/CommercialData/VMS/VRNsMissingVMS",surveyyear,".txt",sep=""),quote=FALSE, row.names=FALSE, sep=",")
 #all vms records associated with inshore scallop for the year #NOTE this is for ALL inshore scallop areas - not just 29W - so only write out if you really want it since its LARGE
 #	write.table(vms.dat, paste0(ess,path.directory,assessmentyear,"/Assessment/Data/CommercialData/VMS/scallopVMS",surveyyear,".txt",sep=""),quote=FALSE, row.names=FALSE, sep="\t") 
 	write.table(vms.dat, paste0("D:/VMS/data/VMSInshoreAll/scallopVMS",surveyyear,".txt",sep=""),quote=FALSE, row.names=FALSE, sep="\t") 
@@ -371,7 +371,7 @@ poly.sf <- st_transform(poly.sf, crs = sp::CRS(SRS_string = "EPSG:32619"))
 #	                                 vrn = vrn, year, vmsdate,   vmstime, assigned_area, uid)
 	head(vms.29)
 
-	write.table(vms.29, paste0(ess,path.directory,assessmentyear,"/Assessment/Data/CommercialData/VMS/SFA29vms_",surveyyear,".txt",sep=""),quote=FALSE, row.names=FALSE, sep="\t") #write inshore scallop vms data to table for year = YR
+	write.table(vms.29, paste0(sky,path.directory,assessmentyear,"/Assessment/Data/CommercialData/VMS/SFA29vms_",surveyyear,".txt",sep=""),quote=FALSE, row.names=FALSE, sep="\t") #write inshore scallop vms data to table for year = YR
 	#place here: D:\VMS\data\vms\vmsFormatted\sfa29
 	
 #Creates run.bat file and runs. Must specify folder that contains both PERL script and VMS script for which speed will be calculated. 
@@ -387,7 +387,7 @@ poly.sf <- st_transform(poly.sf, crs = sp::CRS(SRS_string = "EPSG:32619"))
 	#move output here D:\VMS\scripts\perl\out_60min\sfa29_byYr
 	
 	#vms.29.out <- read.delim2("D:/VMS/scripts/perl/out_60min/sfa29_byYr/SFA29vms_2020out.txt") #read in vms file with speed
-	vms.29.out <- read.delim2(paste0(ess,path.directory,assessmentyear,"/Assessment/Data/CommercialData/VMS/SFA29vms_",surveyyear,"out.txt"))
+	vms.29.out <- read.delim2(paste0(sky,path.directory,assessmentyear,"/Assessment/Data/CommercialData/VMS/SFA29vms_",surveyyear,"out.txt"))
 	dim(vms.29.out)
 	
 	names(vms.29.out)
@@ -438,7 +438,7 @@ poly.sf <- st_transform(poly.sf, crs = sp::CRS(SRS_string = "EPSG:32619"))
 #     xx <- asSGDF_GROD(x)
 #     r <- raster::raster(xx)
 # 3. raster import function from raster package: 
-  sdm.raster <- raster(paste0(ess,":/Inshore/Databases/Scallsur/SFA29BottomTypes/SDM/sdm29bins"))  
+  sdm.raster <- raster(paste0(sky,":/Inshore/Databases/Scallsur/SFA29BottomTypes/SDM/sdm29bins"))  
   crs(sdm.raster) #confirm its in UTM zone 19N -- should be 
   
 #Intersect  vms.29.out_sf with raster sdm.raster
@@ -576,11 +576,11 @@ names(vms.sdm.29)[grep("Y", names(vms.sdm.29))] <- 'lat'
     head(vms29.ordered)
     
 # Export vms with prorated catch # 
-  write.csv(vms29.ordered, paste0(ess, path.directory,assessmentyear,"/Assessment/Data/CommercialData/VMS/VMSproratedCatch/SFA29vms_",surveyyear,"_proratedCatch.csv"), row.names = FALSE)
+  write.csv(vms29.ordered, paste0(sky, path.directory,assessmentyear,"/Assessment/Data/CommercialData/VMS/VMSproratedCatch/SFA29vms_",surveyyear,"_proratedCatch.csv"), row.names = FALSE)
   
   
 #read in all data since 2002 and append recent year data to full dataset#
-  vms.prorated.catch <- read.csv(paste0(ess, path.directory,assessmentyear,"/Assessment/Data/CommercialData/VMS/VMSproratedCatch/SFA29vms.2002to",(surveyyear-1),".proratedCatch.csv"))
+  vms.prorated.catch <- read.csv(paste0(sky, path.directory,assessmentyear,"/Assessment/Data/CommercialData/VMS/VMSproratedCatch/SFA29vms.2002to",(surveyyear-1),".proratedCatch.csv"))
   table(vms.prorated.catch$year)
   head(vms.prorated.catch)
   head(vms29)
@@ -601,7 +601,7 @@ names(vms.sdm.29)[grep("Y", names(vms.sdm.29))] <- 'lat'
   vms.prorated.catch.all <- rbind(vms.prorated.catch, vms29.ordered)
   table(vms.prorated.catch.all$year)
   
-  write.csv(vms.prorated.catch.all, paste0(ess, path.directory,assessmentyear,"/Assessment/Data/CommercialData/VMS/VMSproratedCatch/SFA29vms.2002to",(surveyyear),".proratedCatch.csv"),  row.names = FALSE)
+  write.csv(vms.prorated.catch.all, paste0(sky, path.directory,assessmentyear,"/Assessment/Data/CommercialData/VMS/VMSproratedCatch/SFA29vms.2002to",(surveyyear),".proratedCatch.csv"),  row.names = FALSE)
   #note you will used vms.prorated.catch.all for further analysis lower down in the script 
   
 ### Compare VMS trip effort to log trip effort ###
@@ -617,10 +617,10 @@ names(vms.sdm.29)[grep("Y", names(vms.sdm.29))] <- 'lat'
 #Read in and plot all years of SFA 29W VMS with speed 
 	# YEAR  i : 2002=1, 2003=2, ... , 2012=11, 2013=12, 2014=13 , 2015=14, 2016=15, 2017=16, 2018=17 , 2019 = 18
 	i <- length(2002:surveyyear) 
-	temp <- list.files(path=paste0(ess, path.directory, assessmentyear,"/Assessment/Data/CommercialData/VMS/sfa29_byYr/"), pattern="*.txt")
+	temp <- list.files(path=paste0(sky, path.directory, assessmentyear,"/Assessment/Data/CommercialData/VMS/sfa29_byYr/"), pattern="*.txt")
 	#setwd(paste0(ess, path.directory,assessmentyear,"/Assessment/Data/CommercialData/VMS/sfa29_byYr/"))  #note this is needed for lappy to work on all .txt files in the folder
 	# Read in and merge all files into a list	
-	all.29vms <- lapply(temp, function(x) read.delim2(paste0(ess, path.directory,assessmentyear,"/Assessment/Data/CommercialData/VMS/sfa29_byYr/",x))) 
+	all.29vms <- lapply(temp, function(x) read.delim2(paste0(sky, path.directory,assessmentyear,"/Assessment/Data/CommercialData/VMS/sfa29_byYr/",x))) 
 
 #merge all years VMS in SFA 29W into a data.frame 
 	all.29vms <- ldply(all.29vms, data.frame)
@@ -662,7 +662,7 @@ names(vms.sdm.29)[grep("Y", names(vms.sdm.29))] <- 'lat'
 	  coord_sf(xlim = c(-66.5,-65.45), ylim = c(43.1,43.8), expand = FALSE)+
 	  plot.theme
 	
-ggsave(paste0("SFA29vms_2002to",surveyyear,"_all.png"), path=paste0(ess,path.directory,assessmentyear,"/Assessment/Figures/CommercialData/"), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(paste0("SFA29vms_2002to",surveyyear,"_all.png"), path=paste0(sky,path.directory,assessmentyear,"/Assessment/Figures/CommercialData/"), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 	
 # NO speed filter - Plot All Years of VMS IN SFA 29W with current year (YR) identified - NO speed filter#
@@ -675,7 +675,7 @@ ggsave(paste0("SFA29vms_2002to",surveyyear,"_all.png"), path=paste0(ess,path.dir
 	coord_sf(xlim = c(-66.5,-65.45), ylim = c(43.1,43.8), expand = FALSE)+
 	  plot.theme 
 
-ggsave(paste0("SFA29vms_2002to",(surveyyear-1),"v",xx,"_all.png"), path=paste0(ess,path.directory,assessmentyear,"/Assessment/Figures/CommercialData/"), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(paste0("SFA29vms_2002to",(surveyyear-1),"v",xx,"_all.png"), path=paste0(sky,path.directory,assessmentyear,"/Assessment/Figures/CommercialData/"), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 
 # NO speed filter - Plot Current Years of VMS IN SFA 29W vs Previous Year - NO speed filter 
@@ -690,7 +690,7 @@ ggsave(paste0("SFA29vms_2002to",(surveyyear-1),"v",xx,"_all.png"), path=paste0(e
 	  coord_sf(xlim = c(-66.5,-65.45), ylim = c(43.1,43.8), expand = FALSE)+
 	  plot.theme 
 	
-ggsave(paste0("SFA29vms_",yy,"v",xx,"_all.png"), path=paste0(ess,path.directory,assessmentyear,"/Assessment/Figures/CommercialData/"), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(paste0("SFA29vms_",yy,"v",xx,"_all.png"), path=paste0(sky,path.directory,assessmentyear,"/Assessment/Figures/CommercialData/"), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 	
 # SPEED FILTERED "FISHING" - Plot All Years of VMS that fished SFA 29W to check data 
@@ -702,7 +702,7 @@ p3 +
   coord_sf(xlim = c(-66.5,-65.45), ylim = c(43.1,43.8), expand = FALSE)+
   plot.theme
 
-ggsave(paste0("SFA29vms_2002to",surveyyear,"_filtered.png"), path=paste0(ess,path.directory,assessmentyear,"/Assessment/Figures/CommercialData/"), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(paste0("SFA29vms_2002to",surveyyear,"_filtered.png"), path=paste0(sky,path.directory,assessmentyear,"/Assessment/Figures/CommercialData/"), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 	
 # SPEED FILTERED "FISHING" Plot All Years of VMS IN SFA 29W with current year (YR) identified in red 
@@ -717,7 +717,7 @@ p4 +
   coord_sf(xlim = c(-66.5,-65.45), ylim = c(43.1,43.8), expand = FALSE)+
   plot.theme
 
-ggsave(paste0("SFA29vms_2002to",(surveyyear-1),"v",xx,"_filtered.png"), path=paste0(ess,path.directory,assessmentyear,"/Assessment/Figures/CommercialData/"), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(paste0("SFA29vms_2002to",(surveyyear-1),"v",xx,"_filtered.png"), path=paste0(sky,path.directory,assessmentyear,"/Assessment/Figures/CommercialData/"), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 
 # SPEED FILTERED "FISHING" Plot Current Years of VMS IN SFA 29W vs Previous Year  
 xx <- surveyyear 	#Be sure YR is the year you want 
@@ -732,7 +732,7 @@ p5 <- pecjector(area =list(x=c(-66.5,-65.45), y=c(43.1,43.8), crs=4326),repo ='g
 	  coord_sf(xlim = c(-66.5,-65.45), ylim = c(43.1,43.8), expand = FALSE)+
 	  plot.theme
 
-ggsave(paste0("SFA29vms_",yy,"v",xx,"_filtered.png"), path=paste0(ess,path.directory,assessmentyear,"/Assessment/Figures/CommercialData/"), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(paste0("SFA29vms_",yy,"v",xx,"_filtered.png"), path=paste0(sky,path.directory,assessmentyear,"/Assessment/Figures/CommercialData/"), plot = last_plot(), scale = 2.5, width =8, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
 	
 #ggsave(paste0("SFA29vms_",yy,"v",xx,"_filtered.png"), path=paste0(ess,path.directory,assessmentyear,"/Assessment/Figures/CommercialData/"), dpi=300)   
 	
@@ -741,7 +741,7 @@ ggsave(paste0("SFA29vms_",yy,"v",xx,"_filtered.png"), path=paste0(ess,path.direc
 	#vms.prorated.catch.all is dat.2002toYYYY from 2 of 2 script 
 	
 	#areas
-	areas <- read.csv(paste0(ess,":/Inshore/Databases/Scallsur/SFA29BottomTypes/SDM/SDM_Binned_Areas.csv"))
+	areas <- read.csv(paste0(sky,":/Inshore/Databases/Scallsur/SFA29BottomTypes/SDM/SDM_Binned_Areas.csv"))
 	areas$subarea <- substr(areas$Subarea,6,6)
 	areas$sdm <- areas$strata.id
 	areas <- areas[,2:ncol(areas)]
@@ -767,7 +767,7 @@ ggsave(paste0("SFA29vms_",yy,"v",xx,"_filtered.png"), path=paste0(ess,path.direc
 	
 	
 	#landings by subarea 
-	landings <- read.csv(paste0(ess,path.directory,assessmentyear,"/Assessment/Data/CommercialData/SFA29_totalLandings_YearSubarea.csv"))
+	landings <- read.csv(paste0(sky,path.directory,assessmentyear,"/Assessment/Data/CommercialData/SFA29_totalLandings_YearSubarea.csv"))
 	landings$landingskg <- landings$Landingsmt*1000
 	landings$subarea <- substring(landings$Area,3,3)
 	names(landings) <- tolower(names(landings)) 
@@ -849,7 +849,7 @@ ggsave(paste0("SFA29vms_",yy,"v",xx,"_filtered.png"), path=paste0(ess,path.direc
 	effort.strata <- effort.strata[order(effort.strata$subarea, effort.strata$sdmstrata, effort.strata$year), ]  # Order dataframe 
 	
 	#export effort by sdm strata within each subarea A, B, C, D
-	write.csv(effort.strata,paste0(ess,path.directory,assessmentyear,"/Assessment/Data/CommercialData/VMS/effort.strata.",surveyyear,".csv"))
+	write.csv(effort.strata,paste0(sky,path.directory,assessmentyear,"/Assessment/Data/CommercialData/VMS/effort.strata.",surveyyear,".csv"))
 	
 	
 # Corrected effort by SDM bins 
@@ -882,7 +882,7 @@ ggsave(paste0("SFA29vms_",yy,"v",xx,"_filtered.png"), path=paste0(ess,path.direc
 	
 	#write.csv(effort.bins,"VMS/effort.sdmbins.csv")
 	#export effort by sdm bin within each subarea A, B, C, D
-	write.csv(effort.strata,paste0(ess,path.directory,assessmentyear,"/Assessment/Data/CommercialData/VMS/effort.sdmbins.",surveyyear,".csv"))
+	write.csv(effort.strata,paste0(sky,path.directory,assessmentyear,"/Assessment/Data/CommercialData/VMS/effort.sdmbins.",surveyyear,".csv"))
 	
 	
 ### ---- VMS Effort Plots ---- 
@@ -921,7 +921,7 @@ ggsave(paste0("SFA29vms_",yy,"v",xx,"_filtered.png"), path=paste0(ess,path.direc
 	    legend.justification = c("right", "top"),
 	    legend.box.just = "right" ,
 	    legend.margin = margin(7, 7, 7, 7)) 
-	ggsave(paste0("VMSeffortpersqkm.",(surveyyear),".png"), path=paste0(ess,path.directory,assessmentyear,"/Assessment/Figures/CommercialData/"), width =12, height = 8, dpi = 300, units = "in")   
+	ggsave(paste0("VMSeffortpersqkm.",(surveyyear),".png"), path=paste0(sky,path.directory,assessmentyear,"/Assessment/Figures/CommercialData/"), width =12, height = 8, dpi = 300, units = "in")   
 	
 	
 	
@@ -930,28 +930,28 @@ ggsave(paste0("SFA29vms_",yy,"v",xx,"_filtered.png"), path=paste0(ess,path.direc
 	ggplot(effort.bins[effort.bins$subarea=="A",], (aes(x=as.factor(sdm), y=effort.std))) + geom_col() + facet_wrap(~year, scales = "free_y") +
 	labs(x ="Habitat suitability", y = expression(paste("Fishing intensity  ", (h/km^2),sep=""))) + 
 	  theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) 
-	ggsave(paste0("VMSFishingIntensity_Bins_A.",(surveyyear),".png"), path=paste0(ess,path.directory,assessmentyear,"/Assessment/Figures/CommercialData/"), dpi=300, width = 12, height = 6, units = c("in"))   
+	ggsave(paste0("VMSFishingIntensity_Bins_A.",(surveyyear),".png"), path=paste0(sky,path.directory,assessmentyear,"/Assessment/Figures/CommercialData/"), dpi=300, width = 12, height = 6, units = c("in"))   
 	
 
 	# Subarea B
 	ggplot(effort.bins[effort.bins$subarea=="B",], (aes(x=as.factor(sdm), y=effort.std))) + geom_col() + facet_wrap(~year, scales = "free_y") +
 	  labs(x ="Habitat suitability", y = expression(paste("Fishing intensity  ", (h/km^2),sep=""))) + 
 	  theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) 
-	ggsave(paste0("VMSFishingIntensity_Bins_B.",(surveyyear),".png"), path=paste0(ess,path.directory,assessmentyear,"/Assessment/Figures/CommercialData/"), dpi=300, width = 12, height = 6, units = c("in"))  
+	ggsave(paste0("VMSFishingIntensity_Bins_B.",(surveyyear),".png"), path=paste0(sky,path.directory,assessmentyear,"/Assessment/Figures/CommercialData/"), dpi=300, width = 12, height = 6, units = c("in"))  
 	
 	
 	# Subarea C
 	ggplot(effort.bins[effort.bins$subarea=="C",], (aes(x=as.factor(sdm), y=effort.std))) + geom_col() + facet_wrap(~year, scales = "free_y") +
 	  labs(x ="Habitat suitability", y = expression(paste("Fishing intensity  ", (h/km^2),sep=""))) + 
 	  theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) 
-	ggsave(paste0("VMSFishingIntensity_Bins_C.",(surveyyear),".png"), path=paste0(ess,path.directory,assessmentyear,"/Assessment/Figures/CommercialData/"),dpi=300, width = 12, height = 6, units = c("in"))  
+	ggsave(paste0("VMSFishingIntensity_Bins_C.",(surveyyear),".png"), path=paste0(sky,path.directory,assessmentyear,"/Assessment/Figures/CommercialData/"),dpi=300, width = 12, height = 6, units = c("in"))  
 	
 	
 	# Subarea D
 	ggplot(effort.bins[effort.bins$subarea=="D",], (aes(x=as.factor(sdm), y=effort.std))) + geom_col() + facet_wrap(~year, scales = "free_y") +
 	  labs(x ="Habitat suitability", y = expression(paste("Fishing intensity  ", (h/km^2),sep=""))) + 
 	  theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) 
-	ggsave(paste0("VMSFishingIntensity_Bins_D.",(surveyyear),".png"), path=paste0(ess,path.directory,assessmentyear,"/Assessment/Figures/CommercialData/"), dpi=300, width = 12, height = 6, units = c("in"))  
+	ggsave(paste0("VMSFishingIntensity_Bins_D.",(surveyyear),".png"), path=paste0(sky,path.directory,assessmentyear,"/Assessment/Figures/CommercialData/"), dpi=300, width = 12, height = 6, units = c("in"))  
 	
 	
 	
@@ -965,5 +965,5 @@ ggsave(paste0("SFA29vms_",yy,"v",xx,"_filtered.png"), path=paste0(ess,path.direc
 	rm(pw.sameotoj)
 	
 	### UPDATE BEFORE SAVING 
-save.image(file = paste0("Y:/Inshore/SFA29/",assessmentyear,"/Assessment/Data/CommercialData/VMS/vms_temp.RData"))	
+save.image(file = paste0("Y:/Inshore/Assessment/SFA29/",assessmentyear,"/Assessment/Data/CommercialData/VMS/vms_temp.RData"))	
 	

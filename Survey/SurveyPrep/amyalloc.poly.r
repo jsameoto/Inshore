@@ -20,6 +20,7 @@ alloc.poly<-function(poly.lst,bounding.poly,ntows,bank.plot=NULL,mindist=1,pool.
 	}
 	
 	source("Y:/Inshore/Survey/2010/r/fn/genran.r",local=T)
+	#source("Y:/Inshore/Survey/2010/r/fn/genran.r",local=T)
 	pool.EventData<-genran(npool,bounding.poly,mindist=mindist)
 	#browser()	
 	

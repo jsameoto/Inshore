@@ -15,7 +15,7 @@ library(SSModeltest) #v 1.0-5;  this is the SSModel package used in BoF, modifie
 library(lubridate)
 library(tidyverse)
 #library(SSModel) #v 1.0-5
-source("Y:/Inshore/SFA29/2017/model/SFA29model9-2015.R") #contains the SFA29model model (BUGS) 
+source("Y:/Inshore/Assessment/SFA29/2017/model/SFA29model9-2015.R") #contains the SFA29model model (BUGS) 
 
 
 funcs <- c("https://raw.githubusercontent.com/Mar-scal/Inshore/master/BoF/Model/SSModel_predict_summary_median.r")
@@ -30,7 +30,7 @@ for(fun in funcs)
 
 
 #DEFINE:
-direct <- "Y:/Inshore/SFA29/"
+direct <- "Y:/Inshore/Assessment/SFA29/"
 assessmentyear <- 2024 #year in which you are conducting the assessment 
 surveyyear <- 2023 
 yrs <- 2001:surveyyear 

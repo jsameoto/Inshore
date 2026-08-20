@@ -25,13 +25,14 @@ pwd <- pw.sameotoj
 #uid <- keyring::key_list("Oracle")[1,2]
 #pwd <- keyring::key_get("Oracle", uid)
 
-surveyyear <- 2024  #This is the last survey year for which you want to include  - not should match year of cruise below 
-cruise <- "SFA292024"  #note should match year for surveyyear set above 
+surveyyear <- 2025  #This is the last survey year for which you want to include  - not should match year of cruise below 
+cruise <- "SFA292025"  #note should match year for surveyyear set above 
 
-assessmentyear <- 2025 #year in which you are conducting the assessment (surveyyear+1)
-path.directory <- "Y:/Inshore/SFA29/"
+assessmentyear <- 2026 #year in which you are conducting the assessment (surveyyear+1)
+path.directory <- "Y:/Inshore/Assessment/SFA29/"
+#path.directory <- "Y:/Inshore/SFA29/"
 
-weight.by.tow.previous.yrs <- read.csv(paste0("Y:/Inshore/SFA29/",assessmentyear-1,"/Assessment/Data/SurveyIndices/SFA29liveweight2014to",assessmentyear-2,".csv"))
+weight.by.tow.previous.yrs <- read.csv(paste0("Y:/Inshore/Assessment/SFA29/",assessmentyear-1,"/Assessment/Data/SurveyIndices/SFA29liveweight2014to",assessmentyear-2,".csv"))
 weight.by.tow.previous.yrs <- weight.by.tow.previous.yrs[,2:dim(weight.by.tow.previous.yrs)[2]]
 
 ####
@@ -82,7 +83,7 @@ SFA29livefreq.dat$YEAR <- as.numeric(substr(SFA29livefreq.dat$CRUISE,6,9))
 SFA29detail.dat$ID <- paste(SFA29detail.dat$CRUISE,SFA29detail.dat$TOW_NO,sep='.')
 uniqueID <- unique(SFA29detail.dat$ID)
 
-OlexTows_all <- read.csv("Y:/Inshore/StandardDepth/towsdd_StdDepth.csv")
+OlexTows_all <- read.csv("Y:/Inshore/Assessment/StandardDepth/towsdd_StdDepth.csv")
 names(OlexTows_all)[which(colnames(OlexTows_all)=="RASTERVALU")] <- "OLEXDEPTH_M"   #rename "RASTERVALU" column
 OlexTows_all$OLEXDEPTH_M[OlexTows_all$OLEXDEPTH_M==-9999] <- NA
 OlexTows_all$ID <- paste(OlexTows_all$CRUISE,OlexTows_all$TOW_NO,sep='.')
@@ -330,7 +331,7 @@ SFA29.condition.ts.plot <- ggplot(SFA29.con.ts,
         legend.title = element_blank(),
         text = element_text(size=20)) +
   guides(linetype=guide_legend(keywidth = 2.5, keyheight = 1.5)) +
-  scale_x_continuous(breaks = seq(2000,2026,by=4), limits = c(2000,2026)) 
+  scale_x_continuous(breaks = seq(1998,2026,by=4), limits = c(2000,2026)) 
 
 SFA29.condition.ts.plot
 

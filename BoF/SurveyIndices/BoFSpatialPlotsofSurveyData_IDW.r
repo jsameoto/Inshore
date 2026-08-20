@@ -56,7 +56,8 @@ pwd <- pw.englishg
 #set year 
 survey.year <- 2025 #survey year
 assessmentyear <- 2025 #year in which you are providing advice for- determines where to save files to
-path.directory <- "Y:/Inshore/BoF/"
+path.directory <- "Y:/Inshore/Assessment/BoF/"
+#path.directory <- "Y:/Inshore/BoF/"
 
 #set up directory to save plot
 saveplot.dir <- paste0(path.directory,assessmentyear,"/Assessment/Figures/")

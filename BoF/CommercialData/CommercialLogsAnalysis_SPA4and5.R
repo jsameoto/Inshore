@@ -32,7 +32,8 @@ library(openxlsx)
 library(sf) 
 library(lubridate)
 
-source("Y:/Inshore/BoF/Assessment_fns/convert.dd.dddd.r")
+source("Y:/Inshore/Assessment/BoF/Assessment_fns/convert.dd.dddd.r")
+#source("Y:/Inshore/BoF/Assessment_fns/convert.dd.dddd.r")
 
 
 #### Import Mar-scal functions for Pectinid Projector
@@ -52,7 +53,8 @@ for(fun in funcs)
 
 #### DEFINE ####
 
-direct <- "Y:/Inshore/BoF"
+direct <- "Y:/Inshore/Assessment/BoF"
+#direct <- "Y:/Inshore/BoF"
 fishingyear <- 2025 #most recent year of commercial fishing data to be used (e.g. if fishing season is 2019/2020, use 2020)
 assessmentyear <- 2025 #year in which you are conducting the assessment
 un.ID=Sys.getenv("un.raperj") #ptran username
@@ -67,7 +69,8 @@ ends.date.logs <- "2025-10-01"  #YYYY-MM-DD use Oct 1
 # TAC and Landings time series flat files
 tacq<-read.xlsx(paste0(direct,"/",assessmentyear,"/Assessment/Data/CommercialData/SPA4and5_TACandLandings_", 
                        fishingyear, ".xlsx"), sheet = "TACandLandings")
-tacq4<-read.csv("Y:/Inshore/BoF/CommercialData/Archive/2014/SPA4_TACandLandings_2014.csv") # DO NOT UPDATE - historial data 
+tacq4<-read.csv("Y:/Inshore/Assessment/BoF/CommercialData/Archive/2014/SPA4_TACandLandings_2014.csv") # DO NOT UPDATE - historial data 
+#tacq4<-read.csv("Y:/Inshore/BoF/CommercialData/Archive/2014/SPA4_TACandLandings_2014.csv") # DO NOT UPDATE - historial data 
 
 #CPUE csv files from previous year
 CPUE_spa4 <- read.csv(paste0(direct,"/",(assessmentyear-1),"/Assessment/Data/CommercialData/CPUE_spa4_", fishingyear-1, ".csv")) 
@@ -75,9 +78,11 @@ CPUE_spa5 <- read.csv(paste0(direct,"/",(assessmentyear-1),"/Assessment/Data/Com
 
 #Polygons for spatial plots
 
-poly.sf4 <- st_read("Y:/Inshore/BoFBoundaries/SPABoundaries_Redrawn2014/SPA New Polys/shp polygons", layer = "SPA4_polygon_NAD83")
-poly.sf5 <- st_read("Y:/Inshore/BoFBoundaries/SPABoundaries_Redrawn2014/SPA New Polys/shp polygons", layer = "SPA5_polygon_NAD83")
-poly.strata <- st_read("Z:/People/Amy/2012 survey prep/AmyArc", layer = "SCSTRATADEFS_Polygons")
+poly.sf4 <- st_read("Y:/GISdata/Private/BoFBoundaries/SPABoundaries_Redrawn2014/SPA New Polys/shp polygons", layer = "SPA4_polygon_NAD83")
+#poly.sf4 <- st_read("Y:/Inshore/BoFBoundaries/SPABoundaries_Redrawn2014/SPA New Polys/shp polygons", layer = "SPA4_polygon_NAD83")
+poly.sf5 <- st_read("Y:/GISdata/Private/BoFBoundaries/SPABoundaries_Redrawn2014/SPA New Polys/shp polygons", layer = "SPA5_polygon_NAD83")
+#poly.sf5 <- st_read("Y:/Inshore/BoFBoundaries/SPABoundaries_Redrawn2014/SPA New Polys/shp polygons", layer = "SPA5_polygon_NAD83")
+poly.strata <- st_read("Y:/People/Amy/2012 survey prep/AmyArc", layer = "SCSTRATADEFS_Polygons")
 
 
 

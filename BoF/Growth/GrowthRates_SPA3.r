@@ -21,10 +21,12 @@ assessmentyear <- 2025 #this is the year you are running your assessment in -- c
 
 
 # DEFINE: load required workspace with model objects (set for year YYYY)
-load(paste0("Y:/Inshore/BoF/",year,"/Assessment/Data/Growth/SPA3/BIgrowth",year,".RData"))
+load(paste0("Y:/Inshore/Assessment/BoF/",year,"/Assessment/Data/Growth/SPA3/BIgrowth",year,".RData"))
+#load(paste0("Y:/Inshore/BoF/",year,"/Assessment/Data/Growth/SPA3/BIgrowth",year,".RData"))
 
 # DEFINE: load shell height objects (set for year YYYY)
-source(paste0("Y:/Inshore/BoF/",year,"/Assessment/Data/Growth/SPA3/SPA3.SHobj.",year,".R"))
+source(paste0("Y:/Inshore/Assessment/BoF/",year,"/Assessment/Data/Growth/SPA3/SPA3.SHobj.",year,".R"))
+#source(paste0("Y:/Inshore/BoF/",year,"/Assessment/Data/Growth/SPA3/SPA3.SHobj.",year,".R"))
 #Check that you have correctly identified all required Shell Height objects and they are within the workspace (should have been loaded via the shell height object above)
 sh.actual
 sh.predict
@@ -35,7 +37,8 @@ SH.object <- cbind(sh.actual %>% dplyr::select(years, SHactual.Com = SPA3.SHactu
 
 # DEFINE: Source previous year meat weight and growth rate object for ACTUAL growth rates:
 # if your year defined above it for YYYY, then you should be bringing in the YYYY-1 growth rate object.
-spa3.growthrate <- read.csv(paste0("Y:/Inshore/BoF/",year-1,"/Assessment/Data/Growth/SPA3/spa3.growthrate.",year-1,".csv"))
+spa3.growthrate <- read.csv(paste0("Y:/Inshore/Assessment/BoF/",year-1,"/Assessment/Data/Growth/SPA3/spa3.growthrate.",year-1,".csv"))
+#spa3.growthrate <- read.csv(paste0("Y:/Inshore/BoF/",year-1,"/Assessment/Data/Growth/SPA3/spa3.growthrate.",year-1,".csv"))
 spa3.growthrate <- spa3.growthrate[,-1]
 spa3.growthrate
 str(spa3.growthrate)
@@ -54,7 +57,8 @@ model.object <- MWTSHBI.YYYY
 data <- BIdetailYYYY
 
 # DEFINE path for figures and dataouput to be saved; note expects within this folder that you've created a "dataoutput" and "Figures" folder under the following directory path;  MUST HAVE "/" at the end of your path!
-path.directory <- "Y:/Inshore/BoF/"
+path.directory <- "Y:/Inshore/Assessment/BoF/"
+#path.directory <- "Y:/Inshore/BoF/"
 
 #////... END OF DEFINE SECTION ...////
 

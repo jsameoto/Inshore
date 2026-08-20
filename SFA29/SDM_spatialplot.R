@@ -99,7 +99,7 @@ p2
         plot.margin = margin(0,0.5,0,0, "cm"))
 
 #save
-ggsave(filename = paste0("Y:/Inshore/SFA29/", assessment.year,"/Assessment/Figures/ScallopSDM_binned_coloured.png"), plot = last_plot(), scale = 2.5, width = 7, height = 5, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0("Y:/Inshore/Assessment/SFA29/", assessment.year,"/Assessment/Figures/ScallopSDM_binned_coloured.png"), plot = last_plot(), scale = 2.5, width = 7, height = 5, dpi = 300, units = "cm", limitsize = TRUE)
 
 # Coloured FR Version -------------------------------------------------------
 
@@ -135,7 +135,7 @@ p3 +
         plot.margin = margin(0,0.5,0,0, "cm"))
 
 #save
-ggsave(filename = paste0("Y:/Inshore/SFA29/", assessment.year,"/Assessment/Figures/ScallopSDM_binned_coloured_FR.png"), plot = last_plot(), scale = 2.5, width = 7, height = 5, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0("Y:/Inshore/Assessment/SFA29/", assessment.year,"/Assessment/Figures/ScallopSDM_binned_coloured_FR.png"), plot = last_plot(), scale = 2.5, width = 7, height = 5, dpi = 300, units = "cm", limitsize = TRUE)
 
 # Greyscale EN Version -------------------------------------------------------
 
@@ -215,11 +215,11 @@ p3 +
                   pattern_density = 0.25,
                   pattern_spacing = 0.010,
                   pattern_key_scale_factor = 0.5) + 
-  scale_colour_manual(values= c("white","transparent","transparent","transparent"), breaks = c("High", "Medium", "Low", "No_information"),labels = c("High"="Élevée [0,6 à 1,0)", "Medium"="Moyenne [0,3 à 0,6)", "Low"="Faible [0 à 0,3)", "No_information" = "Aucune information"), name = "Qualité de l'habitat")+
-  scale_fill_manual(values = c("white","grey70","black","transparent"), breaks = c("High", "Medium", "Low", "No_information"),labels = c("High"="Élevée [0,6 à 1,0)", "Medium"="Moyenne [0,3 à 0,6)", "Low"="Faible [0 à 0,3)", "No_information" = "Aucune information"),name = "Qualité de l'habitat") +
-  scale_pattern_discrete(choices = c(Low = "none", Medium = "none", High = "none", No_information = "crosshatch"), breaks = c("High", "Medium", "Low", "No_information"),labels = c("High"="Élevée [0,6 à 1,0)", "Medium"="Moyenne [0,3 à 0,6)", "Low"="Faible [0 à 0,3)", "No_information" = "Aucune information"),name = "Qualité de l'habitat")+
+  scale_colour_manual(values= c("white","transparent","transparent","transparent"), breaks = c("High", "Medium", "Low", "No_information"),labels = c("High"="?lev?e [0,6 ? 1,0)", "Medium"="Moyenne [0,3 ? 0,6)", "Low"="Faible [0 ? 0,3)", "No_information" = "Aucune information"), name = "Qualit? de l'habitat")+
+  scale_fill_manual(values = c("white","grey70","black","transparent"), breaks = c("High", "Medium", "Low", "No_information"),labels = c("High"="?lev?e [0,6 ? 1,0)", "Medium"="Moyenne [0,3 ? 0,6)", "Low"="Faible [0 ? 0,3)", "No_information" = "Aucune information"),name = "Qualit? de l'habitat") +
+  scale_pattern_discrete(choices = c(Low = "none", Medium = "none", High = "none", No_information = "crosshatch"), breaks = c("High", "Medium", "Low", "No_information"),labels = c("High"="?lev?e [0,6 ? 1,0)", "Medium"="Moyenne [0,3 ? 0,6)", "Low"="Faible [0 ? 0,3)", "No_information" = "Aucune information"),name = "Qualit? de l'habitat")+
   geom_sf(data = sfa29.poly, size = 1.15, colour = "black", fill = NA)+
-  geom_text(aes(label = "Nouvelle-Écosse"), x = -65.6, y = 43.65, size = 4, color = "black")+
+  geom_text(aes(label = "Nouvelle-?cosse"), x = -65.6, y = 43.65, size = 4, color = "black")+
   geom_sf_text(data = sfa29.poly %>% filter(ET_ID =="A"), aes(label = ET_ID),size = 4, colour = "black",fontface = "bold", nudge_x = -0.12 )+
   geom_sf_text(data = sfa29.poly %>% filter(ET_ID == "B"), aes(label = ET_ID),size = 5, colour = "white",fontface = "bold", nudge_y = 0.13, nudge_x = -0.0109)+
   geom_sf_text(data = sfa29.poly %>% filter(ET_ID == "B"), aes(label = ET_ID),size = 2.5, colour = "white",fontface = "bold", nudge_y = 0.13, nudge_x = -0.0109)+
@@ -246,4 +246,4 @@ p3 +
  #                      pad_x = unit(xpad + 1.5, "cm"), pad_y = unit(ypad+1.9, "cm"),style = north_arrow_fancy_orienteering)+
 
 #save
-ggsave(filename = paste0("Y:/Inshore/SFA29/", assessment.year,"/Assessment/Figures/ScallopSDM_binned_greyscale_FR.png"), plot = last_plot(), scale = 2.5, width = 7, height = 5, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0("Y:/Inshore/Assessment/SFA29/", assessment.year,"/Assessment/Figures/ScallopSDM_binned_greyscale_FR.png"), plot = last_plot(), scale = 2.5, width = 7, height = 5, dpi = 300, units = "cm", limitsize = TRUE)

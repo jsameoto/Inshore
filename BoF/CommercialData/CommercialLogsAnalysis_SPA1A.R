@@ -33,7 +33,8 @@ library(sf)
 library(lubridate)
 library(dplyr)
 
-source("Y:/Inshore/BoF/Assessment_fns/convert.dd.dddd.r")
+source("Y:/Inshore/Assessment/BoF/Assessment_fns/convert.dd.dddd.r")
+#source("Y:/Inshore/BoF/Assessment_fns/convert.dd.dddd.r")
 
 
 #### Import Mar-scal functions for Pectinid Projector
@@ -53,7 +54,8 @@ for(fun in funcs)
 
 #### DEFINE ####
 
-direct <- "Y:/Inshore/BoF"
+direct <- "Y:/Inshore/Assessment/BoF"
+#direct <- "Y:/Inshore/BoF"
 fishingyear <- 2025 #most recent year of commercial fishing data to be used (e.g. if fishing season is 2019/2020, use 2020)
 assessmentyear <- 2025 #year in which you are conducting the assessment
 un.ID=Sys.getenv("un.raperj") #ptran username
@@ -76,8 +78,9 @@ tacq <- read.xlsx(paste0(direct,"/",assessmentyear,"/Assessment/Data/CommercialD
 CPUE_1A <- read.csv(paste0(direct,"/",(assessmentyear-1),"/Assessment/Data/CommercialData/CPUE_1A_", (fishingyear-1), ".csv")) 
 
 #Polygons for spatial plots
-poly.sf <- st_read("Y:/Inshore/BoFBoundaries/SPABoundaries_Redrawn2014/SPA New Polys/shp polygons", layer = "SPA1A_polygon_NAD83")
-poly.strata <- st_read("Z:/People/Amy/2012 survey prep/AmyArc", layer = "SCSTRATADEFS_Polygons")
+poly.sf <- st_read("Y:/GISdata/Private/BoFBoundaries/SPABoundaries_Redrawn2014/SPA New Polys/shp polygons", layer = "SPA1A_polygon_NAD83")
+#poly.sf <- st_read("Y:/Inshore/BoFBoundaries/SPABoundaries_Redrawn2014/SPA New Polys/shp polygons", layer = "SPA1A_polygon_NAD83")
+poly.strata <- st_read("Y:/People/Amy/2012 survey prep/AmyArc", layer = "SCSTRATADEFS_Polygons")
 
 
 #### Select data ####
@@ -289,7 +292,8 @@ ggsave(filename = paste0(direct, "/",assessmentyear,"/Assessment/Figures/Commerc
  df <- (as.data.frame(raster::rasterToPoints(raster.data)))
  names(df) <- c("lon", "lat", "mean.cpue")
 
- shp <- readOGR("Y:/Admin/Request_and_Review_Tracking/Aquaculture_Reviews/shp/SMB_proposed_Aquaculture_sites.shp")
+ shp <- readOGR("Y:/Inshore/Admin/Request_and_Review_Tracking/Aquaculture_Reviews/shp/SMB_proposed_Aquaculture_sites.shp")
+ #shp <- readOGR("Y:/Admin/Request_and_Review_Tracking/Aquaculture_Reviews/shp/SMB_proposed_Aquaculture_sites.shp")
   
  ##add sf objects to basemap outside of pecjector
  

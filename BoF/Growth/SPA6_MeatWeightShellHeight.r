@@ -33,7 +33,8 @@ cruise <- "GM2025"  #note should match year for surveyyear set above
 
 assessmentyear <- 2025 #year in which you are conducting the survey 
 area <- "6"  #SPA assessing recall SPA 1A, 1B, and 4 are grouped; options: "1A1B4and5", "3", "6" 
-path.directory <- "Y:/Inshore/BoF/"
+path.directory <- "Y:/Inshore/Assessment/BoF/"
+#path.directory <- "Y:/Inshore/BoF/"
 
 
 # ROracle; note this can take ~ 10 sec or so, don't panic
@@ -79,7 +80,8 @@ table(GMlivefreq.dat$YEAR)
 GMdetail.dat$ID <- paste(GMdetail.dat$CRUISE, GMdetail.dat$TOW_NO,sep='.')
 uniqueID <- unique(GMdetail.dat$ID)
 
-OlexTows_all <- read.csv("Y:/Inshore/StandardDepth/towsdd_StdDepth.csv")
+OlexTows_all <- read.csv("Y:/Inshore/Assessment/StandardDepth/towsdd_StdDepth.csv")
+#OlexTows_all <- read.csv("Y:/Inshore/StandardDepth/towsdd_StdDepth.csv")
 names(OlexTows_all)[which(colnames(OlexTows_all)=="RASTERVALU")] <- "OLEXDEPTH_M"   #rename "RASTERVALU" column
 OlexTows_all$OLEXDEPTH_M[OlexTows_all$OLEXDEPTH_M==-9999] <- NA
 OlexTows_all$ID <- paste(OlexTows_all$CRUISE,OlexTows_all$TOW_NO,sep='.')
@@ -244,7 +246,8 @@ write.csv(livefreq.condition.spatial, paste0(path.directory, assessmentyear, "/A
 
 
 #Bring in file with depths by area, note some are by strata groups within area
-mean.depth <- read.csv('Y:/Inshore/StandardDepth/BoFMeanDepths.csv')[ ,c("AREA", "MeanDepth_m")] #File for the constant depth to predict on by area
+mean.depth <- read.csv('Y:/Inshore/Assessment/StandardDepth/BoFMeanDepths.csv')[ ,c("AREA", "MeanDepth_m")] #File for the constant depth to predict on by area
+#mean.depth <- read.csv('Y:/Inshore/StandardDepth/BoFMeanDepths.csv')[ ,c("AREA", "MeanDepth_m")] #File for the constant depth to predict on by area
 unique(mean.depth$AREA)
 length(mean.depth$AREA)
 
@@ -322,35 +325,4 @@ ggsave(filename = paste0(path.directory, assessmentyear, "/Assessment/Figures/SP
 #png(paste0(path.directory, assessmentyear, "/Assessment/Figures/SPA6_ConditionTimeSeries.png" ),res = 200, width = 900, height = 600 )
 #condition.ts.plot
 #dev.off()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

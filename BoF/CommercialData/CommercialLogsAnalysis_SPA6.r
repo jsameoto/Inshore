@@ -31,34 +31,32 @@
 # perform spatial checks of SPA6 logs: plot and check logs where coordinates fall on land or areas not normally fished, correct positions in SCALLOP db if necessary
 # update SPA6_TACandLandings_YYYY.xlsx with TAC and landings from area cap monitoring report and save in the current assessment folder: Y:\Inshore\BoF\YYYY\Assessment\Data\CommercialData
 # ensure date format in your SQL Developer profile is set to YYYY-MM-DD
+	
+library(ROracle)
+library (PBSmapping)
+library(dplyr)
+library(openxlsx)
+library(ggplot2)
+library(RColorBrewer)
+library(sf)
+library(lubridate)
 
-
-	options(stringsAsFactors=FALSE)
-	library(ROracle)
-	library (PBSmapping)
-  library(dplyr)
-	library(openxlsx)
-	library(ggplot2)
-	library(RColorBrewer)
-	library(sf)
-	library(lubridate)
-
-	source("Y:/Inshore/BoF/Assessment_fns/convert.dd.dddd.r")
+#source("Y:/Inshore/BoF/Assessment_fns/convert.dd.dddd.r")
 	
 
 #### DEFINE ####
 	
-	direct <- "Y:/Inshore/BoF"
-	fishingyear <- 2025 #most recent year of commercial fishing data to be used (e.g. if fishing season is 2019/2020, use 2020)
-	assessmentyear <- 2025 #year in which you are conducting the assessment
+	direct <- "Y:/Inshore/Assessment/BoF"
+	fishingyear <- 2026 #most recent year of commercial fishing data to be used (e.g. if fishing season is 2019/2020, use 2020)
+	assessmentyear <- 2026 #year in which you are conducting the assessment
 	un.ID=Sys.getenv("un.raperj") #ptran username
 	pwd.ID=Sys.getenv("pw.raperj") #ptran password
 #	un.ID=un.sameotoj #ptran username
 #	pwd.ID=pw.sameotoj#ptran password
 	
 #Date range for logs to be selected 
-	start.date.logs <- "2024-10-01"  #YYYY-MM-DD use Oct 1 
-	ends.date.logs <- "2025-10-01"  #YYYY-MM-DD use Oct 1 
+	start.date.logs <- "2025-10-01"  #YYYY-MM-DD use Oct 1 
+	ends.date.logs <- "2026-10-01"  #YYYY-MM-DD use Oct 1 
 	
 #### Read files ####
 	
@@ -73,26 +71,29 @@
 
 	#polygons for assigning VMS strata to data
 	spa6IN<-read.csv("Y:/Inshore/Databases/Scallsur/SPA6_SurveyStrata/2015/SPA6_VMS_IN_R_final.csv")
-	spa6OUT<-read.csv("Y:/Inshore/Databases/Scallsur/SPA6_SurveyStrata/2015/SPA6_VMS_OUT_R_final.csv")	
+	spa6OUT<-read.csv("Y:/Inshore/Databases/Scallsur/SPA6_SurveyStrata/2015/SPA6_VMS_OUT_R_final.csv")
+	#spa6IN<-read.csv("Y:/Inshore/Databases/Scallsur/SPA6_SurveyStrata/2015/SPA6_VMS_IN_R_final.csv")
+	#spa6OUT<-read.csv("Y:/Inshore/Databases/Scallsur/SPA6_SurveyStrata/2015/SPA6_VMS_OUT_R_final.csv")
 	attr(spa6IN,"projection") <- "LL"
 	attr(spa6OUT,"projection") <- "LL"
 	
-	#polygons for spatial plots
-	poly.sf <- st_read("Y:/Inshore/Databases/Scallsur/SPA6_SurveyStrata/SPA6_all", layer = "SPA6_wgs84")
-	poly.VMSIN <- st_read("Y:/Inshore/Databases/Scallsur/SPA6_SurveyStrata/2015", layer = "SPA6_VMSStrata_IN_2015")
-	poly.6A <- st_read("Y:/Inshore/BoFBoundaries/SPABoundaries_Redrawn2014/SPA New Polys/shp polygons", layer = "SPA6A_polygon_NAD83")
-	poly.6B <- st_read("Y:/Inshore/BoFBoundaries/SPABoundaries_Redrawn2014/SPA New Polys/shp polygons", layer = "SPA6B_polygon_NAD83")
-	poly.6C <- st_read("Y:/Inshore/BoFBoundaries/SPABoundaries_Redrawn2014/SPA New Polys/shp polygons", layer = "SPA6C_polygon_NAD83")
-	poly.6D <- st_read("Y:/Inshore/BoFBoundaries/SPABoundaries_Redrawn2014/SPA New Polys/shp polygons", layer = "SPA6D_polygon_NAD83")
-	
+	 #polygons for spatial plots
+	 poly.sf <- st_read("Y:/Inshore/Databases/Scallsur/SPA6_SurveyStrata/SPA6_all", layer = "SPA6_wgs84")
+	 poly.VMSIN <- st_read("Y:/Inshore/Databases/Scallsur/SPA6_SurveyStrata/2015", layer = "SPA6_VMSStrata_IN_2015")
+	 poly.6A <- st_read("Y:/GISdata/Private/BoFBoundaries/SPABoundaries_Redrawn2014/SPA New Polys/shp polygons", layer = "SPA6A_polygon_NAD83")
+	 poly.6B <- st_read("Y:/GISdata/Private/BoFBoundaries/SPABoundaries_Redrawn2014/SPA New Polys/shp polygons", layer = "SPA6B_polygon_NAD83")
+	 poly.6C <- st_read("Y:/GISdata/Private/BoFBoundaries/SPABoundaries_Redrawn2014/SPA New Polys/shp polygons", layer = "SPA6C_polygon_NAD83")
+	 poly.6D <- st_read("Y:/GISdata/Private/BoFBoundaries/SPABoundaries_Redrawn2014/SPA New Polys/shp polygons", layer = "SPA6D_polygon_NAD83")
+	 Land <- st_read("Y:/GISdata/Private/AtlanticUSCdnCoast", layer = "MAR_Maine")
 
-#### Import Mar-scal functions for Pectinid Projector
+
+	 #### Import Mar-scal functions for Pectinid Projector
 	
 	funcs <- c("https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Maps/convert_coords.R",
 	           "https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Maps/add_alpha_function.R",
 	           "https://raw.githubusercontent.com/Mar-scal/Assessment_fns/master/Maps/pectinid_projector_sf.R")
 	dir <- getwd()
-	for(fun in funcs) 
+	for(fun in funcs)
 	{
 	  temp <- dir
 	  download.file(fun,destfile = basename(fun))
@@ -103,7 +104,7 @@
 	
 #### Select data ####
 
-	quer2 <- paste(
+	quer <- paste(
 		"SELECT * 			                             ",
 		"FROM scallop.scallop_log_marfis s		         ",
 		"WHERE s.assigned_area in ('6A','6B','6C','6D')       ",
@@ -118,7 +119,7 @@
 	
 	chan <- dbConnect(drv = dbDriver("Oracle"), username=un.ID,  password = pwd.ID,  dbname = "ptran", believeNRows=FALSE)
 	
-	logs <- dbGetQuery(chan, quer2)
+	logs <- dbGetQuery(chan, quer)
 	dim(logs)
 	
 	#Convert coordinates:
@@ -160,7 +161,7 @@
 
 	#Add ID row
   logs$ID<-1:nrow(logs)
-  
+
   
 #### Calculate CPUE by fleet and subarea ####
   
@@ -427,6 +428,18 @@
     theme(legend.position=c(0.75, 0.85)) # play with the location if you want it inside the plotting panel
   ggsave(filename = paste0(direct, "/",assessmentyear,"/Assessment/Figures/CommercialData/SPA6_TACandLandings",fishingyear, ".png"), width = 24, height = 20, dpi = 400,units='cm')
   
+  #TAC and Landings (FR)
+  ggplot() +
+    theme_bw(base_size = 16) + theme(panel.grid=element_blank()) + # white background, no gridlines
+    geom_bar(data=landings[landings$variable%in%c('FSC','FB','MB'),], aes(year, catch.fleet.mt, fill=factor(variable, levels = c('FSC', 'FB','MB'))), colour="black", stat="identity") + 
+    geom_line(data=landings[landings$variable == 'TAC',], aes(x = year, y = catch.fleet.mt), lwd = 1) +
+    scale_y_continuous("Débarquements (tonnes de chairs)", breaks=seq(0,1200,200)) + # 
+    scale_x_continuous("Année", breaks=seq(1976,fishingyear,4)) +
+    scale_fill_manual(values=c("black","white", "grey"), labels=c("À des fins alimentaires, sociales et rituelles","Totalité de la baie", "Milieu de la baie"), name=NULL) +
+    annotate(geom="text",label="TAC", x=2003.4, y= 210) +
+    theme(legend.position=c(0.65, 0.85)) # play with the location if you want it inside the plotting panel
+  ggsave(filename = paste0(direct, "/",assessmentyear,"/Assessment/Figures/CommercialData/SPA6_TACandLandings_FR",fishingyear, ".png"), width = 24, height = 20, dpi = 400,units='cm')
+  
 #CPUE Fleets and Subareas combined
   ggplot(comm.dat.combined) +
     theme_bw(base_size = 20) + theme(panel.grid=element_blank()) + 
@@ -456,7 +469,7 @@
 #### SPATIAL PLOTS ####
   
   #Pecjector basemap with SPA6 boundaries
-  p <- pecjector(area =list(x=c(-67.4,-65.8), y=c(44.2,45.2), crs=4326),repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot', add_layer = list(land = "grey", bathy = c(50,'c'), scale.bar = c('bl',0.5)))
+  p <- pecjector(area =list(x=c(-67.4,-65.8), y=c(44.2,45.2), crs=4326),repo ='github',c_sys="ll", gis.repo = 'github', plot=F,plot_as = 'ggplot', add_layer = list(bathy = c(50,'c'), scale.bar = c('bl',0.5)))
   
   
 #CPUE Grid Plot
@@ -484,9 +497,8 @@
     geom_sf(data = poly.6C, fill=NA, colour="grey55") +
     geom_sf(data = poly.6D, fill=NA, colour="grey55") +
     geom_sf(data = poly.VMSIN, fill=NA, colour="red") +
-    coord_sf(xlim = c(-67.4,-65.8), ylim = c(44.2,45.2), expand = F) +
-    scale_fill_binned(type = "viridis", direction = -1, name="CPUE (kg/h)", breaks = c(25, 50, 75, 100, 125)) +
-    geom_polygon(data = shp, aes(x = long, y = lat, group = group), fill="grey55") +
+    scale_fill_binned(type = "viridis", direction = -1, name="CPUE (kg/h)", breaks = c(10, 20, 30, 40)) +
+    geom_sf(data = Land, fill="grey55", colour = "grey55") +
     theme(plot.title = element_text(size = 14, hjust = 0.5), #plot title size and position
           axis.title = element_text(size = 12),
           axis.text = element_text(size = 10),
@@ -494,7 +506,8 @@
           legend.text = element_text(size = 10),
           legend.position = c(.8,.6), 
           legend.box.background = element_rect(colour = "grey55", fill= alpha("white", 0.7)), #Legend bkg colour and transparency
-          legend.box.margin = margin(6, 8, 6, 8))
+          legend.box.margin = margin(6, 8, 6, 8)) +
+      coord_sf(xlim = c(-67.4,-65.8), ylim = c(44.2,45.2), expand = F)
  #save
   ggsave(filename = paste0(direct, "/",assessmentyear,"/Assessment/Figures/CommercialData/SPA6_CPUEgridplot_new",fishingyear, ".png"), width = 9, height = 9, dpi = 200,units='in')
   
@@ -535,16 +548,17 @@
     geom_sf(data = poly.6C, fill=NA, colour="grey55") +
     geom_sf(data = poly.6D, fill=NA, colour="grey55") +
     geom_sf(data = poly.VMSIN, fill=NA, colour="red") +
-    coord_sf(xlim = c(-67.4,-65.8), ylim = c(44.2,45.2), expand = FALSE) +
-    scale_fill_binned(type = "viridis", direction = -1, name="Catch (kg)", breaks = c(2000, 4000, 6000, 8000, 10000)) +
+    scale_fill_binned(type = "viridis", direction = -1, name="Catch (kg)") +
+    geom_sf(data = Land, fill="grey55", colour = "grey55") +
     theme(plot.title = element_text(size = 14, hjust = 0.5), #plot title size and position
           axis.title = element_text(size = 12),
           axis.text = element_text(size = 10),
           legend.title = element_text(size = 10, face = "bold"), 
           legend.text = element_text(size = 10),
-          legend.position = c(.07,.72), 
+          legend.position = c(.8,.6), 
           legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.7)), #Legend bkg colour and transparency
-          legend.box.margin = margin(6, 8, 6, 8))
+          legend.box.margin = margin(6, 8, 6, 8)) +
+      coord_sf(xlim = c(-67.4,-65.8), ylim = c(44.2,45.2), expand = FALSE)
   #save
   ggsave(filename = paste0(direct, "/",assessmentyear,"/Assessment/Figures/CommercialData/SPA6_Catchgridplot",fishingyear, ".png"), width = 9, height = 9, dpi = 200,units='in')
  
@@ -571,16 +585,17 @@
     geom_sf(data = poly.6C, fill=NA, colour="grey55") +
     geom_sf(data = poly.6D, fill=NA, colour="grey55") +
     geom_sf(data = poly.VMSIN, fill=NA, colour="red") +
-    coord_sf(xlim = c(-67.4,-65.8), ylim = c(44.2,45.2), expand = FALSE) +
-    scale_fill_binned(type = "viridis", direction = -1, name="Effort (h)", breaks = c(100, 200, 300, 400, 500)) +
+    scale_fill_binned(type = "viridis", direction = -1, name="Effort (h)") +
+    geom_sf(data = Land, fill="grey55", colour = "grey55") +
     theme(plot.title = element_text(size = 14, hjust = 0.5), #plot title size and position
           axis.title = element_text(size = 12),
           axis.text = element_text(size = 10),
           legend.title = element_text(size = 10, face = "bold"), 
           legend.text = element_text(size = 10),
-          legend.position = c(.07,.72), 
+          legend.position = c(.8,.6), 
           legend.box.background = element_rect(colour = "white", fill= alpha("white", 0.7)), #Legend bkg colour and transparency
-          legend.box.margin = margin(6, 8, 6, 8))
+          legend.box.margin = margin(6, 8, 6, 8)) +
+    coord_sf(xlim = c(-67.4,-65.8), ylim = c(44.2,45.2), expand = FALSE)
   #save  
   ggsave(filename = paste0(direct, "/",assessmentyear,"/Assessment/Figures/CommercialData/SPA6_Effortgridplot",fishingyear, ".png"), width = 9, height = 9, dpi = 200,units='in')
     
@@ -607,19 +622,4 @@
 #   #save
 #   ggsave(filename = paste0(direct, "/",assessmentyear,"/Assessment/Figures/CommercialData/SPA6_RefPts",fishingyear, "_FR",".png"), width = 24, height = 20, dpi = 400,units='cm')
     
-
-
-
-  
-
-
-
-
-
-
-
-
-
-
-
 

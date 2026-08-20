@@ -24,7 +24,8 @@ showtext_auto()
 #require(rosettafish) || stop("Install the rosettafish package please: remotes::install_github('freyakeyser/rosettafish')")
 #require(RCurl) || stop("Install the RCurl package please: install.packages('RCurl')")
 #rosetta_terms_SABHU <- read.csv("https://raw.githubusercontent.com/mar-scal/rosetta_shell/master/terms.csv", fileEncoding = "UTF-8")
-source("Y:/Inshore/BoF/Assessment_fns/convert.dd.dddd.r")
+source("Y:/Inshore/Assessment/BoF/Assessment_fns/convert.dd.dddd.r")
+#source("Y:/Inshore/BoF/Assessment_fns/convert.dd.dddd.r")
 
 # Everything you should review/may need to change or update is listed between this point and "Summary Data:"
 
@@ -37,13 +38,13 @@ fishingyear <- 2025 # most recent year of commercial fishing data to be used (e.
 assessmentyear <- 2025 # year of model data to use
 
 # Sources
-direct <- paste0("Y:/Inshore/BoF/")
-direct_out <- paste0("Y:/Inshore/BoF/", year,"/Assessment/")
+direct <- paste0("Y:/Inshore/Assessment/BoF/")
+direct_out <- paste0("Y:/Inshore/Assessment/BoF/", year,"/Assessment/")
 
 # Reference points
 RR.tab <- data.frame(
   SPA = c("SPA 1A", "SPA 1B", "SPA 3", "SPA 4", "SPA 6"),
-  RR  = c(0.15, 0.15, 0.15, 0.15, 0.18),
+  TER  = c(0.15, 0.15, 0.15, 0.15, 0.18),
   stringsAsFactors = FALSE)
 # To find RR for specific area: rp.tab$RR[rp.tab$SPA==paste0("SPA ", area)]
 
@@ -130,7 +131,7 @@ mod <- loadEnvironment(paste0(direct_mod))
     bounds <- (apply(post.matrix, 2, quantile, probs = c(cred.lim/2, 1 - cred.lim/2)))
     ylim <- c(0, max(bounds[2, ]))
 # "Model_results_and_diagnostics_2023_1A.RData"
-        # Source: Z:\Inshore\BoF\2023\Assessment\Data\Model\SPA##
+        # Source: Y:\Inshore\BoF\2023\Assessment\Data\Model\SPA##
 dat <- loadEnvironment(paste0(direct_out,"Data/Model/SPA", area, "/Model_results_and_diagnostics_", year,"_", area, ".RData"))
       # define variables from dat for easier referencing
       catch.next.year <- dat$catch.next.year
@@ -243,7 +244,7 @@ showtext_auto(TRUE)
 e.m.plot <- ggplot() +
   # exploitation (prop): mu
   geom_ribbon(aes(ymin=mu$`2.5%`,ymax=mu$`97.5%`,x=Years.ribbon[-1]-1), alpha=0.2,fill="grey10") +
-  geom_hline(aes(yintercept=RR.tab$RR[RR.tab$SPA==paste0("SPA ", area)],col="RR"), lty="dotted", alpha=0.7, linewidth=0.8)+ # RR
+  geom_hline(aes(yintercept=RR.tab$TER[RR.tab$SPA==paste0("SPA ", area)],col="TER"), name = "TER", lty="dotted", alpha=0.7, linewidth=0.8)+ # RR
   geom_line(aes(x=Years[-1]-1, y=mu$median), col="black", linewidth = 0.4) +
   geom_point(aes(x=Years[-1]-1, y=mu$median), col="black", size=1) +
   #styling
@@ -476,8 +477,8 @@ SPA<-"4"
 # CommercialLogsAnalysis
 #tacq <- read.xlsx(paste0(direct,"/",assessmentyear,"/Assessment/Data/CommercialData/SPA1B_TACandLandings_", fishingyear, ".xlsx"), sheet = "TACandLandings")
 tacq <- read.xlsx(paste0(direct,"/",assessmentyear,"/Assessment/Data/CommercialData/SPA",SPA,"and5_TACandLandings_", fishingyear, ".xlsx"), sheet = "TACandLandings")
-# May need to change directory letter (Z: in this case, but could be Y:)
-tacq4<-read.csv("Y:/Inshore/BoF/CommercialData/Archive/2014/SPA4_TACandLandings_2014.csv") # DO NOT UPDATE - historial data
+# May need to change directory letter (Y: in this case, but could be Y:)
+tacq4<-read.csv(paste0(direct,"CommercialData/Archive/2014/SPA4_TACandLandings_2014.csv")) # DO NOT UPDATE - historial data
 landings <- tacq[,-1]
 landings <- as.data.frame(t(landings))
 names(landings) <- c("SPA4", "SPA5", "TAC")

@@ -1,8 +1,10 @@
-###................................................................................###
-###                       Scallop Health - Spatial Figures                         ###
-###                                  SFA 29                                        ###
-###                                 Dec 2021                                       ###
-###................................................................................###
+###..........................................................................................###
+###                       Scallop Health - Spatial Figures and Disease Metrics               ###
+###                                       SFA 29                                             ###
+###                                      Dec 2021                                            ###
+###..........................................................................................###
+
+#Plots for Proportions of myco and discoloured meats in samples by tow and by SUBAREA
 
 # Spatial figures of Mycobacterium infections (numbers per tow and proportions) and Gray Meats (number per tow and proportions): 
 
@@ -36,15 +38,15 @@ require(ggspatial)
 #pwd <- pw.sameotoj
 #uid <- un.raperj
 #pwd <- un.raperj
-# uid <- keyring::key_list("Oracle")[1,2]
-# pwd <- keyring::key_get("Oracle", uid)
-uid <- un.englishg
-pwd <- pw.englishg
+ uid <- keyring::key_list("Oracle")[1,2]
+ pwd <- keyring::key_get("Oracle", uid)
+#uid <- un.englishg
+#pwd <- pw.englishg
 #set year 
-survey.year <- 2025  #removed maxyear in script and changed to survey year
-assessmentyear <- 2026 #year in which you are providing advice for- determines where to save files to
-path.directory <- "Y:/Inshore/SFA29/"
-cruise <- "'SFA292025'"
+survey.year <- 2024  #removed maxyear in script and changed to survey year
+assessmentyear <- 2025 #year in which you are providing advice for- determines where to save files to
+path.directory <- "Y:/Inshore/Assessment/SFA29/"
+cruise <- "'SFA292024'"
 
 #set up directory to save plot
 saveplot.dir <- paste0(path.directory,assessmentyear,"/Assessment/Figures/") 
@@ -111,11 +113,11 @@ quer4 <- paste(
 sampled.dat <- dbGetQuery(chan, quer4)
 sampled.dat <- sampled.dat[,1:17]
 
-# -------------------------------Format for Myco plots-----------------------------------------
+# ------------------------------- MYCO PROPORTION PLOTS -----------------------------------------
 
 sampled.dat <- sampled.dat %>%
   mutate(year = year(TOW_DATE)) %>%
-  filter(year %in% c(2018:survey.year)) %>% 
+  filter(year %in% c(2017:survey.year)) %>% 
   mutate(lat = convert.dd.dddd(START_LAT)) %>% #Convert to DD
   mutate(lon = convert.dd.dddd(START_LONG)) %>% #Convert to DD 
   rename(tow = TOW_NO) %>%  #Rename column TOW_NO to tow - required for one of the mapping functions.
@@ -124,7 +126,13 @@ sampled.dat <- sampled.dat %>%
   mutate(MEAT_COLOUR = as.factor(MEAT_COLOUR)) %>% 
   mutate(MEAT_COLOUR = case_when(MEAT_COLOUR == "Normal white colour" ~ "Normal", 
                                  MEAT_COLOUR == "moderate (light brown/gray)" ~ "Moderate",
-                                 MEAT_COLOUR == "severe (dark brown/gray)" ~ "Severe"))
+                                 MEAT_COLOUR == "severe (dark brown/gray)" ~ "Severe")) %>%
+  mutate(STRATA_ID = as.numeric(STRATA_ID)) %>% 
+  mutate(SUBAREA = case_when(STRATA_ID %in% 41 ~ "A", 
+                             STRATA_ID %in% 42 ~ "B",
+                             STRATA_ID %in% 43 ~ "C",
+                             STRATA_ID %in% 44 ~ "D",
+                             STRATA_ID %in% 45 ~ "E"))
 
 table(sampled.dat$MYCO_INFECTED)
 
@@ -152,7 +160,7 @@ if(myco.datw %>% names %>% str_detect("Y") %>% any() == FALSE){
 }
 
 
-tow.dat <- sampled.dat %>% group_by(ID, tow, STRATA_ID, lat, lon, year) %>% 
+tow.dat <- sampled.dat %>% group_by(ID, tow, SUBAREA, lat, lon, year) %>% 
   summarise()
 
 myco.datw <- merge(myco.datw, tow.dat, by = "ID", all.x = TRUE) %>% 
@@ -167,8 +175,46 @@ myco.datw <- merge(myco.datw, tow.dat, by = "ID", all.x = TRUE) %>%
 # write.csv(myco.datw %>% filter(year == i), paste0("Y:/Inshore/SFA29/",assessmentyear,"/Assessment/Data/SurveyIndices/SFA29towsdd_MYCOprop",i,".csv"),row.names = FALSE)
 # }
 
+# Calculate total proportions
+#proportions_data <- myco.datw %>%
+#  group_by(CRUISE, SUBAREA, year) %>%
+#  summarise(tot.N = sum(N),
+#            tot.Y = sum(Y),
+#            tot.all = sum(tot)) %>% 
+#  mutate(N.prop = tot.N/tot.all) %>%
+#  mutate(Y.prop = tot.Y/tot.all) %>% 
+#  mutate(prop.check = N.prop + Y.prop)
 
-# -------------------------------Format for Discoloured scallops plots-----------------------------------------
+#table(proportions_data$prop.check)
+
+#prop_data_4plot <- proportions_data %>% 
+#  select(CRUISE, SPA, year, Y.prop, N.prop)
+
+
+#prop_data_4plot <- reshape2::melt(prop_data_4plot, id.vars = c("year", "SUBAREA", "CRUISE"), value.name = "value")
+
+# plot without pattern
+#plot <- ggplot(prop_data_4plot) +
+#  geom_bar(data=prop_data_4plot[prop_data_4plot$variable%in%c('N.prop','Y.prop'),],
+#           aes(year, value, fill=factor(variable, levels = c('N.prop','Y.prop'))), colour="black", stat="identity") +
+#  ylab("Proportion of myco infected samples") +
+#  scale_fill_manual(values=c("skyblue3","salmon"), labels=c("Not infected","Infected with Myco"), name=NULL) +
+#  theme_bw()+
+#  theme(axis.title.x = element_blank(),
+#        axis.text.x = element_text(margin = margin(t = 4)),
+#        axis.title.y = element_text(margin = margin(r = 4)),
+#        legend.position = "bottom",legend.direction = "horizontal",
+#        legend.key.width = unit(0.7, "cm"), legend.text=element_text(size=8),
+#        panel.border = element_rect(linewidth = 1, fill = NA),
+#        axis.ticks = element_line(linewidth = 0.3), axis.ticks.length = unit(5, "pt"),
+#        plot.margin = margin(5, 5, 5, 1, "points"))+
+#  facet_wrap(~ SUBAREA)
+#plot
+
+#save
+#ggsave(filename = "Y:/Inshore/SFA29/2026/Assessment/Figures/Disease_Metrics/Proportion_of_Myco_Infections_by_SUBAREA.png", plot = plot, scale = 2.5, width = 6, height = 6, dpi = 300, units = "cm", limitsize = TRUE)
+
+# -------------------------------DISCOLOURED PROPORTION PLOTS-----------------------------------------
 
 table(sampled.dat$MEAT_COLOUR)
 
@@ -198,6 +244,70 @@ greymeat.datw <- merge(greymeat.datw, tow.dat, by = "ID", all.x = TRUE) %>%
 # for(i in unique(greymeat.datw$year)){
 # write.csv(greymeat.datw %>% filter(year == i), paste0("Y:/Inshore/SFA29/",assessmentyear,"/Assessment/Data/SurveyIndices/SFA29towsdd_MYCOprop",i,".csv"),row.names = FALSE)
 # }
+
+# Calculate proportions
+proportions_data <- greymeat.datw %>%
+  group_by(CRUISE, SUBAREA, year) %>%
+  summarise(tot.Normal = sum(Normal),
+            tot.greymeat = sum(NUM_GREYMEAT),
+            tot.all = sum(Normal + Moderate + Severe)) %>% 
+  mutate(Normal.prop = tot.Normal/tot.all) %>%
+  mutate(greymeat.prop = tot.greymeat/tot.all) %>% 
+  mutate(prop.check = Normal.prop + greymeat.prop)
+
+table(proportions_data$prop.check)
+
+prop_data_4plot <- proportions_data %>% 
+  select(CRUISE, SUBAREA, year, Normal.prop , greymeat.prop)
+
+
+prop_data_4plot <- reshape2::melt(prop_data_4plot, id.vars = c("year", "SUBAREA", "CRUISE"), value.name = "value")
+
+# plot without pattern
+plot <- ggplot(prop_data_4plot) +
+  geom_bar(data=prop_data_4plot[prop_data_4plot$variable%in%c('Normal.prop' , 'greymeat.prop'),],
+           aes(year, value, fill=factor(variable, levels = c('Normal.prop' , 'greymeat.prop'))), colour="black", stat="identity") +
+  ylab("Proportion of discoloured samples") +
+  #scale_x_continuous(breaks = seq(2018, year+3, 5),
+  # labels = c(1995, 2000, 2005, 2010, 2015, 2020, 2025))+
+  scale_fill_manual(values=c("skyblue3", "grey"), labels=c("Normal", "Discoloured"), name=NULL) +
+  theme_bw()+
+  theme(axis.title.x = element_blank(),
+        axis.text.x = element_text(margin = margin(t = 4)),
+        axis.title.y = element_text(margin = margin(r = 4)),
+        legend.position = "bottom",legend.direction = "horizontal",
+        legend.key.width = unit(0.7, "cm"), legend.text=element_text(size=8),
+        panel.border = element_rect(linewidth = 1, fill = NA),
+        axis.ticks = element_line(linewidth = 0.3), axis.ticks.length = unit(5, "pt"),
+        plot.margin = margin(5, 5, 5, 1, "points"))+
+  facet_wrap(~ SUBAREA)
+plot
+
+#save
+ggsave(filename = paste0("Y:/Inshore/Assessment/SFA29/",assessmentyear,"/Assessment/Figures/Disease_Metrics/Proportion_of_DiscolouredSamples_by_SUBAREA.png"), plot = plot, scale = 2.5, width = 6, height = 6, dpi = 300, units = "cm", limitsize = TRUE)
+
+#line plot:
+
+line_plot <- ggplot(proportions_data)+
+  geom_line(aes(x = year, y = greymeat.prop))+
+  ylim(0, 1.0)+
+  ylab("Proportion of discoloured samples")+
+  theme_bw()+
+  facet_wrap(~ SUBAREA)
+line_plot
+
+#save
+ggsave(filename = paste0("Y:/Inshore/Assessment/SFA29/",assessmentyear,"/Assessment/Figures/Disease_Metrics/Proportion_of_discolouredmeats_by_SUBAREA_lineplot.png"), plot = line_plot, scale = 2.5, width = 6, height = 6, dpi = 300, units = "cm", limitsize = TRUE)
+
+#Save as .CSV-----------------------------------------
+#By Tow
+write.csv(greymeat.datw, paste0("Y:/Inshore/Assessment/SFA29/",assessmentyear,"/Assessment/Data/SurveyIndices/Disease_Metrics/Discoloured_Meats_By_Tow.csv"))
+#By SPA
+proportions_data <- proportions_data %>% 
+  select(-Normal.prop, -prop.check)
+write.csv(proportions_data, paste0("Y:/Inshore/Assessment/SFA29/",assessmentyear,"/Assessment/Data/SurveyIndices/Disease_metrics/Discoloured_Meats_By_SUBAREA.csv"))
+
+# SPATIAL PLOTS -----------------------------------------------------------
 
 # ----------- Making a custom boundary for IDW analysis based off survey tows ---------------
 
@@ -240,8 +350,9 @@ st_crs(idw_sf) <- 32620
 
 #Set standard layers: bathymetry on bottom layer, and land, survey tows, etc above IDW layer
 bathy <-   ggplot() + #goes before IDW layer
-  geom_sf(data = bathy_sf, color = "steelblue", alpha = 0.1, size = 0.5) +
-  coord_sf(xlim = c(-66.50,-64.30), ylim = c(44.25,45.80), expand = FALSE)
+  geom_sf(data = bathy_sf, color = "steelblue", alpha = 0.05, size = 0.5) +
+  coord_sf(xlim = c(-66.50,-64.30), ylim = c(44.25,45.80), expand = FALSE)+
+  theme_bw()
 
 # Function to generate map layers to go after IDW layer
 p <- function(mgmt_zone, surv_sf, land) {

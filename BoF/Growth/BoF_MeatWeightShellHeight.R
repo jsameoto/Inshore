@@ -30,7 +30,8 @@ cruise <- "BF2025"  #note should match year for surveyyear set above
 
 assessmentyear <- 2025 #year in which you are conducting the survey 
 area <- "1A1B4and5"  #SPA assessing recall SPA 1A, 1B, and 4 are grouped; options: "1A1B4and5", "3", "6" 
-path.directory <- "Y:/Inshore/BoF/"
+path.directory <- "Y:/Inshore/Assessment/BoF/" #New directory on Sky
+#path.directory <- "Y:/Inshore/BoF/"
 
 ###
 # read in shell height and meat weight data from database
@@ -70,7 +71,8 @@ BFlivefreq.dat$YEAR <- as.numeric(substr(BFlivefreq.dat$CRUISE,3,6))
 BFdetail.dat$ID <- paste(BFdetail.dat$CRUISE,BFdetail.dat$TOW_NO,sep='.')
 uniqueID <- unique(BFdetail.dat$ID)
 
-OlexTows_all <- read.csv("Y:/Inshore/StandardDepth/towsdd_StdDepth.csv")
+OlexTows_all <- read.csv("Y:/Inshore/Assessment/StandardDepth/towsdd_StdDepth.csv") #New directory on Sky
+#OlexTows_all <- read.csv("Y:/Inshore/StandardDepth/towsdd_StdDepth.csv")
 names(OlexTows_all)[which(colnames(OlexTows_all)=="RASTERVALU")] <- "OLEXDEPTH_M"   #rename "RASTERVALU" column
 OlexTows_all$OLEXDEPTH_M[OlexTows_all$OLEXDEPTH_M==-9999] <- NA
 OlexTows_all$ID <- paste(OlexTows_all$CRUISE,OlexTows_all$TOW_NO,sep='.')
@@ -242,7 +244,8 @@ write.csv(livefreq.condition.spatial, paste0(path.directory, assessmentyear, "/A
 # SPA1B = -50.09
 
 #Bring in file with depths by area, note some are by strata groups within area
-mean.depth <- read.csv('Y:/Inshore/StandardDepth/BoFMeanDepths.csv')[ ,c("AREA", "MeanDepth_m")] #File for the constant depth to predict on by area
+mean.depth <- read.csv('Y:/Inshore/Assessment/StandardDepth/BoFMeanDepths.csv')[ ,c("AREA", "MeanDepth_m")] #File for the constant depth to predict on by area, New directory on Sky
+#mean.depth <- read.csv('Y:/Inshore/StandardDepth/BoFMeanDepths.csv')[ ,c("AREA", "MeanDepth_m")] #File for the constant depth to predict on by area
 unique(mean.depth$AREA)
 length(mean.depth$AREA)
 

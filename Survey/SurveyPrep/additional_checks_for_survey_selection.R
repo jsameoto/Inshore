@@ -20,7 +20,8 @@ prev.surv.year <- 2019
 survey.year <- 2021
 area <- "GM" #"GM", "BI", "BF"
 
-path.directory <- "Y:/INSHORE SCALLOP/BoF/"
+path.directory <- "Y:/Inshore/Assessment/BoF"
+#path.directory <- "Y:/INSHORE SCALLOP/BoF/"
 
 #ROracle
 chan <- dbConnect(dbDriver("Oracle"),username=uid, password=pwd,'ptran')

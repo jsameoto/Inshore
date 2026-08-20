@@ -32,13 +32,13 @@ library(lubridate)
 library(readxl)
 library(tidyverse)
 #library(SSModel) #v 1.0-5
-source("Y:/Inshore/SFA29/2017/model/SFA29model9-2015.R") #contains the SFA29model model (BUGS) 
+source("Y:/Inshore/Assessment/SFA29/2017/model/SFA29model9-2015.R") #contains the SFA29model model (BUGS) 
 
 
 #DEFINE:
-path.directory <- "Y:/Inshore/SFA29/"
-assessmentyear <- 2025 #year in which you are conducting the assessment 
-surveyyear <- 2024  #last year of survey data you are using, e.g. if max year of survey is survey from summer 2019, this would be 2019 
+path.directory <- "Y:/Inshore/Assessment/SFA29/"
+assessmentyear <- 2026 #year in which you are conducting the assessment 
+surveyyear <- 2025  #last year of survey data you are using, e.g. if max year of survey is survey from summer 2019, this would be 2019 
 area <- "SFA29C"  
 
 #yr <- year(Sys.Date()) # This should be set to the year after the year of the last survey.  e.g. if 2018 that means you are using the 2017 survey. This assumes you're running assessment in surveyyear + 1
@@ -126,7 +126,7 @@ inits.29C <- SFA29.inits(NY)
 
 ##### run model
 C.mod.res <- SSModel(SFA29Cdata,SFA29.priors,inits.29C,parms=SFA29.parms,model.file=SFA29model,Years=yrs,
-                nchains=nchains,niter=niter,nburnin=nburnin,nthin=nthin,Area="SFA29W",e.parms=e.parms.29C,debug=F)
+                nchains=nchains,niter=niter,nburnin=nburnin,nthin=nthin,Area="SFA29W",e.parms=e.parms.29C,debug=T)
 
 #load(paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29C/SFA29C.",surveyyear,".RData"))
 mod.res <- C.mod.res
@@ -164,7 +164,7 @@ write.csv(C.mod.res$summary,file=paste0(file = paste0(path.directory,assessmenty
 #Catch 
 high.cat <- apply(C.mod.res$sims.matrix[,grep("Catch.t",colnames(C.mod.res$sims.matrix))],2,median)
 high.cat <- high.cat[grep(",3]",names(high.cat))]
-high.cat <- c(0,high.cat[1:12],0,high.cat[13:length(high.cat)])
+high.cat <- c(0,high.cat[1:12],0,high.cat[13:22],0) #****WILL NEED TO BE EDITED FOR 2027***** No fishing occurred in 2025-26 fishing season in Subarea C
 length(high.cat)
 high.cat
 
@@ -183,7 +183,7 @@ high.nat.m
 #modelled CPUE 
 high.CPUE <- apply(C.mod.res$sims.matrix[,grep("CPUE.sub",colnames(C.mod.res$sims.matrix))],2,median)
 high.CPUE <- high.CPUE[grep(",3]",names(high.CPUE))]
-high.CPUE <- c(0,high.CPUE[1:12],0,high.CPUE[13:length(high.CPUE)])
+high.CPUE <- c(0,high.CPUE[1:12],0,high.CPUE[13:22],0) #****WILL NEED TO BE EDITED FOR 2027***** No fishing occurred in 2025-26 fishing season in Subarea C
 length(high.CPUE)
 high.CPUE
 
@@ -193,7 +193,7 @@ high.CPUE
 #Catch 
 med.cat <- apply(C.mod.res$sims.matrix[,grep("Catch.t",colnames(C.mod.res$sims.matrix))],2,median)
 med.cat <- med.cat[grep(",2]",names(med.cat))]
-med.cat <-  c(0,med.cat[1:12],0,med.cat[13:length(med.cat)])
+med.cat <-  c(0,med.cat[1:12],0,med.cat[13:22],0) #****WILL NEED TO BE EDITED FOR 2027***** No fishing occurred in 2025-26 fishing season in Subarea C
 length(med.cat)
 
 #Biomass  
@@ -209,7 +209,7 @@ length(med.nat.m)
 #modelled CPUE 
 med.CPUE <- apply(C.mod.res$sims.matrix[,grep("CPUE.sub",colnames(C.mod.res$sims.matrix))],2,median)
 med.CPUE <- med.CPUE[grep(",2]",names(med.CPUE))]
-med.CPUE <-  c(0,med.CPUE[1:12],0,med.CPUE[13:length(med.CPUE)])
+med.CPUE <-  c(0,med.CPUE[1:12],0,med.CPUE[13:22],0) #****WILL NEED TO BE EDITED FOR 2027***** No fishing occurred in 2025-26 fishing season in Subarea C
 length(med.CPUE)
 
 ##
@@ -218,7 +218,7 @@ length(med.CPUE)
 #Catch  
 low.cat <- apply(C.mod.res$sims.matrix[,grep("Catch.t",colnames(C.mod.res$sims.matrix))],2,median)
 low.cat <- low.cat[grep(",1]",names(low.cat))]
-low.cat <- c(0,low.cat[1:12],0,low.cat[13:length(low.cat)])
+low.cat <- c(0,low.cat[1:12],0,low.cat[13:22],0) #****WILL NEED TO BE EDITED FOR 2027***** No fishing occurred in 2025-26 fishing season in Subarea C
 length(low.cat)
 
 #Biomass
@@ -234,7 +234,7 @@ length(low.nat.m)
 #modelled CPUE 
 low.CPUE <- apply(C.mod.res$sims.matrix[,grep("CPUE.sub",colnames(C.mod.res$sims.matrix))],2,median)
 low.CPUE <- low.CPUE[grep(",1]",names(low.CPUE))]
-low.CPUE <- c(0,low.CPUE[1:12],0,low.CPUE[13:length(low.CPUE)])
+low.CPUE <- c(0,low.CPUE[1:12],0,low.CPUE[13:22],0)
 length(low.CPUE)
 
 
@@ -485,7 +485,7 @@ save(pe.pred,file=paste0(path.directory,assessmentyear,"/Assessment/Data/Model/S
 # we need to bring in all the prediction evalulation data we have....
 # Now load all the old pe.pred results, first identify where to find the data...
 
-direct <- "Y:/Inshore/SFA29/"
+direct <- "Y:/Inshore/Assessment/SFA29/"
 pe.all <- NULL
 
 for(i in 2016:pe.years) {
@@ -575,7 +575,7 @@ summary <- cbind(parameters, data.frame(summary, row.names=NULL))
 
 n <- 3
 years <- rep(2001:surveyyear, each=n)
-Habitat <- rep(c("Low", "Med", "High"), 24) #Need to fix this so new years are added.
+Habitat <- rep(c("Low", "Med", "High"), 25) #Need to fix this so new years are added.
 
 summary.Bh <- summary |>  filter(str_detect(summary$parameters, "^Bh"))
 summary.Bh$Year <- years

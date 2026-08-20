@@ -23,7 +23,7 @@ library(PEDstrata)
 library(tidyverse)
 
 #setwd temporarily to grab these data...
-setwd('Y:/Inshore/BoF/Assessment_fns/SFA29W')
+setwd('Y:/Inshore/Assesment/BoF/Assessment_fns/SFA29W')
 source('Geophysicalareas.R')
 source('SedimentareasSFA29.R')
 source('Domainestimates.R')
@@ -43,21 +43,21 @@ uid <- un.sameotoj
 pwd <- pw.sameotoj
 #uid <- keyring::key_list("Oracle")[1,2]
 #pwd <- keyring::key_get("Oracle", uid)
-uid <- un.englishg
-pwd <- pw.englishg
+#uid <- un.englishg
+#pwd <- pw.englishg
 
-surveyyear <- 2024  #This is the last survey year for which you want to include  - note should match year of cruise below 
-cruise <- "SFA292024"  #note should match year for surveyyear set above 
-assessmentyear <- 2025 #year in which you are conducting the survey 
-path.directory <- "Y:/Inshore/SFA29/"
-years <- c(2001:2024) 
+surveyyear <- 2025  #This is the last survey year for which you want to include  - note should match year of cruise below 
+cruise <- "SFA292025"  #note should match year for surveyyear set above 
+assessmentyear <- 2026 #year in which you are conducting the survey 
+path.directory <- "Y:/Inshore/Assessment/SFA29/"
+years <- c(2001:2025) 
 
-#Bring in survey tow data with SDM value (note - SFA29_SDM_LWM.R script must be run to get updated survey tows with SDM values prior to runnint this script)
-sdmtows <- read.csv("Y:/Inshore/SFA29/ScalSurv_SDM/SFA29Tows_SDM.csv")
+#Bring in survey tow data with SDM value (note - SFA29_SDM_LWM.R script must be run to get updated survey tows with SDM values prior to running this script)
+sdmtows <- read.csv("Y:/Inshore/Assessment/SFA29/ScalSurv_SDM/SFA29Tows_SDM.csv")
 table(sdmtows$CRUISE)
 # Get an unique ID for the tows and keep only the columns we need for later...
 sdmtows$uid <- paste(sdmtows$CRUISE, sdmtows$TOW_NO, sep=".")
-sdmtows <- sdmtows %>% select(uid, SDM)
+sdmtows <- sdmtows %>% dplyr::select(uid, SDM)
 
 # Assign SDM level (low,med,high) based on SDM length weighted mean values (mval_LWM)
 #sdmtows$SDM <- NA
@@ -305,7 +305,7 @@ lbar.comm <- ggplot(comm.size, aes(year,SHF,colour=SDM)) + geom_point(aes(shape 
   scale_color_manual(values=colr, breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low")) +
   scale_linetype_manual(values = line.type, breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low")) +
   scale_shape_manual(values = symbs, breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low"))+ 
-  scale_x_continuous(limits = c(2000, (survey.year+1)), breaks = seq(2002, (survey.year+1), by = 6)) +
+  scale_x_continuous(limits = c(2000, (surveyyear+1)), breaks = seq(2002, (surveyyear+1), by = 6)) +
   ylab("Shell Height (mm)") + xlab("Year") + 
   coord_cartesian(ylim=y) +
   theme_bw()+
@@ -322,7 +322,7 @@ lbar.comm <- ggplot(comm.size, aes(year,SHF,colour=SDM)) + geom_point(aes(shape 
   #guides(linetype=guide_legend(keywidth = 2.5, keyheight = 1.5))
 lbar.comm
 
-ggsave(filename = paste0(path.directory,assessmentyear,"/Assessment/Figures/Growth/SFA29.lbar.comm.",surveyyear,".png"), plot = lbar.comm, scale = 2.5, width = 6, height = 6, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(path.directory,assessmentyear,"/Assessment/Figures/Growth/SFA29.lbar.comm.",surveyyear,".png"), plot = lbar.comm, scale = 2.5, width = 8, height = 6, dpi = 300, units = "cm", limitsize = TRUE)
 
 #png(paste0(path.directory,assessmentyear,"/Assessment/Figures/Growth/SFA29.lbar.comm.",surveyyear,".png"),width=11,height=11,units = "in",res=300)
 #lbar.comm
@@ -336,7 +336,7 @@ lbar.rec <- ggplot(rec.size, aes(year,SHF,colour=SDM)) + geom_point(aes(shape = 
   scale_color_manual(values=colr,breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low")) +
   scale_linetype_manual(values = line.type, breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low")) +
   scale_shape_manual(values = symbs, breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low"))+
-  scale_x_continuous(limits = c(2000, (survey.year+1)), breaks = seq(2002, (survey.year+1), by = 6)) +
+  scale_x_continuous(limits = c(2000, (surveyyear+1)), breaks = seq(2002, (surveyyear+1), by = 6)) +
   ylab("Shell Height (mm)") + xlab("Year") + 
   coord_cartesian(ylim=y) +
   theme_bw()+
@@ -385,10 +385,10 @@ lbar <- rbind(comm.size, rec.size)
 #remove SUBAREA Column to keep consistant with previous years files:
 lbar <- lbar |> dplyr::select(!SUBAREA)
 
-lbar %>% filter(year %in% c(2023,2024) & size == "recruit")
+lbar %>% filter(year %in% c(2024,2025) & size == "recruit")
 
 
-#note lbar is column  "SHF" - curren year average height; column name "SHF.pred" is the predicted average SH in the following year 
+#note lbar is column  "SHF" - current year average height; column name "SHF.pred" is the predicted average SH in the following year 
 write.csv(lbar, paste0(path.directory,assessmentyear, "/Assessment/Data/Growth/SFA29.SHobj.",surveyyear,".csv"))
 
 # Save the results....

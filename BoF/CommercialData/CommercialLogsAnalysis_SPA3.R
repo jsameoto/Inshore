@@ -41,12 +41,14 @@ library(sf)
 library(dplyr)
 library(lubridate)
 
-source("Y:/Inshore/BoF/Assessment_fns/convert.dd.dddd.r")
+source("Y:/Inshore/Assessment/BoF/Assessment_fns/convert.dd.dddd.r")
+#source("Y:/Inshore/BoF/Assessment_fns/convert.dd.dddd.r")
 
 
 #### DEFINE ####
 
-direct <- "Y:/Inshore/BoF"
+direct <- "Y:/Inshore/Assessment/BoF"
+#direct <- "Y:/Inshore/BoF"
 fishingyear <- 2025 #most recent year of commercial fishing data to be used (e.g. if fishing season is 2019/2020, use 2020)
 assessmentyear <- 2025 #year in which you are conducting the assessment
 un.ID=Sys.getenv("un.raperj") #ptran username
@@ -70,12 +72,15 @@ CPUE_spa3_subarea <- read.csv(paste0(direct,"/",(assessmentyear-1),"/Assessment/
 CPUE_spa3_combined <- read.csv(paste0(direct,"/",(assessmentyear-1),"/Assessment/Data/CommercialData/CPUE_spa3_combined_", fishingyear-1, ".csv"))
 
 #Polygon to separate catch between BILU and St Mary's Bay
-BILU.poly<-read.csv("Y:/Inshore/BoFBoundaries/SPABoundaries_Redrawn2014/SPA New Polys/csv_NAD83/BILUpoly.csv")
+BILU.poly<-read.csv("Y:/GISdata/Private/BoFBoundaries/SPABoundaries_Redrawn2014/SPA New Polys/csv_NAD83/BILUpoly.csv")
 
 #Polygons for spatial plots
-poly.sf <- st_read("Y:/Inshore/BoFBoundaries/SPABoundaries_Redrawn2014/SPA New Polys/shp polygons", layer = "SPA3_polygon_NAD83")
+poly.sf <- st_read("Y:/GISdata/Private/BoFBoundaries/SPABoundaries_Redrawn2014/SPA New Polys/shp polygons", layer = "SPA1A_polygon_NAD83")
+#poly.sf <- st_read("Y:/Inshore/BoFBoundaries/SPABoundaries_Redrawn2014/SPA New Polys/shp polygons", layer = "SPA1A_polygon_NAD83")
 poly.VMS <- st_read("Y:/Inshore/Databases/Scallsur/SPA3", layer = "SPA3_VMS_StrataBrierLurcher")
+#poly.VMS <- st_read("Y:/Inshore/Databases/Scallsur/SPA3", layer = "SPA3_VMS_StrataBrierLurcher")
 poly.SMB <- st_read("Y:/Inshore/Databases/Scallsur/SPA3", layer = "SMB")
+#poly.SMB <- st_read("Y:/Inshore/Databases/Scallsur/SPA3", layer = "SMB")
 
 
 

@@ -26,7 +26,8 @@ cruise <- "BF2024"  #note should match year for surveyyear set above
 
 assessmentyear <- 2024 #year in which you are conducting the survey 
 area <- "1A1B4and5"  #SPA assessing recall SPA 1A, 1B, and 4 are grouped; options: "1A1B4and5", "3", "6" 
-path.directory <- "Y:/Inshore/BoF/"
+path.directory <- "Y:/Inshore/Assessment/BoF/" #new directory on SKY
+#path.directory <- "Y:/Inshore/BoF/"
 
 
 #required packages

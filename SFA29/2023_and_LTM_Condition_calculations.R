@@ -1,7 +1,7 @@
 
 library(tidyverse)
 assessmentyear <- 2025 #year in which you are conducting the survey 
-path.directory <- "Y:/Inshore/SFA29/"
+path.directory <- "Y:/Inshore/Assessment/SFA29/"
 surveyyear <- 2024 
 
 #####Import condition file for SFA29W:######################################################################
@@ -108,7 +108,7 @@ SFA29.con.ts.diff.D |> filter(diff == max(diff, na.rm = T))
 
 #############################################################################################
 
-biomass <- read.csv("/Inshore/SFA29/2024/Assessment/Data/SurveyIndices/SDM.HighMedLow.2001to2023.Commercial.Weight.csv")
+biomass <- read.csv("Y:/Inshore/Assessment/SFA29/2024/Assessment/Data/SurveyIndices/SDM.HighMedLow.2001to2023.Commercial.Weight.csv")
 
 biomass.A <- biomass %>% filter(SUBAREA == "SFA29A", Strata == "med") |> dplyr::select(YEAR,  Mean) |> dplyr::rename(I = Mean)
 biomass.B <- biomass %>% filter(SUBAREA == "SFA29B", Strata == "high") |> dplyr::select(YEAR,  Mean) |> dplyr::rename(I = Mean)
@@ -155,7 +155,7 @@ biomass.D |> filter(YEAR %in% c(2022, 2023)) |>
 
 #############################################################################################
 
-abundance <- read.csv("/Inshore/SFA29/2024/Assessment/Data/SurveyIndices/SDM.HighMedLow.2001to2023.Numbers.csv")
+abundance <- read.csv("Y:/Inshore/Assessment/SFA29/2024/Assessment/Data/SurveyIndices/SDM.HighMedLow.2001to2023.Numbers.csv")
 
 abundance.A <- abundance %>% filter(SUBAREA == "SFA29A", Strata == "med", size == "comm") |> dplyr::select(YEAR,  Mean) |> dplyr::rename(N = Mean)
 abundance.B <- abundance %>% filter(SUBAREA == "SFA29B", Strata == "high", size == "comm") |> dplyr::select(YEAR,  Mean) |> dplyr::rename(N = Mean)

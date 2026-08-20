@@ -16,15 +16,15 @@ years.2019 <- (2001:2019)
 years.mu.2019 <- (2001:2019) 
 
 
-ess <- "Y"
+sky <- "Y"
 path <- ":/Inshore/SFA29/2022/Assessment/Data/Model/"
 path2 <- ":/Inshore/SFA29/2020/model/"
 
-model.2019 <- read.csv(paste0(ess,path2,"SFA29",area,"_results/","29",area,"_model_results_summary.csv"))
+model.2019 <- read.csv(paste0(sky,path2,"SFA29",area,"_results/","29",area,"_model_results_summary.csv"))
 
-g.2019 <- read.csv(paste0(ess,path,"SFA29",area,"/SFA29.",area,".model.results.summary.2021.csv"))
-g.min <- read.csv(paste0(ess,path,"SFA29",area,"/test_min_gh_for2020/SFA29.",area,".model.results.summary.2021.csv"))
-g.max <- read.csv(paste0(ess,path,"SFA29",area,"/test_max_gh_for2020/SFA29.",area,".model.results.summary.2021.csv"))
+g.2019 <- read.csv(paste0(sky,path,"SFA29",area,"/SFA29.",area,".model.results.summary.2021.csv"))
+g.min <- read.csv(paste0(sky,path,"SFA29",area,"/test_min_gh_for2020/SFA29.",area,".model.results.summary.2021.csv"))
+g.max <- read.csv(paste0(sky,path,"SFA29",area,"/test_max_gh_for2020/SFA29.",area,".model.results.summary.2021.csv"))
 
 head(model.2019)
 head(g.2019)
@@ -46,7 +46,7 @@ ggplot() +
   xlab("Year") + 
   facet_wrap(~Habitat) 
 
-ggsave("g.impact.biomass.density.png", path=paste0(ess,":/Inshore/SFA29/2022/Assessment/Figures/Model/SFA29",area), dpi=300)   
+ggsave("g.impact.biomass.density.png", path=paste0(sky,":/Inshore/SFA29/2022/Assessment/Figures/Model/SFA29",area), dpi=300)   
 
 
 ggplot() + 
@@ -56,7 +56,7 @@ ggplot() +
   xlab("Year") + 
   facet_wrap(~Habitat) 
 
-ggsave("g.impact.CPUE.png", path=paste0(ess,":/Inshore/SFA29/2022/Assessment/Figures/Model/SFA29",area), dpi=300)   
+ggsave("g.impact.CPUE.png", path=paste0(sky,":/Inshore/SFA29/2022/Assessment/Figures/Model/SFA29",area), dpi=300)   
 
 ggplot() + 
   geom_point(data=model.dat, aes(x= Year, y=Catch , group=type, colour = type)) + 
@@ -65,7 +65,7 @@ ggplot() +
   xlab("Year") + 
   facet_wrap(~Habitat) 
 
-ggsave("g.impact.Catch.png", path=paste0(ess,":/Inshore/SFA29/2022/Assessment/Figures/Model/SFA29",area), dpi=300)   
+ggsave("g.impact.Catch.png", path=paste0(sky,":/Inshore/SFA29/2022/Assessment/Figures/Model/SFA29",area), dpi=300)   
 
 ggplot() + 
   geom_point(data=model.dat, aes(x= Year, y=nat.m , group=type, colour = type)) +
@@ -74,7 +74,7 @@ ggplot() +
   xlab("Year") + 
   facet_wrap(~Habitat) 
 
-ggsave("g.impact.mortality.png", path=paste0(ess,":/Inshore/SFA29/2022/Assessment/Figures/Model/SFA29",area), dpi=300)   
+ggsave("g.impact.mortality.png", path=paste0(sky,":/Inshore/SFA29/2022/Assessment/Figures/Model/SFA29",area), dpi=300)   
 
 
 ggplot() + 
@@ -84,7 +84,7 @@ ggplot() +
   xlab("Year") + 
   facet_wrap(~Habitat) 
 
-ggsave("g.impact.Biomass.png", path=paste0(ess,":/Inshore/SFA29/2022/Assessment/Figures/Model/SFA29",area), dpi=300)   
+ggsave("g.impact.Biomass.png", path=paste0(sky,":/Inshore/SFA29/2022/Assessment/Figures/Model/SFA29",area), dpi=300)   
 
 
 ggplot() + 
@@ -94,7 +94,7 @@ ggplot() +
   xlab("Year") + 
   facet_wrap(~Habitat) 
 
-ggsave("g.impact.exploitation.png", path=paste0(ess,":/Inshore/SFA29/2022/Assessment/Figures/Model/SFA29",area), dpi=300)   
+ggsave("g.impact.exploitation.png", path=paste0(sky,":/Inshore/SFA29/2022/Assessment/Figures/Model/SFA29",area), dpi=300)   
 
 
 

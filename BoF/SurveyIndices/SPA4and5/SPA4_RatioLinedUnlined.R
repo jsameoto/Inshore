@@ -18,7 +18,8 @@ library(cowplot)
 
 
 # source strata definitions
-source("Y:/Inshore/BoF/SurveyDesignTables/BoFstratadef.R")
+source("Y:/Inshore/Assessment/BoF/SurveyDesignTables/BoFstratadef.R")
+#source("Y:/Inshore/BoF/SurveyDesignTables/BoFstratadef.R")
 
 # Define: 
 uid <- un.sameotoj
@@ -29,7 +30,8 @@ pwd <- pw.sameotoj
 surveyyear <- 2025  #This is the last survey year 
 assessmentyear <- 2025 #year in which you are conducting the survey 
 area <- "1A1B4and5"  #SPA assessing recall SPA 1A, 1B, and 4 are grouped; options: "1A1B4and5", "3", "6" 
-path.directory <- "Y:/Inshore/BoF/"
+path.directory <- "Y:/Inshore/Assessment/BoF/"
+#path.directory <- "Y:/Inshore/BoF/"
 
 
 # read in shell height and meat weight data from database

@@ -23,17 +23,18 @@ require(openxlsx)
 require(sf)
 
 
-source("Y:/Inshore/BoF/Assessment_fns/convert.dd.dddd.r")
+source("Y:/Inshore/Assessment/BoF/Assessment_fns/convert.dd.dddd.r")
+#source("Y:/Inshore/BoF/Assessment_fns/convert.dd.dddd.r")
 
 
 #### DEFINE ####
 
-direct <- "Y:/Inshore/SFA29"
-fishingyear <- 2024 #most recent year of commercial fishing data to be used (e.g. if fishing season is 2019/2020, use 2020)
-assessmentyear <- 2025 #year in which you are conducting the assessment
+direct <- "Y:/Inshore/Assessment/SFA29"
+fishingyear <- 2025 #most recent year of commercial fishing data to be used (e.g. if fishing season is 2019/2020, use 2020)
+assessmentyear <- 2026 #year in which you are conducting the assessment
 un.ID=Sys.getenv("un.raperj") #ptran username
 pwd.ID=Sys.getenv("pw.raperj") #ptran password
-ess <- "Y" #identify ess drive
+sky <- "Z" #identify Sky drive
 
 #### Import Mar-scal functions for Pectinid Projector
 
@@ -61,8 +62,8 @@ CPUE_byYrAreaFleet <- read.csv(paste0(direct,"/", (assessmentyear-1), "/Assessme
 CPUE_bySubarea <- read.csv(paste0(direct, "/", (assessmentyear-1), "/Assessment/Data/CommercialData/SFA29_CPUE_bySubarea_", (fishingyear-1), ".csv"))
 
 #Polygons for spatial plots
-poly.sf <- st_read(paste0(ess,":/Inshore/Databases/Scallsur/SFA29BottomTypes/SFA29_shp"),layer = "SFA29_BoundariesFollowing12nmDD_NoSubareas_WGS84")
-poly.subareas <- st_read(paste0(ess,":/Inshore/Databases/Scallsur/SFA29BottomTypes/SFA29_shp"),layer = "SFA29_subareas_utm19N")
+poly.sf <- st_read(paste0(sky,":/Inshore/Databases/Scallsur/SFA29BottomTypes/SFA29_shp"),layer = "SFA29_BoundariesFollowing12nmDD_NoSubareas_WGS84")
+poly.subareas <- st_read(paste0(sky,":/Inshore/Databases/Scallsur/SFA29BottomTypes/SFA29_shp"),layer = "SFA29_subareas_utm19N")
 
 #### Select data #### 
 
@@ -71,7 +72,7 @@ quer2 <- paste(
   "FROM scallop.scallop_log_marfis s		         ",
   "WHERE s.assigned_area in ('29A', '29B', '29C', '29D', '29E')       ",
   " 	AND  s.date_fished >= to_date('",fishingyear-1,"-10-01','YYYY-MM-DD') and s.date_fished < to_date('",fishingyear,"-10-01','YYYY-MM-DD') ",
-  "AND licence_id NOT IN ('356089', '356090', '356091', '356092', '368730', '369132', '369133', '371484')  ",
+  "AND licence_id NOT IN ('356089', '356090', '356091', '356092', '368730', '369132', '369133', '371484','375539', '376508')  ",
   "	AND (s.data_class = 1                        ",
   "OR (s.data_class = 2 AND s.quality_flag =',4' ) ",
   "OR (s.data_class = 2 AND s.quality_flag =',1,4') ",
@@ -199,11 +200,11 @@ facet_names <- c(
 medians <- ddply(comm.dat.subarea[which(comm.dat.subarea$year != fishingyear),], .(fleet, area), summarise, median = median(cpue.kgh, na.rm = TRUE)) #Create df of median cpue by fleet and area
 
 ggplot(filter(comm.dat.subarea), aes(x = year, y = cpue.kgh)) +
-  theme_bw(base_size = 16) +  
+  theme_bw(base_size = 16) + theme(panel.grid.minor.x = element_blank()) +  
   geom_point(aes(colour = fleet, shape = fleet)) +
   geom_line(aes(colour = fleet)) +
   geom_hline(data=medians, aes(yintercept=median, colour = fleet), linetype = "dashed") +
-  scale_x_continuous("Year", breaks = seq(2002,fishingyear,4)) +
+  scale_x_continuous("Year", breaks = seq(2002,2026,6), limits = c(2000, 2027)) +
   scale_y_continuous("Catch Rate (kg/h)", limits = c(0,120), breaks = seq(0,120,20)) +
   scale_colour_manual(values = c("black", "red"), labels = c("Full Bay", "East of Baccaro")) +
   scale_linetype_manual(values = c(1,2), labels = c("Full Bay", "East of Baccaro")) +
@@ -225,7 +226,7 @@ write.csv(medians.area, paste0(direct,"/",assessmentyear,"/Assessment/Data/Comme
 
 #plot
 ggplot(comm.dat.combined) +
-  theme_bw(base_size = 16) + theme(panel.grid=element_blank()) +  
+  theme_bw(base_size = 16) + theme(panel.grid.minor.x = element_blank()) +  
   theme(axis.line.y.right = element_line(color = "red"), axis.ticks.y.right = element_line(color = "red"), axis.text.y.right = element_text(color = "red"), axis.title.y.right = element_text(color = "red")) +
   geom_point(aes(x = year, y = cpue.kgh)) + 
   geom_line(aes(x = year, y = cpue.kgh)) + 
@@ -234,7 +235,7 @@ ggplot(comm.dat.combined) +
   geom_hline(data=median.cpue, aes(yintercept=median), linetype = "dashed", color = "black") +
   geom_hline(data=median.effort, aes(yintercept=median*8), linetype = "dashed", color = "red") +
   scale_y_continuous("Catch Rate (kg/h)", sec.axis = sec_axis(~./8, name = "Effort (1000h)")) + # 
-  scale_x_continuous("Year", breaks=seq(2002,fishingyear,4)) +
+  scale_x_continuous("Year", breaks=seq(2002,2026,6), limits = c(2000, 2027)) +
   facet_wrap(~area, labeller = as_labeller(facet_names))
 #save
 ggsave(filename = paste0(direct, "/",assessmentyear,"/Assessment/Figures/CommercialData/SFA29_CPUEandEffort_combined",fishingyear, ".png"), width = 24,height = 16,units='cm', dpi=400, device = "png")
@@ -401,7 +402,7 @@ histolog<-subset(logs, YEAR == fishingyear, c('ASSIGNED_AREA','CPUE_KG'))
 cpuehisto <- ggplot (histolog, aes (x = CPUE_KG)) +
   geom_histogram (breaks = seq (0, 200, by = 5), col = 'grey60') + labs (x = 'CPUE (kg/h)', y = 'Count') +
   facet_wrap (~ASSIGNED_AREA, ncol = 1) +
-  scale_x_continuous(breaks = seq (0, 200, by = 50)) +
+  scale_x_continuous(breaks = seq (0, 200, by = 20)) +
   theme_bw() +
   theme(panel.grid=element_blank())
 cpuehisto
@@ -474,3 +475,4 @@ p +
 
 #save
 ggsave(filename = paste0(direct, "/",assessmentyear,"/Assessment/Figures/CommercialData/SFA29_Effortgridplot", fishingyear, ".png"), plot = last_plot(), width =24, height = 20, dpi = 400, units = "cm", limitsize = TRUE)
+

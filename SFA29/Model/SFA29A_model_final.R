@@ -31,13 +31,15 @@ library(lubridate)
 library(readxl)
 library(tidyverse)
 #library(SSModel) #v 1.0-5
-source("Y:/Inshore/SFA29/2017/model/SFA29model9-2015.R") #contains the SFA29model model (BUGS) 
+source("Y:/Inshore/Assessment/SFA29/2017/model/SFA29model9-2015.R") #contains the SFA29model model (BUGS) 
+#source("Y:/Inshore/SFA29/2017/model/SFA29model9-2015.R") #contains the SFA29model model (BUGS)
 
 
 #DEFINE:
-path.directory <- "Y:/Inshore/SFA29/"
-assessmentyear <- 2025 #year in which you are conducting the assessment 
-surveyyear <- 2024  #last year of survey data you are using, e.g. if max year of survey is survey from summer 2019, this would be 2019 
+path.directory <- "Y:/Inshore/Assessment/SFA29/"
+#path.directory <- "Y:/Inshore/SFA29/"
+assessmentyear <- 2026 #year in which you are conducting the assessment 
+surveyyear <- 2025  #last year of survey data you are using, e.g. if max year of survey is survey from summer 2019, this would be 2019 
 area <- "SFA29A"  
 
 #yr <- year(Sys.Date()) # This should be set to the year after the year of the last survey.  e.g. if 2018 that means you are using the 2017 survey. This assumes you're running assessment in surveyyear + 1
@@ -129,7 +131,7 @@ VMS.Effort = dat.wrap(mod.dat,"VMSEffort",yrs[-length(yrs)],strata)) # There won
 
 # now run the model and save the results.  This is taking ball park 1 hour to run 
 A.mod.res <- SSModel(SFA29Adata,SFA29.priors,inits.29A,parms=SFA29.parms,model.file=SFA29model,
-                Years=yrs, nchains=nchains,niter=niter,nburnin=nburnin,nthin=nthin,Area="SFA29W",e.parms=e.parms.29A,debug=F)
+                Years=yrs, nchains=nchains,niter=niter,nburnin=nburnin,nthin=nthin,Area="SFA29W",e.parms=e.parms.29A,debug=T)
 #load(paste0(path.directory,assessmentyear,"/Assessment/Data/Model/SFA29A/SFA29A.",surveyyear,".RData"))
 mod.res <- A.mod.res
 # You want this to be a minimum of 400, if less than this you should increase your chain length
@@ -215,7 +217,6 @@ write.csv(A.mod.res$summary,file=paste0(file = paste0(path.directory,assessmenty
  length(low.CPUE)
  
 # # The dataframe with the results.  Note this is set up as Catch(2015) / (Catch2015 + Biomass2015)
-# # This isn't entirely correct since we pull catch from an intermediate biomass, but it's pretty good!
  dat <- data.frame(Year = rep(yrs,2),Catch = c(med.cat,low.cat),Biomass = c(med.bm,low.bm),
                    nat.m = c(med.nat.m,low.nat.m),
                    CPUE = c(med.CPUE,low.CPUE),
@@ -386,7 +387,7 @@ save(pe.pred,file=paste0(path.directory,assessmentyear,"/Assessment/Data/Model/S
 # Assuming you haven't re-run everything above and wasted several hours of you life
 # we need to bring in all the prediction evaluation data we have....
 # Now load all the old pe.pred results, first identify where to find the data...
-direct <- "Y:/Inshore/SFA29/"
+direct <- "Y:/Inshore/Assessment/SFA29/"
 #direct <- "D:/r/Inshore/SFA29W"
 pe.all <- NULL
 for(i in 2016:pe.years) {
@@ -472,7 +473,7 @@ summary <- cbind(parameters, data.frame(summary, row.names=NULL))
 
 n <- 2
 years <- rep(2001:surveyyear, each=n)
-Habitat <- rep(c("Low", "Med"), 23) #Need to fix this so new years are added.
+Habitat <- rep(c("Low", "Med"), 25) #Need to fix this so new years are added.
 
 summary.Bh <- summary |>  filter(str_detect(summary$parameters, "^Bh"))
 summary.Bh$Year <- years

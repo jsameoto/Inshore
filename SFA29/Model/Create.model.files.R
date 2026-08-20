@@ -8,10 +8,11 @@ library(ggplot2)
 library(openxlsx)
 library(compareDF)
 
-surveyyear <- 2024  #This is the last survey year for which you want to include  - note should match year of cruise below 
-cruise <- "SFA292024"  #note should match year for surveyyear set above 
-assessmentyear <- 2025 #year in which you are conducting the survey 
-path.directory <- "Y:/Inshore/SFA29/"
+surveyyear <- 2025  #This is the last survey year for which you want to include  - note should match year of cruise below 
+cruise <- "SFA292025"  #note should match year for surveyyear set above 
+assessmentyear <- 2026 #year in which you are conducting the survey 
+path.directory <- "Y:/Inshore/Assessment/SFA29/"
+#path.directory <- "Y:/Inshore/SFA29/"
 years <- c(2001:surveyyear)
 
 Catch <- read.csv(paste0(path.directory, assessmentyear, "/Assessment/Data/CommercialData/SFA29_totalLandings_YearSubarea.csv"))
@@ -355,6 +356,16 @@ revised$obs.tau[revised$Year == 2023 & revised$Strata == "low"] <- 0.009950331
 revised$obs.nu[revised$Year == 2023 & revised$Strata == "low"] <- 0.009950331
 revised$obs.phi[revised$Year == 2023 & revised$Strata == "low"] <- 0.009950331
 
+#Subarea C was closed for fishing in 2024
+revised$VMS[revised$Year == 2024 & revised$Strata == "high"] <- 0
+revised$VMS[revised$Year == 2024 & revised$Strata == "medium"] <- 0
+revised$VMS[revised$Year == 2024 & revised$Strata == "low"] <- 0
+
+revised$obs.nu[revised$Year == 2025 & revised$Strata == "low"] <- 0.009950331
+revised$obs.phi[revised$Year == 2025 & revised$Strata == "low"] <- 0.009950331
+
+
+
 #write out data for model 
 revised <- revised %>%  select(SUBAREA, Year , Catch.actual, wk, Strata, Ih, obs.tau, rh, obs.nu, clappers,  obs.phi, L, VMSEffort, gh)  
 write.csv(revised, paste0(path.directory, assessmentyear,"/Assessment/Data/Model/",area,"_ModelData.",surveyyear,".csv"), row.names = FALSE ) 
@@ -461,6 +472,9 @@ revised
 #Note: For 2023 - 0 recruits for low in D -- as per process for this situation (since can't have 0 in model or NA for obs.nu) set rh = 0.001	obs.nu = 0.009950331, (note this often happens in subarea A). Rh get set to 0.001 in model_final.R script.
 #revised$obs.nu[revised$Year == 2022 & revised$Strata == "low"] <- 0.009950331
 revised$obs.nu[revised$Year == 2023 & revised$Strata == "low"] <- 0.009950331
+
+revised$obs.nu[revised$Year == 2025 & revised$Strata == "low"] <- 0.009950331
+revised$obs.phi[revised$Year == 2025 & revised$Strata == "low"] <- 0.009950331
 
 #write out data for model 
 revised <- revised %>%  dplyr::select(SUBAREA, Year , Catch.actual, wk, Strata, Ih, obs.tau, rh, obs.nu, clappers,  obs.phi, L, VMSEffort, gh)  

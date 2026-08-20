@@ -12,7 +12,7 @@ library(tidyverse)
 library(ggplot2)
 library(ROracle)
 
-setwd('Y:/Inshore/BoF/Assessment_fns/SFA29W')
+setwd('Y:/Inshore/Assessment/BoF/Assessment_fns/SFA29W')
 source('Geophysicalareas.R')
 source('SedimentareasSFA29.R')
 source('Domainestimates.R')
@@ -28,16 +28,16 @@ SFA292005to2007sediment  <- SFA292005to2007sediment [,c("uid","surf")]
 names(SFA292005to2007sediment ) <- c("uid","Start.Bottom")
 
 #DEFINE:
-path.directory <- "Y:/Inshore/SFA29/"
-assessmentyear <- 2025 #year in which you are conducting the assessment 
-surveyyear <- 2024  #last year of survey data you are using, e.g. if max year of survey is survey from summer 2019, this would be 2019 
+path.directory <- "Y:/Inshore/Assessment/SFA29/"
+assessmentyear <- 2026 #year in which you are conducting the assessment 
+surveyyear <- 2025  #last year of survey data you are using, e.g. if max year of survey is survey from summer 2019, this would be 2019 
 uid <- un.sameotoj
 pwd <- pw.sameotoj
 #uid <- keyring::key_list("Oracle")[1,2]
 #pwd <- keyring::key_get("Oracle", uid)
 
 #Bring in survey tow data with SDM value (note - SFA29_SDM_LWM.R script must be run to get updated survey tows with SDM values prior to runnint this script)
-sdmtows <- read.csv("Y:/Inshore/SFA29/ScalSurv_SDM/SFA29Tows_SDM.csv")
+sdmtows <- read.csv("Y:/Inshore/Assessment/SFA29/ScalSurv_SDM/SFA29Tows_SDM.csv")
 table(sdmtows$CRUISE)
 sdmtows$uid <- paste(sdmtows$CRUISE, sdmtows$TOW_NO, sep=".")
 sdmtows <- sdmtows[,c("uid","SDM")]
@@ -127,11 +127,20 @@ cruise.list <- paste(cruise.list,collapse="','")
 
 	strata.group <- SDMareas #SDM stratified estimates 
 	
-# Only use regular survey tows for estimation (TOW_TYPE_ID = 1)
-	data.obj.all <- data.obj 
+	#In 2024 did tows outside 29W and also in non-MBES covered part of B; remove these so apples and apples with previous estimates 
+	data.obj %>% filter(CRUISE == "SFA292024" & is.na(SDM) == TRUE)
+	dim(data.obj)
+	
+	data.obj <- data.obj[!(data.obj$CRUISE == "SFA292024" & is.na(data.obj$SDM) == TRUE),]
+	dim(data.obj)
+	
+	data.obj.all <- data.obj
+	
 	#data.obj <- data.obj[data.obj$TOW_TYPE_ID==1,] #Need to add tow_type_id in bycatch view if want to use just tow type 1 ; for now are using all tows assuming they're all type 1 - good enough for what this analysis is it's used for 
 	dim(data.obj)
 	head(data.obj)
+	
+
 	
 ###... For Years:  2001-2004 Calculate Stratified Random Survey Estimate - SDM strata ...###
 # NOTE: entries for Subarea in strata.group and STRATA in data.obj must be equal #
@@ -559,9 +568,11 @@ cruise.list <- paste(cruise.list,collapse="','")
 		  geom_line() +
 		  scale_x_continuous(limits = c(2000, (surveyyear+1)), breaks = seq(2004, (surveyyear+1), by = 4)) +
 		  theme_bw() +
+	    theme(text = element_text(size=15), axis.title = element_text(size =15),axis.text = element_text(size = 12))+
 		  facet_wrap(~SUBAREA) + 
 		  ylab("Mean number of Lobster per standarized tow ") + 
-		  xlab("Year") 
+		  xlab("Year") +
+	    scale_x_continuous(limits = c(2000, (surveyyear+1)), breaks = seq(2002, (surveyyear+1), by = 6))
 #save
 ggsave(filename = paste0(path.directory,assessmentyear,'/Assessment/Figures/LobsterSurvey_NumPerTow_SDM',surveyyear, '.png'), plot = last_plot(), scale = 2.5, width =9, height = 6, dpi = 300, units = "cm", limitsize = TRUE)	
 		

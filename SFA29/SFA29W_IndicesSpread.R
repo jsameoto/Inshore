@@ -10,17 +10,17 @@ library(gridtext)
 
 setwd("Y:/")
 
-surveyyear <- 2024
-assessmentyear <- 2025 
+surveyyear <- 2025
+assessmentyear <- 2026 
 
 # SFA29A ---- 
-numbers.A <- read.csv(paste0("/Inshore/SFA29/",assessmentyear,"/Assessment/Data/SurveyIndices/SDM.HighMedLow.2001to",surveyyear,".Numbers.csv"))
+numbers.A <- read.csv(paste0("Inshore/Assessment/SFA29/",assessmentyear,"/Assessment/Data/SurveyIndices/SDM.HighMedLow.2001to",surveyyear,".Numbers.csv"))
 numbers.A <- numbers.A %>% filter(SUBAREA == "SFA29A", Strata == "med", size == "comm") |> dplyr::select(YEAR,  Mean) |> dplyr::rename(N = Mean)
 
-weight.A <- read.csv(paste0("/Inshore/SFA29/",assessmentyear,"/Assessment/Data/SurveyIndices/SDM.HighMedLow.2001to",surveyyear,".Commercial.Weight.csv"))
+weight.A <- read.csv(paste0("Inshore/Assessment/SFA29/",assessmentyear,"/Assessment/Data/SurveyIndices/SDM.HighMedLow.2001to",surveyyear,".Commercial.Weight.csv"))
 weight.A <- weight.A  %>% filter(SUBAREA == "SFA29A", Strata == "med") |> dplyr::select(YEAR,  Mean) |> dplyr::rename(I = Mean) 
 
-condition.A <- read.csv(paste0("/Inshore/SFA29/",assessmentyear,"/Assessment/Data/SurveyIndices/SFA29W_ConditionTimeSeries2001to",surveyyear,".csv"))
+condition.A <- read.csv(paste0("Inshore/Assessment/SFA29/",assessmentyear,"/Assessment/Data/SurveyIndices/SFA29W_ConditionTimeSeries2001to",surveyyear,".csv"))
 condition.A <- condition.A %>% filter(STRATA == "SFA29A") |> dplyr::select(YEAR, CONDITION)
 condition.A
 #only since 1997 
@@ -93,13 +93,13 @@ plot.A.FR
 
 
 # SFA29B ---- 
-numbers.B <- read.csv(paste0("/Inshore/SFA29/",assessmentyear,"/Assessment/Data/SurveyIndices/SDM.HighMedLow.2001to",surveyyear,".Numbers.csv"))
+numbers.B <- read.csv(paste0("Inshore/Assessment/SFA29/",assessmentyear,"/Assessment/Data/SurveyIndices/SDM.HighMedLow.2001to",surveyyear,".Numbers.csv"))
 numbers.B <- numbers.B %>% filter(SUBAREA == "SFA29B", Strata == "high", size == "comm") |> dplyr::select(YEAR,  Mean) |> dplyr::rename(N = Mean)
 
-weight.B <- read.csv(paste0("/Inshore/SFA29/",assessmentyear,"/Assessment/Data/SurveyIndices/SDM.HighMedLow.2001to",surveyyear,".Commercial.Weight.csv"))
+weight.B <- read.csv(paste0("Inshore/Assessment/SFA29/",assessmentyear,"/Assessment/Data/SurveyIndices/SDM.HighMedLow.2001to",surveyyear,".Commercial.Weight.csv"))
 weight.B <- weight.B  %>% filter(SUBAREA == "SFA29B", Strata == "high") |> dplyr::select(YEAR,  Mean) |> dplyr::rename(I = Mean)
 
-condition.B <- read.csv(paste0("/Inshore/SFA29/",assessmentyear,"/Assessment/Data/SurveyIndices/SFA29W_ConditionTimeSeries2001to",surveyyear,".csv"))
+condition.B <- read.csv(paste0("Inshore/Assessment/SFA29/",assessmentyear,"/Assessment/Data/SurveyIndices/SFA29W_ConditionTimeSeries2001to",surveyyear,".csv"))
 condition.B <- condition.B %>% filter(STRATA == "SFA29B") |> dplyr::select(YEAR, CONDITION)
 condition.B
 
@@ -169,13 +169,13 @@ plot.B.FR <- ggplot(all.dat.B.long.FR, aes(x = YEAR, y = value)) +
 plot.B.FR
 
 # SFA29C ---- 
-numbers.C <- read.csv(paste0("/Inshore/SFA29/",assessmentyear,"/Assessment/Data/SurveyIndices/SDM.HighMedLow.2001to",surveyyear,".Numbers.csv"))
+numbers.C <- read.csv(paste0("Inshore/Assessment/SFA29/",assessmentyear,"/Assessment/Data/SurveyIndices/SDM.HighMedLow.2001to",surveyyear,".Numbers.csv"))
 numbers.C <- numbers.C %>% filter(SUBAREA == "SFA29C", Strata == "high", size == "comm") |> dplyr::select(YEAR,  Mean) |> dplyr::rename(N = Mean)
 
-weight.C <- read.csv(paste0("/Inshore/SFA29/",assessmentyear,"/Assessment/Data/SurveyIndices/SDM.HighMedLow.2001to",surveyyear,".Commercial.Weight.csv"))
+weight.C <- read.csv(paste0("Inshore/Assessment/SFA29/",assessmentyear,"/Assessment/Data/SurveyIndices/SDM.HighMedLow.2001to",surveyyear,".Commercial.Weight.csv"))
 weight.C <- weight.C  %>% filter(SUBAREA == "SFA29C", Strata == "high") |> dplyr::select(YEAR,  Mean) |> dplyr::rename(I = Mean) #|> distinct(YEAR, .keep_all = TRUE) #NEED TO INVESTIGATE!!!
 
-condition.C <- read.csv(paste0("/Inshore/SFA29/",assessmentyear,"/Assessment/Data/SurveyIndices/SFA29W_ConditionTimeSeries2001to",surveyyear,".csv"))
+condition.C <- read.csv(paste0("Inshore/Assessment/SFA29/",assessmentyear,"/Assessment/Data/SurveyIndices/SFA29W_ConditionTimeSeries2001to",surveyyear,".csv"))
 condition.C <- condition.C %>% filter(STRATA == "SFA29C") |> dplyr::select(YEAR, CONDITION)
 condition.C
 
@@ -245,13 +245,13 @@ plot.C.FR <- ggplot(all.dat.C.long.FR, aes(x = YEAR, y = value)) +
 plot.C.FR
 
 # SFA29D ---- 
-numbers.D <- read.csv(paste0("/Inshore/SFA29/",assessmentyear,"/Assessment/Data/SurveyIndices/SDM.HighMedLow.2001to",surveyyear,".Numbers.csv"))
+numbers.D <- read.csv(paste0("Inshore/Assessment/SFA29/",assessmentyear,"/Assessment/Data/SurveyIndices/SDM.HighMedLow.2001to",surveyyear,".Numbers.csv"))
 numbers.D <- numbers.D %>% filter(SUBAREA == "SFA29D", Strata == "high", size == "comm") |> dplyr::select(YEAR,  Mean) |> dplyr::rename(N = Mean)
 
-weight.D <- read.csv(paste0("/Inshore/SFA29/",assessmentyear,"/Assessment/Data/SurveyIndices/SDM.HighMedLow.2001to",surveyyear,".Commercial.Weight.csv"))
+weight.D <- read.csv(paste0("Inshore/Assessment/SFA29/",assessmentyear,"/Assessment/Data/SurveyIndices/SDM.HighMedLow.2001to",surveyyear,".Commercial.Weight.csv"))
 weight.D <- weight.D  %>% filter(SUBAREA == "SFA29D", Strata == "high") |> dplyr::select(YEAR,  Mean) |> dplyr::rename(I = Mean)
 
-condition.D <- read.csv(paste0("/Inshore/SFA29/",assessmentyear,"/Assessment/Data/SurveyIndices/SFA29W_ConditionTimeSeries2001to",surveyyear,".csv"))
+condition.D <- read.csv(paste0("Inshore/Assessment/SFA29/",assessmentyear,"/Assessment/Data/SurveyIndices/SFA29W_ConditionTimeSeries2001to",surveyyear,".csv"))
 condition.D <- condition.D %>% filter(STRATA == "SFA29D") |> dplyr::select(YEAR, CONDITION)
 condition.D
 
@@ -351,7 +351,7 @@ plot.eng <- grid.arrange(grobs=p.eng, ncol = 1,
 grid.draw(plot.eng)
 
 ##Save out 
-ggsave(file=paste0("Y:/Inshore/SFA29/",assessmentyear,"/Assessment/Figures/ConditionNumberWeight_BySubarea_Proportion.png"), plot.eng, width = 20, height = 20, units = "cm", dpi = 300)
+ggsave(file=paste0("Y:/Inshore/Assessment/SFA29/",assessmentyear,"/Assessment/Figures/ConditionNumberWeight_BySubarea_Proportion.png"), plot.eng, width = 20, height = 20, units = "cm", dpi = 300)
 
 
 
@@ -381,7 +381,7 @@ plot.fr <- grid.arrange(grobs=p, ncol = 1,
                         left = yleft, bottom = bottom)
 grid.draw(plot.fr)
 
-ggsave(file=paste0("Y:/Inshore/SFA29/",assessmentyear,"/Assessment/Figures/ConditionNumberWeight_BySubarea_Proportion_FR.png"), plot.fr, width = 20, height = 20, units = "cm", dpi = 300)
+ggsave(file=paste0("Y:/Inshore/Assessment/SFA29/",assessmentyear,"/Assessment/Figures/ConditionNumberWeight_BySubarea_Proportion_FR.png"), plot.fr, width = 20, height = 20, units = "cm", dpi = 300)
 
 
 #Save using RStudio GUI 
@@ -475,77 +475,4 @@ B.yr.tminus1 <- weight.D[weight.D$YEAR == YR-1,]
 #((B.yr.tminus1$Biomass - B.yr.t$Biomass) / (B.yr.tminus1$Biomass))*100
 
 # range in biomass index: 90% decline (C) to 19% increase (B)
-
-
-
-##### change in Modelled Biomass as percent #####
-## CAN DO WHEN DONE MODELLING 
-
-setwd("Y:/Inshore/BoF/2024/Assessment/Data/Model/")
-
-#current/most recent year 
-YR <- 2024
-
-B.1A <- read.csv(paste0("SPA1A/summary stats_1A_",YR,".csv"))
-B.1B <- read.csv(paste0("SPA1B/summary stats_1B_",YR,".csv"))
-B.3 <- read.csv(paste0("SPA3/summary stats_3_",YR,".csv"))
-B.4 <- read.csv(paste0("SPA4/summary stats_4_",YR,".csv"))
-B.6 <- read.csv(paste0("SPA6/summary stats_6_",YR,".csv"))
-
-
-
-## 1A
-B.1A <- B.1A[B.1A$description  == "comm.biomass",]
-yr.t <- B.1A[,6]
-yr.t
-yr.tminus1 <-  B.1A[,3]
-yr.tminus1
-((yr.tminus1 - yr.t) / (yr.tminus1))*100
-# 44.45334
-
-## 1B
-B.1B <- B.1B[B.1B$description  == "comm.biomass",]
-yr.t <- B.1B[,6]
-yr.t
-yr.tminus1 <-  B.1B[,3]
-yr.tminus1
-((yr.tminus1 - yr.t) / (yr.tminus1))*100
-#42.00945
-
-
-## 3 
-B.3 <- B.3[B.3$description  == "comm.biomass",]
-yr.t <- B.3[,6]
-yr.t
-yr.tminus1 <-  B.3[,3]
-yr.tminus1
-((yr.tminus1 - yr.t) / (yr.tminus1))*100
-#32.62144
-
-
-## 4 
-B.4 <- B.4[B.4$description  == "comm.biomass",]
-yr.t <- B.4[,6]
-yr.t
-yr.tminus1 <-  B.4[,3]
-yr.tminus1
-((yr.tminus1 - yr.t) / (yr.tminus1))*100
-#41.86935
-
-
-## 6 
-B.6 <- B.6[B.6$description  == "comm.biomass",]
-yr.t <- B.6[,6]
-yr.t
-yr.tminus1 <-  B.6[,3]
-yr.tminus1
-((yr.tminus1 - yr.t) / (yr.tminus1))*100
-#32.60546
-
-
-# range in modelled biomass: 33 - 44%
-
-
-
-
 

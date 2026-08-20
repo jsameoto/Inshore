@@ -28,8 +28,8 @@ for(fun in funcs)
   file.remove(paste0(dir,"/",basename(fun)))
 }
 
-source("Z:/Projects/Holistic_sampling_with_HGS/TechReport_SPA3/Pr_Frac_function.R") #Plotting residuals - found on Sky
-source("Y:/Admin/Request_and_Review_Tracking/Aquaculture_Reviews/2023/St. Mary's Bay/HighstatLibV13.R")
+source("Y:/Projects/Holistic_sampling_with_HGS/TechReport_SPA3/Pr_Frac_function.R") #Plotting residuals - found on Sky
+source("Y:/Inshore/Admin/Request_and_Review_Tracking/Aquaculture_Reviews/2023/St. Mary's Bay/HighstatLibV13.R")
 
 #credentials
 uid <- keyring::key_list("Oracle")[1,2]
@@ -144,7 +144,7 @@ ScallopSurv.sf <- ScallopSurv |>
   st_as_sf(coords = c("lon","lat"), crs = 4326)
 mapview(ScallopSurv.sf, zcol = "STRATA_ID")+
   mapview(sfa29.poly)
-#st_write(ScallopSurv.sf, "Z:/Projects/Holistic_sampling_SFA29W/2016/SFA292016_surveytows_shp/SFA292016_towlocations.shp")
+#st_write(ScallopSurv.sf, "Y:/Projects/Holistic_sampling_SFA29W/2016/SFA292016_surveytows_shp/SFA292016_towlocations.shp")
 
 # Outliers  --------------------------------------------------------
 

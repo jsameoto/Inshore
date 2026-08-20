@@ -22,10 +22,12 @@ assessmentyear <- 2025 #this is the year you are running your assessment in -- c
 
 
 # DEFINE: load required workspace with model objects - current year 
-load(paste0("Y:/Inshore/BoF/",year,"/Assessment/Data/Growth/SPA6/GMgrowth",year,".RData"))
+load(paste0("Y:/Inshore/Assessment/BoF/",year,"/Assessment/Data/Growth/SPA6/GMgrowth",year,".RData"))
+#load(paste0("Y:/Inshore/BoF/",year,"/Assessment/Data/Growth/SPA6/GMgrowth",year,".RData"))
 
 # DEFINE: load shell height objects - current year 
-source(paste0("Y:/Inshore/BoF/",year,"/Assessment/Data/Growth/SPA6/SPA6.SHobj.IN.",year,".R"))
+source(paste0("Y:/Inshore/Assessment/BoF/",year,"/Assessment/Data/Growth/SPA6/SPA6.SHobj.IN.",year,".R"))
+#source(paste0("Y:/Inshore/BoF/",year,"/Assessment/Data/Growth/SPA6/SPA6.SHobj.IN.",year,".R"))
 #Identify Shell Height objects and confirm column names: 
 #column names:    years SPA6.SHactual.Com.IN SPA6.SHactual.Rec.IN
 SPA6.SHactual.IN <- sh.actual.in %>% select(years, SHactual.Com = SPA6.SHactual.Com.IN, SHactual.Rec = SPA6.SHactual.Rec.IN)
@@ -43,7 +45,8 @@ SH.object
 
 # DEFINE: Source previous year meat weight and growth rate object for ACTUAL growth rates:
 # if your year defined above it for YYYY, then you should be bringing in the YYYY-1 growth rate object.
-spa6.growthrate <- read.csv(paste0("Y:/Inshore/BoF/",year-1,"/Assessment/Data/Growth/SPA6/spa6.growthrate.",year-1,".csv"))
+spa6.growthrate <- read.csv(paste0("Y:/Inshore/Assessment/BoF/",year-1,"/Assessment/Data/Growth/SPA6/spa6.growthrate.",year-1,".csv"))
+#spa6.growthrate <- read.csv(paste0("Y:/Inshore/BoF/",year-1,"/Assessment/Data/Growth/SPA6/spa6.growthrate.",year-1,".csv"))
 spa6.growthrate <- spa6.growthrate[,-1]
 spa6.growthrate
 str(spa6.growthrate)
@@ -79,7 +82,8 @@ model.object <- MWTSHGM.YYYY
 data <- GMdetail.foryear #GMdetailYYYY
 
 # DEFINE path for figures and dataouput to be saved; note expects within this folder that you've created a "dataoutput" and "Figures" folder under the following directory path;  MUST HAVE "/" at the end of your path! (shouldn't have to change this in most years with new folder structure)
-path.directory <- "Y:/Inshore/BoF/"
+path.directory <- "Y:/Inshore/Assessment/BoF/"
+#path.directory <- "Y:/Inshore/BoF/"
 
 #////... END OF DEFINE SECTION ...////
 

@@ -13,19 +13,19 @@ library(gridtext)
 #install.packages("xfun")
 library(xfun)
 
-setwd("Y:/")
-
 assessmentyear <- 2025
+
+direct <- "Y:/Inshore/Assessment/BoF/"
 
 
 # SPA 1A ---- 
-numbers.1A <- read.csv(paste0("/Inshore/BoF/",assessmentyear,"/Assessment/Data/SurveyIndices/SPA1A1B4and5/SPA1A.population.model.input.",assessmentyear,".csv"))
+numbers.1A <- read.csv(paste0(direct,assessmentyear,"/Assessment/Data/SurveyIndices/SPA1A1B4and5/SPA1A.population.model.input.",assessmentyear,".csv"))
 numbers.1A <- numbers.1A %>% dplyr::select(Year,  N) 
 
-weight.1A <- read.csv(paste0("/Inshore/BoF/",assessmentyear,"/Assessment/Data/SurveyIndices/SPA1A1B4and5/SPA1A.population.model.input.",assessmentyear,".csv"))
+weight.1A <- read.csv(paste0(direct,assessmentyear,"/Assessment/Data/SurveyIndices/SPA1A1B4and5/SPA1A.population.model.input.",assessmentyear,".csv"))
 weight.1A <- weight.1A  %>%  dplyr::select(Year,  I) 
 
-condition.1A <- read.csv(paste0("/Inshore/BoF/",assessmentyear,"/Assessment/Data/SurveyIndices/SPA1A1B4and5/BoF_ConditionTimeSeries.csv"))
+condition.1A <- read.csv(paste0(direct,assessmentyear,"/Assessment/Data/SurveyIndices/SPA1A1B4and5/BoF_ConditionTimeSeries.csv"))
                          
 condition.1A <- condition.1A %>% filter(STRATA == "SPA1A")
 condition.1A
@@ -98,13 +98,13 @@ plot.1A.FR
 
 
 # SPA 1B ---- 
-numbers.1B <- read.csv(paste0("/Inshore/BoF/",assessmentyear,"/Assessment/Data/SurveyIndices/SPA1A1B4and5/SPA1B.population.model.input.",assessmentyear,".csv"))
+numbers.1B <- read.csv(paste0(direct,assessmentyear,"/Assessment/Data/SurveyIndices/SPA1A1B4and5/SPA1B.population.model.input.",assessmentyear,".csv"))
 numbers.1B <- numbers.1B %>% dplyr::select(Year,  N) 
 
-weight.1B <- read.csv(paste0("/Inshore/BoF/",assessmentyear,"/Assessment/Data/SurveyIndices/SPA1A1B4and5/SPA1B.population.model.input.",assessmentyear,".csv"))
+weight.1B <- read.csv(paste0(direct,assessmentyear,"/Assessment/Data/SurveyIndices/SPA1A1B4and5/SPA1B.population.model.input.",assessmentyear,".csv"))
 weight.1B <- weight.1B  %>%  dplyr::select(Year,  I) 
 
-condition.1B <- read.csv(paste0("/Inshore/BoF/",assessmentyear,"/Assessment/Data/SurveyIndices/SPA1A1B4and5/BoF_ConditionTimeSeries.csv"))
+condition.1B <- read.csv(paste0(direct,assessmentyear,"/Assessment/Data/SurveyIndices/SPA1A1B4and5/BoF_ConditionTimeSeries.csv"))
 condition.1B <- condition.1B %>% filter(STRATA == "SPA1B")
 condition.1B
 #only since 1997 
@@ -177,10 +177,10 @@ plot.1B.FR
 
 
 # SPA 3 ---- 
-dat.3 <- read.csv(paste0("/Inshore/BoF/",assessmentyear,"/Assessment/Data/SurveyIndices/SPA3/SPA3.population.model.input.",assessmentyear,".csv"))
-condition.3 <- read.csv(paste0("/Inshore/BoF/",assessmentyear,"/Assessment/Data/SurveyIndices/SPA3/SPA3_ConditionTimeSeries.csv"))
+dat.3 <- read.csv(paste0(direct,assessmentyear,"/Assessment/Data/SurveyIndices/SPA3/SPA3.population.model.input.",assessmentyear,".csv"))
+condition.3 <- read.csv(paste0(direct,assessmentyear,"/Assessment/Data/SurveyIndices/SPA3/SPA3_ConditionTimeSeries.csv"))
 
-lbar.3 <- read.csv(paste0("/Inshore/BoF/",assessmentyear,"/Assessment/Data/Growth/SPA3/SPA3.lbar.to",assessmentyear,".csv"))
+lbar.3 <- read.csv(paste0(direct,assessmentyear,"/Assessment/Data/Growth/SPA3/SPA3.lbar.to",assessmentyear,".csv"))
 
 condition.3 <- condition.3 %>% filter(STRATA == "InVMS_SMB")
 condition.3
@@ -259,13 +259,13 @@ plot.3.FR
 
 
 # SPA 4 ---- 
-numbers.4 <- read.csv(paste0("/Inshore/BoF/",assessmentyear,"/Assessment/Data/SurveyIndices/SPA1A1B4and5/SPA4.Index.Numbers.",assessmentyear,".csv"))
+numbers.4 <- read.csv(paste0(direct,assessmentyear,"/Assessment/Data/SurveyIndices/SPA1A1B4and5/SPA4.Index.Numbers.",assessmentyear,".csv"))
 numbers.4 <- numbers.4 %>% filter(Age == "Commercial") %>% dplyr::select(Year,  Mean.nums) 
 
-weight.4 <- read.csv(paste0("/Inshore/BoF/",assessmentyear,"/Assessment/Data/SurveyIndices/SPA1A1B4and5/SPA4.Index.Weight.",assessmentyear,".csv"))
+weight.4 <- read.csv(paste0(direct,assessmentyear,"/Assessment/Data/SurveyIndices/SPA1A1B4and5/SPA4.Index.Weight.",assessmentyear,".csv"))
 weight.4 <- weight.4  %>% filter(Age == "Commercial") %>% dplyr::select(Year,  Mean.wt) 
  
-condition.4 <- read.csv(paste0("/Inshore/BoF/",assessmentyear,"/Assessment/Data/SurveyIndices/SPA1A1B4and5/BoF_ConditionTimeSeries.csv"))
+condition.4 <- read.csv(paste0(direct,assessmentyear,"/Assessment/Data/SurveyIndices/SPA1A1B4and5/BoF_ConditionTimeSeries.csv"))
 
 condition.4 <- condition.4 %>% filter(STRATA == "SPA4")
 condition.4
@@ -339,13 +339,13 @@ plot.4.FR
 # SPA 6 ---- 
 #limit time series from 2006 on 
 
-numbers.6 <- read.csv(paste0("/Inshore/BoF/",assessmentyear,"/Assessment/Data/SurveyIndices/SPA6/SPA6.Index.Numbers.IN.",assessmentyear,".csv"))
+numbers.6 <- read.csv(paste0(direct,assessmentyear,"/Assessment/Data/SurveyIndices/SPA6/SPA6.Index.Numbers.IN.",assessmentyear,".csv"))
 numbers.6 <- numbers.6 %>% filter(Age == "Commercial" & Year >= 2006) %>% dplyr::select(Year,   Mean.nums ) 
 
-weight.6 <- read.csv(paste0("/Inshore/BoF/",assessmentyear,"/Assessment/Data/SurveyIndices/SPA6/SPA6.Index.Weight.IN.",assessmentyear,".csv"))
+weight.6 <- read.csv(paste0(direct,assessmentyear,"/Assessment/Data/SurveyIndices/SPA6/SPA6.Index.Weight.IN.",assessmentyear,".csv"))
 weight.6 <- weight.6  %>% filter(Age == "Commercial" & Year >= 2006) %>%  dplyr::select(Year,  Mean.wt)
 
-condition.6 <- read.csv(paste0("/Inshore/BoF/",assessmentyear,"/Assessment/Data/SurveyIndices/SPA6/SPA6_ConditionTimeSeries.csv"))
+condition.6 <- read.csv(paste0(direct,assessmentyear,"/Assessment/Data/SurveyIndices/SPA6/SPA6_ConditionTimeSeries.csv"))
 condition.6 <- condition.6 %>% filter(STRATA == "INVMS" & YEAR >= 2006)
 condition.6 
 
@@ -439,7 +439,7 @@ plot.eng <- grid.arrange(grobs=p.eng, ncol = 1,
 grid.draw(plot.eng)
 
 ##Save out 
-ggsave(file=paste0("Y:/Inshore/BoF/",assessmentyear,"/Assessment/Figures/ConditionNumberWeight_BySPA_Proportion.png"), plot.eng, width = 20, height = 20, units = "cm", dpi = 300)
+ggsave(file=paste0(direct,assessmentyear,"/Assessment/Figures/ConditionNumberWeight_BySPA_Proportion.png"), plot.eng, width = 20, height = 20, units = "cm", dpi = 300)
 
 
 #FRENCH VERSION
@@ -457,7 +457,7 @@ plot.fr <- grid.arrange(grobs=p, ncol = 1,
                     left = yleft, bottom = bottom)
 grid.draw(plot.fr)
 
-ggsave(file=paste0("Y:/Inshore/BoF/",assessmentyear,"/Assessment/Figures/ConditionNumberWeight_BySPA_Proportion_FR.png"), plot.fr, width = 20, height = 20, units = "cm", dpi = 300)
+ggsave(file=paste0(direct,assessmentyear,"/Assessment/Figures/ConditionNumberWeight_BySPA_Proportion_FR.png"), plot.fr, width = 20, height = 20, units = "cm", dpi = 300)
 
 
 #Save using RStudio GUI 
@@ -549,8 +549,8 @@ B.yr.tminus1 <- all.dat.6[all.dat.6$YEAR == YR-1,]
 
 ##### change in Modelled Biomass as percent #####
 
-
-setwd("Y:/Inshore/BoF/2024/Assessment/Data/Model/")
+setwd(paste0("Y:/Inshore/Assessment/BoF/",assessment.year,"/Assessment/Data/Model/"))
+#setwd("Y:/Inshore/BoF/2024/Assessment/Data/Model/")
 
 #current/most recent year 
 YR <- 2024

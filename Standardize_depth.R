@@ -79,7 +79,7 @@ table(ScallopSurv$CRUISE)
 ## As of 2024; using DEM for all inshore areas including SFA 29W - bc in 2024 did some sampling outside MBES domain; use moving forward. 
 
 #---- For BoF and approaches areas ----
-bathy <- rast("Y:/Inshore/StandardDepth/ScotianShelfDEM_Olex/mdem_olex/w001001.adf")
+bathy <- rast("Y:/Inshore/Assessment/StandardDepth/ScotianShelfDEM_Olex/mdem_olex/w001001.adf")
 crs(bathy)<- "epsg:32620"
 ScallopSurv.sf <- st_as_sf(ScallopSurv, coords = c("lon", "lat"), crs = 4326) |> 
       st_transform(crs = 32620) #Convert to utm zone 20 to match bathy.
@@ -91,7 +91,7 @@ ScallopSurv.dpth <- cbind(ScallopSurv.sf, olex.depth) %>%
       st_set_geometry(NULL) #removes geometry
 
 #Load previous towsdd_stdDepth.csv file to append to.
-towsdd <- read.csv(paste0("Y:/Inshore/StandardDepth/towsdd_StdDepth.csv"))
+towsdd <- read.csv(paste0("Y:/Inshore/Assessment/StandardDepth/towsdd_StdDepth.csv"))
 table(towsdd$CRUISE)
 dim(towsdd)
 
@@ -109,12 +109,12 @@ summary(towsdd.updt)
 #  mapview::mapview(bathy)
 
 #Save
-write.csv(towsdd.updt, "Y:/Inshore/StandardDepth/towsdd_StdDepth.csv", row.names = FALSE)
+write.csv(towsdd.updt, "Y:/Inshore/Assessment/StandardDepth/towsdd_StdDepth.csv", row.names = FALSE)
 
 
 
 #---- For SFA 29 ; note in 2024 surveyed outside MBES area; thus use regular DEM to get depths; compare to past years, use this DEM moving forward -----
-bathy <- rast("Y:/Inshore/StandardDepth/ScotianShelfDEM_Olex/mdem_olex/w001001.adf")
+bathy <- rast("Y:/Inshore/Assessment/StandardDepth/ScotianShelfDEM_Olex/mdem_olex/w001001.adf")
 crs(bathy)<- "epsg:32620"
 ScallopSurv.sf <- st_as_sf(ScallopSurv, coords = c("lon", "lat"), crs = 4326) |> 
   st_transform(crs = 32620) #Convert to utm zone 20 to match bathy.

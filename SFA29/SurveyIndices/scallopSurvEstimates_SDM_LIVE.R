@@ -18,7 +18,7 @@ library(ROracle)
 library(tidyverse)
 library(ggplot2)
 
-setwd('Y:/Inshore/BoF/Assessment_fns/SFA29W')
+setwd('Y:/Inshore/Assessment/BoF/Assessment_fns/SFA29W')
 source('Geophysicalareas.R')
 source('SedimentareasSFA29.R')
 source('Domainestimates.R')
@@ -39,15 +39,15 @@ pwd <- pw.sameotoj
 #uid <- keyring::key_list("Oracle")[1,2]
 #pwd <- keyring::key_get("Oracle", uid)
 
-surveyyear <- 2024  #This is the last survey year for which you want to include  - not should match year of cruise below 
-cruise <- "SFA292024"  #note should match year for surveyyear set above 
-assessmentyear <- 2025 #year in which you are conducting the survey 
-path.directory <- "Y:/Inshore/SFA29/"
+surveyyear <- 2025  #This is the last survey year for which you want to include  - not should match year of cruise below 
+cruise <- "SFA292025"  #note should match year for surveyyear set above 
+assessmentyear <- 2026 #year in which you are conducting the survey 
+path.directory <- "Y:/Inshore/Assessment/SFA29/"
 years <- c(2001:surveyyear) #when have 2021 data ready with SDM value then can use line of code below 
 #yr.crnt <- surveyyear-1
 
 #Bring in survey tow data with SDM value (note - SFA29_SDM_LWM.R script must be run to get updated survey tows with SDM values prior to running this script)
-sdmtows <- read.csv("Y:/Inshore/SFA29/ScalSurv_SDM/SFA29Tows_SDM.csv")
+sdmtows <- read.csv("Y:/Inshore/Assessment/SFA29/ScalSurv_SDM/SFA29Tows_SDM.csv")
 table(sdmtows$CRUISE)
 sdmtows$uid <- paste(sdmtows$CRUISE, sdmtows$TOW_NO, sep=".")
 sdmtows <- sdmtows[,c("uid","SDM")]
@@ -121,6 +121,10 @@ dim(data.obj)
 
 data.obj <- data.obj[!(data.obj$CRUISE == "SFA292024" & is.na(data.obj$SDM) == TRUE),]
 dim(data.obj)
+
+#Remove tow 92 from B low - large number of commercial size.
+#data.obj <- data.obj[!(data.obj$CRUISE == "SFA292025" & data.obj$TOW_NO == 92),]
+#dim(data.obj)
 
 data.obj.all <- data.obj
 
@@ -1448,10 +1452,9 @@ A.number.per.tow <- ggplot(data = sdm.levels %>% filter(SUBAREA == "Subarea A" &
   scale_color_manual(values=c('firebrick2', 'darkgrey', 'darkblue'), breaks = c("high", "med", "low"), labels = c("high"="High", "med"="Medium", "low"="Low"))+
   scale_linetype_manual(values = c(1,2,3),breaks = c("high", "med", "low"), labels = c("high"="High", "med"="Medium", "low"="Low"))+
   scale_shape_manual(values = c(15:17),breaks = c("high", "med", "low"), labels = c("high"="High", "med"="Medium", "low"="Low"))+
-  #scale_x_continuous(n.breaks = 5)+
   theme_bw() + ylab("Survey mean no./tow") + xlab("Year") + 
   theme(legend.position = c(0.1, 0.9),panel.grid.minor = element_blank()) + 
-  scale_x_continuous(breaks = seq(2001,2026,by=4), limits = c(2001,2026)) #+ 
+  scale_x_continuous(limits = c(2000, (surveyyear+1)), breaks = seq(2002, (surveyyear+1), by = 4)) #+ 
 # geom_ribbon(aes(ymin=out.e$yst-out.e$se.yst, ymax=out.e$yst+out.e$se.yst), 
 #             alpha=0.1,       #transparency
 #             linetype=1,      #solid, dashed or other line types
@@ -1479,7 +1482,7 @@ B.number.per.tow <- ggplot(data = sdm.levels %>% filter(SUBAREA == "Subarea B"),
   scale_shape_manual(values = c(15:17),breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low"))+
   theme_bw() + ylab("Survey mean no./tow") + xlab("Year") + 
   theme(legend.position = c(0.1, 0.89),panel.grid.minor = element_blank()) + 
-  scale_x_continuous(breaks = seq(2001,2026,by=4), limits = c(2001,2026))#+ 
+  scale_x_continuous(limits = c(2000, (surveyyear+1)), breaks = seq(2002, (surveyyear+1), by = 4))#+ 
 # geom_ribbon(aes(ymin=out.e$yst-out.e$se.yst, ymax=out.e$yst+out.e$se.yst), 
 #             alpha=0.1,       #transparency
 #             linetype=1,      #solid, dashed or other line types
@@ -1506,7 +1509,7 @@ C.number.per.tow <- ggplot(data = sdm.levels %>% filter(SUBAREA == "Subarea C"),
   scale_shape_manual(values = c(15:17),breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low"))+
   theme_bw() + ylab("Survey mean no./tow") + xlab("Year") + 
   theme(legend.position = c(0.1, 0.89),legend.background = element_rect(fill=alpha('white', 0.8)),panel.grid.minor = element_blank()) + 
-  scale_x_continuous(breaks = seq(2001,2026,by=4), limits = c(2001,2026))#Legend bkg colour and transparency)
+  scale_x_continuous(limits = c(2000, (surveyyear+1)), breaks = seq(2002, (surveyyear+1), by = 4))#Legend bkg colour and transparency)
 # geom_ribbon(aes(ymin=out.e$yst-out.e$se.yst, ymax=out.e$yst+out.e$se.yst), 
 #             alpha=0.1,       #transparency
 #             linetype=1,      #solid, dashed or other line types
@@ -1532,7 +1535,7 @@ D.number.per.tow <- ggplot(data = sdm.levels %>% filter(SUBAREA == "Subarea D"),
   scale_shape_manual(values = c(15:17),breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low"))+
   theme_bw() + ylab("Survey mean no./tow") + xlab("Year") + 
   theme(legend.position = c(0.9, 0.89),panel.grid.minor = element_blank()) + 
-  scale_x_continuous(breaks = seq(2001,2026,by=4), limits = c(2001,2026)) #+ 
+  scale_x_continuous(limits = c(2000, (surveyyear+1)), breaks = seq(2002, (surveyyear+1), by = 4)) #+ 
 # geom_ribbon(aes(ymin=out.e$yst-out.e$se.yst, ymax=out.e$yst+out.e$se.yst), 
 #             alpha=0.1,       #transparency
 #             linetype=1,      #solid, dashed or other line types
@@ -1557,13 +1560,13 @@ AtoD.number.per.tow.prerec <- ggplot(data = sdm.levels %>% filter(!(SUBAREA == "
   scale_linetype_manual(values = c(1,2,3),breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low"))+
   scale_shape_manual(values = c(15:17),breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low"))+
   theme_bw() + ylab("Survey mean no./tow") + xlab("Year") + 
-  theme(legend.position = c(0.1, 0.85),panel.grid.minor.x = element_blank(),legend.title = element_blank()) + 
-  scale_x_continuous(breaks = seq(2001,2026,by=4), limits = c(2001,2026))
+  theme(legend.position = c(0.1, 0.85),panel.grid.minor.x = element_blank(),legend.title = element_blank(),text = element_text(size=15), axis.title = element_text(size =15),axis.text = element_text(size = 12)) + 
+  scale_x_continuous(limits = c(2000, (surveyyear+1)), breaks = seq(2002, (surveyyear+1), by = 4))
 
 AtoD.number.per.tow.prerec
 
 #Export plot 
-ggsave(filename = paste0(path.directory, assessmentyear, "/Assessment/Figures/SFA29AtoD.Numberspertow.Prerecruit.",surveyyear,".png"), plot = AtoD.number.per.tow.prerec, scale = 2.5, width = 6, height = 6, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(path.directory, assessmentyear, "/Assessment/Figures/SFA29AtoD.Numberspertow.Prerecruit.",surveyyear,".png"), plot = AtoD.number.per.tow.prerec, scale = 2.5, width = 8, height = 6, dpi = 300, units = "cm", limitsize = TRUE)
 
 ## All Subareas A-D Pre-recruits - FR
 AtoD.number.per.tow.prerec.fr <- ggplot(data = sdm.levels %>% filter(!(SUBAREA == "Subarea A" & Strata == "high") & sdm.levels$size == "prerec"), aes(x=YEAR, y=Mean,  col=Strata, pch=Strata)) + 
@@ -1574,13 +1577,13 @@ AtoD.number.per.tow.prerec.fr <- ggplot(data = sdm.levels %>% filter(!(SUBAREA =
   scale_linetype_manual(values = c(1,2,3),breaks = c("high", "med", "low"),labels = c("high"="Élevée", "med"="Moyenne", "low"="Faible"))+
   scale_shape_manual(values = c(15:17),breaks = c("high", "med", "low"),labels = c("high"="Élevée", "med"="Moyenne", "low"="Faible"))+
   theme_bw() + ylab("Nombre moyen par trait") + xlab("Année") + 
-  theme(legend.position = c(0.1, 0.85),panel.grid.minor.x = element_blank(),legend.title = element_blank()) + 
-  scale_x_continuous(breaks = seq(2001,2026,by=4), limits = c(2001,2026))
+  theme(legend.position = c(0.1, 0.85),panel.grid.minor.x = element_blank(),legend.title = element_blank(),text = element_text(size=15), axis.title = element_text(size =15),axis.text = element_text(size = 12)) + 
+  scale_x_continuous(limits = c(2000, (surveyyear+1)), breaks = seq(2002, (surveyyear+1), by = 4))
 
 AtoD.number.per.tow.prerec.fr
 
 #Export plot - FR
-ggsave(filename = paste0(path.directory, assessmentyear, "/Assessment/Figures/SFA29AtoD.Numberspertow.Prerecruit.",surveyyear,"_FR.png"), plot = AtoD.number.per.tow.prerec.fr, scale = 2.5, width = 6, height = 6, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(path.directory, assessmentyear, "/Assessment/Figures/SFA29AtoD.Numberspertow.Prerecruit.",surveyyear,"_FR.png"), plot = AtoD.number.per.tow.prerec.fr, scale = 2.5, width = 8, height = 6, dpi = 300, units = "cm", limitsize = TRUE)
 
 
 ## All Subareas A-D Recruits 
@@ -1592,12 +1595,12 @@ AtoD.number.per.tow.rec <- ggplot(data = sdm.levels %>% filter(!(SUBAREA == "Sub
   scale_linetype_manual(values = c(1,2,3),breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low"))+
   scale_shape_manual(values = c(15:17),breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low"))+
   theme_bw() + ylab("Survey mean no./tow") + xlab("Year") + 
-  theme(legend.position = c(0.1, 0.85),panel.grid.minor.x = element_blank(),legend.title = element_blank()) + 
-  scale_x_continuous(breaks = seq(2001,2026,by=4), limits = c(2001,2026))#+ 
+  theme(legend.position = c(0.1, 0.85),panel.grid.minor.x = element_blank(),legend.title = element_blank(),text = element_text(size=15), axis.title = element_text(size =15),axis.text = element_text(size = 12)) + 
+  scale_x_continuous(limits = c(2000, (surveyyear+1)), breaks = seq(2002, (surveyyear+1), by = 4))#+ 
 
 AtoD.number.per.tow.rec
 
-ggsave(filename = paste0(path.directory, assessmentyear, "/Assessment/Figures/SFA29AtoD.Numberspertow.Recruit.",surveyyear,".png"), plot = AtoD.number.per.tow.rec, scale = 2.5, width = 6, height = 6, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(path.directory, assessmentyear, "/Assessment/Figures/SFA29AtoD.Numberspertow.Recruit.",surveyyear,".png"), plot = AtoD.number.per.tow.rec, scale = 2.5, width = 8, height = 6, dpi = 300, units = "cm", limitsize = TRUE)
 
 ## All Subareas A-D Recruits - FR
 AtoD.number.per.tow.rec.fr <- ggplot(data = sdm.levels %>% filter(!(SUBAREA == "Subarea A" & Strata == "high") & sdm.levels$size == "rec"), aes(x=YEAR, y=Mean,  col=Strata, pch=Strata)) + 
@@ -1608,12 +1611,12 @@ AtoD.number.per.tow.rec.fr <- ggplot(data = sdm.levels %>% filter(!(SUBAREA == "
   scale_linetype_manual(values = c(1,2,3),breaks = c("high", "med", "low"),labels = c("high"="Élevée", "med"="Moyenne", "low"="Faible"))+
   scale_shape_manual(values = c(15:17),breaks = c("high", "med", "low"),labels = c("high"="Élevée", "med"="Moyenne", "low"="Faible"))+
   theme_bw() + ylab("Nombre moyen par trait") + xlab("Année") + 
-  theme(legend.position = c(0.1, 0.85),panel.grid.minor.x = element_blank(),legend.title = element_blank()) + 
-  scale_x_continuous(breaks = seq(2001,2026,by=4), limits = c(2001,2026))
+  theme(legend.position = c(0.1, 0.85),panel.grid.minor.x = element_blank(),legend.title = element_blank(),text = element_text(size=15), axis.title = element_text(size =15),axis.text = element_text(size = 12)) + 
+  scale_x_continuous(limits = c(2000, (surveyyear+1)), breaks = seq(2002, (surveyyear+1), by = 4))
 
 AtoD.number.per.tow.rec.fr
 
-ggsave(filename = paste0(path.directory, assessmentyear, "/Assessment/Figures/SFA29AtoD.Numberspertow.Recruit.",surveyyear,"_FR.png"), plot = AtoD.number.per.tow.rec.fr, scale = 2.5, width = 6, height = 6, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(path.directory, assessmentyear, "/Assessment/Figures/SFA29AtoD.Numberspertow.Recruit.",surveyyear,"_FR.png"), plot = AtoD.number.per.tow.rec.fr, scale = 2.5, width = 8, height = 6, dpi = 300, units = "cm", limitsize = TRUE)
 
 
 ## All Subareas A-D Commercial  
@@ -1625,12 +1628,12 @@ AtoD.number.per.tow.comm <- ggplot(data = sdm.levels %>% filter(!(SUBAREA == "Su
   scale_linetype_manual(values = c(1,2,3),breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low"))+
   scale_shape_manual(values = c(15:17),breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low"))+
   theme_bw() + ylab("Survey mean no./tow") + xlab("Year") + 
-  theme(legend.position = c(0.1, 0.85),panel.grid.minor.x = element_blank(),legend.title = element_blank()) + 
-  scale_x_continuous(breaks = seq(2001,2026,by=4), limits = c(2001,2026))#+ 
+  theme(legend.position = c(0.1, 0.85),panel.grid.minor.x = element_blank(),legend.title = element_blank(),text = element_text(size=15), axis.title = element_text(size =15),axis.text = element_text(size = 12)) + 
+  scale_x_continuous(limits = c(2000, (surveyyear+1)), breaks = seq(2002, (surveyyear+1), by = 4))#+ 
 
 AtoD.number.per.tow.comm
 
-ggsave(filename = paste0(path.directory, assessmentyear, "/Assessment/Figures/SFA29AtoD.Numberspertow.Commercial.",surveyyear,".png"), plot = AtoD.number.per.tow.comm, scale = 2.5, width = 6, height = 6, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(path.directory, assessmentyear, "/Assessment/Figures/SFA29AtoD.Numberspertow.Commercial.",surveyyear,".png"), plot = AtoD.number.per.tow.comm, scale = 2.5, width = 8, height = 6, dpi = 300, units = "cm", limitsize = TRUE)
 
 ## All Subareas A-D Commercial-FR
 AtoD.number.per.tow.comm.fr <- ggplot(data = sdm.levels %>% filter(!(SUBAREA == "Subarea A" & Strata == "high") & sdm.levels$size == "comm"), aes(x=YEAR, y=Mean,  col=Strata, pch=Strata)) + 
@@ -1641,12 +1644,12 @@ AtoD.number.per.tow.comm.fr <- ggplot(data = sdm.levels %>% filter(!(SUBAREA == 
   scale_linetype_manual(values = c(1,2,3),breaks = c("high", "med", "low"),labels = c("high"="Élevée", "med"="Moyenne", "low"="Faible"))+
   scale_shape_manual(values = c(15:17),breaks = c("high", "med", "low"),labels = c("high"="Élevée", "med"="Moyenne", "low"="Faible"))+
   theme_bw() + ylab("Nombre moyen par trait") + xlab("Année") +
-  theme(legend.position = c(0.1, 0.85),panel.grid.minor.x = element_blank(),legend.title = element_blank()) + 
-  scale_x_continuous(breaks = seq(2001,2026,by=4), limits = c(2001,2026))
+  theme(legend.position = c(0.1, 0.85),panel.grid.minor.x = element_blank(),legend.title = element_blank(),text = element_text(size=15), axis.title = element_text(size =15),axis.text = element_text(size = 12)) + 
+  scale_x_continuous(limits = c(2000, (surveyyear+1)), breaks = seq(2002, (surveyyear+1), by = 4))
 
 AtoD.number.per.tow.comm.fr
 
-ggsave(filename = paste0(path.directory, assessmentyear, "/Assessment/Figures/SFA29AtoD.Numberspertow.Commercial.",surveyyear,"_FR.png"), plot = AtoD.number.per.tow.comm.fr, scale = 2.5, width = 6, height = 6, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(path.directory, assessmentyear, "/Assessment/Figures/SFA29AtoD.Numberspertow.Commercial.",surveyyear,"_FR.png"), plot = AtoD.number.per.tow.comm.fr, scale = 2.5, width = 8, height = 6, dpi = 300, units = "cm", limitsize = TRUE)
 
 
 
@@ -1744,12 +1747,12 @@ E.number.per.tow <- ggplot(data = out.e, aes(x=YEAR, y=yst)) +
   geom_point() + 
   geom_line() + 
   facet_wrap(~group, ncol=1, labeller = size_names) + 
-  scale_x_continuous(limits = c(2001, (survey.year+1)), breaks = seq(2001, (survey.year+1), by = 4)) +
+  scale_x_continuous(limits = c(2001, (surveyyear+1)), breaks = seq(2001, (surveyyear+1), by = 4)) +
   theme_bw() + ylab("Survey mean no./tow") + xlab("Year") + 
   theme(legend.position = c(0.1, 0.9),panel.grid.minor = element_blank()) + 
  # geom_pointrange(data = out.e, aes(ymin=(yst-se.yst), ymax=(yst - se.yst))) 
   geom_pointrange(aes(ymin=out.e$yst-out.e$se.yst, ymax=out.e$yst+out.e$se.yst)) + 
-  scale_x_continuous(breaks = seq(2001,2026,by=4), limits = c(2001,2026))
+  scale_x_continuous(limits = c(2000, (surveyyear+1)), breaks = seq(2002, (surveyyear+1), by = 4))
   #geom_ribbon(aes(ymin=out.e$yst-out.e$se.yst, ymax=out.e$yst+out.e$se.yst), 
   #           alpha=0.1,       #transparency
   #           linetype=1,      #solid, dashed or other line types
@@ -1764,10 +1767,10 @@ E.number.per.tow <- ggplot(data = out.e , aes(x=YEAR, y=yst)) +
   geom_line() + 
   facet_wrap(~group, ncol=1, labeller = size_names) + 
   theme_bw() + ylab("Survey mean no./tow") + xlab("Year") + 
-  theme(legend.position = c(0.1, 0.9),panel.grid.minor = element_blank()) + 
+  theme(legend.position = c(0.1, 0.9),panel.grid.minor = element_blank(),text = element_text(size=15), axis.title = element_text(size =15),axis.text = element_text(size = 12)) + 
   # geom_pointrange(data = out.e, aes(ymin=(yst-se.yst), ymax=(yst - se.yst))) 
   geom_pointrange(aes(ymin=out.e$yst-out.e$se.yst, ymax=out.e$yst+out.e$se.yst)) + 
-  scale_x_continuous(breaks = seq(2012,2025,by=4), limits = c(2012,2025))
+  scale_x_continuous(limits = c(2012, (surveyyear+1)), breaks = seq(2012, (surveyyear+1), by = 2))
 #geom_ribbon(aes(ymin=out.e$yst-out.e$se.yst, ymax=out.e$yst+out.e$se.yst), 
 #           alpha=0.1,       #transparency
 #           linetype=1,      #solid, dashed or other line types
@@ -1775,7 +1778,6 @@ E.number.per.tow <- ggplot(data = out.e , aes(x=YEAR, y=yst)) +
 #           size=1,          #border line size
 #           fill="grey70") 
 E.number.per.tow
-
 
 
 ggsave(filename = paste0(path.directory, assessmentyear, "/Assessment/Figures/SFA29E.Numberspertow.",surveyyear,".png"), plot = E.number.per.tow, scale = 2.5, width = 6, height = 8, dpi = 300, units = "cm", limitsize = TRUE)
@@ -1795,8 +1797,8 @@ E.number.per.tow <- ggplot(data = out.e %>% filter(YEAR %in% c(2012:surveyyear))
   facet_wrap(~group, ncol=1, labeller = size_names) + 
   theme_bw() + ylab("Survey mean no./tow") + xlab("Year") + 
   theme(legend.position = c(0.1, 0.9),panel.grid.minor = element_blank()) + 
-  geom_pointrange(aes(ymin=out.e$yst-out.e$se.yst, ymax=out.e$yst+out.e$se.yst)) + 
-  scale_x_continuous(breaks = seq(2001,2026,by=4), limits = c(2001,2026))
+  geom_pointrange(aes(ymin=yst-se.yst, ymax=yst+se.yst)) 
+  #scale_x_continuous(breaks = seq(2001,2026,by=4), limits = c(2001,2026))
 #geom_ribbon(aes(ymin=out.e$yst-out.e$se.yst, ymax=out.e$yst+out.e$se.yst), 
 #           alpha=0.1,       #transparency
 #           linetype=1,      #solid, dashed or other line types
@@ -1893,13 +1895,13 @@ LTM.prerec <-  sdm.strat.est %>% filter(size == "prerec" & YEAR < surveyyear) %>
 LTM.prerec
 #subarea     LTM
 #<chr>     <dbl>
-#1 Subarea A  26.7
-#2 Subarea B  37.0
-#3 Subarea C  46.9
-#4 Subarea D  78.5
+#  1 Subarea A  20.1
+#2 Subarea B  35.0
+#3 Subarea C  42.6
+#4 Subarea D  69.4
 
 AtoD.stratified.plot.prerec <- ggplot(data = sdm.strat.est %>% filter(size == "prerec"), aes(x=YEAR, y=yst)) + 
-  geom_point() + 
+  geom_point(size = 0.25) + 
   geom_line() + 
   facet_wrap(~subarea, ncol=2, scales = "free") +
   theme_bw() + 
@@ -1908,7 +1910,8 @@ AtoD.stratified.plot.prerec <- ggplot(data = sdm.strat.est %>% filter(size == "p
   #theme(legend.position = c(0.1, 0.85),panel.grid.minor = element_blank()) + 
   geom_pointrange(aes(ymin=yst-se.yst, ymax=yst+se.yst)) + 
   scale_x_continuous(breaks = seq(2001,surveyyear+1,by=4), limits = c(2001,surveyyear+1)) + 
-  geom_hline(data = LTM.prerec, aes(yintercept=LTM), col = "blue", linetype = "dashed")
+  geom_hline(data = LTM.prerec, aes(yintercept=LTM), col = "blue", linetype = "dashed")+
+  theme(axis.title = element_text(size = 16), strip.text = element_text(size = 12), axis.text = element_text(size = 12))
 # geom_ribbon(aes(ymin=out.e$yst-out.e$se.yst, ymax=out.e$yst+out.e$se.yst), 
 #             alpha=0.1,       #transparency
 #             linetype=1,      #solid, dashed or other line types
@@ -1917,17 +1920,19 @@ AtoD.stratified.plot.prerec <- ggplot(data = sdm.strat.est %>% filter(size == "p
 #             fill="grey70") 
 AtoD.stratified.plot.prerec
 
-ggsave(paste0(path.directory,assessmentyear,"/Assessment/Figures/SFA29.AtoD.stratified.prerecuit.numbers.",surveyyear,".png"),width=15,height=10,units = "in",dpi=300)
+ggsave(paste0(path.directory,assessmentyear,"/Assessment/Figures/SFA29.AtoD.stratified.prerecuit.numbers.",surveyyear,".png"),width=9,height=8,units = "in",dpi=300)
 
+#ggsave(paste0(path.directory,assessmentyear,"/Assessment/Figures/SFA29.AtoD.stratified.prerecuit.numbers._wotow92",surveyyear,".png"),width=9,height=8,units = "in",dpi=300)
 
 ## Just recruits ####
 LTM.rec <-  sdm.strat.est %>% filter(size == "rec" & YEAR < surveyyear) %>% group_by(subarea) %>% summarise(LTM = median(yst, na.rm = TRUE   ))
 LTM.rec
 #subarea      LTM
-#1 Subarea A  1.12
-#2 Subarea B 10.1 
-#3 Subarea C  9.71
-#4 Subarea D 12.0 
+#<chr>      <dbl>
+#  1 Subarea A  0.998
+#2 Subarea B  9.59 
+#3 Subarea C  7.91 
+#4 Subarea D 11.0  
 
 AtoD.stratified.plot.rec <- ggplot(data = sdm.strat.est %>% filter(size == "rec"), aes(x=YEAR, y=yst)) + 
   geom_point() + 
@@ -1939,7 +1944,8 @@ AtoD.stratified.plot.rec <- ggplot(data = sdm.strat.est %>% filter(size == "rec"
   #theme(legend.position = c(0.1, 0.85),panel.grid.minor = element_blank()) + 
   geom_pointrange(aes(ymin=yst-se.yst, ymax=yst+se.yst)) + 
   scale_x_continuous(breaks = seq(2001,surveyyear+1,by=4), limits = c(2001,surveyyear+1)) + 
-  geom_hline(data = LTM.rec, aes(yintercept=LTM), col = "blue", linetype = "dashed")
+  geom_hline(data = LTM.rec, aes(yintercept=LTM), col = "blue", linetype = "dashed")+
+  theme(axis.title = element_text(size = 16), strip.text = element_text(size = 12), axis.text = element_text(size = 12))
 # geom_ribbon(aes(ymin=out.e$yst-out.e$se.yst, ymax=out.e$yst+out.e$se.yst), 
 #             alpha=0.1,       #transparency
 #             linetype=1,      #solid, dashed or other line types
@@ -1948,7 +1954,9 @@ AtoD.stratified.plot.rec <- ggplot(data = sdm.strat.est %>% filter(size == "rec"
 #             fill="grey70") 
 AtoD.stratified.plot.rec
 
-ggsave(paste0(path.directory,assessmentyear,"/Assessment/Figures/SFA29.AtoD.stratified.recuit.numbers.",surveyyear,".png"),width=15,height=10,units = "in",dpi=300)
+ggsave(paste0(path.directory,assessmentyear,"/Assessment/Figures/SFA29.AtoD.stratified.recuit.numbers.",surveyyear,".png"),width=9,height=8,units = "in",dpi=300)
+
+#ggsave(paste0(path.directory,assessmentyear,"/Assessment/Figures/SFA29.AtoD.stratified.recuit.numbers.wotow92",surveyyear,".png"),width=9,height=8,units = "in",dpi=300)
 
 
 ## Just commercial ####
@@ -1956,10 +1964,10 @@ LTM.comm <-  sdm.strat.est %>% filter(size == "comm" & YEAR < surveyyear) %>% gr
 LTM.comm
 #subarea     LTM
 #<chr>     <dbl>
-#1 Subarea A  95.7
-#2 Subarea B 122. 
-#3 Subarea C  75.6
-#4 Subarea D 125. 
+#  1 Subarea A  95.7
+#2 Subarea B 130. 
+#3 Subarea C  75.3
+#4 Subarea D 119. 
 
 AtoD.stratified.plot.comm <- ggplot(data = sdm.strat.est %>% filter(size == "comm"), aes(x=YEAR, y=yst)) + 
   geom_point() + 
@@ -1971,7 +1979,8 @@ AtoD.stratified.plot.comm <- ggplot(data = sdm.strat.est %>% filter(size == "com
   #theme(legend.position = c(0.1, 0.85),panel.grid.minor = element_blank()) + 
   geom_pointrange(aes(ymin=yst-se.yst, ymax=yst+se.yst)) + 
   scale_x_continuous(breaks = seq(2001,surveyyear+1,by=4), limits = c(2001,surveyyear+1)) + 
-  geom_hline(data = LTM.comm, aes(yintercept=LTM), col = "blue", linetype = "dashed")
+  geom_hline(data = LTM.comm, aes(yintercept=LTM), col = "blue", linetype = "dashed")+
+  theme(axis.title = element_text(size = 16), strip.text = element_text(size = 12), axis.text = element_text(size = 12))
 # geom_ribbon(aes(ymin=out.e$yst-out.e$se.yst, ymax=out.e$yst+out.e$se.yst), 
 #             alpha=0.1,       #transparency
 #             linetype=1,      #solid, dashed or other line types
@@ -1980,7 +1989,10 @@ AtoD.stratified.plot.comm <- ggplot(data = sdm.strat.est %>% filter(size == "com
 #             fill="grey70") 
 AtoD.stratified.plot.comm
 
-ggsave(paste0(path.directory,assessmentyear,"/Assessment/Figures/SFA29.AtoD.stratified.commercial.numbers.",surveyyear,".png"),width=15,height=10,units = "in",dpi=300)
+ggsave(paste0(path.directory,assessmentyear,"/Assessment/Figures/SFA29.AtoD.stratified.commercial.numbers.",surveyyear,".png"),width=9,height=8,units = "in",dpi=300)
+
+#ggsave(paste0(path.directory,assessmentyear,"/Assessment/Figures/SFA29.AtoD.stratified.commercial.numbers.wotow92.",surveyyear,".png"),width=9,height=8,units = "in",dpi=300)
+
 
 
 #-- REFERENCE POINTS -proposal based off survey index of commercial numbers per tow ---- 
@@ -1991,7 +2003,7 @@ ggsave(paste0(path.directory,assessmentyear,"/Assessment/Figures/SFA29.AtoD.stra
 # 40% of 50% Bmax where Bmax proxy for Bo
 
 #Commerical biomass time series median of the yearly median values 
-LTM.comm <-  sdm.strat.est %>% filter(size == "comm" & YEAR < surveyyear) %>% group_by(subarea) %>% summarise(LTM = median(yst   ))
+LTM.comm <-  sdm.strat.est %>% filter(size == "comm" & YEAR < surveyyear) %>% group_by(subarea) %>% summarise(LTM = median(yst   , na.rm = TRUE))
 LTM.comm
 #subarea     LTM
 #<chr>     <dbl>
@@ -2020,7 +2032,7 @@ ggsave(paste0(path.directory,assessmentyear,"/Assessment/Figures/Com_timeseries_
 
 
 ##... LRP Plot - 40% of 50% Bmax where Bmax proxy for Bo ####
-max.val <- sdm.strat.est %>% filter(size == "comm") %>% group_by(subarea) %>% summarize(Bo = max(yst))
+max.val <- sdm.strat.est %>% filter(size == "comm") %>% group_by(subarea) %>% summarize(Bo = max(yst, na.rm = TRUE))
 
 max.val$Bmsy <- max.val$Bo*0.5
 max.val
@@ -2044,7 +2056,7 @@ ggsave(paste0(path.directory,assessmentyear,"/Assessment/Figures/Com_timeseries_
 
 
 ##... LRP Plot - 20% of Bo (i.e. Bmax ) ####
-max.val <- sdm.strat.est %>% filter(size == "comm") %>% group_by(subarea) %>% summarize(Bo = max(yst))
+max.val <- sdm.strat.est %>% filter(size == "comm") %>% group_by(subarea) %>% summarize(Bo = max(yst, na.rm = TRUE))
 max.val$LRP <- max.val$Bo*0.2
 max.val
 #subarea      Bo   LRP
@@ -2070,7 +2082,7 @@ ggplot(data = sdm.strat.est %>% filter(size == "comm"), aes(x=YEAR, y=yst)) +
 ggsave(paste0(path.directory,assessmentyear,"/Assessment/Figures/Com_timeseries_LRP.20.of.Bmax.ie.Bo.",surveyyear,".png"),width=15,height=10,units = "in",dpi=300)
 
 ## min biomass "B recover" in timeseries ####
-Brec.comm <-  sdm.strat.est %>% filter(size == "comm" & YEAR < surveyyear) %>% group_by(subarea) %>% summarise(min = min(yst   ))
+Brec.comm <-  sdm.strat.est %>% filter(size == "comm" & YEAR < surveyyear) %>% group_by(subarea) %>% summarise(min = min(yst , na.rm = TRUE))
 Brec.comm
 #subarea     min
 #<chr>     <dbl>
@@ -2104,7 +2116,7 @@ Brec.comm
 #### USR Options #### 
 ##... USR Plot - 80% of Bavg (Bavg ~ Bmsy)
 #Commerical biomass time series median of the yearly median values 
-LTM.comm <-  sdm.strat.est %>% filter(size == "comm" & YEAR < surveyyear) %>% group_by(subarea) %>% summarise(LTM = median(yst   ))
+LTM.comm <-  sdm.strat.est %>% filter(size == "comm" & YEAR < surveyyear) %>% group_by(subarea) %>% summarise(LTM = median(yst   , na.rm = TRUE))
 LTM.comm
 
 LTM.comm$USR <- LTM.comm$LTM*0.8
@@ -2141,7 +2153,7 @@ ggsave(paste0(path.directory,assessmentyear,"/Assessment/Figures/Com_timeseries_
 
 ##... USR Plot - 80% of 50% Bmax where Bmax proxy for Bo
 #Commerical biomass time series median of the yearly median values 
-max.val <- sdm.strat.est %>% filter(size == "comm") %>% group_by(subarea) %>% summarize(Bo = max(yst))
+max.val <- sdm.strat.est %>% filter(size == "comm") %>% group_by(subarea) %>% summarize(Bo = max(yst, na.rm = TRUE))
 max.val$Bmsy <- max.val$Bo*0.5
 max.val
 
@@ -2171,7 +2183,7 @@ ggsave(paste0(path.directory,assessmentyear,"/Assessment/Figures/Com_timeseries_
 
 
 ##... USR Plot - Median stock size 
-LTM.comm <-  sdm.strat.est %>% filter(size == "comm" & YEAR < surveyyear) %>% group_by(subarea) %>% summarise(USR = median(yst   ))
+LTM.comm <-  sdm.strat.est %>% filter(size == "comm" & YEAR < surveyyear) %>% group_by(subarea) %>% summarise(USR = median(yst, na.rm = TRUE))
 LTM.comm
 
 PA.limits <- merge(LTM.comm, Brec.comm, by = "subarea")

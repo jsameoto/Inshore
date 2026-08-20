@@ -46,7 +46,9 @@ rm(list=ls(all=T))
 options(stringsAsFactors = FALSE)
 
 #DEFINE:
-direct <- "Y:/Inshore/BoF"
+direct <- "Z:/Inshore/AssessmentBoF"
+#direct <- "Y:/Inshore/BoF"
+#direct <- "Y:/Inshore/BoF"
 assessmentyear <- 2025 #year in which you are conducting the assessment 
 surveyyear <- 2025  #last year of survey data you are using, e.g. if max year of survey is survey from summer 2019, this would be 2019 
 area <- 3  #this would be the SPA, for entries options are to use: 1A, 1B, 3, 4, or 6  
@@ -442,7 +444,7 @@ write.csv(decision.table, paste0(direct,"/",assessmentyear,"/Assessment/Data/Mod
 #Produces files: summary stats temporal_6_2019.csv ; summary stats_6_2019.csv
 # Be sure to set assessmentyear and surveyyear and RDatafile appropriately !!
 #stats.output <- BoF.model.stats(area = "3", assessmentyear=2024, surveyyear=2024, direct = "Y:/Inshore/BoF/", RDatafile = "SPA3_Model_2024")
-stats.output <- BoF.model.stats(area = "3", assessmentyear=assessmentyear, surveyyear=surveyyear, direct = "Y:/Inshore/BoF/", RDatafile = paste0("SPA3_Model_",surveyyear))
+stats.output <- BoF.model.stats(area = "3", assessmentyear=assessmentyear, surveyyear=surveyyear, direct = "Z:/Inshore/Assessment/BoF/", RDatafile = paste0("SPA3_Model_",surveyyear))
 
 
 

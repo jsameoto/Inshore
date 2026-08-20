@@ -28,7 +28,8 @@ surveyyear <- 2024  #This is the last survey year for which you want to include 
 
 assessmentyear <- 2025 #year in which you are conducting the survey 
 #area <- "1A1B4and5"  #SPA assessing recall SPA 1A, 1B, and 4 are grouped; options: "1A1B4and5", "3", "6" 
-path.directory <- "Y:/Inshore/SFA29/"
+path.directory <- "Y:/Inshore/Assessment/SFA29/"
+#path.directory <- "Y:/Inshore/SFA29/"
 
 
 ## ---- Obtain data for VonB modelling ---- 

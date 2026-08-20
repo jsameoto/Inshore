@@ -25,7 +25,8 @@ cruise <- "GM2024"  #note should match year for surveyyear set above
 
 assessmentyear <- 2024 #year in which you are conducting the survey 
 area <- "6"  #SPA assessing recall SPA 1A, 1B, and 4 are grouped; options: "1A1B4and5", "3", "6" 
-path.directory <- "Y:/Inshore/BoF/"
+path.directory <- "Y:/Inshore/Assessment/BoF/"
+#path.directory <- "Y:/Inshore/BoF/"
 
 
 # ---- Obtain data for VonB modelling ---- 

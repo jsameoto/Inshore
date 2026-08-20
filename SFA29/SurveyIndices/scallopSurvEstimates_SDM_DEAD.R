@@ -9,6 +9,9 @@
 ## NO LONGER REQUIRED: Bring in library but then bring in PEDstrata function manually from file: PEDStrata.txt under: Y:\Jessica\SFA29\2014\r
 ## PEDstrata v 1.0.1 updated
 
+
+###NOTE:: ADD STRATIFIED CLAPPER INDEX FOR 2027####
+
 options(stringsAsFactors=FALSE)
 library(PEDstrata)
 library(lubridate)
@@ -16,7 +19,8 @@ library(ROracle)
 library(tidyverse)
 library(ggplot2)
 
-setwd('Y:/Inshore/BoF/Assessment_fns/SFA29W')
+setwd('Y:/Inshore/Assessment/BoF/Assessment_fns/SFA29W')
+#setwd('Y:/Inshore/BoF/Assessment_fns/SFA29W')
 source('Geophysicalareas.R')
 source('SedimentareasSFA29.R')
 source('Domainestimates.R')
@@ -36,15 +40,16 @@ pwd <- pw.sameotoj
 #uid <- keyring::key_list("Oracle")[1,2]
 #pwd <- keyring::key_get("Oracle", uid)
 
-surveyyear <- 2024  #This is the last survey year for which you want to include  - not should match year of cruise below 
-cruise <- "SFA292024"  #note should match year for surveyyear set above 
-assessmentyear <- 2025 #year in which you are conducting the survey 
-path.directory <- "Y:/Inshore/SFA29/"
+surveyyear <- 2025  #This is the last survey year for which you want to include  - not should match year of cruise below 
+cruise <- "SFA292025"  #note should match year for surveyyear set above 
+assessmentyear <- 2026 #year in which you are conducting the survey 
+path.directory <- "Y:/Inshore/Assessment/SFA29/"
+#path.directory <- "Y:/Inshore/SFA29/"
 years <- c(2001:surveyyear) #when have 2021 data ready with SDM value then can use line of code below 
 #yr.crnt <- surveyyear-1
 
 #Bring in survey tow data with SDM value (note - SFA29_SDM_LWM.R script must be run to get updated survey tows with SDM values prior to runnint this script)
-sdmtows <- read.csv("Y:/Inshore/SFA29/ScalSurv_SDM/SFA29Tows_SDM.csv")
+sdmtows <- read.csv("Y:/Inshore/Assessment/SFA29/ScalSurv_SDM/SFA29Tows_SDM.csv")
 table(sdmtows$CRUISE)
 sdmtows$uid <- paste(sdmtows$CRUISE, sdmtows$TOW_NO, sep=".")
 sdmtows <- sdmtows[,c("uid","SDM")]
@@ -1515,8 +1520,8 @@ AtoD.number.per.tow.prerec <- ggplot(data = sdm.levels %>% filter(!(SUBAREA == "
   scale_shape_manual(values = c(15:17),breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low"))+
   facet_wrap(~SUBAREA, ncol=2) + 
   theme_bw() + ylab("Survey mean no./tow") + xlab("Year") + 
-  theme(legend.position = c(0.1, 0.85),panel.grid.minor = element_blank(),legend.title = element_blank())  + 
-  scale_x_continuous(breaks = seq(2001,2026,by=4), limits = c(2001,2026)) #+ #+ 
+  theme(legend.position = c(0.1, 0.85),panel.grid.minor = element_blank(),legend.title = element_blank(), text = element_text(size=15), axis.title = element_text(size =15),axis.text = element_text(size = 12))  + 
+  scale_x_continuous(limits = c(2000, (surveyyear+1)), breaks = seq(2002, (surveyyear+1), by = 4)) #+ #+ 
 # geom_ribbon(aes(ymin=out.e$yst-out.e$se.yst, ymax=out.e$yst+out.e$se.yst), 
 #             alpha=0.1,       #transparency
 #             linetype=1,      #solid, dashed or other line types
@@ -1525,7 +1530,7 @@ AtoD.number.per.tow.prerec <- ggplot(data = sdm.levels %>% filter(!(SUBAREA == "
 #             fill="grey70") 
 AtoD.number.per.tow.prerec
 
-ggsave(filename = paste0(path.directory, assessmentyear, "/Assessment/Figures/SFA29AtoD.Numberspertow.Clappers.Prerecruit.",surveyyear,".png"), plot = AtoD.number.per.tow.prerec, scale = 2.5, width = 6, height = 6, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(path.directory, assessmentyear, "/Assessment/Figures/SFA29AtoD.Numberspertow.Clappers.Prerecruit.",surveyyear,".png"), plot = AtoD.number.per.tow.prerec, scale = 2.5, width = 8, height = 6, dpi = 300, units = "cm", limitsize = TRUE)
 
 #png(paste0(path.directory,assessmentyear,"/Assessment/Figures/SFA29AtoD.Numberspertow.Clappers.Prerecruit.",surveyyear,".png"),width=11,height=11#,units = "in",res=300)
 #AtoD.number.per.tow.prerec
@@ -1540,8 +1545,8 @@ AtoD.number.per.tow.rec <- ggplot(data = sdm.levels %>% filter(!(SUBAREA == "Sub
   scale_linetype_manual(values = c(1,2,3),breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low"))+
   scale_shape_manual(values = c(15:17),breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low"))+
   theme_bw() + ylab("Survey mean no./tow") + xlab("Year") + 
-  theme(legend.position = c(0.1, 0.85),panel.grid.minor = element_blank(),legend.title = element_blank())  + 
-  scale_x_continuous(breaks = seq(2001,2026,by=4), limits = c(2001,2026)) #+ #+ 
+  theme(legend.position = c(0.1, 0.85),panel.grid.minor = element_blank(),legend.title = element_blank(), text = element_text(size=15), axis.title = element_text(size =15),axis.text = element_text(size = 12))  + 
+  scale_x_continuous(limits = c(2000, (surveyyear+1)), breaks = seq(2002, (surveyyear+1), by = 4)) #+ #+ 
 # geom_ribbon(aes(ymin=out.e$yst-out.e$se.yst, ymax=out.e$yst+out.e$se.yst), 
 #             alpha=0.1,       #transparency
 #             linetype=1,      #solid, dashed or other line types
@@ -1550,7 +1555,7 @@ AtoD.number.per.tow.rec <- ggplot(data = sdm.levels %>% filter(!(SUBAREA == "Sub
 #             fill="grey70") 
 AtoD.number.per.tow.rec
 
-ggsave(filename = paste0(path.directory, assessmentyear, "/Assessment/Figures/SFA29AtoD.Numberspertow.Clappers.Recruit.",surveyyear,".png"), plot = AtoD.number.per.tow.rec, scale = 2.5, width = 6, height = 6, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(path.directory, assessmentyear, "/Assessment/Figures/SFA29AtoD.Numberspertow.Clappers.Recruit.",surveyyear,".png"), plot = AtoD.number.per.tow.rec, scale = 2.5, width = 8, height = 6, dpi = 300, units = "cm", limitsize = TRUE)
 
 #png(paste0(path.directory,assessmentyear,"/Assessment/Figures/SFA29AtoD.Numberspertow.Clappers.Recruit.",surveyyear,".png"),width=11,height=11,units = "in",res=300)
 #AtoD.number.per.tow.rec
@@ -1567,8 +1572,8 @@ AtoD.number.per.tow.comm <- ggplot(data = sdm.levels %>% filter(!(SUBAREA == "Su
   scale_linetype_manual(values = c(1,2,3),breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low"))+
   scale_shape_manual(values = c(15:17),breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low"))+
   theme_bw() + ylab("Survey mean no./tow") + xlab("Year") + 
-  theme(legend.position = c(0.85, 0.85),panel.grid.minor = element_blank(),legend.title = element_blank())  + 
-  scale_x_continuous(breaks = seq(2001,2026,by=4), limits = c(2001,2026)) #+ #+ 
+  theme(legend.position = c(0.1, 0.85),panel.grid.minor = element_blank(),legend.title = element_blank(), text = element_text(size=15), axis.title = element_text(size =15),axis.text = element_text(size = 12))  + 
+  scale_x_continuous(limits = c(2000, (surveyyear+1)), breaks = seq(2002, (surveyyear+1), by = 4)) #+ #+ 
 # geom_ribbon(aes(ymin=out.e$yst-out.e$se.yst, ymax=out.e$yst+out.e$se.yst), 
 #             alpha=0.1,       #transparency
 #             linetype=1,      #solid, dashed or other line types
@@ -1577,7 +1582,7 @@ AtoD.number.per.tow.comm <- ggplot(data = sdm.levels %>% filter(!(SUBAREA == "Su
 #             fill="grey70") 
 AtoD.number.per.tow.comm
 
-ggsave(filename = paste0(path.directory, assessmentyear, "/Assessment/Figures/SFA29AtoD.Numberspertow.Clappers.Commercial.",surveyyear,".png"), plot = AtoD.number.per.tow.comm, scale = 2.5, width = 6, height = 6, dpi = 300, units = "cm", limitsize = TRUE)
+ggsave(filename = paste0(path.directory, assessmentyear, "/Assessment/Figures/SFA29AtoD.Numberspertow.Clappers.Commercial.",surveyyear,".png"), plot = AtoD.number.per.tow.comm, scale = 2.5, width = 8, height = 6, dpi = 300, units = "cm", limitsize = TRUE)
 
 #png(paste0(path.directory,assessmentyear,"/Assessment/Figures/SFA29AtoD.Numberspertow.Clappers.Commercial.",surveyyear,".png"),width=11,height=11,units = "in",res=300)
 #AtoD.number.per.tow.comm
@@ -1733,14 +1738,14 @@ clap.prop.comm <- ggplot(data=XX, aes(x=YEAR, y=prop.dead.no.NAs, col= Strata, s
 	  scale_linetype_manual(values = c(1,2,3),breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low"))+
 	  scale_shape_manual(values = c(15:17),breaks = c("high", "med", "low"),labels = c("high"="High", "med"="Medium", "low"="Low"))+
 	  facet_wrap(~SUBAREA) + theme_bw() + 
-  theme(legend.position = c(0.85, 0.85),panel.grid.minor = element_blank(),legend.title = element_blank()) + 
+  theme(legend.position = c(0.85, 0.85),panel.grid.minor = element_blank(),legend.title = element_blank(), text = element_text(size=15), axis.title = element_text(size =15),axis.text = element_text(size = 12)) + 
 	  ylab("Commercial (>=100mm) Clappers (proportion)") + 
 	  xlab("Year")  + 
-  scale_x_continuous(breaks = seq(2001,2026,by=4), limits = c(2001,2026)) #+ 
+  scale_x_continuous(limits = c(2000, (surveyyear+1)), breaks = seq(2002, (surveyyear+1), by = 4))
 clap.prop.comm
 	
 #save
-	ggsave(filename = paste0(path.directory,assessmentyear,"/Assessment/Figures/SFA29AtoD.Clappers.Prop.Commercial.",surveyyear,".png"), plot = clap.prop.comm, scale = 2.5, width =6, height = 6, dpi = 300, units = "cm", limitsize = TRUE)
+	ggsave(filename = paste0(path.directory,assessmentyear,"/Assessment/Figures/SFA29AtoD.Clappers.Prop.Commercial.",surveyyear,".png"), plot = clap.prop.comm, scale = 2.5, width =8, height = 6, dpi = 300, units = "cm", limitsize = TRUE)
 	
 #dev.off()
 
@@ -1817,7 +1822,7 @@ dim(data.obj.all)
 dim(data.live)
 
 # Left join survey tows to surficial substrate tows on uid
-data.join <- merge(data.obj.all %>% select(uid, CRUISE,TOW_NO,START_LAT, START_LONG,STRATA,YEAR, dead.prerec=prerec, dead.rec=rec, dead.comm= comm), data.live %>% select(uid,live.prerec=prerec, live.rec=rec, live.comm= comm ), by.x='uid', by.y='uid', all.x=TRUE)
+data.join <- merge(data.obj.all %>% dplyr::select(uid, CRUISE,TOW_NO,START_LAT, START_LONG,STRATA,YEAR, dead.prerec=prerec, dead.rec=rec, dead.comm= comm), data.live %>% dplyr::select(uid,live.prerec=prerec, live.rec=rec, live.comm= comm ), by.x='uid', by.y='uid', all.x=TRUE)
 dim(data.join)
 head(data.join)
 

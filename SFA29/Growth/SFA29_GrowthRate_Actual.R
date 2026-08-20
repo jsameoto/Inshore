@@ -32,13 +32,15 @@ options(stringsAsFactors = FALSE)
 # ///.... DEFINE THESE ENTRIES ....////
 
 #DEFINE: year, area
-year <- 2024  #this is the survey year
-assessmentyear <- 2025 #this is the year you are running your assessment in -- corresponds to the assessment folder year name 
+year <- 2025  #this is the survey year
+assessmentyear <- 2026 #this is the year you are running your assessment in -- corresponds to the assessment folder year name 
 # DEFINE path for figures and dataouput to be saved; note expects within this folder that you've created a "dataoutput" and "Figures" folder under the following directory path;  MUST HAVE "/" at the end of your path! (shouldn't have to change this in most years with new folder structure)
-path.directory <- "Y:/Inshore/SFA29/"
+path.directory <- "Y:/Inshore/Assessment/SFA29/"
+#path.directory <- "Y:/Inshore/SFA29/"
 
 # DEFINE: load shell height objects 
-SFA29.SHactualpredict <- read.csv(paste0("Y:/Inshore/SFA29/",assessmentyear,"/Assessment/Data/Growth/SFA29.SHobj.",year,".csv"))
+SFA29.SHactualpredict <- read.csv(paste0("Y:/Inshore/Assessment/SFA29/",assessmentyear,"/Assessment/Data/Growth/SFA29.SHobj.",year,".csv"))
+#SFA29.SHactualpredict <- read.csv(paste0("Y:/Inshore/SFA29/",assessmentyear,"/Assessment/Data/Growth/SFA29.SHobj.",year,".csv"))
 #field size identifies if commercial or recruit
 #field SHF is actual shell height in year t, field SHF.pred is predicted shell height in year t+1 
 SFA29.SHactual.Com <- SFA29.SHactualpredict %>% filter(size == "commercial")  %>% dplyr::select(years=year, STRATA, SDM, SHactual.Com = SHF)
@@ -74,7 +76,7 @@ SH.object
 # if your year defined above it 2019, then you should be bringing in the 2018 growth rate object.
 
 ###### !!!!!! Be sure to bring this file over to teh current year assessment folder !!!!!! ######
-sfa29.growthrate <- read.csv(paste0("Y:/Inshore/SFA29/",assessmentyear,"/Assessment/Data/Growth/growth.actual.2001to",year-1,".csv"))
+sfa29.growthrate <- read.csv(paste0("Y:/Inshore/Assessment/SFA29/",assessmentyear,"/Assessment/Data/Growth/growth.actual.2001to",year-1,".csv"))
 #sfa29.growthrate <- read.csv("Y:/INSHORE SCALLOP/BoF/2020/Assessment/Data/Growth/SPA1A1B4and5/spa1a.growthrate.2019.csv")
 #sfa29.growthrate <- sfa29.growthrate[,-1]
 sfa29.growthrate <- sfa29.growthrate %>% arrange(strata, sdm, Year)
@@ -82,10 +84,10 @@ sfa29.growthrate <- sfa29.growthrate %>% arrange(strata, sdm, Year)
 # DEFINE: load required workspace with model objects 
 # need current year model object AND previous year model object 
 # current year 
-load(paste0("Y:/Inshore/SFA29/",assessmentyear,"/Assessment/Data/Growth/SFA29growth",year,".RData"))
+load(paste0("Y:/Inshore/Assessment/SFA29/",assessmentyear,"/Assessment/Data/Growth/SFA29growth",year,".RData"))
 model.object.Y <- get(paste0("MWTSHSFA29.",year)) #Assign model.object.Y to current year model object - MWTSHSFA29.YYYY
 #Previous year;
-load(paste0("Y:/Inshore/SFA29/",assessmentyear-1,"/Assessment/Data/Growth/SFA29growth",year-1,".RData"))
+load(paste0("Y:/Inshore/Assessment/SFA29/",assessmentyear-1,"/Assessment/Data/Growth/SFA29growth",year-1,".RData"))
 model.object.Yminus1 <- get(paste0("MWTSHSFA29.",year-1))
 
 summary(model.object.Y)
