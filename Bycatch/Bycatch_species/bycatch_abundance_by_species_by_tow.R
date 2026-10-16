@@ -160,25 +160,3 @@ for (i in 1:length(species_all)) {
 write.csv(species_data[[species_all[i]]],file=paste0("species_data/std_data_",species_all[i],".csv"), row.names = FALSE)
 }
 
-
-#### Pull data for individual data - individual level data (data normalized on individuals within tows)
-#specify species code in sql query 
-con <- dbConnect(DBI::dbDriver("Oracle"), un.ID, pw.ID, 'ptran')
-bycatch.ind <- dbGetQuery(con, (" SELECT * from SCALLSUR.SCBYCATCH_BY_TOW_RAW WHERE SPECCD_ID = 43"))
-
-dim(bycatch.ind)
-head(bycatch.ind)
-
-table(bycatch.ind$MEAS_ID)
-table(bycatch.ind$SEX_ID)
-
-
-bycatch.ind <- bycatch.ind %>% select(CRUISE, TOW_NO, TOW_DATE, STRATA_ID, START_LAT, START_LONG, END_LAT, END_LONG, BYCATCH_SEQ, SPECCD_ID, COMMON, SCIENTIFIC, MEAS_VAL)
-
-
-write.csv(bycatch.ind, "Y:/Inshore/Bycatch/SurveyBycatch/WinterFlounder_GF_PED_2024/winterfounderindividuals.csv")
-
-
-
-
-
